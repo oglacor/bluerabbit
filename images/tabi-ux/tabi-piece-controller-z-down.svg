@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="pieces" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: .2;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        fill: #1caee4;
+      }
+
+      .cls-4 {
+        fill: #27c1e6;
+        opacity: .5;
+      }
+
+      .cls-2 {
+        opacity: .7;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="43.81" y="36.22" width="114.41" height="15.78" transform="translate(201.45 89.54) rotate(-179.25)"/>
+  <rect class="cls-4" x="36.61" y="55.35" width="128.15" height="27.34" transform="translate(200.47 139.36) rotate(-179.25)"/>
+  <rect class="cls-2" x="24.22" y="86.05" width="152.07" height="32.45" transform="translate(199.17 205.85) rotate(-179.25)"/>
+  <polygon class="cls-3" points="0 120.55 200 123.16 99.44 164.53 0 120.55"/>
+</svg>

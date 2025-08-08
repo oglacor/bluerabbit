@@ -1,0 +1,1 @@
+<?php include (TEMPLATEPATH . '/page-adventures.php'); ?>

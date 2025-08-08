@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="base" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 54">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #04161e;
+        stroke: #f7cb15;
+      }
+
+      .cls-1, .cls-2 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3 {
+        fill: #f7cb15;
+      }
+
+      .cls-2 {
+        fill: none;
+        stroke: #1caee4;
+      }
+    </style>
+  </defs>
+  <polyline class="cls-1" points="-.8 6.88 2.79 6.88 12.79 16.88 12.79 38.87 2.79 48.87 -.8 48.87"/>
+  <line class="cls-2" x1="12.8" y1="43.61" x2="7.53" y2="48.88"/>
+  <line class="cls-2" x1="12.8" y1="46.6" x2="7.53" y2="51.87"/>
+  <polygon class="cls-3" points="6.67 6.88 12.79 13.01 12.79 6.88 6.67 6.88"/>
+</svg>

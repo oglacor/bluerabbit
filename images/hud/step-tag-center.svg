@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="base" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 54">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: #f7cb15;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #04161e;
+      }
+    </style>
+  </defs>
+  <rect class="cls-2" x="0" y="6.88" width="2000" height="41.99"/>
+  <line class="cls-1" y1="6.88" x2="2000" y2="6.88"/>
+  <line class="cls-1" x1="2000" y1="48.87" y2="48.87"/>
+  <line class="cls-1" x1="1055.35" y1="51.87" x2="89.33" y2="51.87"/>
+</svg>

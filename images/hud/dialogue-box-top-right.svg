@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="base" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 35">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: .55;
+      }
+
+      .cls-2 {
+        stroke: #f06ea9;
+      }
+
+      .cls-2, .cls-3 {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .cls-3 {
+        stroke: #1cc2eb;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="-82.75" y="20.98" width="92.15" height="233.84"/>
+  <circle class="cls-3" cx="39.72" cy="29.84" r="2.98" transform="translate(9.62 69.36) rotate(-89.63)"/>
+  <polyline class="cls-2" points="-64.3 7.01 21.92 7.01 27.91 13 27.91 37.75 16.48 49.18 16.48 83.9"/>
+  <polyline class="cls-3" points="-50.43 1.72 23.27 1.72 39.72 18.17 39.72 26.44"/>
+</svg>

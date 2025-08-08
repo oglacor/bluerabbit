@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="pieces" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #1caee4;
+      }
+    </style>
+  </defs>
+  <circle class="cls-2" cx="100" cy="100" r="100"/>
+  <g>
+    <circle class="cls-1" cx="122.56" cy="59.5" r="12.65"/>
+    <circle class="cls-1" cx="122.56" cy="140.5" r="12.65"/>
+    <circle class="cls-1" cx="122.56" cy="100" r="12.65"/>
+    <circle class="cls-1" cx="77.44" cy="59.5" r="12.65"/>
+    <circle class="cls-1" cx="77.44" cy="100" r="12.65"/>
+    <circle class="cls-1" cx="77.44" cy="140.5" r="12.65"/>
+  </g>
+</svg>

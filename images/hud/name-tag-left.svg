@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="base" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 75">
+  <defs>
+    <style>
+      .cls-1 {
+        font-family: PreospeRegular, Preospe;
+        font-size: 21.08px;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        fill: #04161e;
+      }
+
+      .cls-2, .cls-4, .cls-5, .cls-6 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2, .cls-6 {
+        stroke: #f7cb15;
+      }
+
+      .cls-4 {
+        fill: #f7cb15;
+        stroke: #04161e;
+      }
+
+      .cls-5 {
+        stroke: #1caee4;
+      }
+
+      .cls-5, .cls-6 {
+        fill: none;
+      }
+    </style>
+  </defs>
+  <path class="cls-2" d="M47.57,62.76H15.66l-7.71-7.71V17.31c3.01-3.01,7.71-7.71,7.71-7.71h31.91"/>
+  <path class="cls-4" d="M44.38,62.76H15.66l-7.71-7.71V17.31c3.01-3.01,7.71-7.71,7.71-7.71h28.71v53.17Z"/>
+  <polyline class="cls-5" points="3.94 58.64 3.94 13.72 11.65 6.01 39.46 6.01"/>
+  <polyline class="cls-6" points="18.25 69.38 8.71 69.38 1 61.67 1 10.69"/>
+  <polygon class="cls-3" points="38.25 9.59 44.38 15.72 44.38 9.59 38.25 9.59"/>
+  <polygon class="cls-3" points="44.38 51.63 33.24 62.76 44.38 62.76 44.38 51.63"/>
+  <text class="cls-1" transform="translate(44.56 62.76) rotate(-90)"><tspan x="0" y="0">name</tspan></text>
+</svg>

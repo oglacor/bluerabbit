@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="base" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 35">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: .55;
+      }
+
+      .cls-2 {
+        stroke: #f06ea9;
+      }
+
+      .cls-2, .cls-3 {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .cls-3 {
+        stroke: #1cc2eb;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="19.67" y="20.98" width="92.15" height="233.84"/>
+  <polyline class="cls-3" points="2.04 243.34 2.04 18.17 18.49 1.72 27.4 1.72"/>
+  <line class="cls-2" x1="8.72" y1="17.95" x2="22.03" y2="4.63"/>
+</svg>

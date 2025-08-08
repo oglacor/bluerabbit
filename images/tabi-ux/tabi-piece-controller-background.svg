@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="pieces" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #24da98;
+      }
+    </style>
+  </defs>
+  <path class="cls-1" d="M159.32,2l38.83,38.83v118.34l-38.83,38.83H40.97L2.14,159.17V40.83L40.97,2h118.34M160.14,0H40.14C24.52,15.62,15.77,24.38.14,40v120c15.62,15.62,24.38,24.38,40,40h120l40-40V40L160.14,0h0Z"/>
+</svg>

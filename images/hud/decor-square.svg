@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="base" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #1cc2eb;
+      }
+
+      .cls-2, .cls-3 {
+        fill: none;
+        stroke: #1cc2eb;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .cls-3 {
+        opacity: .4;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="39.8" y="39.8" width="20.4" height="20.4"/>
+  <polyline class="cls-3" points="39.8 86.2 13.8 86.2 13.8 72.45"/>
+  <polyline class="cls-3" points="13.8 46.31 13.8 13.8 27.87 13.8"/>
+  <polyline class="cls-3" points="86.2 58.7 86.2 86.2 70.29 86.2"/>
+  <polyline class="cls-3" points="73.72 13.8 86.2 13.8 86.2 37.88"/>
+  <polyline class="cls-2" points="43.91 92.16 7.84 92.16 7.84 7.84 34.02 7.84"/>
+  <path class="cls-2" d="M50,86.2c-3.29,0-5.96,2.67-5.96,5.96s2.67,5.96,5.96,5.96,5.96-2.67,5.96-5.96-2.67-5.96-5.96-5.96Z"/>
+  <path class="cls-2" d="M39.8,1.88c-3.29,0-5.96,2.67-5.96,5.96s2.67,5.96,5.96,5.96,5.96-2.67,5.96-5.96-2.67-5.96-5.96-5.96Z"/>
+  <polyline class="cls-2" points="47.14 7.84 92.16 7.84 92.16 92.16 56.38 92.16"/>
+</svg>
