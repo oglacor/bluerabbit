@@ -179,6 +179,7 @@ $sql = "
 		`tabi_color` VARCHAR(20) NULL DEFAULT 'blue',
 		`tabi_background` TEXT NULL,
 		`tabi_level` INT NULL,
+		`tabi_on_journey` TINYINT NULL,
 
 	PRIMARY KEY (`tabi_id`) )$charset_collate;
 
@@ -425,6 +426,24 @@ $sql = "
 		`player_secret_code` VARCHAR(255) NULL,
 	PRIMARY KEY (`player_id`) )$charset_collate;
 
+	CREATE TABLE {$wpdb->prefix}br_player_meta (
+		player_meta_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+		player_id BIGINT UNSIGNED NOT NULL,
+		player_gender VARCHAR(50) NULL,
+		work_level VARCHAR(100) NULL,
+		work_function VARCHAR(150) NULL,
+		work_sub_function VARCHAR(150) NULL,
+		job_profile VARCHAR(150) NULL,
+		business_pillar VARCHAR(150) NULL,
+		work_cluster VARCHAR(150) NULL,
+		work_country VARCHAR(150) NULL,
+		work_location VARCHAR(150) NULL,
+	PRIMARY KEY (`player_meta_id`) )$charset_collate;
+
+
+
+
+
 	CREATE TABLE {$wpdb->prefix}br_player_achievement (
 		`achievement_id` BIGINT NOT NULL,
 		`player_id` BIGINT NOT NULL,
@@ -611,11 +630,14 @@ $sql = "
 
 	CREATE TABLE `{$wpdb->prefix}br_ai_chunks` (
 		chunk_id INT AUTO_INCREMENT PRIMARY KEY,
+		user_id BIGINT UNSIGNED NOT NULL,
 		file_id INT NOT NULL,
 		project_id INT NOT NULL,
 		chunk_index INT NOT NULL,
-		chapter_title VARCHAR(255),
 		chunk_text LONGTEXT,
+		chars INT NULL DEFAULT 0,
+		est_tokens INT NULL DEFAULT 0,
+		status VARCHAR(20) NOT NULL DEFAULT 'ready',
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)$charset_collate;
 
@@ -623,7 +645,9 @@ $sql = "
 		processed_chunk_id INT AUTO_INCREMENT PRIMARY KEY,
 		chunk_id INT NOT NULL,
 		project_id INT NOT NULL,
-		processing_style VARCHAR(100),
+		user_id BIGINT UNSIGNED NOT NULL,
+		processing_style TEXT NULL,
+		gpt_model VARCHAR(50) NOT NULL,
 		depth VARCHAR(50),
 		prompt_settings TEXT,
 		ai_response LONGTEXT,
@@ -798,9 +822,10 @@ $sql = "
 		"Adventure",
 		"Adventures",
 		"Adventure Summary",
-		"Chunk Processing", // Page to process unprocessed chunks. Here we display all chunk cards and allow the user to edit and customize the project.
+		"Documents", // Page to show unprocessed chunks. Here we display all chunk cards and allow the user to edit and customize the project.
+		"Document Chunks", // Page to show unprocessed chunks. Here we display all chunk cards and allow the user to edit and customize the project.
 		"Projects", // List of projects to access and manage them.
-		"Project", // Here we edit name and description of the project. Displays Unprocessed chunks and proecessed chunks in two tabs
+		"Project", // Here we edit name and description of the project.
 		"Assign Achievement",
 		"Backpack",
 		"Blocker",
@@ -874,16 +899,25 @@ $sql = "
 		"Tabis",
 		"Wall"
 	);
-	foreach ($new_pages as $np){
-		$page_check = get_page_by_title($np);
-		if(!$page_check){
-			$nparray = array(
-				'post_type' => 'page',
-				'post_title' => $np,
+	foreach ($new_pages as $np) {
+		// Exact, case-insensitive match on post_title
+		$q = new WP_Query([
+			'post_type'      => 'page',
+			'title'          => $np,       // exact match on the title
+			'post_status'    => 'any',     // mirror get_page_by_title behavior
+			'posts_per_page' => 1,
+			'no_found_rows'  => true,
+			'fields'         => 'ids',     // faster: return only IDs
+		]);
+
+		if (empty($q->posts)) {
+			$nparray = [
+				'post_type'    => 'page',
+				'post_title'   => $np,
 				'post_content' => '',
-				'post_status' => 'publish',
-				'post_author' => 1,
-			);
+				'post_status'  => 'publish',
+				'post_author'  => 1,
+			];
 			$npid = wp_insert_post($nparray);
 		}
 	}
@@ -1091,6 +1125,16 @@ function get_time_ago( $time, $adventure_id=0 ){
     }
 }
 
+function br_est_tokens($text) { return max(1, (int)ceil(mb_strlen($text,'UTF-8')/4)); }
+function br_est_cost($model, $in_toks, $out_cap = 800) {
+  $prices = [
+    'gpt-4o-mini'   => ['in'=>0.000150/1000,'out'=>0.000600/1000],
+    'gpt-3.5-turbo' => ['in'=>0.000500/1000,'out'=>0.001500/1000],
+    'gpt-4o'        => ['in'=>0.000500/1000,'out'=>0.001500/1000],
+  ];
+  $p = $prices[$model] ?? $prices['gpt-4o-mini'];
+  return round($in_toks*$p['in'] + $out_cap*$p['out'], 4);
+}
 
 
 function registerAdventureLogin($adventure_id) { 
@@ -1316,81 +1360,6 @@ add_shortcode('page_break', 'quest_instructions_page_break_shortcode');
 CLASSES
 
 */
-class Notification{
-	
-	public $color='blue';
-	public $icon = 'check';
-	public $message = '';
-	public $headline = '';
-	
-	function pop($m, $c='blue', $i='check'){
-		$this->color = $c;
-		$this->icon = $i;
-		$this->message = $m;
-		if($m){
-			$content = "<li class='border {$this->color}-bg-400 {$this->color}-border-800 white-color'>
-				<span class='icon-group'>
-					<span class='icon-button font _24 sq-40  icon-sm white-bg'>
-						<span class='icon icon-{$this->icon} {$this->color}-400'></span>
-					</span>
-					<span class='icon-content'>
-						<span class='line font _16'>".$this->message."</span>
-					</span>
-				</span>
-			</li>";
-		}else{
-			$content = "<li class='border white-bg red-border-A700 red-bg-A400 white-color'>
-				<span class='icon-group'>
-					<span class='icon-button font _24 sq-40  icon-sm white-bg'>
-						<span class='icon icon-cancel red-A400'></span>
-					</span>
-					<span class='icon-content'>
-						<span class='line font _16'>".__('No message',"bluerabbit")."</span>
-					</span>
-				</span>
-			</li>";
-		}
-		return($content);
-	}
-	function energy($ep=10){
-		$this->ep = $ep;
-		if($this->ep > 0){
-			$content = "<span class='button-form-ui cyan-A400'><span class='icon icon-activity'></span>+$this->ep</span>";
-		}else{
-			$content = "<span class='button-form-ui red-A400'><span class='icon icon-activity'></span>+0</span>";
-		}
-		return($content);
-	}
-	function notify($h='',$m='',$c='',$i='check'){
-		$this->color = $c;
-		$this->icon = $i;
-		$this->message = $m;
-		$this->headline = $h;
-		
-		if($m){
-			if($i){
-				$content .= "<span class='icon icon-$this->icon icon-xl'></span>";
-			}
-			if($h){
-				$content .= "<h1>$this->headline</h1>";
-			}
-			$content .= "<h3>$this->message</h3>";
-			$content .= "<h5>".__("click to close","bluerabbit")."</h5>";
-		}else{
-			$content = "<li class='border white-bg red-border-A400 red-A400'>
-				<span class='icon-group'>
-					<span class='icon-button font _24 sq-40  icon-sm white-bg red-border-A400 border border-all border-2 red-A400'>
-						<span class='icon icon-cancel'></span>
-					</span>
-					<span class='icon-content'>
-						<span class='line font _16'>".__('No message',"bluerabbit")."</span>
-					</span>
-				</span>
-			</li>";
-		}
-		return($content);
-	}
-}
 
 
 function stepTag($the_text=""){
@@ -1453,8 +1422,11 @@ require_once ("$dirName/functions/ajax.php");
 require_once ("$dirName/functions/player.php");
 require_once ("$dirName/functions/adventure-management.php");
 require_once ("$dirName/functions/progression.php");
+require_once ("$dirName/classes/Notification.php");
 require_once ("$dirName/classes/Project.php");
 
+$br_project = new Project();
+$n = new Notification();
 
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );
@@ -1468,6 +1440,7 @@ add_action('wp_login', 'absolute_level_calc');
 
 ///////// FUNCTION PERMISSIONS //////////////
 
+add_action("wp_ajax_br_notify", "notify");
 add_action("wp_ajax_switchRank", "switchRank");
 add_action("wp_ajax_closeIntro", "closeIntro");
 add_action("wp_ajax_resetIntro", "resetIntro");
@@ -1477,6 +1450,7 @@ add_action("wp_ajax_resetPlayerAdventure", "resetPlayerAdventure");
 add_action("wp_ajax_updatePlayer", "updatePlayer");
 add_action("wp_ajax_setGrade", "setGrade");
 add_action("wp_ajax_updateProfile", "updateProfile");
+add_action("wp_ajax_nopriv_bluerabbit_add_new_player", "bluerabbit_add_new_player");
 add_action("wp_ajax_bluerabbit_add_new_player", "bluerabbit_add_new_player");
 add_action("wp_ajax_checkUserDataExists", "checkUserDataExists");
 add_action("wp_ajax_enrollUser", "enrollUser");
@@ -1580,6 +1554,7 @@ add_action("wp_ajax_setGuildGroup", "setGuildGroup");
 add_action("wp_ajax_setGuildCapacity", "setGuildCapacity");
 add_action("wp_ajax_setDisplayStyle", "setDisplayStyle");
 add_action("wp_ajax_setDimensions", "setDimensions");
+add_action("wp_ajax_setTabiOnJourney", "setTabiOnJourney");
 add_action("wp_ajax_setNickname", "setNickname");
 add_action("wp_ajax_setProfilePicture", "setProfilePicture");
 add_action("wp_ajax_exportPlayersWork", "exportPlayersWork");

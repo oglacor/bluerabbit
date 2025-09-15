@@ -8,8 +8,9 @@
 		<span class="button-form-ui amber-bg-200 font _14 blue-grey-700 w900 kerning-1" id="guild-lb-xp-<?php echo $g->guild_id; ?>">
 			<span class="icon icon-star"></span>
 			<span class="number">0</span>
-			<input type="hidden" class="end-value" value="<?= $g->guild_xp; ?>">
+			<input type="hidden" class="end-value" value="<?= $g->total_player_xp; ?>">
 		</span>
+		
 	</div>
 	<script>animateNumber('#guild-lb-xp-<?=$g->guild_id; ?>');</script>
 </li>

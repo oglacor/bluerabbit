@@ -158,7 +158,7 @@
 										<?= toMoney($i->item_cost,"$");?>
 									</h3>
 									<h4 class="item-stock">
-										<?php if($i->item_type == 'key' || ($i->item_type == 'tabi-piece' && $i->item_stock <= 0) || ($i->item_stock >= 99999999)){ ?>
+										<?php if($i->item_type == 'key' || ($i->item_type == 'tabi-piece' && $i->item_stock <= 0) || ($i->item_stock >= 99999)){ ?>
 											<?= __("Stock","bluerabbit").": <span class='icon icon-infinite'></span>"; ?>
 										<?php }else{ ?>
 											<?= __("Stock","bluerabbit").": <span class='stock-left'>".$stock_left."</span> / ".$i->item_stock; ?>

@@ -4,9 +4,8 @@
 if(isset($adventure) && $isGM){
 	$guild_id = isset($_GET['guild_id']) ? $_GET['guild_id'] : NULL ;
 	$selected_players = array();
-	if($guild_id){
+	if($guild_id !== NULL){
 		$g = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."br_guilds WHERE guild_id=$guild_id");
-		$selected_players = $wpdb->get_col("SELECT player_id FROM ".$wpdb->prefix."br_player_guild WHERE guild_id=$guild_id AND adventure_id=$adventure->adventure_id");
 	}
 	?>
 
@@ -101,33 +100,22 @@ if(isset($adventure) && $isGM){
 				</td>
 			</tr>
 			<?php } ?>
+
+<?php 
+
+$players = $wpdb->get_results("
+SELECT a.*,b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_picture, p_guild.guild_id FROM {$wpdb->prefix}br_player_adventure a
+LEFT JOIN {$wpdb->prefix}br_players b
+ON a.player_id = b.player_id
+LEFT JOIN {$wpdb->prefix}br_player_guild p_guild
+ON b.player_id = p_guild.player_id AND p_guild.guild_id = $g->guild_id
+WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' LIMIT 1000
+"); 
+?>
 			<tr>
-				<td class="text-right w-150"><?= __('Guild Players','bluerabbit'); ?></td>
+				<td class="text-right w-150"><?= __('Player in guild','bluerabbit'); ?></td>
 				<td>
 					<?php if(isset($g)){ ?>
-						<?php 
-						$player_select_title = __("Guild Players","blueabbit");
-						include (TEMPLATEPATH . '/player-select-guild.php'); 
-						?>
-					<?php }else{ ?>
-						<h3 class="text-center padding-10 font w900 uppercase purple-600">- <?= __("Create the guild first","bluerabbit"); ?> -</h3>
-					<?php } ?>
-					
-				</td>
-			</tr>
-			<tr>
-				<td class="text-right w-150"><?= __('List of Players','bluerabbit'); ?></td>
-				<td>
-					<?php if(isset($g)){ ?>
-						<?php
-						$player_ids = $selected_players ? "AND a.player_id IN (".implode(",",$selected_players).") " : "";
-						$players = $wpdb->get_results("
-						SELECT a.*,b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_hexad, b.player_hexad_slug FROM {$wpdb->prefix}br_player_adventure a
-						LEFT JOIN {$wpdb->prefix}br_players b 
-						on a.player_id = b.player_id
-						WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' $player_ids LIMIT 1000
-						");
-						?>
 						<table class="table compact">
 							<thead>
 								<tr>
@@ -143,13 +131,15 @@ if(isset($adventure) && $isGM){
 										<td><?= $play->player_id; ?></td>
 										<td><?= $play->player_first." ".$play->player_last; ?></td>
 										<td><?= $play->player_email; ?></td>
-										<td id="player-guild-list-<?=$play->player_id;?>" class="active">
-											<button class="active-content form-ui red-bg-400 white-color" onClick="triggerGuild(<?php echo "$g->guild_id, $play->player_id"; ?>);">
-												<?= __("Remove","bluerabbit"); ?>
-											</button>
-											<button class="inactive-content form-ui blue-bg-400 white-color" onClick="triggerGuild(<?php echo "$g->guild_id, $play->player_id"; ?>);">
-												<?= __("Restore","bluerabbit"); ?>
-											</button>
+										<td id="player-guild-list-<?=$play->player_id;?>" <?php if($play->guild_id == $g->guild_id){ ?>class="active"<?php } ?>>
+											
+												<button class="active-content form-ui red-bg-400 white-color" onClick="triggerGuild(<?php echo "$g->guild_id, $play->player_id"; ?>);">
+													<?= __("Remove","bluerabbit"); ?>
+												</button>
+												<button class="inactive-content form-ui blue-bg-400 white-color" onClick="triggerGuild(<?php echo "$g->guild_id, $play->player_id"; ?>);">
+													<?= __("Assign","bluerabbit"); ?>
+												</button>
+											
 										</td>
 									</tr>
 								<?php } ?>

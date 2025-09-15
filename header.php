@@ -98,6 +98,7 @@
 			$show_player_transactions = isset($adv_settings['show_my_transactions']['value']) ? $adv_settings['show_my_transactions']['value'] : "";
 			$show_adventure_status = isset($adv_settings['show_adventure_status']['value']) ? $adv_settings['show_adventure_status']['value'] : "";
 			$adventure_theme = isset($adv_settings['adventure_theme']['value']) ? $adv_settings['adventure_theme']['value'] : "default";
+			$journey_zoom_level = isset($adv_settings['journey_zoom_level']['value']) ? $adv_settings['journey_zoom_level']['value'] : "0";
 			
 			
 			if(isset($adv_settings['support_email']['value']) && $adv_settings['support_email']['value'] != ""){
@@ -323,17 +324,24 @@
 			<div class="tools">
 				<?php //print_r($current_player); ?>
 				<?php 
-				if($current_player->player_current_quest_id > 0){ 
+				if(isset($current_player->player_current_quest_id) && ($current_player->player_current_quest_id) > 0){ 
 					$cq = getQuest($current_player->player_current_quest_id); 
 					$cq_link = get_bloginfo('url')."/{$cq->quest_type}/?questID={$cq->quest_id}&adventure_id={$cq->adventure_id}#step-{$current_player->player_current_quest_step}";
 				}else{ 
-					$cq_link = "";
+					$current_player->player_current_quest_id = 0;
+					$cq_link = ""; 
 				}
 				?>
 				<a class="current-quest-torch icon-button <?= $current_player->player_current_quest_id == 0 ? "hidden" : ""; ?>" id="current-quest-torch" style="background-image: url(<?= get_bloginfo('template_directory'); ?>/images/icons/icon-torch.png); " href="<?= $cq_link; ?>">
 				</a>
 				<button class="icon-button white-bg border rounded-max" id="profile-box-btn" <?php if(isset($current_player->player_picture)){ ?>style="background-image: url(<?= $current_player->player_picture; ?>); "<?php } ?> onClick="activate('#profile-box');">
 				</button>
+				<?php if($current_player->player_guild){ ?>
+					<?php $myGuild = getMyGuild($adventure_id, $current_player->player_guild); ?>
+					<?php $myGuildExists = true; ?>
+					<a class="icon-button white-bg border rounded-max" id="guild-btn" <?php if(isset($myGuild->guild_logo)){ ?>style="background-image: url(<?= $myGuild->guild_logo; ?>); "<?php } ?> href="<?= get_bloginfo('url')."/guilds/?adventure_id=$adv_child_id"; ?>">
+					</a>
+				<?php } ?>
 				<?php if(is_page('adventure')){ ?>
 					<button class="icon-button transparent-bg font _18 relative" id="tutorial-button-start" onClick="tour.start();" title="<?= __("Start Tutorial","bluerabbit"); ?>" alt="<?= __("Start Tutorial","bluerabbit"); ?>">
 						<span class="background layer black-bg opacity-20 border rounded-max absolute"></span>

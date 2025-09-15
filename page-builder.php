@@ -54,7 +54,7 @@
             </div>
             <script>
                 initializeBuilderMilestones();
-                resizeJourneyMapWithPadding(300, 'builder', '.milestone');
+                resizeJourneyMapWithPadding(1000, 'builder', '.milestone');
             </script>
         <?php }else{ ?>
             <div class="sys-message">

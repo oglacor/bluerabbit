@@ -203,6 +203,7 @@
 												<img src="<?= get_template_directory_uri(); ?>/images/drag-handle.svg" class="drag-icon">
 											</div>
 											<div class="cell cell-name">
+												<?php if($current_user->ID==1){ echo "$q->quest_id | ";} ?>
 												<input type="text" class="form-ui w-full" id="the_title-<?= $q->quest_type; ?>-<?= $q->quest_id; ?>" value="<?= $q->quest_title; ?>" onChange="setTitle(<?= $q->quest_id; ?>,'<?= $q->quest_type; ?>');">
 												<input type="hidden" class="quest-id" value="<?= $q->quest_id; ?>">
 												<div class="quest-links font _12 w600 grey-600">

@@ -92,7 +92,7 @@
 											}
 										}  
 									} ?>
-									<tr class="item " id="item-<?= $i->item_id;?>">
+									<tr class="item-row " id="item-<?= $i->item_id;?>">
 										<td class="badge">
 											<input type="hidden" value="<?= $i->item_badge; ?>" id="the_item_badge-<?= $i->item_id; ?>">
 											<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_item_badge-<?= $i->item_id; ?>','a','item',<?= $i->item_id; ?>);" id="the_item_badge-<?= $i->item_id; ?>_thumb" style="background-image: url(<?=$i->item_badge; ?>);">

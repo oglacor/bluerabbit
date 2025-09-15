@@ -562,6 +562,9 @@ div.table-cell, span.table-cell{
 		&.with-ep{
 			grid-template-columns:1fr 11fr 3fr 3fr 3fr 4fr 4fr 4fr;
 		}
+		&.with-tabi-assign{ 
+			grid-template-columns:1fr 13fr 3fr 3fr 3fr 4fr 4fr 2fr;
+		}
 		&.level-split{
 			width: 100%;
 			background-color: #2196F3;

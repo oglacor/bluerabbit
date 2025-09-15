@@ -38,7 +38,13 @@
 						<img class="rotate-R-60 mix-blend-overlay halo " src="<?= get_bloginfo('template_directory')."/images/a4.png";?>">
 						<img class="rotate-L-90 mix-blend-overlay halo opacity-20" src="<?= get_bloginfo('template_directory')."/images/a5.png";?>">
 					</div>
-					<h1 class="font _30 w600 condensed kerning-1 padding-10 text-center w-full"><?= $g->guild_name; ?></h1>
+					<div class="text-center w-full">
+						<h1 class="font _30 w600 condensed kerning-1 padding-10"><?= $g->guild_name; ?></h1>
+						<a href="<?= get_bloginfo('url')."/guilds/?adventure_id=$g->adventure_id"; ?>" class="form-ui grey-bg-100 blue-grey-900 font _16 w900">
+							<?= __("View Guilds","bluerabbit"); ?>
+						</a>
+					</div>
+						
 					<?php if($isGM || $isAdmin || $isNPC){ ?>
 						<div class="card-message padding-10 white-color text-center">
 							<?php if($guild_players ){ ?>
@@ -73,33 +79,3 @@
 	
 	
 
-	<?php if($guild_players && ($isGM || $isNPC || $isAdmin) ){ ?>
-		<div class="background overlay-layer fixed" id="guild-details-<?=$g->guild_id; ?>">
-			<div class="background fixed black-bg opacity-80"></div>
-			<div class="layer base absolute sq-full">
-				<button class="layer base absolute icon-button font _14 sq-20 red-bg-400 top-10 right-10" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span></button>
-				<div class="text-center padding-20 white-color">
-					<h1 class="font _24 w600"><?= $g->guild_name; ?></h1>
-					<h3 class="font _18 w300"><?= count($guild_players)." ".__("Members","bluerabbit"); ?></h3>
-				</div>
-				<div class="guild-players white-color text-center">
-					<?php foreach($guild_players as $p){ ?>
-						<div class="icon-group inline-block padding-5">
-							<span class="icon-button player-picture white-bg sq-40" style="background-image: url(<?= $p->player_picture; ?>);"></span>
-							<div class="icon-content text-left">
-								<span class="line font _18 player-name"><?= $p->player_display_name; ?></span>
-							</div>
-						</div>
-					<?php } ?>
-				</div>
-				<div class="padding-10 text-center absolute bottom left w-full layer foreground">
-					<h3 class="font _14 w100"><?= __("Share the enroll link","bluerabbit"); ?></h3>
-					<button id="<?= "button-link-$g->guild_id"; ?>" class="form-ui blue-bg-800 font _16 normal" onClick="copyTextFrom(<?= "'#guild-link-$g->guild_id'"; ?>);">
-						<?= __("Click to copy enroll code","bluerabbit"); ?>
-					</button>
-					<input id="<?= "guild-link-$g->guild_id"; ?>" type="hidden" class="form-ui w-full" value="<?= get_bloginfo('url')."/guild-enroll/?adventure_id=$g->adventure_id&t=$g->guild_code"; ?>">
-				</div>
-			</div>
-		</div>
-	<?php } ?>
-</div>

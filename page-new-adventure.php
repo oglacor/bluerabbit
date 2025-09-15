@@ -12,6 +12,28 @@ if($adventure){
 }
 
 $adv_config=array(
+	'journey_zoom_level' => array(
+		'label'=>__("Zoom Level","bluerabbit"),
+		'icon'=>'lock',
+		'type'=>'select',
+		'options' => array(
+			array( "-1000", "10%" ),
+			array( "-900", "20%" ),
+			array( "-800", "30%" ),
+			array( "-700", "40%" ),
+
+			array( "-600", "50%" ),
+			array( "-500", "60%" ),
+			array( "-400", "70%" ),
+			array( "-300", "80%" ),
+			array( "-200", "90%" ),
+			array( "0", "100%" ),
+			array( "100", "110%" ),
+			array( "200", "120%" ),
+			array( "300", "130%" ),
+			array( "400", "140%" )
+		),
+	),
 	'hide_achievements' => array(
 		'label'=>__("Hide Achievements","bluerabbit"),
 		'desc'=>__("In the badges page, hide the achievements until the player has earned them","bluerabbit"),
@@ -870,7 +892,7 @@ $image_types = array(
 								<?php $tabis = getTabis($adv_parent_id); ?>
 								<div class="admin-table table-tabis" id="table-tabis">
 									<div class="admin-table-header">
-										<div class="row admin-row">
+										<div class="row admin-row with-tabi-assign">
 											<div class="cell cell-tabi-id">&nbsp;</div>
 											<div class="cell cell-name"><?= __("Name","bluerabbit");?></div>
 											<div class="cell cell-badge"><?= __("Background","bluerabbit");?></div>
@@ -878,6 +900,7 @@ $image_types = array(
 											<div class="cell cell-level"><?= __("Level","bluerabbit");?></div>
 											<div class="cell cell-width"><?= __("Width","bluerabbit");?></div>
 											<div class="cell cell-height"><?= __("Height","bluerabbit");?></div>
+											<div class="cell cell-location"><?= __("Show in Journey","bluerabbit");?></div>
 										</div>
 									</div>
 									<?php if($tabis){ ?>
@@ -1298,6 +1321,7 @@ $image_types = array(
 	<input type="hidden" id="level-nonce" value="<?php echo wp_create_nonce('level_nonce'); ?>" />
 	<input type="hidden" id="title-nonce" value="<?php echo wp_create_nonce('title_nonce'); ?>" />
 	<input type="hidden" id="dimensions-nonce" value="<?php echo wp_create_nonce('dimensions_nonce'); ?>" />
+	<input type="hidden" id="tabi-on-journey-nonce" value="<?php echo wp_create_nonce('tabi_on_journey_nonce'); ?>" />
 	<input type="hidden" id="add-tabi-nonce" value="<?php echo wp_create_nonce('add_tabi_nonce'); ?>" />
 
 

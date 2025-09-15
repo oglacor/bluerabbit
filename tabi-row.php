@@ -1,5 +1,5 @@
 <div class="row-container <?= $a->tabi_color; ?>-bg-100" id="<?= "tabi-$a->tabi_id"; ?>">
-    <div class="row admin-row">
+    <div class="row admin-row with-tabi-assign">
         <div class="cell cell-tabi-id">
             <?= $rowNumber; ?>	
             <input type="hidden" class="tabi_id" value="<?= $a->tabi_id; ?>">
@@ -36,6 +36,11 @@
         <div class="cell cell-height">
             <div class="input-group">
                 <input type="number" class="form-ui w-full" id="the_height-tabi-<?= $a->tabi_id; ?>" value="<?= $a->tabi_height; ?>" onChange="setDimensions(<?= $a->tabi_id; ?>,'tabi');">
+            </div>
+        </div>
+        <div class="cell cell-location">
+            <div class="input-group">
+                <input type="checkbox" class="form-ui tabi-on-journey-checkbox" id="tabi-on-journey-<?= $a->tabi_id; ?>" <?= $a->tabi_fixed ? 'checked' : ''; ?> onChange="setTabiOnJourney(<?= $a->tabi_id; ?>);">
             </div>
         </div>
     </div>

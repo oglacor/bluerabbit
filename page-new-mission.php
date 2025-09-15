@@ -126,7 +126,7 @@
 					</button>
 				</li>
 				<li class="block text-center">
-					<a class="form-ui red-bg-400 font _14" href="<?php echo get_bloginfo('url')."/item-shop/?adventure_id=$adventure->adventure_id"; ?>">
+					<a class="form-ui red-bg-400 font _14" href="<?php echo get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
 						<span class="icon icon-xs icon-cancel"></span><?php _e('Cancel','bluerabbit'); ?><br>
 					</a>
 				</li>

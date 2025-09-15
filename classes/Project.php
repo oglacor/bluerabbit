@@ -19,6 +19,7 @@ class Project {
     public function __construct() {
         add_action('wp_ajax_br_ai_upload_file', [$this, 'handle_upload']);
         add_action('wp_ajax_br_update_project', [$this, 'update_project']);
+        add_action('wp_ajax_br_process_chunk', [$this, 'send_to_openai']);
     }
 
     public function handle_upload() {
@@ -29,25 +30,22 @@ class Project {
             $current_user = wp_get_current_user();
 
             // Sanitize input
-            $project_id = intval($_POST['br_project_id']);
-            $new_project_name = sanitize_text_field($_POST['br_new_project_name'] ?? '');
-            $new_project_desc = sanitize_textarea_field($_POST['br_new_project_description'] ?? '');
+            $posted_project_id = intval($_POST['br_project_id']);
+            $project_name = sanitize_text_field($_POST['br_project_name'] ?? '');
+            $project_desc = sanitize_textarea_field($_POST['br_project_description'] ?? '');
             $story_meta = [
+                'custom_prompt' => sanitize_text_field($_POST['br_custom_prompt'] ?? ''),
                 'narrative' => sanitize_text_field($_POST['br_story_narrative'] ?? ''),
                 'tone'      => sanitize_text_field($_POST['br_story_tone'] ?? ''),
                 'audience'  => sanitize_text_field($_POST['br_story_audience'] ?? ''),
                 'subject'   => sanitize_text_field($_POST['br_story_subject'] ?? ''),
             ];
 
-            // Create project if needed
-            if (!$project_id && $new_project_name) {
-                $wpdb->insert("{$wpdb->prefix}br_projects", [
-                    'user_id' => $current_user->ID,
-                    'name' => $new_project_name,
-                    'description' => $new_project_desc,
-                ]);
-                $project_id = $wpdb->insert_id;
-            }
+			$project_sql="INSERT INTO {$wpdb->prefix}br_projects (`project_id`,`user_id`, `name`, `description`) VALUES (%d, %d, %s, %s) ON DUPLICATE KEY UPDATE `name`=%s , `description`=%s";
+			$project_sql = $wpdb->prepare( $project_sql, $posted_project_id, $current_user->ID, $project_name, $project_desc, $project_name, $project_desc);
+			$project_sql = $wpdb->query($project_sql);
+            $project_id = $wpdb->insert_id;
+
 
             // Handle file upload
             if (!function_exists('wp_handle_upload')) {
@@ -85,55 +83,63 @@ class Project {
             $text = $pdf->getText();
             $chunks = $this->chunk_pdf_text($text);
             // Send chunks to OpenAI
-            $milestones = [];
-            foreach ($chunks as $key=> $chunk) {
-                $chunk_text = $chunk['chapter_title'] ?? '';
-                $story_meta['chapter_title'] = "Part " . ($key + 1);
-               // error_log("📤 Sending chunk to OpenAI: " . substr($chunk_text, 0, 100));
-                $wpdb->insert("{$wpdb->prefix}br_ai_temp_results", [
+            
+            foreach ($chunks as $c) {
+                $wpdb->insert("{$wpdb->prefix}br_ai_chunks", [
+                    'file_id'   => $file_id,
+                    'chunk_index'   => $c['chunk_index'],
+                    'chunk_text'          => $c['text'],
+                    'chars'         => $c['chars'],
+                    'est_tokens'    => $c['est_tokens'],
+                    'status'        => 'ready',
+                    'created_at'    => current_time('mysql'),
+                    'project_id' => $project_id,
                     'user_id' => $current_user->ID,
-                    'data' => print_r($chunk,true)
                 ]);
-                
-                $ai_response = $this->send_to_openai($chunk_text, $new_project_name, $story_meta);
-                //$ai_response = "";
-                $wpdb->insert("{$wpdb->prefix}br_ai_temp_results", [
-                    'user_id' => $current_user->ID,
-                    'data' => is_string($ai_response) ? $ai_response : json_encode($ai_response)
-                ]);
-                
-                error_log("📥 OpenAI raw response: " . substr(print_r($ai_response, true), 0, 500));
-
-                // Try decoding response (could be JSON string)
-
-                $raw_responses[] = $ai_response;
-                if (is_string($ai_response)) {
-                    $clean_json = $this->sanitize_openai_json_response($ai_response);
-                    error_log("🧪 Clean JSON: " . substr($clean_json, 0, 500));
-
-                    $decoded = json_decode($clean_json, true);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        error_log("❌ JSON error: " . json_last_error_msg());
-                        wp_send_json_error(['error' => 'OpenAI returned invalid JSON', 'raw' => $ai_response]);
-                    }
-
-                    if (json_last_error() === JSON_ERROR_NONE && isset($decoded['milestones'])) {
-                        foreach ($decoded['milestones'] as $milestone) {
-                            $milestones[] = $milestone;
-                        }
-                    } else {
-                         error_log("⚠️ No milestones key found in decoded output.");
-                        $milestones[] = [
-                            'quest_title' => 'Chunk ' . $chunk['chunk_index'] . ' parsing failed',
-                            'quest_content' => 'Could not decode AI response.',
-                            'steps' => []
-                        ];
-                    }
-                }else{
-                    error_log("❗ OpenAI response was not a string.");
-                }
-                
             }
+
+
+
+                /*
+                    //$ai_response = $this->send_to_openai($chunk_text, $new_project_name, $story_meta);
+                    //$ai_response = "";
+                    $wpdb->insert("{$wpdb->prefix}br_ai_temp_results", [
+                        'user_id' => $current_user->ID,
+                        'data' => is_string($ai_response) ? $ai_response : json_encode($ai_response)
+                    ]);
+                    
+                    error_log("📥 OpenAI raw response: " . substr(print_r($ai_response, true), 0, 500));
+
+                    // Try decoding response (could be JSON string)
+
+                    $raw_responses[] = $ai_response;
+                    if (is_string($ai_response)) {
+                        $clean_json = $this->sanitize_openai_json_response($ai_response);
+                        error_log("🧪 Clean JSON: " . substr($clean_json, 0, 500));
+
+                        $decoded = json_decode($clean_json, true);
+                        if (json_last_error() !== JSON_ERROR_NONE) {
+                            error_log("❌ JSON error: " . json_last_error_msg());
+                            wp_send_json_error(['error' => 'OpenAI returned invalid JSON', 'raw' => $ai_response]);
+                        }
+
+                        if (json_last_error() === JSON_ERROR_NONE && isset($decoded['milestones'])) {
+                            foreach ($decoded['milestones'] as $milestone) {
+                                $milestones[] = $milestone;
+                            }
+                        } else {
+                            error_log("⚠️ No milestones key found in decoded output.");
+                            $milestones[] = [
+                                'quest_title' => 'Chunk ' . $chunk['chunk_index'] . ' parsing failed',
+                                'quest_content' => 'Could not decode AI response.',
+                                'steps' => []
+                            ];
+                        }
+                    }else{
+                        error_log("❗ OpenAI response was not a string.");
+                    }
+                */
+            /*
             $final_structure = [
                 'milestones' => $milestones
             ];
@@ -150,56 +156,78 @@ class Project {
             ]);
 
             $temp_id = $wpdb->insert_id;
-
-            $redirect_url = site_url('/project#chunks?result_id=' . $temp_id);
-
+            */
+            $redirect_url = site_url('/document-chunks?project_id=' . $project_id);
             wp_send_json_success([
                 'redirect' => $redirect_url
             ]);
-
             error_log("✅ File uploaded and linked to project ID: $project_id");
-
         } catch (Exception $e) {
             error_log("❌ Exception: " . $e->getMessage());
             wp_send_json_error('Server error: ' . $e->getMessage());
         } 
     }
 
-    private function send_to_openai($text, $project_name = '', $story_meta= []) {
+    public function send_to_openai($text=null, $p_story_meta = []) {
+        global $wpdb;
+        $current_user = wp_get_current_user();
+        error_log('AJAX reached');
+
+        if($p_story_meta){
+            $chunk_meta = [
+                'custom_prompt' => $p_story_meta['custom_prompt'] ?? '',
+                'narrative' => $p_story_meta['narrative'] ?? 'epic fantasy',
+                'tone'      => $p_story_meta['tone'] ?? 'mentor-like',
+                'audience'  => $p_story_meta['audience'] ?? 'high school students',
+                'subject'   => $p_story_meta['subject'] ?? 'general education',
+                'min_milestones'   => $p_story_meta['min_milestones'] ?? 5,
+            ];
+        } else {
+            $chunk_meta = [];
+        }
+
+        $gpt_model = ($_POST['gpt_model'] ? $_POST['gpt_model'] : "gpt-3.5-turbo");
+        $chunk_text = ($_POST['br_chunk_text'] ? $_POST['br_chunk_text'] : $text);
+        $custom_prompt = ($_POST['br_custom_prompt'] ? $_POST['br_custom_prompt'] : $p_story_meta['custom_prompt'] ?? '');
+        $min_milestones = ($_POST['br_minimum_milestones'] ? $_POST['br_minimum_milestones'] : $p_story_meta['min_milestones'] ?? 5);
+        $narrative = ($_POST['br_story_narrative'] ? $_POST['br_story_narrative'] : $p_story_meta['narrative'] ?? '');
+        $tone = ($_POST['br_story_tone'] ? $_POST['br_story_tone'] : $p_story_meta['tone'] ?? '');
+        $audience = ($_POST['br_story_audience'] ? $_POST['br_story_audience'] : $p_story_meta['audience'] ?? '');
+        $subject = ($_POST['br_story_subject'] ? $_POST['br_story_subject'] : $p_story_meta['subject'] ?? '');
+        $br_chunk_id = ($_POST['br_chunk_id'] ?? 0);
+        $br_project_id = ($_POST['br_project_id'] ?? 0);
+
         $api_key = defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null;
 
         if (!$api_key) {
             return ['error' => 'OpenAI API key missing'];
         }
 
-        $narrative = $story_meta['narrative'] ?? 'epic fantasy';
-        $tone      = $story_meta['tone'] ?? 'mentor-like';
-        $audience  = $story_meta['audience'] ?? 'high school students';
-        $subject   = $story_meta['subject'] ?? 'general education';
-        $chapter_title = $story_meta['chapter_title'] ?? '';
 
         $instructions = <<<PROMPT
-            You are a gamification designer for interactive education experiences.
-            Your task is to turn the content below into a JSON array of gamified milestones , using the following structure and only outputting VALID JSON.
+            
+            Your task is to turn the content below into a Dialouge between characters explaining content from the uploaded text to the user. 
+            
+            After creating the dialogue, you will return a JSON array of {$min_milestones} milestones with 7 steps each , using the following structure and only outputting VALID JSON. Each milestone should be a significant part of the conversation and such conversation should be relevant to the content of the chunk.
 
-            Return 6-10 milestones from this content. Each one should represent a unique learning moment or idea.
-            Each milestone should represent one focused concept or scene in the educational narrative.
+            Each step is one dialogue of that conversation. 
+           
+            Do NOT explain. Do NOT explain. Do NOT explain. 
 
-            Each milestone is a "quest", and contains XP, bloo (currency), level, and steps. Each step should be written like part of a game or story — use character dialogue, open challenges, or narrative messaging. 
-            You can invent system messages, characters, and backgrounds if needed.
+            Create at least {$min_milestones} milestones with 7 steps each. Make sure to use the content of the chunk to create the dialogue and narrative content. The dialogue and story must be relevant to the subject matter of the chunk.
+
+            Each milestone should represent a significant concept or section from the content. Each milestone should have a clear title and a brief description of its purpose.
+            Each milestone contains XP, bloo (currency), level, and steps. Each step should be written like part of a game or story use character dialogue, open challenges, or narrative messaging. 
+            You can invent system messages and characters if needed.
 
             Example milestone titles: 
-            - "The Philosopher's Dilemma"
-            - "Unlocking the Secrets of Well-being"
-            - "Exploring the Temple of Definitions"
+            - \"The Philosopher\'s Dilemma\"
+            - \"Unlocking the Secrets of Well-being\"
+            - \"Exploring the Temple of Definitions\"
 
             Example step types:
             - dialogue: Character explains something in-game
             - sys-message: System gives feedback or instruction
-            - open: User types something to continue
-            - win/fail: Used to complete or retry the milestone
-
-            Do NOT explain. Do NOT add markdown blocks like \`\`\`. Just output the JSON structure.
 
             The JSON structure MUST follow this:
 
@@ -232,6 +260,11 @@ class Project {
                 }
             ]
             }
+            
+            Do NOT add markdown blocks like \`\`\`. Just output the JSON structure.
+
+            Here is the input from the designer of the course:
+            {$custom_prompt}
 
             Narrative style: {$narrative}
             Tone: {$tone}
@@ -240,18 +273,17 @@ class Project {
 
             Content:
             """
-            {$chapter_title}
+            $chunk_text
             """
         PROMPT;
 
-
         $body = [
-            'model' => 'gpt-3.5-turbo',
+            'model' => $gpt_model,
             'messages' => [
-                ['role' => 'system', 'content' => 'You are an assistant for gamified curriculum design.'],
+                ['role' => 'system', 'content' => 'You are an assistant for learning experience design.'],
                 ['role' => 'user', 'content' => $instructions]
             ],
-            'temperature' => 0.7,
+            'temperature' => 0.5,
         ];
 
         $response = wp_remote_post('https://api.openai.com/v1/chat/completions', [
@@ -262,7 +294,6 @@ class Project {
             'body' => json_encode($body),
             'timeout' => 45,
         ]);
-        error_log("🧠 OpenAI request size: " . strlen($text) . " chars");
 
         if (is_wp_error($response)) {
             return ['error' => $response->get_error_message()];
@@ -276,7 +307,26 @@ class Project {
                 'raw' => $data
             ];
         }
+        
+        error_log("🧠 OpenAI request size: " . strlen($text) . " chars");
+        error_log("🧠 OpenAI prompt: " . print_r($instructions, true));
+        error_log("🧠 OpenAI request body: " . json_encode($body));
+        error_log("🧠 OpenAI raw response: " . wp_remote_retrieve_body($response));
+        error_log("🧠 OpenAI processing_style: {$narrative} - {$tone} - {$audience} - {$subject}");
+        error_log("🧠 OpenAI gpt_model: $gpt_model");
 
+        //`processed_chunk_id`, `chunk_id`, `project_id`, `processing_style`, `depth`, `prompt_settings`, `ai_response`, `token_usage`, `cost_estimate`, `created_at`
+        $wpdb->insert("{$wpdb->prefix}br_ai_processed_chunks", [
+            'user_id' => $current_user->ID,
+            'chunk_id' => $br_chunk_id,
+            'project_id' => $br_project_id,
+            'prompt_settings' => print_r($instructions, true),
+            'gpt_model' => "$gpt_model",
+            'processing_style' => "{$narrative} - {$tone} - {$audience} - {$subject}",
+            'ai_response' => is_string($data['choices'][0]['message']['content']) ? $data['choices'][0]['message']['content'] : json_encode($data['choices'][0]['message']['content'])
+        ]);
+
+        
         return $data['choices'][0]['message']['content'];
     }
     public function br_render_ai_milestones_preview($json_string) {
@@ -317,60 +367,100 @@ class Project {
         $clean = trim($clean, "` \n\r");
         return $clean;
     }
-    private function chunk_pdf_text($text) {
+    private function chunk_pdf_text(string $text, int $target_words = 2800, int $max_words_hardcap = 3400, int $overlap_paras = 1): array {
         $chunks = [];
 
-        // Regex splits on "Chapter" style headings and keeps the titles and content
-        $chapter_splits = preg_split(
-            '/\b(?:Chapter|CHAPTER|Cap[ií]tulo|CAP[IÍ]TULO)\s+\d+[^\n]*\n?/i',
-            $text,
-            -1,
-            PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
-        );
+        // 1) Normalize whitespace: keep blank lines as paragraph boundaries
+        $text = preg_replace("/\r\n?/", "\n", $text);                 // normalize newlines
+        $text = preg_replace("/[ \t]+\n/", "\n", $text);              // trim trailing spaces
+        $text = preg_replace("/[ \t]+/", " ", $text);                  // collapse inline spaces
+        $text = trim($text);
 
-        // Now we loop in pairs: title + content
-        if (count($chapter_splits) > 1) {
-            for ($i = 0; $i < count($chapter_splits) - 1; $i += 2) {
-                $chapter_title = trim($chapter_splits[$i]);
-                $chapter_text  = trim($chapter_splits[$i + 1]);
+        if ($text === '') return $chunks;
 
-                if (empty($chapter_text)) continue;
+        // 2) Split into raw paragraphs on blank lines (>=1 empty line)
+        //    Also guard against PDFs that hard-wrap every line: we stitch single newlines inside a paragraph.
+        $raw_paras = preg_split("/\n{2,}/", $text); // split on 2+ newlines
 
-                // Optional: re-chunk large chapters
-                $max_len = 12000;
-                if (mb_strlen($chapter_text) > $max_len) {
-                    $sub_parts = str_split($chapter_text, $max_len);
-                    foreach ($sub_parts as $j => $sub_chunk) {
-                        $chunks[] = [
-                            'chunk_index' => count($chunks),
-                            'chapter_title' => $chapter_title . ' (Part ' . ($j + 1) . ')',
-                            'text' => $sub_chunk,
-                        ];
-                    }
-                } else {
-                    $chunks[] = [
-                        'chunk_index' => count($chunks),
-                        'chapter_title' => $chapter_title,
-                        'text' => $chapter_text,
-                    ];
-                }
-            }
-        } else {
-            // Fallback: split entire text by length
-            $max_len = 12000;
-            $parts = str_split($text, $max_len);
-            foreach ($parts as $i => $chunk_text) {
-                $chunks[] = [
-                    'chunk_index' => $i,
-                    'chapter_title' => null,
-                    'text' => $chunk_text,
-                ];
-            }
+        $paras = [];
+        foreach ($raw_paras as $p) {
+            $p = trim($p);
+            if ($p === '') continue;
+            // Join single newlines that are likely hard wraps inside the same paragraph.
+            // Heuristic: replace lone \n (not preceded by punctuation) with space.
+            $p = preg_replace("/(?<![\.!?:])\n(?!\n)/u", " ", $p);
+            // Collapse extra spaces again just in case
+            $p = preg_replace("/\s+/u", " ", $p);
+            $paras[] = $p;
         }
 
-        error_log("🧩 Final chunk count: " . count($chunks));
+        if (empty($paras)) return $chunks;
+
+        // Word counter helper
+        $count_words = function(string $s): int {
+            // Unicode-aware split on whitespace
+            $arr = preg_split('/\s+/u', trim($s), -1, PREG_SPLIT_NO_EMPTY);
+            return $arr ? count($arr) : 0;
+        };
+
+        // 3) Pack paragraphs into chunks respecting target/hardcap words
+        $index = 0;
+        $i = 0;
+        $n = count($paras);
+
+        while ($i < $n) {
+            $chunk_paras = [];
+            $words = 0;
+
+            // Fill until target (soft), but never exceed hardcap (hard)
+            while ($i < $n) {
+                $p = $paras[$i];
+                $pw = $count_words($p);
+
+                if (empty($chunk_paras)) {
+                    // First paragraph always goes in (even if big)
+                    $chunk_paras[] = $p;
+                    $words += $pw;
+                    $i++;
+                    continue;
+                }
+
+                if ($words + $pw <= $target_words || ($words < $max_words_hardcap && $words + $pw <= $max_words_hardcap)) {
+                    $chunk_paras[] = $p;
+                    $words += $pw;
+                    $i++;
+                } else {
+                    break; // stop packing; this paragraph will start the next chunk
+                }
+            }
+
+            // Overlap: carry the last K paragraphs into the next chunk’s start (without advancing $i for those)
+            if ($overlap_paras > 0 && $i < $n && !empty($chunk_paras)) {
+                $k = min($overlap_paras, count($chunk_paras));
+                // Move pointer back by K so the next chunk starts with these again
+                $i -= $k;
+            }
+
+            // Build chunk text
+            $chunk_text = implode("\n\n", $chunk_paras);
+
+            // Optional: finish on sentence boundary by peeking a little ahead (small polish)
+            // (Disabled by default—paragraph boundaries usually suffice.)
+
+            $chars = mb_strlen($chunk_text, 'UTF-8');
+            $est_tokens = max(1, (int)ceil($chars / 4)); // rough estimate
+
+            $chunks[] = [
+                'chunk_index'   => $index++,
+                'text'          => $chunk_text,
+                'chars'         => $chars,
+                'est_tokens'    => $est_tokens,
+            ];
+        }
+
         return $chunks;
     }
+
     public function get_project_by_id($project_id) {
         global $wpdb;
         $current_user = wp_get_current_user();
@@ -380,6 +470,25 @@ class Project {
             $project_id, $current_user->ID
         ));
         return $project ? $project : null;
+    }
+    public function get_projects($user_id){
+        global $wpdb;
+
+        $projects = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_projects WHERE user_id = %d ORDER BY project_id DESC",
+            $user_id
+        ));
+        return $projects ? $projects : [];
+    }
+    public function get_project_chunks($project_id) {
+        global $wpdb;
+        $current_user = wp_get_current_user();
+
+        $chunks = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_ai_chunks WHERE project_id = %d AND user_id = %d ORDER BY chunk_index",
+            $project_id, $current_user->ID
+        ));
+        return $chunks ? $chunks : [];
     }
     public function update_project() {
         global $wpdb;

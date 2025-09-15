@@ -1,4 +1,4 @@
-<div class="journey journey-map" id="the-journey"   style="background-image: url(<?= $bg; ?>);">
+<div class="journey journey-map" id="the-journey">
 	<?php 
 	$today = date('YmdHi');
 	$hide_quests = $adventure->adventure_hide_quests ? $adventure->adventure_hide_quests : 'never';

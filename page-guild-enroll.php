@@ -21,6 +21,13 @@
 				<div class="layer base relative boxed w-340 text-center">
 					<h3 class="font w300 _24"><?=__("You are already a member of",'bluerabbit');?></h3>
 					<div class="guild-badge sq-300 relative inline-block">
+						<?php
+						$sql = "UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=%d WHERE adventure_id=%d AND player_id=%d";
+						$sql = $wpdb->prepare ($sql, $guild->guild_id,$adventure->adventure_id,$current_user->ID);
+						$wpdb->query($sql);
+						$wpdb->flush;
+						?>
+
 						<h1 class="text-center font _40 w600 kerning-1 white-color layer base">
 							<?= $guild->guild_name; ?>
 						</h1>

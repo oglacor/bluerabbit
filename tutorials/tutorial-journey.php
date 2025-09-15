@@ -121,7 +121,7 @@ const intro_steps = [
               classes:"blue-bg-400 white-color",
               action: function(){
                   <?php if(count($quests) > 0){ ?>
-                     activateMilestone('#<?=$first_milestone_for_tutorial; ?>', '#ui-touch-milestone','#ui-touch-milestone-reverse');
+                     activateMilestone('<?=$first_milestone_for_tutorial; ?>', '#ui-touch-milestone','#ui-touch-milestone-reverse');
                   <?php } ?>
                   return this.next();
               }
@@ -133,7 +133,7 @@ const intro_steps = [
         title: "<?= __("Milestones","bluerabbit"); ?>",
         text: "<?= __("Click on the milestone to activate it","bluerabbit"); ?>",
         attachTo: { 
-            element: '#<?=$first_milestone_for_tutorial; ?>', 
+            element: '#milestone-<?=$first_milestone_for_tutorial; ?>', 
             on:'bottom' 
         },
         classes: 'blue-bg-400',
@@ -546,6 +546,7 @@ const intro_steps = [
         ]
     }, 
 	<?php } ?>
+
     {
         id: 'step-5_7',
         title: "Logout button",
@@ -569,6 +570,44 @@ const intro_steps = [
             }
         ]
     }, 
+    <?php if($myGuildExists){ ?>
+    {
+        id: 'step-6',
+        title: "<?= __("Guilds","bluerabbit"); ?>",
+        text: "<?= __("You can access your guild info here.","bluerabbit"); ?>",
+        attachTo: { 
+            element: '#guild-btn', 
+            on: 'bottom'
+        },
+        buttons: [
+            {
+              text: "<?= __("Next","bluerabbit"); ?>",
+              classes:"blue-bg-400 white-color",
+              action: function(){
+                  return this.next();
+              }
+            }
+        ]
+    }, 
+    {
+        id: 'step-6',
+        title: "<?= __("Guilds","bluerabbit"); ?>",
+        text: "<?= __("Come often to the guild page to check the leaderboard.","bluerabbit"); ?>",
+        attachTo: { 
+            element: '#guild-btn', 
+            on: 'bottom'
+        },
+        buttons: [
+            {
+              text: "<?= __("Next","bluerabbit"); ?>",
+              classes:"blue-bg-400 white-color",
+              action: function(){
+                  return this.next();
+              }
+            }
+        ]
+    }, 
+    <?php } ?>
     {
         id: 'step-98',
         title: "<?= __("Activate Tutorial","bluerabbit"); ?>",

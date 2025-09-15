@@ -30,7 +30,7 @@
 	}
 	if($use_leaderboard){
 		$limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
-		$leaderboard_guilds = $wpdb->get_results("SELECT 
+		/*$leaderboard_guilds = $wpdb->get_results("SELECT 
 		
 		guilds.*, COUNT(guild_players.player_id) AS guild_current_capacity
 		
@@ -41,7 +41,27 @@
 		
 		WHERE guilds.adventure_id=$adventure->adventure_id AND guilds.guild_status='publish' AND guilds.assign_on_login=1 
 		GROUP BY guilds.guild_id ORDER BY guilds.guild_xp DESC LIMIT $limit
+		");*/
+		$leaderboard_guilds = $wpdb->get_results("
+			SELECT 
+				guilds.*, 
+				COUNT(guild_players.player_id) AS guild_current_capacity,
+				SUM(player_adventure.player_xp) AS total_player_xp,
+				SUM(player_adventure.player_bloo) AS total_player_bloo
+			FROM {$wpdb->prefix}br_guilds guilds
+			LEFT JOIN {$wpdb->prefix}br_player_guild guild_players 
+				ON guilds.guild_id = guild_players.guild_id
+			LEFT JOIN {$wpdb->prefix}br_player_adventure player_adventure
+				ON guild_players.player_id = player_adventure.player_id
+				AND player_adventure.adventure_id = guilds.adventure_id
+			WHERE guilds.adventure_id = $adventure->adventure_id AND guilds.assign_on_login=1 
+			AND guilds.guild_status = 'publish'
+			GROUP BY guilds.guild_id
+			ORDER BY total_player_xp DESC
 		");
+
+
+
 	}
 ?>
 	<?php if($use_leaderboard) { ?>

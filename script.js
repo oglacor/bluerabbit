@@ -360,6 +360,20 @@ function bulkEnrollUsers(){
 				firstname:$('#row-new-bulk-user-'+row_id+' .firstname').text(),
 				lastname:$('#row-new-bulk-user-'+row_id+' .lastname').text(),
 				lang:$('#row-new-bulk-user-'+row_id+' .lang').text(),
+				///////////////////////
+				gender:$('#row-new-bulk-user-'+row_id+' .gender').text(),
+				work_level:$('#row-new-bulk-user-'+row_id+' .work_level').text(),
+				work_function:$('#row-new-bulk-user-'+row_id+' .work_function').text(),
+				work_sub_function:$('#row-new-bulk-user-'+row_id+' .work_sub_function').text(),
+				job_profile:$('#row-new-bulk-user-'+row_id+' .job_profile').text(),
+				buisness_pillar:$('#row-new-bulk-user-'+row_id+' .buisness_pillar').text(),
+				work_cluster:$('#row-new-bulk-user-'+row_id+' .work_cluster').text(),
+				work_country:$('#row-new-bulk-user-'+row_id+' .work_country').text(),
+				work_location:$('#row-new-bulk-user-'+row_id+' .work_location').text(),
+
+
+
+
 				user_id:$(this).attr('data-user-id'),
 			};
 			existing_users.push(existing_users_values);
@@ -371,6 +385,16 @@ function bulkEnrollUsers(){
 				firstname:$('#row-new-bulk-user-'+row_id+' .firstname').text(),
 				lastname:$('#row-new-bulk-user-'+row_id+' .lastname').text(),
 				lang:$('#row-new-bulk-user-'+row_id+' .lang').text(),
+				////////////////////////////
+				gender:$('#row-new-bulk-user-'+row_id+' .gender').text(),
+				work_level:$('#row-new-bulk-user-'+row_id+' .work_level').text(),
+				work_function:$('#row-new-bulk-user-'+row_id+' .work_function').text(),
+				work_sub_function:$('#row-new-bulk-user-'+row_id+' .work_sub_function').text(),
+				job_profile:$('#row-new-bulk-user-'+row_id+' .job_profile').text(),
+				buisness_pillar:$('#row-new-bulk-user-'+row_id+' .buisness_pillar').text(),
+				work_cluster:$('#row-new-bulk-user-'+row_id+' .work_cluster').text(),
+				work_country:$('#row-new-bulk-user-'+row_id+' .work_country').text(),
+				work_location:$('#row-new-bulk-user-'+row_id+' .work_location').text(),
 			};
 			new_users.push(new_users_values);
 		}
@@ -517,7 +541,35 @@ function deadlineCountdown (the_deadline){
 	}, 1000);
 }
 
+function notify(message="", icon="check", color="blue", message_delay=1000){
 
+	jQuery.ajax({  
+		url: runAJAX.ajaxurl,
+		data: ({action: 'br_notify', message: message, icon: icon, color: color}),
+		method: "POST",
+		success: function(data_received) {
+			let data = JSON.parse(data_received);
+			$("#notify-message ul.content").append(data.message);
+			setTimeout ( function (){
+				$("#notify-message ul.content li:last-child").addClass('active');
+				let last_message = $("#notify-message ul.content li:last-child");
+				setTimeout(function (){
+					last_message.removeClass('active');
+					setTimeout(function (){
+						last_message.remove();
+						if(data.reload){
+							document.location.reload();
+						}
+					},300);
+
+				}, message_delay); 
+			},1);
+
+
+
+		}
+	});
+}
 function notification(message, msg_delay=1000, var_content=null, var_icon=null){
 	$("#notify-message ul.content").append($(message).html());
 	let notificationTimeOut1 = setTimeout ( function (){
@@ -4623,6 +4675,37 @@ function setDimensions(id,type){
 		}
 	});
 }
+///////////////////////// setTabiOnJourney  //////////////////
+
+function setTabiOnJourney(id){
+	let nonce = $("#tabi-on-journey-nonce").val();
+	let adventure_id = $("#the_adventure_id").val();
+	showLoader('small'); 
+	let tabi_id;
+
+	$(function() {
+		$('.tabi-on-journey-checkbox').click(function() {
+			if ($(this).is(':checked')) {
+				$('.tabi-on-journey-checkbox').not(this).prop('checked', false);
+			} else {
+				$('.tabi-on-journey-checkbox').prop('checked', false);
+			}
+		});
+	});	
+	if($("#tabi-on-journey-"+id).is(':checked')){
+		tabi_id = id;
+	}else{
+		tabi_id = 0;
+	}
+	jQuery.ajax({  
+		url: runAJAX.ajaxurl,
+		data: ({action: 'setTabiOnJourney', id:tabi_id, adventure_id:adventure_id, nonce:nonce}),
+		method: "POST",
+		success: function(data_received) {
+			displayAjaxResponse(data_received);
+		}
+	});
+}
 ///////////////////////// Set Achievement  //////////////////
 function setAchievement(id,type){
 	showLoader('small');
@@ -5656,16 +5739,16 @@ function displayAjaxResponse(json_data){
 		$("#xp-nonce").val(data.new_xp_nonce);
 	}
 }
-let zoomLevel = 1;
+let zoomLevel = 0;
 
 function toggleJourneyView(){
 	$('#the-journey').toggleClass('journey-map journey-board');
-	zoomLevel = 1;
+	zoomLevel = 0;
 	if(($('#the-journey').hasClass('journey-map'))){
 		resizeJourneyMapWithPadding();
 		centerJourneyMap();
 	}else{
-		zoomLevel = 1;
+		zoomLevel = 0;
 	}
 }
 
@@ -5681,13 +5764,13 @@ function applyZoom() {
 		transformValue = `translateZ(${zoomLevel}px) translateX(150px)`;
 	}
 
-
 	let $map = $('#the-journey');
 	$map.css('transform', transformValue);
+	resizeJourneyMapWithPadding(-zoomLevel);
 }
 
 function resizeJourneyMapWithPadding(padding = 300, map='the-journey', milestoneContainer='.milestone-container') {
-	const $map = $('#' + map);
+	let $map = $('#' + map);
 
 	if(!$map.attr('data-width')){
 		let maxX = 0, maxY = 0;
@@ -5714,19 +5797,20 @@ function resizeJourneyMapWithPadding(padding = 300, map='the-journey', milestone
 			height: currentHeight + 'px'
 		});
 	}
+	console.log($map.css('width'), $map.css('height'));
 }
 function centerJourneyMap() {
-	const $container = $('.journey-container');
-	const $map = $('#the-journey');
+	let $container = $('.journey-container');
+	let $map = $('#the-journey');
 
-	const containerWidth = $container.width();
-	const containerHeight = $container.height();
+	let containerWidth = $container.width();
+	let containerHeight = $container.height();
 
-	const mapWidth = $map.outerWidth();
-	const mapHeight = $map.outerHeight();
+	let mapWidth = $map.outerWidth();
+	let mapHeight = $map.outerHeight();
 
-	const scrollLeft = (mapWidth - containerWidth) / 2;
-	const scrollTop = (mapHeight - containerHeight) / 2;
+	let scrollLeft = (mapWidth - containerWidth) / 2;
+	let scrollTop = (mapHeight - containerHeight) / 2;
 
 	$container.animate({
 		scrollTop: scrollTop,

@@ -746,7 +746,7 @@ button.hex-button, a.hex-button, span.hex-button, .hex-button{
 
 textarea.form-ui{
 	padding: 0.5em;
-	border: none;
+	border: solid 1px $new-colors-dark-blue;
 	display: block;
 	min-width: 100%;
 	max-width: 100%;
@@ -846,6 +846,9 @@ textarea.form-ui{
 			margin: 0;
 			box-shadow: none;
 		}
+	}
+	textarea.form-ui, input.form-ui, select.form-ui{
+		width: 100%;
 	}
 	&.w-full{
 		label{
@@ -1411,12 +1414,33 @@ span.divider{
 				content:"..// ";
 			}
 		}
+		.dashboard-sidebar{
+			float: left;
+			position: sticky;
+			top: 100px;;
+		}
 		.dashboard-grid{
 			display: grid;
 			grid-template-columns: repeat(24, 1fr);
 			grid-auto-rows: minmax(55px,auto);
 			gap: 10px;
 			padding: 10px;
+			.input-group{
+				width: 100%;
+			}
+			.cell{
+				grid-column: span 12;
+				grid-row: auto;
+				transition: all 0.3s ease-out;
+				&.chunk{ 
+					grid-row:span 6;
+					background-color: rgba($new-colors-dark-grey,0.1);
+					border: solid 1px rgba($new-colors-dark-grey,0.5);
+					border-radius: 8px;
+					padding: 10px;
+				}
+			}
+			
 		}
 		.dashboard-type-selector{
 			button{
@@ -7258,6 +7282,14 @@ nav.tab-nav{
 			width: 25%;
 			padding: 20px;
 		}
+		&.hud-display{
+			.hud-screen-container{
+				position: relative;
+				width: 90%;
+				aspect-ratio: 9 / 16;
+				max-width: 300px; 
+			}
+		}
 	}
 	.item-preview{
 		width: 0%; 
@@ -7274,6 +7306,7 @@ nav.tab-nav{
 			position: relative;
 			z-index: 100;
 			width: 100%; height: 100%;
+			display: grid;
 		}
 		.item-preview-type{
 			position: absolute;
@@ -7633,44 +7666,60 @@ nav.tab-nav{
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		gap: 20px;
-		.tabi{
-			aspect-ratio: 1 / 1;
-			position: relative;
-			.hud-display{
-				width: 100%;
-				.hud-screen-container{
+	}
+		
+}
+.adv-tabi{
+	position: fixed;
+	bottom: 60px; right: 20px;
+	width: 200px;
+	height: 200px;
+	z-index: 100;
+	transition: all 0.3s ease-out;
+	*{
+		transition: all 0.3s ease-out;
+	}
+	&:hover{
+		width: 400px;
+		height: 400px;
+	}
+}
+.tabi{
+	aspect-ratio: 1 / 1;
+	position: relative;
+	.hud-display{
+		width: 100%;
+		.hud-screen-container{
+			width: 100%;
+			aspect-ratio: 1/1;
+			.hud-screen-content{
+				visibility: visible;
+				opacity: 1;
+				z-index: 2;
+				clip-path: url(#tabi-screen-clip);
+				overflow: hidden;
+				.tabi-pieces{
 					width: 100%;
-					aspect-ratio: 1/1;
-					.hud-screen-content{
-						visibility: visible;
-						opacity: 1;
-						z-index: 2;
-						clip-path: url(#tabi-screen-clip);
-						overflow: hidden;
-						.tabi-pieces{
-							width: 100%;
-							height: 100%;
-							position: absolute;
-							top: 0; left: 0;
-							background-position: center center;
-							background-size: 100% 100%;
-							background-repeat: no-repeat;
-							visibility: visible;
-							opacity: 1;
-							z-index: 2;
+					height: 100%;
+					position: absolute;
+					top: 0; left: 0;
+					background-position: center center;
+					background-size: 100% 100%;
+					background-repeat: no-repeat;
+					visibility: visible;
+					opacity: 1;
+					z-index: 2;
 
-							.tabi-piece{
-								position: absolute;
-								.tabi-piece-image{
-									display: block;
-									text-align: center;
-									width: 100%; height: 100%;
-									z-index: 1;
-									position: relative;
-									img{
-										max-width: 100%; max-height: 100%;
-									}
-								}
+					.tabi-piece{
+						position: absolute;
+						.tabi-piece-image{
+							display: block;
+							text-align: center;
+							width: 100%; height: 100%;
+							z-index: 1;
+							position: relative;
+							img{
+								max-width: 100%; max-height: 100%;
 							}
 						}
 					}
@@ -7678,7 +7727,6 @@ nav.tab-nav{
 			}
 		}
 	}
-		
 }
 
 .hud-display{

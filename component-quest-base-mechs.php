@@ -37,7 +37,7 @@
 							</td>
 						</tr>
 						<tr>
-							<td class="text-right w-150"><?php _e('XP','bluerabbit'); ?></td>
+							<td class="text-right w-150"><?= $xp_long_label; ?></td>
 							<td>
 								<div class="input-group w-full">
 									<label class="light-blue-bg-800 font w900"><span class="icon icon-star"></span></label>
@@ -45,9 +45,18 @@
 								</div>
 							</td>
 						</tr>
+						<tr>
+							<td class="text-right w-150"><?= $bloo_long_label; ?></td>
+							<td>
+								<div class="input-group w-full">
+									<label class="light-blue-bg-800 font w900"><span class="icon icon-bloo"></span></label>
+									<input class="number form-ui" type="number" min="0" id="the_quest_bloo" value="<?= isset($quest->mech_bloo) ? $quest->mech_bloo : 1 ; ?>">
+								</div>
+							</td>
+						</tr>
 						<?php if(isset($use_encounters)){ ?>
 							<tr>
-								<td class="text-right w-150"><?php _e('EP','bluerabbit'); ?></td>
+								<td class="text-right w-150"><?= $ep_long_label; ?></td>
 								<td>
 									<div class="input-group w-full">
 										<label class="light-blue-bg-800 font w900"><span class="icon icon-activity"></span></label>
@@ -56,15 +65,6 @@
 								</td>
 							</tr>
 						<?php } ?>
-						<tr>
-							<td class="text-right w-150"><?php _e('BLOO','bluerabbit'); ?></td>
-							<td>
-								<div class="input-group w-full">
-									<label class="light-blue-bg-800 font w900"><span class="icon icon-bloo"></span></label>
-									<input class="number form-ui" type="number" min="0" id="the_quest_bloo" value="<?= isset($quest->mech_bloo) ? $quest->mech_bloo : 1 ; ?>">
-								</div>
-							</td>
-						</tr>
 						<tr>
 							<td class="text-right w-150"><?php _e('Start Date','bluerabbit'); ?></td>
 							<td>

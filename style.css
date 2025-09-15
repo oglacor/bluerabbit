@@ -667,7 +667,7 @@ button.hex-button .hex-text, a.hex-button .hex-text, span.hex-button .hex-text, 
 
 textarea.form-ui {
   padding: 0.5em;
-  border: none;
+  border: solid 1px #04161e;
   display: block;
   min-width: 100%;
   max-width: 100%;
@@ -790,6 +790,9 @@ textarea.form-ui:-ms-input-placeholder {
 .input-group label a.form-ui, .input-group label button.form-ui {
   margin: 0;
   box-shadow: none;
+}
+.input-group textarea.form-ui, .input-group input.form-ui, .input-group select.form-ui {
+  width: 100%;
 }
 .input-group.w-full label {
   width: 1%;
@@ -1353,11 +1356,31 @@ span.divider {
 .dashboard > .dashboard-content h3.dashboard-grid-cell-headline::before {
   content: "..// ";
 }
+.dashboard > .dashboard-content .dashboard-sidebar {
+  float: left;
+  position: sticky;
+  top: 100px;
+}
 .dashboard > .dashboard-content .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(24, 1fr);
   grid-auto-rows: minmax(55px, auto);
   gap: 10px;
+  padding: 10px;
+}
+.dashboard > .dashboard-content .dashboard-grid .input-group {
+  width: 100%;
+}
+.dashboard > .dashboard-content .dashboard-grid .cell {
+  grid-column: span 12;
+  grid-row: auto;
+  transition: all 0.3s ease-out;
+}
+.dashboard > .dashboard-content .dashboard-grid .cell.chunk {
+  grid-row: span 6;
+  background-color: rgba(29, 45, 52, 0.1);
+  border: solid 1px rgba(29, 45, 52, 0.5);
+  border-radius: 8px;
   padding: 10px;
 }
 .dashboard > .dashboard-content .dashboard-type-selector button {
@@ -7684,6 +7707,12 @@ nav.tab-nav ul li.active {
   width: 25%;
   padding: 20px;
 }
+.item-shop .item-shop-video.hud-display .hud-screen-container {
+  position: relative;
+  width: 90%;
+  aspect-ratio: 9/16;
+  max-width: 300px;
+}
 .item-shop .item-preview {
   width: 0%;
   overflow: hidden;
@@ -7701,6 +7730,7 @@ nav.tab-nav ul li.active {
   z-index: 100;
   width: 100%;
   height: 100%;
+  display: grid;
 }
 .item-shop .item-preview .item-preview-type {
   position: absolute;
@@ -8090,25 +8120,43 @@ nav.tab-nav ul li.active {
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
-.tabi-collection .tabis .tabi {
+
+.adv-tabi {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  width: 200px;
+  height: 200px;
+  z-index: 100;
+  transition: all 0.3s ease-out;
+}
+.adv-tabi * {
+  transition: all 0.3s ease-out;
+}
+.adv-tabi:hover {
+  width: 400px;
+  height: 400px;
+}
+
+.tabi {
   aspect-ratio: 1/1;
   position: relative;
 }
-.tabi-collection .tabis .tabi .hud-display {
+.tabi .hud-display {
   width: 100%;
 }
-.tabi-collection .tabis .tabi .hud-display .hud-screen-container {
+.tabi .hud-display .hud-screen-container {
   width: 100%;
   aspect-ratio: 1/1;
 }
-.tabi-collection .tabis .tabi .hud-display .hud-screen-container .hud-screen-content {
+.tabi .hud-display .hud-screen-container .hud-screen-content {
   visibility: visible;
   opacity: 1;
   z-index: 2;
   clip-path: url(#tabi-screen-clip);
   overflow: hidden;
 }
-.tabi-collection .tabis .tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces {
+.tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -8121,10 +8169,10 @@ nav.tab-nav ul li.active {
   opacity: 1;
   z-index: 2;
 }
-.tabi-collection .tabis .tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece {
+.tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece {
   position: absolute;
 }
-.tabi-collection .tabis .tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece .tabi-piece-image {
+.tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece .tabi-piece-image {
   display: block;
   text-align: center;
   width: 100%;
@@ -8132,7 +8180,7 @@ nav.tab-nav ul li.active {
   z-index: 1;
   position: relative;
 }
-.tabi-collection .tabis .tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece .tabi-piece-image img {
+.tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece .tabi-piece-image img {
   max-width: 100%;
   max-height: 100%;
 }

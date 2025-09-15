@@ -501,6 +501,41 @@ function setDimensions(){
 	echo json_encode($data);
 	die();
 }
+/////////////////////// SET Tabi on Journey ////////////////////
+function setTabiOnJourney(){
+	global $wpdb; $current_user = wp_get_current_user();
+	$data = array();
+	
+	$data['success'] = false;
+	$id = $_POST['id'];
+	$adventure_id = $_POST['adventure_id'];
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'tabi_on_journey_nonce')){
+		$remove_tabis_from_journey_sql = "UPDATE {$wpdb->prefix}br_tabis SET tabi_on_journey=0 WHERE adventure_id=%d";
+		$remove_tabis_from_journey_sql = $wpdb->prepare ($remove_tabis_from_journey_sql,$adventure_id);
+		$wpdb->query($remove_tabis_from_journey_sql);
+		if($id > 0){
+			logActivity($adventure_id, "set","tabi_on_journey","tabi",$id);
+			$msg_content = __('Tabi assigned to journey!','bluerabbit');
+			$sql = "UPDATE {$wpdb->prefix}br_tabis SET tabi_on_journey=1 WHERE tabi_id=%d AND adventure_id=%d";
+			$sql = $wpdb->prepare ($sql,$id,$adventure_id);
+			$wpdb->query($sql);
+		}else{
+			logActivity($adventure_id, "removed","tabi_on_journey","tabi",$id);
+			$msg_content = __('Tabi removed from journey!','bluerabbit');
+		}
+		
+		$data['success'] = true;
+	
+		$notification = new Notification();
+		$data['message'] = $notification->pop($msg_content,'deep-purple','stats');
+		$data['just_notify'] =true;
+	}else{
+		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+	}
+	echo json_encode($data);
+	die();
+}
 ////////////// setAchievement /////////////
 function setAchievement(){
 	global $wpdb; $current_user = wp_get_current_user();

@@ -1862,7 +1862,7 @@ function displayAchievementCard(){
 function loadGuildCard(){
 	global $wpdb; $current_user = wp_get_current_user();
 	$data=array();
-	 $roles = $current_user->roles;
+	$roles = $current_user->roles;
 	$guild_id = $_POST['guild_id'];
 	$g = $wpdb->get_row("SELECT 
 		guild.*, player.player_id, player.guild_enroll_date FROM {$wpdb->prefix}br_guilds guild
@@ -4570,38 +4570,28 @@ function triggerAchievements($p_ach_id=NULL, $p_adv_id=NULL, $p_status=NULL){
 	die();
 }
 ////////////// TRIGGER TEAM /////////////
-function triggerGuild($p_guild_id="", $p_player_id="", $p_adventure_id=""){
+function triggerGuild($p_guild_id=NULL, $p_player_id=NULL, $p_adventure_id=NULL){
 	global $wpdb; $current_user = wp_get_current_user();
 	$data = array();
 	$data['success'] = false;
 	$guild_id = $p_guild_id ? $p_guild_id : $_POST['guild_id'];
 	$player_id = $p_player_id ? $p_player_id : $_POST['player_id'];
 	$adventure_id = $p_adventure_id ? $p_adventure_id : $_POST['adventure_id'];
-
-	$t = $wpdb->get_row("SELECT a.*, b.player_id, c.player_guild FROM {$wpdb->prefix}br_guilds a
-	LEFT JOIN  {$wpdb->prefix}br_player_guild b
-	ON a.guild_id = b.guild_id AND b.player_id=$player_id AND b.adventure_id=$adventure_id
-	LEFT JOIN  {$wpdb->prefix}br_player_adventure c
-	ON b.player_id = c.player_id AND c.player_id=$player_id AND c.adventure_id=$adventure_id
-	WHERE a.adventure_id=$adventure_id AND a.guild_id=$guild_id AND a.guild_status='publish'");
+	$n = new Notification();
+	$t = $wpdb->get_row("SELECT guilds.*, player_guild.player_id, player_adventure.player_guild FROM {$wpdb->prefix}br_guilds guilds
+	LEFT JOIN  {$wpdb->prefix}br_player_guild player_guild
+	ON guilds.guild_id = player_guild.guild_id AND player_guild.player_id=$player_id AND player_guild.adventure_id=$adventure_id
+	LEFT JOIN  {$wpdb->prefix}br_player_adventure player_adventure
+	ON player_guild.player_id = player_adventure.player_id AND player_adventure.player_id=$player_id AND player_adventure.adventure_id=$adventure_id
+	WHERE guilds.adventure_id=$adventure_id AND guilds.guild_id=$guild_id AND guilds.guild_status='publish'");
 	if($t){
-		if(!$t->player_id){
+		if($t->player_id != $player_id){
 			$sql = "INSERT INTO {$wpdb->prefix}br_player_guild (guild_id, player_id, adventure_id) VALUES (%d,%d,%d)";
 			$sql = $wpdb->prepare ($sql,$guild_id,$player_id, $adventure_id);
 			$wpdb->query($sql);
 			
 			$data['success'] = true;
-			$data['message'].= '<li>
-						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  green-bg-400">
-								<span class="icon icon-check white-color"></span>
-							</span>
-							<span class="icon-content">
-								<span class="font _14 w300 grey-500">'.__('Player Assigned to Guild!','bluerabbit').'</span>
-							</span>
-						</span>
-						<br class="clear">
-					</li>';
+			$data['message'] = $n->pop( __('Player Assigned to Guild!','bluerabbit'),'green','guild');
 			$data['just_notify'] =true;
 			$data['action'] = 'assign';
 			logActivity($adventure_id,'enroll','guild',"",$player_id, $guild_id);
@@ -4617,17 +4607,7 @@ function triggerGuild($p_guild_id="", $p_player_id="", $p_adventure_id=""){
 			}
 			
 			$data['success'] = true;
-			$data['message'].= '<li>
-						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  red-bg-400">
-								<span class="icon icon-trash white-color"></span>
-							</span>
-							<span class="icon-content">
-								<span class="font _14 w300 grey-500">'.__('Player removed!','bluerabbit').'</span>
-							</span>
-						</span>
-						<br class="clear">
-					</li>';
+			$data['message'] = $n->pop( __('Player Removed from Guild!','bluerabbit'),'red','cancel');
 			$data['just_notify'] =true;
 			$data['action'] = 'remove';
 			logActivity($adventure_id,'removed','guild',"",$player_id, $guild_id);
@@ -4654,7 +4634,7 @@ function assignGuild($p_player_id="", $p_adventure_id=""){
 		// No Guild Assigned
 		$guilds = $wpdb->get_results("SELECT 
 		
-		guilds.*, COUNT(guild_players.player_id) AS guild_current_capacity, guilds.guild_id 
+		guilds.*, COUNT(guild_players.player_id) AS guild_current_capacity 
 		
 		FROM {$wpdb->prefix}br_guilds guilds
 		
@@ -4662,42 +4642,30 @@ function assignGuild($p_player_id="", $p_adventure_id=""){
 		ON guilds.guild_id=guild_players.guild_id
 		
 		WHERE guilds.adventure_id=$adventure_id AND guilds.guild_status='publish' AND guilds.assign_on_login=1 
-		GROUP BY guilds.guild_id ORDER BY guilds.guild_id ASC
+		GROUP BY guilds.guild_id ORDER BY guild_current_capacity ASC, guilds.guild_id ASC
 		"); 
+		$guilds_data = print_r($guilds,true);
+		//return $guilds_data;
 		if($guilds){
-			$the_guild_id = 0;
-			foreach($guilds as $g){
-				if($g->guild_current_capacity < $g->guild_capacity && !$the_guild_id){
-					$the_guild_id = $g->guild_id;
-				}
-			}
+			$the_guild_id = $guilds[0]->guild_id;
 			$sql = "INSERT INTO {$wpdb->prefix}br_player_guild (guild_id, player_id, adventure_id) VALUES (%d,%d,%d); ";
 			$sql = $wpdb->prepare ($sql,$the_guild_id,$player_id, $adventure_id);
 			$wpdb->query($sql);
+			$last_query = print_r($wpdb->last_query,true);
 			$sql = "UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=%d WHERE player_id=%d AND adventure_id=%d";
 			$sql = $wpdb->prepare ($sql,$the_guild_id,$player_id, $adventure_id);
 			$wpdb->query($sql);
-			
-			return true;
+			$last_query .= print_r($wpdb->last_query,true);
+
+			return print_r($last_query);
 			logActivity($adventure_id,'assigned','guild',"",$player_id, $the_guild_id);
+		}else{
+			
 		}
 	}else{
-		return false;
+		return "player has_guild->player_guild = True";
 	}
 	
-}
-////////////// GET MY GUILD /////////////
-function getMyGuild($adventure_id=0){
-	global $wpdb; $current_user = wp_get_current_user();
-	$data = array();
-	
-	$guild = $wpdb->get_row("
-		SELECT * FROM {$wpdb->prefix}br_guilds guilds
-		LEFT JOIN {$wpdb->prefix}br_player_guild guild_players 
-		ON guilds.guild_id=guild_players.guild_id
-		WHERE guild_players.player_id=$current_user->ID AND guilds.guild_status='publish' AND guilds.assign_on_login=1 AND guilds.adventure_id=$adventure_id
-	");
-	return $guild;
 }
 ////////////// Choose Path - ACHIEVEMENTS /////////////
 
@@ -6149,6 +6117,35 @@ function getTabi($tabi_id){
 		return false;
 	}
 }
+function getMyTabi($tabi_id){
+	global $wpdb;
+	$current_user = wp_get_current_user();
+	$data = [];
+	$data['tabi'] =  $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_tabis WHERE tabi_id=$tabi_id AND tabi_status='publish'");
+	$adventure = getAdventure($data['tabi']->adventure_id);
+
+	$adv_child_id = $adventure->adventure_id;
+	$adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
+	if($data['tabi']){
+		$tabi_id = $data['tabi']->tabi_id;
+		$pieces =$wpdb->get_results( "SELECT items.*, tabis.tabi_name,
+		trnxs.object_id, trnxs.trnx_id, trnxs.trnx_type, trnxs.trnx_date, COUNT(items.item_id) AS total_consumables
+		FROM  {$wpdb->prefix}br_items items 
+		JOIN {$wpdb->prefix}br_transactions trnxs
+		ON items.item_id = trnxs.object_id
+
+		JOIN {$wpdb->prefix}br_tabis tabis
+		ON items.tabi_id = tabis.tabi_id
+
+
+		WHERE items.adventure_id=$adv_parent_id AND items.item_status='publish' AND trnxs.player_id=$current_user->ID AND trnxs.adventure_id=$adv_child_id AND trnxs.trnx_type='tabi-piece' AND trnxs.trnx_status='publish' AND items.tabi_id=$tabi_id
+		GROUP BY trnxs.object_id, trnxs.trnx_type ORDER BY items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
+		$data['pieces'] = $pieces;
+		return $data;
+	}else{
+		return false;
+	}
+}
 function saveTabiPiecePosition(){
 	global $wpdb; $current_user = wp_get_current_user();
 	$item_id = $_POST['item_id'];
@@ -6470,6 +6467,15 @@ function getMyGuilds($adventure_id){
 	ON a.guild_id=b.guild_id AND b.player_id=$current_user->ID
 	WHERE a.adventure_id=$adventure_id AND a.guild_status='publish' AND b.player_id=$current_user->ID");
 	return $result;
+}
+function getMyGuild($adventure_id, $guild_id){ 
+	global $wpdb; $current_user = wp_get_current_user();
+	
+	$result = $wpdb->get_row("SELECT a.* FROM {$wpdb->prefix}br_guilds a
+	JOIN {$wpdb->prefix}br_player_guild b
+	ON a.guild_id=b.guild_id AND b.player_id=$current_user->ID
+	WHERE a.adventure_id=$adventure_id AND a.guild_status='publish' AND b.player_id=$current_user->ID AND a.guild_id=$guild_id");
+	return $result; 
 }
 ////////////////////////////////////// GET ITEMS //////////////////////////////////
 function getItems($adventure_id){

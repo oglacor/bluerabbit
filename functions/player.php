@@ -17,6 +17,17 @@ function bluerabbit_add_new_player($new_player_data=NULL) {
 		$display_name	= $new_player_data["nickname"];
 		$player_first	= $new_player_data["firstname"];
 		$player_last	= $new_player_data["lastname"];
+		
+		$gender	= $new_player_data["gender"];
+		$work_level	= $new_player_data["work_level"];
+		$work_function	= $new_player_data["work_function"];
+		$work_sub_function	= $new_player_data["work_sub_function"];
+		$job_profile	= $new_player_data["job_profile"];
+		$buisness_pillar	= $new_player_data["buisness_pillar"];
+		$work_cluster	= $new_player_data["work_cluster"];
+		$work_country	= $new_player_data["work_country"];
+		$work_location	= $new_player_data["work_location"];
+
 		$default_adventure	= $new_player_data["adventure_id"];
 		$nonce = $new_player_data['nonce'];
 	}else{
@@ -81,6 +92,13 @@ function bluerabbit_add_new_player($new_player_data=NULL) {
 				(`player_id`, `player_email`, `player_password`, `player_display_name`, `player_lang`, `player_picture`, `player_nickname`, `player_first`, `player_last`)				
 				VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s)";
 				$new_player = $wpdb->query($wpdb->prepare($new_player_sql, $new_user_id, $user_email,'none', $user_nickname, $user_lang, $profile_pic_default, $user_nickname, $player_first, $player_last ));
+
+				$new_player_meta_sql="INSERT INTO {$wpdb->prefix}br_player_meta
+				(`player_id`, `player_gender`,`work_level`,`work_function`,`work_sub_function`,`job_profile`,`business_pillar`,`work_cluster` ,`work_country`,`work_location`)				
+				VALUES (%d, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
+				$new_player_meta = $wpdb->query($wpdb->prepare($new_player_meta_sql, $new_user_id, $gender,$work_level,$work_function,$work_sub_function,$job_profile,$buisness_pillar,$work_cluster,$work_country,$work_location));
+
+
 				
 				if($default_adventure>0){
 					$adventure = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$default_adventure");
@@ -163,7 +181,7 @@ function uploadBulkUsers(){
 					$row_index++;
 					continue;
 				}
-				if($row_index <=40){
+				if($row_index <=50){
 					// Assuming the CSV file has columns: name, email, age
 					$nickname = sanitize_text_field($file_data[0]);
 					$password = sanitize_text_field($file_data[1]);
@@ -171,6 +189,17 @@ function uploadBulkUsers(){
 					$firstname = sanitize_text_field($file_data[3]);
 					$lastname = sanitize_text_field($file_data[4]);
 					$lang = sanitize_text_field($file_data[5]);
+					
+					$gender = sanitize_text_field($file_data[8]);
+					$work_level = sanitize_text_field($file_data[9]);
+					$work_function = sanitize_text_field($file_data[10]);
+					$work_sub_function = sanitize_text_field($file_data[11]);
+					$job_profile = sanitize_text_field($file_data[12]);
+					$buisness_pillar = sanitize_text_field($file_data[13]);
+					$work_cluster = sanitize_text_field($file_data[14]);
+					$work_country = sanitize_text_field($file_data[15]);
+					$work_location = sanitize_text_field($file_data[16]);
+
 
 					$errors='';
 					unset($data['file_errors']);
@@ -245,17 +274,28 @@ function uploadBulkUsers(){
 						<td class='firstname'>$firstname</td>
 						<td class='lastname'>$lastname</td>
 						<td class='lang'>$lang</td>
+
+						<td class='gender'>$gender</td>
+						<td class='work_level'>$work_level</td>
+						<td class='work_function'>$work_function</td>
+						<td class='work_sub_function'>$work_sub_function</td>
+						<td class='job_profile'>$job_profile</td>
+						<td class='buisness_pillar'>$buisness_pillar</td>
+						<td class='work_cluster'>$work_cluster</td>
+						<td class='work_country'>$work_country</td>
+						<td class='work_location'>$work_location</td>
 						<td class='font w700'>$errors</td>
 					</tr>
 					";
+
 					$row_index++;
 				}else{
 				}
 			}
 			
 			fclose($handle);
-			if($row_index >= 40){
-				$cta .= "<h2 class='font _18 w600 deep-orange-400'>".__("File limited to 40 players. Upload a new file if you need to add more users.","bluerabbit")."</h2>";
+			if($row_index >= 50){
+				$cta .= "<h2 class='font _18 w600 deep-orange-400'>".__("File limited to 50 players. Upload a new file if you need to add more users.","bluerabbit")."</h2>";
 			}
 			if($data['file_errors']){
 				$cta .= "<h2 class='font _18 w600 red-400'>".__("There are some errors in your file.","bluerabbit")."</h2>";
@@ -302,6 +342,17 @@ function bulkEnrollUsers(){
 					"firstname"	=> $nu["firstname"],
 					"lastname"	=> $nu["lastname"],
 					"lang"		=> $nu["lang"],
+/////////////////////////////////////////////////////////////////////////////
+					"gender"		=> $nu["gender"],
+					"work_level"		=> $nu["work_level"],
+					"work_function"		=> $nu["work_function"],
+					"work_sub_function"		=> $nu["work_sub_function"],
+					"job_profile"		=> $nu["job_profile"],
+					"buisness_pillar"		=> $nu["buisness_pillar"],
+					"work_cluster"		=> $nu["work_cluster"],
+					"work_country"		=> $nu["work_country"],
+					"work_location"		=> $nu["work_location"],
+
 					"adventure_id"	=> $adventure_id,
 					'nonce' => wp_create_nonce('br_register_nonce'),
 				];
@@ -862,6 +913,12 @@ function resetPlayer($adventure_id, $uID){
 						$objectives_completed++;
 					}
 				}
+
+				$something_to_do = false;
+				if(count($objectives) > 0 || !empty($reqs_ids['quests'][$pp->quest_id]) || !empty($reqs_ids['items'][$pp->quest_id]) || !empty($reqs_ids['achievements'][$pp->quest_id])){
+					$something_to_do = true;
+				}
+
 				if($objectives_completed >= count($objectives)){
 					$objectives_achieved = true;
 				}else{
@@ -897,7 +954,7 @@ function resetPlayer($adventure_id, $uID){
 				}else{
 					$aFM = true;
 				}
-				if($qFM && $iFM && $aFM && $objectives_achieved){
+				if($qFM && $iFM && $aFM && $objectives_achieved && $something_to_do){
 					if($pp->mech_item_reward && $pp->quest_type == 'mission'){
 						$prev_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_transactions WHERE player_id=$user->player_id AND adventure_id=$adventure_id AND object_id=$pp->mech_item_reward AND trnx_status='publish'");
 						if(!$prev_reward){

@@ -1682,6 +1682,9 @@ div.table-cell.bottom, span.table-cell.bottom {
 .admin-table .row.with-ep {
   grid-template-columns: 1fr 11fr 3fr 3fr 3fr 4fr 4fr 4fr;
 }
+.admin-table .row.with-tabi-assign {
+  grid-template-columns: 1fr 13fr 3fr 3fr 3fr 4fr 4fr 2fr;
+}
 .admin-table .row.level-split {
   width: 100%;
   background-color: #2196F3;
