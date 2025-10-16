@@ -342,6 +342,25 @@ if($isAdmin || $isGM){
 					</span>
 				</div>
 				<?php if(isset($adventure) && isset($quest)){ ?>
+					<div class="highlight input-group">
+						<div class="form-ui font _14">
+							<form id="upload_bulk_questions_form" class="form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
+								<table>
+									<tbody>
+										<tr>
+											<td class="w-200">
+												<label for="the_csv_file_with_questions" class="">Upload Questions:</label>
+												<input type="file" name="the_csv_file_with_questions" id="the_csv_file_with_questions" size="20" />
+											</td>
+											<td class="w-100">
+												<button type="button" onClick="uploadBulkQuestions();" name="upload_csv" class="form-ui button"><?= __("Upload file","bluerabbit"); ?></button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</form>
+						</div>
+					</div>
 					<div class="w-full">
 						<div class="questions accordion" id="questions">
 							<?php

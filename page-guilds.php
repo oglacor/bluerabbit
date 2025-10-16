@@ -30,18 +30,6 @@
 	}
 	if($use_leaderboard){
 		$limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
-		/*$leaderboard_guilds = $wpdb->get_results("SELECT 
-		
-		guilds.*, COUNT(guild_players.player_id) AS guild_current_capacity
-		
-		FROM {$wpdb->prefix}br_guilds guilds
-		
-		LEFT JOIN {$wpdb->prefix}br_player_guild guild_players 
-		ON guilds.guild_id=guild_players.guild_id
-		
-		WHERE guilds.adventure_id=$adventure->adventure_id AND guilds.guild_status='publish' AND guilds.assign_on_login=1 
-		GROUP BY guilds.guild_id ORDER BY guilds.guild_xp DESC LIMIT $limit
-		");*/
 		$leaderboard_guilds = $wpdb->get_results("
 			SELECT 
 				guilds.*, 
@@ -59,11 +47,22 @@
 			GROUP BY guilds.guild_id
 			ORDER BY total_player_xp DESC
 		");
-
-
-
 	}
 ?>
+
+	
+<div class="guilds">
+	<div class="tab-nav-headline">
+		<h1><?= __("My Guild","bluerabbit"); ?></h1>
+	</div>
+	<div class="my-guild-card">
+		
+	</div>
+
+</div>
+
+
+
 	<?php if($use_leaderboard) { ?>
 		<div class="container boxed max-w-1200 wrap">
 			<div class="highlight text-center">

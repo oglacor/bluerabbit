@@ -112,14 +112,15 @@ function checkUserDataExists(input_field){
 		hideAllOverlay();
 	}
 }
-function uploadBulkQuests(){
-	const upload_bulk_users_form = document.getElementById('upload_bulk_users_form');
+function uploadBulkQuestions(){
+	const upload_bulk_questions_form = document.getElementById('upload_bulk_questions_form');
 	const formData = new FormData();
 
-	let file = $('#the_csv_file_with_quests')[0].files[0]; 
+	let file = $('#the_csv_file_with_questions')[0].files[0]; 
 	formData.append('csv_file', file); 
-	formData.append('action', 'uploadBulkQuests'); 
+	formData.append('action', 'uploadBulkQuestions'); 
 	formData.append('adventure_id', $('#the_adventure_id').val()); 
+	formData.append('quest_id', $('#the_quest_id').val()); 
 	
 	if(file){
 		showLoader();
@@ -132,11 +133,19 @@ function uploadBulkQuests(){
 			method: "POST",
 			success: function(response){
 				let data = JSON.parse(response);
+				console.log(data.debug);
 				for(let i=0; i<data.messages.length; i++){
 					$("#notify-message ul.content").append(data.messages[i]);
-					$("#notify-message ul.content li:last-child").delay(1000).fadeOut(300, function(){
-						$(this).remove();
-					});
+					let notificationTimeOut1 = setTimeout ( function (){
+						$("#notify-message ul.content li:last-child").addClass('active');
+						let last_message = $("#notify-message ul.content li:last-child");
+						let notificationTimeOut2 = setTimeout(function (){
+							last_message.removeClass('active');
+							let notificationTimeOut3 = setTimeout(function (){
+								last_message.remove();
+							},300);
+						}, 1000); 
+					},50);
 				}
 				hideAllOverlay();
 			}
@@ -1659,7 +1668,7 @@ function reorderItems(who){
 	showLoader();
 	jQuery.ajax({  
 		url: runAJAX.ajaxurl,
-		data: ({action: 'reorderItems', adventure_id:adventure_id,the_order:the_order}),
+		data: ({action: 'reorderItems', adventure_id:adventure_id, the_order:the_order}),
 		method: "POST",
 		success: function(data_received) {
 			displayAjaxResponse(data_received);
@@ -3746,6 +3755,7 @@ function updateItem(){
 		item_description : $('#the_item_description').val(), 
 		item_secret_description : $('#the_item_secret_description').val(), 
 		item_type : $('#the_item_type').val(), 
+		item_visibility : $('#the_item_visibility').val(), 
 		item_badge : $('#the_item_badge').val(), 
 		item_secret_badge : $('#the_item_secret_badge').val(), 
 		item_max : $('#the_item_player_max').val(), 

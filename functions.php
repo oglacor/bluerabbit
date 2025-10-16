@@ -317,6 +317,7 @@ $sql = "
 		`item_secret_description` LONGTEXT NULL,
 		`item_cost` INT NOT NULL,
 		`item_type` VARCHAR(20) NOT NULL DEFAULT 'consumable',
+		`item_visibility` VARCHAR(20) NULL DEFAULT 'visible',
 		`item_badge` TEXT NULL,
 		`item_secret_badge` TEXT NULL,
 		`item_stock` INT NULL,
@@ -1459,6 +1460,7 @@ add_action("wp_ajax_bulkEnrollUsers", "bulkEnrollUsers");
 add_action("wp_ajax_uploadBulkSpeakers", "uploadBulkSpeakers");
 add_action("wp_ajax_uploadBulkSessions", "uploadBulkSessions");
 add_action("wp_ajax_uploadBulkQuests", "uploadBulkQuests");
+add_action("wp_ajax_uploadBulkQuestions", "uploadBulkQuestions");
 add_action("wp_ajax_uploadBulkAchievements", "uploadBulkAchievements");
 add_action("wp_ajax_uploadBulkItems", "uploadBulkItems");
 add_action("wp_ajax_newHexad", "newHexad");

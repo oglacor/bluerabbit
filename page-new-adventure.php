@@ -87,6 +87,16 @@ $adv_config=array(
 		'icon'=>'star',
 		'type'=>'radio',
 	),
+	'show_certificate' => array(
+		'label'=>__("Show Certificate in Achievements page","bluerabbit"),
+		'icon'=>'achiever',
+		'type'=>'radio',
+	),
+	'show_torch' => array(
+		'label'=>__("Show torch button (go back to last viewed step)","bluerabbit"),
+		'icon'=>'',
+		'type'=>'radio',
+	),
 	'support_email' => array( 
 		'label'=>__("Custom Support Email","bluerabbit"),
 		'placeholder'=>__("help@domain.com","bluerabbit"),

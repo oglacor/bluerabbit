@@ -37,7 +37,9 @@
 	<div class="boxed max-w-1200 layer base relative">
 		<div class="headline">
 			<img src="<?= get_bloginfo('template_directory')."/images/icons/icon-achievement.png";?>"> <?= __("Achievements","bluerabbit"); ?>
-			<a class="form-ui pull-right font _18" href="<?= get_bloginfo('url'); ?>/certificate/?adventure_id=<?= $adventure->adventure_id;?>"><?= __('Adventure Certificate',"bluerabbit"); ?></a>
+			<?php if($show_certificate){ ?>
+				<a class="form-ui pull-right font _18" href="<?= get_bloginfo('url'); ?>/certificate/?adventure_id=<?= $adventure->adventure_id;?>"><?= __('Adventure Certificate',"bluerabbit"); ?></a>
+			<?php } ?>
 		</div>
 		
 		<?php if($isNPC || $isGM || $isAdmin){ ?>

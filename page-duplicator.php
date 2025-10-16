@@ -186,7 +186,7 @@ if($adventure){
 							}
 							?>
 						
-							<li id="req-item-<?= $i->item_id; ?>" class="item white-bg level-<?= $i->item_level; ?> to-duplicate" onClick="toggleReq('#req-item-<?= $i->item_id; ?>');">
+							<li id="req-item-<?= $i->item_id; ?>" class="item-to-duplicate white-bg level-<?= $i->item_level; ?> to-duplicate" onClick="toggleReq('#req-item-<?= $i->item_id; ?>');">
 								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
 									<span class="icon icon-<?=$icon_type;?>"></span>
 								</span>

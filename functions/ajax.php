@@ -457,7 +457,7 @@ function reorderItems(){
 	$count = 0;
 	foreach($the_order as $k=>$id){
 		$sql = "UPDATE {$wpdb->prefix}br_items SET item_order=%d WHERE (item_id=%d AND adventure_id=%d) OR item_parent=%d";
-		$sql = $wpdb->prepare ($sql,$k,$id,$adventure_id,$id);
+		$sql = $wpdb->prepare ($sql, $k, $id, $adventure_id, $id);
 		$result = $wpdb->query($sql);
 	}
 	if($k+1 >= count($the_order)){
@@ -2870,11 +2870,98 @@ function uploadBulkQuests(){
 
 			$bulk_quests_query .= implode(', ', $place_holders);
 			$bulk_quests_query = $wpdb->query( $wpdb->prepare("$bulk_quests_query ", $values));
-			$data['debug'].= print_r($wpdb->last_query,true);
 			$msg_content = __("Journey uploaded correctly",'bluerabbit');
 			
 			$data['messages'][] = $n->pop($msg_content,'amber','check');
 			$data['success'] = true;
+		}else{
+			$data['errors'][] =__("Cannot open file to read","bluerabbit");
+		}
+	}else{
+		$data["errors"][] = __("File doesn't exist","bluerabbit");
+	}
+	
+	
+	echo json_encode($data);
+	die();
+}
+function uploadBulkQuestions(){
+	global $wpdb; 
+	$data = array();
+	$n = new Notification();
+	$adv_id = $_POST['adventure_id'];
+	$quest_id = $_POST['quest_id'];
+	$questions_counter = 0;
+	$bulk_options_query = "INSERT INTO {$wpdb->prefix}br_challenge_answers (quest_id, question_id,  answer_value, answer_correct) VALUES ";
+	$options_values = [];
+	$options_place_holders = [];
+	if (isset($_FILES['csv_file']['tmp_name'])) {
+		$file = $_FILES['csv_file']['tmp_name'];
+		if (!is_readable($file)) {
+			$data['errors'][] = __("File not readable.","bluerabbit");
+		}
+		if (empty($file) || !file_exists($file)) {
+			$data['errors'][] = __("No file uploaded.","bluerabbit");
+		}
+		if (!$data['errors'] && ($handle = fopen($file, 'r')) !== false) {
+			while (($file_data = fgetcsv($handle, 1000, ',', '"')) !== false) {
+				if ($row_index == 0) {
+					// Skip the header row (optional)
+					$row_index++;
+					continue;
+				}
+				if($row_index <=150){
+					$qd = [
+						'question'=>sanitize_text_field($file_data[0]),
+						'correct'=>sanitize_text_field($file_data[1]),
+						'decoy1'=>sanitize_text_field($file_data[2]),
+						'decoy2'=>sanitize_text_field($file_data[3]),
+						'decoy3'=>sanitize_text_field($file_data[4])
+					];
+					if($qd['question'] && $qd['correct'] && $qd['decoy1']){ 
+						$questions_query = "INSERT INTO {$wpdb->prefix}br_challenge_questions (quest_id, question_title) VALUES (%d, %s)";
+						$qs_insert = $wpdb->query( $wpdb->prepare("$questions_query ", $quest_id, $qd['question']));
+						$qKey = $wpdb->insert_id;
+						logActivity($adv_id,'add','challenge-question','', $quest_id);
+						if($qKey){
+							if($qd['correct']){
+								$options_place_holders[] = " (%d, %d, %s, %d)";
+								array_push($options_values, $quest_id, $qKey, $qd['correct'], 1);
+							}
+							if($qd['decoy1']){
+								$options_place_holders[] = " (%d, %d, %s, %d)";
+								array_push($options_values, $quest_id, $qKey, $qd['decoy1'], 0);
+							}
+							if($qd['decoy2']){
+								$options_place_holders[] = " (%d, %d, %s, %d)";
+								array_push($options_values, $quest_id, $qKey, $qd['decoy2'], 0);
+							}
+							if($qd['decoy3']){
+								$options_place_holders[] = " (%d, %d, %s, %d)";
+								array_push($options_values, $quest_id, $qKey, $qd['decoy3'], 0);
+							}
+							$questions_counter++;	
+							$msg_content = __("Question #",'bluerabbit')."$questions_counter ".__("added!",'bluerabbit');
+							$data['messages'][] = $n->pop($msg_content,'green','check');
+							logActivity($adv_id,'add','challenge-question-option','',$quest_id);
+						}
+					}else{
+						$msg_content = __("Skipping empty row in file",'bluerabbit');
+						$data['messages'][] = $n->pop($msg_content,'grey','check');
+					}
+					$row_index++;
+				}
+			}
+			
+			fclose($handle);
+
+			$bulk_options_query .= implode(', ', $options_place_holders);
+			$bulk_options_query = $wpdb->query( $wpdb->prepare("$bulk_options_query ", $options_values));
+			$msg_content = "$questions_counter ".__("questions uploaded correctly",'bluerabbit');
+			
+			$data['messages'][] = $n->pop($msg_content,'deep-purple','check');
+			$data['success'] = true;
+			$data['debug'] = print_r($data['messages'],true);
 		}else{
 			$data['errors'][] =__("Cannot open file to read","bluerabbit");
 		}
@@ -3440,6 +3527,7 @@ function updateItem(){
 		$item_description = stripslashes_deep($item_data['item_description']);
 		$item_secret_description = stripslashes_deep($item_data['item_secret_description']);
 		$item_type = $item_data['item_type'];
+		$item_visibility = $item_data['item_visibility'];
 		$item_badge = $item_data['item_badge'];
 		$item_secret_badge = $item_data['item_secret_badge'];
 		$item_max = $item_data['item_max'];
@@ -3483,12 +3571,12 @@ function updateItem(){
 		}else{
 			$errors[] = __("Item type doesn't exist, please select one from the options given","bluerabbit");
 		}
-		$sql = "INSERT INTO {$wpdb->prefix}br_items ( item_id, adventure_id, item_cost, item_stock, item_player_max, item_level, item_post_date, item_post_modified, item_author, item_name, item_description, item_type, item_badge, item_secret_badge, item_secret_description, item_category, achievement_id, item_start_date, item_deadline, item_x, item_y, item_z, tabi_id)
-		VALUES (%d, %d, %d, %d, %d, %d, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %s, %d, %s, %s, %d, %d, %d, %d )
+		$sql = "INSERT INTO {$wpdb->prefix}br_items ( item_id, adventure_id, item_cost, item_stock, item_player_max, item_level, item_post_date, item_post_modified, item_author, item_name, item_description, item_type, item_badge, item_secret_badge, item_secret_description, item_category, achievement_id, item_start_date, item_deadline, item_x, item_y, item_z, tabi_id, item_visibility)
+		VALUES (%d, %d, %d, %d, %d, %d, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %s, %d, %s, %s, %d, %d, %d, %d, %s )
 		ON DUPLICATE KEY UPDATE
-		adventure_id=%d, item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_author=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category=%s, achievement_id=%d, item_start_date=%s, item_deadline=%s, item_x=%d, item_y=%d, item_z=%d, tabi_id=%d";
+		adventure_id=%d, item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_author=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category=%s, achievement_id=%d, item_start_date=%s, item_deadline=%s, item_x=%d, item_y=%d, item_z=%d, tabi_id=%d, item_visibility=%s";
 
-		$sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id);
+		$sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility);
 		if(!$errors){
 			$wpdb->query($sql);
 			$new_item_id = $wpdb->insert_id;

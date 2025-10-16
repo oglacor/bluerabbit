@@ -136,6 +136,17 @@ if($adventure && ($isGM || $isAdmin)){
 						<div class="dashboard-grid-cell-container" style="grid-column: 13 / span 5; grid-row: 1 / span 10;">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Options","bluerabbit");?></h3>
 							<div class="dashboard-grid-cell-options-container">
+								<h3 class="dashboard-grid-cell-headline"><?= __("Display in shop","bluerabbit");?></h3>
+								<div class="input-group w-full">
+									<select id="the_item_visibility" class="form-ui w-full  cond-opt cond-opt-consumable">
+										<option class="white-color black-bg capitalize" value="visible"  <?= ($i->item_visibility=='visible' || !$i->item_visibility) ? 'selected' : ""; ?>>
+											<?= __("Visible","bluerabbit"); ?>
+										</option>
+										<option class="white-color black-bg capitalize" value="hidden"  <?= $i->item_visibility=='hidden' ? 'selected' : ""; ?>>
+											<?= __("Hidden","bluerabbit"); ?>
+										</option>
+									</select>
+								</div>
 								<h3 class="dashboard-grid-cell-headline"><?= __("Level","bluerabbit");?></h3>
 								<div class="input-group w-full">
 									<input type="number" class="form-ui w-full cond-opt cond-opt-tabi-piece cond-opt-consumable cond-opt-key" min="1" value="<?= isset($i) ? $i->item_level : "1";?>" id="the_item_min_level">

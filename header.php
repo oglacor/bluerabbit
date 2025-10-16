@@ -61,6 +61,7 @@
 			//$playerReset = getMyAdvPlayerData($adv_child_id, $current_user->ID);
 			
 			$quests=isset($playerReset['quests']) ? $playerReset['quests'] : [];
+			$all_quests=isset($playerReset['all_quests']) ? $playerReset['all_quests'] : [];
 			$reqs=isset($playerReset['reqs']) ? $playerReset['reqs'] : NULL;
 			$reqs_ids=isset($playerReset['reqs_ids']) ? $playerReset['reqs_ids'] : NULL;
 			$guildwork=isset($playerReset['guildwork']) ? $playerReset['guildwork'] : NULL;
@@ -99,6 +100,8 @@
 			$show_adventure_status = isset($adv_settings['show_adventure_status']['value']) ? $adv_settings['show_adventure_status']['value'] : "";
 			$adventure_theme = isset($adv_settings['adventure_theme']['value']) ? $adv_settings['adventure_theme']['value'] : "default";
 			$journey_zoom_level = isset($adv_settings['journey_zoom_level']['value']) ? $adv_settings['journey_zoom_level']['value'] : "0";
+			$show_torch = isset($adv_settings['show_torch']['value']) ? $adv_settings['show_torch']['value'] : "0";
+			$show_certificate = isset($adv_settings['show_certificate']['value']) ? $adv_settings['show_certificate']['value'] : "0";
 			
 			
 			if(isset($adv_settings['support_email']['value']) && $adv_settings['support_email']['value'] != ""){
@@ -322,7 +325,6 @@
 			</div>
 			<?php } ?>
 			<div class="tools">
-				<?php //print_r($current_player); ?>
 				<?php 
 				if(isset($current_player->player_current_quest_id) && ($current_player->player_current_quest_id) > 0){ 
 					$cq = getQuest($current_player->player_current_quest_id); 
@@ -332,8 +334,10 @@
 					$cq_link = ""; 
 				}
 				?>
-				<a class="current-quest-torch icon-button <?= $current_player->player_current_quest_id == 0 ? "hidden" : ""; ?>" id="current-quest-torch" style="background-image: url(<?= get_bloginfo('template_directory'); ?>/images/icons/icon-torch.png); " href="<?= $cq_link; ?>">
-				</a>
+				<?php if($show_torch){ ?>
+					<a class="current-quest-torch icon-button <?= $current_player->player_current_quest_id == 0 ? "hidden" : ""; ?>" id="current-quest-torch" style="background-image: url(<?= get_bloginfo('template_directory'); ?>/images/icons/icon-torch.png); " href="<?= $cq_link; ?>">
+					</a>
+				<?php } ?>
 				<button class="icon-button white-bg border rounded-max" id="profile-box-btn" <?php if(isset($current_player->player_picture)){ ?>style="background-image: url(<?= $current_player->player_picture; ?>); "<?php } ?> onClick="activate('#profile-box');">
 				</button>
 				<?php if($current_player->player_guild){ ?>

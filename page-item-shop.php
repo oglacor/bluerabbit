@@ -45,6 +45,7 @@
 			WHERE 
 			items.adventure_id=$adventure_items_from 
 			AND items.item_status='publish' 
+			AND items.item_visibility !='hidden' 
 			AND (items.item_type='consumable' OR items.item_type='key' OR items.item_type='tabi-piece') 
 			AND ($condition items.achievement_id=0)
 			AND items.item_id NOT IN (SELECT steps.step_item FROM {$wpdb->prefix}br_steps steps WHERE steps.step_item > 0 AND steps.adventure_id=$adventure_items_from AND steps.step_status='publish' AND steps.step_type = 'item-grab') 

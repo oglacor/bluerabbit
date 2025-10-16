@@ -68,6 +68,11 @@ function getPlayerProgress($adventure_id, $uID){
         ON quests.achievement_id = achievements.achievement_id AND achievements.achievement_status='publish'
         WHERE quests.adventure_id=$adv_parent_id AND (quests.quest_status='publish' OR quests.quest_status='hidden') AND (quests.achievement_id='' OR quests.achievement_id=NULL $achievements_ids_str ) ORDER BY quests.quest_color, quests.quest_order, quests.mech_level, quests.mech_start_date, quests.quest_title, quests.quest_id");
 
+		$all_quests = $wpdb->get_results("SELECT
+        quests.* FROM {$wpdb->prefix}br_quests quests
+        WHERE quests.adventure_id=$adv_parent_id AND quests.quest_status='publish' OR quests.quest_status='hidden'
+		ORDER BY quests.quest_color, quests.quest_order, quests.mech_level, quests.mech_start_date, quests.quest_title, quests.quest_id");
+
 		$survey_questions = $wpdb->get_results("SELECT questions.*
 		FROM {$wpdb->prefix}br_survey_questions questions
 		JOIN  {$wpdb->prefix}br_quests surveys
@@ -262,6 +267,8 @@ function getPlayerProgress($adventure_id, $uID){
 		$data['reqs_ids']=$reqs_ids;
 		$data['achievements']=$achievements;
 		$data['achievements_ids']=$achievements_ids;
+
+		$data['all_quests']=$all_quests;
 		$data['quests']=$quests;
 		$data['items']=$myItems;
 		$data['attempts']=$attempts;

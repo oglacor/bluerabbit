@@ -7,9 +7,9 @@
         <button class="reset form-ui" onClick="resetMilestonePositions('data-beehive',50, 10, 1500, <?= $quests ? count($quests)/20*150 : "250" ; ?>);"><?= __("All together","bluerabbit"); ?> </button>
     </div>
     <div class="journey-builder-container">
-        <?php if($quests){ ?>
+        <?php if($all_quests){ ?>
             <div class="builder" id="builder">
-                <?php foreach ($quests as $k=>$m){ ?>
+                <?php foreach ($all_quests as $k=>$m){ ?>
                     <?php
                     if($m->quest_type != 'blog-post' && $m->quest_type != 'lore'){
                         $scale = ' scale(1) ';
