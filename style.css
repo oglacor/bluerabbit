@@ -3215,6 +3215,11 @@ span.divider {
   bottom: -40px;
   right: -40px;
 }
+.journey-builder-container .builder .milestone .milestone-controls button.milestone-reset {
+  left: 25%;
+  top: 50%;
+  margin: -20px 0 0 -20px;
+}
 .journey-builder-container .builder .milestone .milestone-controls button.z-up {
   left: 50%;
   top: -40px;
@@ -8871,6 +8876,13 @@ nav.tab-nav ul li.active {
     max-width: 100% !important;
     width: 100% !important;
     min-width: 360px !important;
+  }
+  .card-deck {
+    display: flex;
+    flex-flow: column;
+  }
+  .card-deck .card {
+    width: 100%;
   }
 }
 /* LG - Desktop */

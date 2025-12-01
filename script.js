@@ -756,9 +756,10 @@ function applyTransform(item_id, setup=null){
 	let scaleVal = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-scale`).val();
 	let rotationVal = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-rotation`).val();
 	let zIndex = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-z`).val();
+    if(zIndex < 1) { zIndex = 1; }
 	let xPos = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-x`).val();
 	let yPos = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-y`).val();
-	let transform_values = `rotate(${rotationVal}deg)`;
+	let transform_values = `scale(${zIndex}) rotate(${rotationVal}deg)`;
 
 	$('#tabi-piece-image-'+item_id).css({'transform':transform_values});
 	$('#tabi-piece-'+item_id).css({'z-index':zIndex, 'width':scaleVal+'%'});
@@ -828,6 +829,13 @@ function rotateCCW(id){
 	}
 	applyTransform(id);
 }
+function resetMilestoneSizes(){
+    $(`.milestone .milestone-data .z-pos`).val(1);
+	$(`.milestone`).each(function(){
+		updateMilestonePosition($(this).data('id'));
+	});
+}
+
 function updateMilestonePosition(id){
 	let milestone = $('#milestone-'+id);
 	let topPos = $(`#milestone-${id} .milestone-data input.top`).val();
@@ -839,6 +847,7 @@ function updateMilestonePosition(id){
 */
 
 	let zPos = $(`#milestone-${id} .milestone-data input.z-pos`).val();
+    if(zPos < 0.5) { zPos = 0.5; }else if(zPos < 0.5) { zPos = 0.5; }
 	let xPos = 0;
 	let yPos = 0;
 	let rotation =0;
@@ -865,7 +874,7 @@ function initializeBuilderMilestones(){
 	$('#builder .milestone').draggable({
 		handle: '.milestone-handle',
 		snap:true,
-		snapTolerance: 10,
+		snapTolerance: 5,
 		start: function () {
 			$(this).addClass("dragging");
 		},
@@ -884,7 +893,7 @@ function initializeBuilderMilestones(){
 function resetMilestonesToList(){
 	$(`.milestone .milestone-data .z-pos`).val(0);
 	$(`.milestone .milestone-data .rotation`).val(0);
-	$(`.milestone`).css({'transform':`translateZ(0px) rotate(0deg)`});
+	$(`.milestone`).css({'transform':`scale(1) rotate(0deg)`});
 	let resetX = 50, resetY = 50;
 	for(let i=0; i<=$(`.milestone`).length; i++){
 		$(`.milestone.milestone-order-${i} .milestone-data input.left`).val(resetX);	
@@ -1014,33 +1023,32 @@ const axialOffsets = [
 
 
 function applyTransformToMilestone(id){
-	let zVal = parseInt($(`#milestone-${id} .milestone-data .z-pos`).val());
+	let zVal = ($(`#milestone-${id} .milestone-data .z-pos`).val());
 	let rotationVal = parseInt($(`#milestone-${id} .milestone-data .rotation`).val());
-	let scale = ' scale(1) ';
-	if(zVal == 100){
-		scale = ' scale(1.1) ';
-	}else if(zVal == -100){
-		scale = ' scale(0.9) ';
-	}else if(zVal == -200){
-		scale = ' scale(0.7) ';
-	}else{
-		scale = ' scale(1) ';
+	if(zVal > 5){
+		scaleVal = 5;
 	}
-	$(`#milestone-${id}`).css({'transform':`translateZ(${zVal}px) ${scale} rotate(${rotationVal}deg)`});
+	let scale = ' scale('+zVal+') ';
+	$(`#milestone-${id}`).css({'transform':`${scale} rotate(${rotationVal}deg)`});
+}
+function milestoneReset(id){
+	$(`#milestone-${id} .milestone-data .z-pos`).val(1);
+	applyTransformToMilestone(id)
+	updateMilestonePosition(id);
 }
 function zFront(id){
 	let $zInput = $(`#milestone-${id} .milestone-data .z-pos`);
 	
-	if($zInput.val() < 100){
-		$zInput.val(+$zInput.val() + 100);
+	if($zInput.val() < 5){
+		$zInput.val(+$zInput.val() + 0.1);
 	}
 	applyTransformToMilestone(id)
 	updateMilestonePosition(id);
 }
 function zBack(id){
 	let $zInput = $(`#milestone-${id} .milestone-data .z-pos`);
-	if($zInput.val() > -200){
-		$zInput.val(+$zInput.val() - 100);
+	if($zInput.val() > 1){
+		$zInput.val(+$zInput.val() - 0.1);
 	}
 	applyTransformToMilestone(id)
 	updateMilestonePosition(id);

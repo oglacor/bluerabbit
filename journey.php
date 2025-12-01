@@ -10,16 +10,9 @@
 	<?php
 	foreach($all_quests as $key=>$mi){ ?>
 		<?php
-		$scale = ' scale(1) ';
-		if($mi->milestone_z == 100){
-			$scale = ' scale(1.1) ';
-		}elseif($mi->milestone_z == -100){
-			$scale = ' scale(0.9) ';
-		}elseif($mi->milestone_z == -200){
-			$scale = ' scale(0.7) ';
-		}else{
-			$scale = ' scale(1) ';
-		}
+        $scaleVal = ($mi->milestone_z > 5) ? 5 : $mi->milestone_z;
+        $scaleVal = $scaleVal < 1 ? 1 : $scaleVal;
+		$scale = ' scale('.$scaleVal.') ';
 		?>
 		<?php if($mi->quest_color != $current_color){ ?>
 			</div>
@@ -33,7 +26,7 @@
 		if($mi->quest_type != 'blog-post' && $mi->quest_type != 'lore'){
 		?>
 
-		<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="top:<?=$mi->milestone_top; ?>px; left:<?=$mi->milestone_left; ?>px; transform: translateZ(<?= $mi->milestone_z;?>px) <?=$scale;?> rotate(<?= $mi->milestone_rotation;?>deg); order:<?=$mi->quest_order; ?>">
+		<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="top:<?=$mi->milestone_top; ?>px; left:<?=$mi->milestone_left; ?>px; transform:<?=$scale;?> rotate(<?= $mi->milestone_rotation;?>deg); order:<?=$mi->quest_order; ?>">
 			<?php
 				if($hide_quests=='before'){
 					if($mi->mech_start_date != '0000-00-00 00:00:00' && $mi->mech_start_date != NULL){

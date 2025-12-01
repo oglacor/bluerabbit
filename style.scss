@@ -3157,6 +3157,7 @@ span.divider{
 					}
 					&.drag-top-left{ top: -40px; left: -40px; }
 					&.drag-bottom-right{ bottom: -40px; right: -40px; }
+					&.milestone-reset{ left: 25%; top: 50%; margin: -20px 0 0 -20px; } 
 					&.z-up{ left: 50%; top: -40px; margin: 0 0 0 -20px; }
 					&.z-down{ left: 50%; bottom: -40px; margin: 0 0 0 -20px; }
 					&.scale-up{ top: -40px; right: -40px; }
@@ -8405,6 +8406,13 @@ nav.tab-nav{
 		width: 100% !important;
 		min-width: 360px !important;
 	}
+    .card-deck{ 
+        display: flex;
+        flex-flow: column;
+        .card{
+            width: 100%;
+        }
+    }
 }
 /* LG - Desktop */
 @media print and (-webkit-min-device-pixel-ratio:0){
@@ -8416,7 +8424,7 @@ nav.tab-nav{
 /*
 		width: 21.5cm;
 		height: 27.94cm;
-*/
+*/ 
 		height: 21.5cm;
 		width: 27.94cm;
 		margin:0;padding: 0;

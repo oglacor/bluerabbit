@@ -6278,7 +6278,7 @@ function updateMilestonePosition(){
 	$left = $milestone_data['left'];
 	$rotation = $milestone_data['rotation'];
 	if($milestone){
-		$sql = "UPDATE {$wpdb->prefix}br_quests SET milestone_x=%s, milestone_y=%s, milestone_z=%d, milestone_top=%d, milestone_left=%d, milestone_rotation=%d WHERE quest_id=$milestone->quest_id";
+		$sql = "UPDATE {$wpdb->prefix}br_quests SET milestone_x=%s, milestone_y=%s, milestone_z=%s, milestone_top=%d, milestone_left=%d, milestone_rotation=%d WHERE quest_id=$milestone->quest_id";
 		$sql = $wpdb->prepare ($sql, $x, $y, $z, $top, $left, $rotation );
 		$wpdb->query($sql); 
 		$data['success'] = true;

@@ -138,7 +138,7 @@ if($adventure && ($isGM || $isAdmin)){
 							<div class="dashboard-grid-cell-options-container">
 								<h3 class="dashboard-grid-cell-headline"><?= __("Display in shop","bluerabbit");?></h3>
 								<div class="input-group w-full">
-									<select id="the_item_visibility" class="form-ui w-full  cond-opt cond-opt-consumable">
+									<select id="the_item_visibility" class="form-ui w-full  cond-opt cond-opt-consumable cond-opt-tabi-piece">
 										<option class="white-color black-bg capitalize" value="visible"  <?= ($i->item_visibility=='visible' || !$i->item_visibility) ? 'selected' : ""; ?>>
 											<?= __("Visible","bluerabbit"); ?>
 										</option>
