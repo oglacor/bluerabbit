@@ -300,7 +300,7 @@
 					<div class="add-single-player">
 						<div class="username-search-form">
 							<h3><?= __("Check if Username or Email exists","bluerabbit"); ?></h3>
-							<input class="form-ui" type="text" id="username-search" maxlength="30" placeholder="<?= __("Nickname or Email","bluerabbit");?>" onBlur="checkUserDataExists(this);">
+							<input class="form-ui" type="text" id="username-search" maxlength="255" placeholder="<?= __("Nickname or Email","bluerabbit");?>" onBlur="checkUserDataExists(this);">
 						</div>
 						<div id="new-player-warnings" class="new-player-warnings">
 						</div>
@@ -309,7 +309,7 @@
 								<div class="row nickame">
 									<h3><?= __("Nickname","bluerabbit"); ?></h3>
 									<input type="hidden" id="new-player-lang" value="<?= $current_player->player_lang;?>">
-									<input class="form-ui" type="text" id="new-player-username" maxlength="30" placeholder="<?= __("Nickname","bluerabbit");?>">
+									<input class="form-ui" type="text" id="new-player-username" maxlength="255" placeholder="<?= __("Nickname","bluerabbit");?>">
 								</div>
 								<div class="row email">
 									<h3><?= __("Email","bluerabbit"); ?></h3>
@@ -317,7 +317,7 @@
 								</div>
 								<div class="row password">
 									<h3><?= __("Password","bluerabbit"); ?></h3>
-									<input class="form-ui" type="text" id="new-player-user-password" maxlength="18" placeholder="<?= __("Password","bluerabbit");?>">
+									<input class="form-ui" type="text" id="new-player-user-password" maxlength="25" placeholder="<?= __("Password","bluerabbit");?>">
 								</div>
 							</div>
 							<div class="player-data-actions">

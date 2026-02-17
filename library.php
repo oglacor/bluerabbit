@@ -52,7 +52,7 @@
 						<div class="template-preview-content"></div>
 						<div class="template-preview-footer">
 							<button class="button form-ui red-bg-400 font _14" onClick="closeTemplatePreview();"><span class="icon icon-cancel"></span><?= __("Close","bluerabbit");?></button>
-							<button class="button form-ui green-bg-400 font _14" onClick="createAdventureFromTemplate(<?= $t->adventure_id;?>);">
+							<button class="button form-ui green-bg-400 font _14" onClick="createChildAdventure(<?= $t->adventure_id;?>);">
 								<span class="icon icon-check"></span><?= __("Use this template","bluerabbit");?>
 							</button>
 						</div>

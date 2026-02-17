@@ -5669,7 +5669,7 @@ function createChildAdventure($template_id=0){
 	$n = new Notification();
 	if($adventure){
 		$player_data = getPlayerData($current_user->ID);
-			
+		$new_child_title = $adventure->adventure_title." ".__("[new child]","bluerabbit");
 		$first_str = random_str(12,'1234567890abcdef');
 		$code_string = $first_str.$current_user->ID;
 		$adventure_code = str_shuffle($code_string);
@@ -5681,11 +5681,11 @@ function createChildAdventure($template_id=0){
 
 			SELECT 
 
-			%d,`adventure_badge`, `adventure_logo`, `adventure_gmt`, 'normal', `adventure_title`, `adventure_xp_label`, `adventure_bloo_label`, `adventure_ep_label`, `adventure_xp_long_label`, `adventure_bloo_long_label`, `adventure_ep_long_label`, `adventure_grade_scale`, `adventure_progression_type`, `adventure_privacy`, `adventure_status`, `adventure_instructions`, `adventure_nickname`, %s, `adventure_level_up_array`, `adventure_color`, `adventure_hide_quests`, `adventure_hide_schedule`, `adventure_topic_id`, `adventure_has_guilds`, %d, %d
+			%d,`adventure_badge`, `adventure_logo`, `adventure_gmt`, 'normal', %s, `adventure_xp_label`, `adventure_bloo_label`, `adventure_ep_label`, `adventure_xp_long_label`, `adventure_bloo_long_label`, `adventure_ep_long_label`, `adventure_grade_scale`, `adventure_progression_type`, `adventure_privacy`, `adventure_status`, `adventure_instructions`, `adventure_nickname`, %s, `adventure_level_up_array`, `adventure_color`, `adventure_hide_quests`, `adventure_hide_schedule`, `adventure_topic_id`, `adventure_has_guilds`, %d, %d
 
 			FROM  {$wpdb->prefix}br_adventures WHERE `adventure_id` = %d;
 		";
-		$sql = $wpdb->prepare($duplication, $current_user->ID, $adventure_code,  $adventure->adventure_id, $player_data->org_id, $adventure->adventure_id);
+		$sql = $wpdb->prepare($duplication, $current_user->ID,$new_child_title, $adventure_code,  $adventure->adventure_id, $player_data->org_id, $adventure->adventure_id);
 		$duplicatedAdventureQuery = $wpdb->query($sql);
 		//$data['debug'] = print_r($wpdb->last_query,true);
 		$newAdvID = $wpdb->insert_id;

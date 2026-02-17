@@ -5233,7 +5233,6 @@ function duplicateQuests(){
 		}
 	});
 }
-
 function createChildAdventure(adventure_id = null){
 	
 	if(adventure_id){
