@@ -50,15 +50,21 @@
 	}
 ?>
 
-	
 <div class="guilds">
-	<div class="tab-nav-headline">
-		<h1><?= __("My Guild","bluerabbit"); ?></h1>
-	</div>
-	<div class="my-guild-card">
-		
-	</div>
-
+    <div class="my-guild">
+        <div class="hud-title">
+            <h2>
+                <span class="hud-title-label"><?= __("My Guild","bluerabbit"); ?></span>
+            </h2>
+        </div>
+        <div class="my-guild-card">
+            <div class="my-guild-card-bg">
+                <svg class="my-guild-card-border" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 802 502">
+                    <path d="M777,501H25l-24-24V25L25,1h752l24,24v452l-24,24Z"/>
+                </svg>
+            </div>
+        </div>       
+    </div>
 </div>
 
 
@@ -121,7 +127,6 @@
 			</div>
 			<?php if(($isGM || $isAdmin || $isNPC) && $guilds){ ?>
 				<div class="content white-color">
-					<div class="background white-bg opacity-10"></div>
 					<table class="table transparent-bg">
 						<thead>
 							<tr>

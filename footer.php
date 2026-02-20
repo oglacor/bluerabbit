@@ -463,7 +463,13 @@
 	
 		<?php if(isset($adventure) && is_page('adventure')){
 			include (get_stylesheet_directory() . '/tutorials/tutorial-journey.php'); 
-		} ?>
+		} 
+        ?>
+        <?php if(!$current_player->player_hide_intro && !$adventure->adventure_instructions && is_page('adventure')){ ?>
+            <script>
+               tour.start();
+            </script>
+        <?php } ?>
 		<input type="hidden" id="url" value="<?= get_bloginfo('url');?>">
 		<footer class="taskbar" id="taskbar">
 			<div class="show-on-start core-nav" id="core-nav">

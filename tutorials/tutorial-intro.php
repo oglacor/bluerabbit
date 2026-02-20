@@ -1,4 +1,9 @@
 <script>
+function onTourCancel() {
+    closeIntro(); /// Close intro.
+    alert("closing Intro");
+}
+
 const tour = new Shepherd.Tour({
     defaultStepOptions: {
         classes: 'shadow-md bg-purple-dark',
@@ -10,6 +15,7 @@ const tour = new Shepherd.Tour({
     useModalOverlay: true,
 	keyboardNavigation:false
 });
+
 const intro_steps = [
     {
         id: 'step-1',
@@ -23,6 +29,7 @@ const intro_steps = [
               text: "<?= __("Skip","bluerabbit"); ?>",
               classes:"br-secondary-button white-color",
               action: function(){
+                    closeIntro();
                   return this.complete();
               }
             },
@@ -498,4 +505,5 @@ const intro_steps = [
     
 ];
 tour.addSteps(intro_steps);
+tour.on('cancel', onTourCancel);
 </script>

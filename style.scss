@@ -3042,7 +3042,7 @@ span.divider{
 	top: 50px;
 	left: 5px;
 	z-index: 28;
-	button.action-button{
+	button.action-button, a.action-button{
 		font: 500 16px $special-font;
 	}
 }
@@ -3066,14 +3066,13 @@ span.divider{
 			transform-origin: center;
 			position: absolute;
 			opacity: 0.5;
-			width: 108px;
-			height: 95px;
 			color: $white;
 			transition: all 0.3s ease-out;
 			.milestone-content{
+                transition: all 0.3s ease-out;
 				z-index: 1;
 				cursor: pointer;
-				position: absolute;
+				position: relative;
 				top:0; left: 0;
 				width: 108px;
 				height: 95px;
@@ -3405,8 +3404,8 @@ span.divider{
 		transform-style: preserve-3d;
 		background-position: center center;
 		background-size: cover;
-		min-width: 100vw;
-		min-height: 100vh;
+		min-width: auto;
+		min-height: auto;
 		&.milestone-on{
 			background-image: none !important;
 		}
@@ -7240,6 +7239,8 @@ nav.tab-nav{
 
 }
 
+
+
 .item-shop{
 	position: relative;
 	width: 100%;
@@ -7810,8 +7811,104 @@ nav.tab-nav{
 		}
 	}
 }
+.hud-lines-bg{
+    background-image: url(images/hud/lines-border-hud-bg.svg);
+    background-repeat: no-repeat;
+    background-position: top right;
+    background-size: 50%;
+}
+.hud-title{
+	width: 100%;
+	padding: 0 20px;
+	margin: 0 auto;
+    border-bottom: solid 1px rgba($new-colors-blue,1);
+    h1, h2, h3, h4, h5, h6{
+        transform: skewX(-30deg);
+        color: $white;
+        font-family: $special-font;
+        background-color: rgba($new-colors-blue,0.2);
+        padding: 10px 20px;
+        width: fit-content;
+        .hud-title-label{
+            display: inline-block;
+            transform: skewX(30deg); 
+        }
+    }
+}
 
-
+.guilds{
+    width: 100%;
+    max-width: 1320px;
+    padding: 20px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    .my-guild{
+        width: 50%;
+        .hud-title{
+            margin-bottom: 20px;
+        }
+        .my-guild-card{
+            aspect-ratio: 8/5;
+            padding: 10px;
+            position: relative;
+            .my-guild-card-bg{
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                z-index: 1;
+                .my-guild-card-border{
+                    path{
+                        fill: none;
+                        stroke-width: 1;
+                        stroke: $new-colors-yellow;
+                    }
+                }
+            }
+            .my-guild-card-content{
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                z-index: 2;
+                display: grid;
+                gap: 10px;;
+                grid-template-columns: 1fr 1fr;
+                .my-guild-card-info{
+                    text-align: center;
+                    h2.guild-name{
+                        font-size: 48px;
+                        color: $white;
+                        font-family: $preospe-font;
+                    }
+                    table.my-guild-card-stats{
+                        padding: 0;
+                        border: none;
+                        tbody{
+                            tr{
+                                &.teal{ color: $new-colors-green;}
+                                &.white{ color: $white;}
+                                &.blue{ color: $new-colors-blue;}
+                                &.yellow{ color: $new-colors-yellow;}
+                                td{
+                                    padding: 5px;
+                                    text-align: left;
+                                    font-weight: 700;
+                                    font-size: 20px;
+                                    &:first-child{
+                                        font-size: 16px;
+                                        text-align: right;
+                                        font-weight: 300;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
  
 
 

@@ -1,10 +1,11 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
+<?php $journey_style = $_GET['style'] ?? 'map'; ?>
 <?php if($adventure){ ?>
 	<?php if(!$current_player->player_hide_intro && $adventure->adventure_instructions){ ?>
 		<script>
 			document.location.href="<?=get_bloginfo('url')."/about-adventure/?adventure_id=$adv_child_id"; ?>";
 		</script>
-	<?php }?>
+	<?php } ?>
 
 	<?php
 		if($adventure->adventure_has_guilds && !$current_player->player_guild && !$isGM && !$isAdmin){
@@ -91,7 +92,15 @@
 	</div>
 	<?php if(isset($quests) && !empty($quests)){ ?>
 		<div class="journey-builder-controls">
-			<button class="reset action-button" onClick="toggleJourneyView();"><?= __("Change View","bluerabbit"); ?> </button>
+
+            <?php if($journey_style == 'board'){ ?>
+			    <a class="reset action-button" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id"; ?>"><?= __("Map View","bluerabbit"); ?> </a>
+            <?php }else{ ?>
+ 			    <a class="reset action-button" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id&style=board"; ?>"><?= __("Board View","bluerabbit"); ?> </a>
+           <?php } ?>
+
+
+
 			<?php if(isset($isDemo) && $isDemo){ ?>
 				<button class="action-button danger" onClick="showOverlay('#reset-demo-form');"><span class="icon icon-rotate"></span><?= __("Reset Demo","bluerabbit"); ?></button>
 			<?php } ?>
@@ -110,7 +119,14 @@
 		</div>
 
 		<div class="journey-container">
-			<?php include (TEMPLATEPATH . '/journey.php'); ?>
+			<?php
+            if($journey_style == 'board'){
+                include (TEMPLATEPATH . '/journey-board.php');
+            }else{
+                include (TEMPLATEPATH . '/journey.php'); 
+            }
+            
+            ?>
 		</div>
 
 
@@ -218,35 +234,6 @@
 
 
 
-
-<script>
-
-
-zoomLevel = <?= $journey_zoom_level; ?>; 
-resizeJourneyMapWithPadding(-zoomLevel);
-
-centerJourneyMap();
-applyZoom();
-
-
-// Zoom controls
-$('#zoom-in').on('click', function () {
-	zoomLevel += 100;
-	applyZoom();
-});
-
-$('#zoom-out').on('click', function () {
-	zoomLevel -= 100;
-	applyZoom();
-});
-
-$('#zoom-reset').on('click', function () {
-	zoomLevel = 0;
-	applyZoom();
-	centerJourneyMap();
-});
-
-</script>
 
 
 

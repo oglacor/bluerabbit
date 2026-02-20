@@ -13,16 +13,25 @@
                 <?php foreach ($all_quests as $k=>$m){ ?>
                     <?php
                     if($m->quest_type != 'blog-post' && $m->quest_type != 'lore'){
-        $scaleVal = ($m->milestone_z > 5) ? 5 : $m->milestone_z;
-        $scaleVal = $scaleVal < 1 ? 1 : $scaleVal;
-		$scale = ' scale('.$scaleVal.') ';
+                        $scaleVal = $m->milestone_z;
+                        if($scaleVal > 5){
+                            $scaleVal = 5;
+                        }elseif($scaleVal < 1){
+                            $scaleVal = 1; 
+                        }
+
+                        $baseWidth = 108;
+                        $baseHeight = 95;
+                        $scaledWidth = $baseWidth * $scaleVal;
+                        $scaledHeight = $baseHeight * $scaleVal;
+                        $scale = 'width: '.$scaledWidth.'px; height: '.$scaledHeight.'px;';
                         ?>
 
-                        <div data-id="<?= $m->quest_id;?>" data-color="<?=$m->quest_color; ?>" data-beehive="all" id="milestone-<?= $m->quest_id; ?>" class="milestone milestone-order-<?= $k; ?>  milestone-color-<?= $m->quest_color; ?>" style="top:<?=$m->milestone_top; ?>px; left:<?=$m->milestone_left; ?>px; transform: <?= $scale; ?> rotate(<?= $m->milestone_rotation;?>deg);">
+                        <div data-id="<?= $m->quest_id;?>" data-color="<?=$m->quest_color; ?>" data-beehive="all" id="milestone-<?= $m->quest_id; ?>" class="milestone milestone-order-<?= $k; ?>  milestone-color-<?= $m->quest_color; ?>" style="top:<?=$m->milestone_top; ?>px; left:<?=$m->milestone_left; ?>px;">
                             <div class="milestone-name">
                                 <?= $m->quest_title; ?>
                             </div>
-                            <div class="milestone-handle milestone-content <?= $m->quest_color; ?>" style="background-image:url(<?= $m->mech_badge; ?>); ">
+                            <div class="milestone-handle milestone-content <?= $m->quest_color; ?>" style="background-image:url(<?= $m->mech_badge; ?>); <?= $scale; ?>">
                                 <span class="icon icon-<?= $m->quest_icon; ?>"></span>
                             </div>
                             <div class="milestone-controls">

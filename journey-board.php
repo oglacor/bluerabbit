@@ -1,32 +1,30 @@
-<div class="journey journey-map" id="the-journey">
+<div class="journey journey-board" id="the-journey">
 	<?php 
 	$today = date('YmdHi');
 	$hide_quests = $adventure->adventure_hide_quests ? $adventure->adventure_hide_quests : 'never';
 	$posID = 0;
 	$row = 1;
 	$counter = 0;
+	$current_color = ''; ?>
+	<div class="board-view-column empty">
+	<?php
 	foreach($all_quests as $key=>$mi){ ?>
 		<?php
-        $scaleVal = ($mi->milestone_z > 5) ? 5 : $mi->milestone_z;
-        $scaleVal = $scaleVal < 1 ? 1 : $scaleVal;
-        $baseWidth = 108;
-        $baseHeight = 95;
-        $scaledWidth = $baseWidth * $scaleVal;
-        $scaledHeight = $baseHeight * $scaleVal;
-        if($scaleVal !=1){
-            $scale = 'width: '.$scaledWidth.'px; height: '.$scaledHeight.'px;';
-        }else{
-            $scale = '';
-        }
-
+		$scale = '';
 		?>
+		<?php if($mi->quest_color != $current_color){ ?>
+			</div>
+			<div class="board-view-column <?=$mi->quest_color; ?>">
+			<?php $current_color = $mi->quest_color; ?>
+		<?php } ?>
+
 
 		<?php 
 		$hideByDay = '';
 		if($mi->quest_type != 'blog-post' && $mi->quest_type != 'lore'){
 		?>
 
-		<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="top:<?=$mi->milestone_top; ?>px; left:<?=$mi->milestone_left; ?>px; order:<?=$mi->quest_order; ?>">
+		<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="top:<?=$mi->milestone_top; ?>px; left:<?=$mi->milestone_left; ?>px; transform:<?=$scale;?> rotate(<?= $mi->milestone_rotation;?>deg); order:<?=$mi->quest_order; ?>">
 			<?php
 				if($hide_quests=='before'){
 					if($mi->mech_start_date != '0000-00-00 00:00:00' && $mi->mech_start_date != NULL){
@@ -111,33 +109,5 @@
 		<?php }	?>
 
 	<?php } //end foreach; ?>
+	</div> <!-- Close last board-column -->
 </div>
-<script>
-
-
-zoomLevel = <?= $journey_zoom_level; ?>; 
-resizeJourneyMapWithPadding(-zoomLevel);
-
-centerJourneyMap();
-applyZoom();
-
-
-// Zoom controls
-$('#zoom-in').on('click', function () {
-	zoomLevel += 100;
-	applyZoom();
-});
-
-$('#zoom-out').on('click', function () {
-	zoomLevel -= 100;
-	applyZoom();
-});
-
-$('#zoom-reset').on('click', function () {
-	zoomLevel = 0;
-	applyZoom();
-	centerJourneyMap();
-});
-
-</script>
-

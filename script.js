@@ -1024,12 +1024,17 @@ const axialOffsets = [
 
 function applyTransformToMilestone(id){
 	let zVal = ($(`#milestone-${id} .milestone-data .z-pos`).val());
-	let rotationVal = parseInt($(`#milestone-${id} .milestone-data .rotation`).val());
 	if(zVal > 5){
 		scaleVal = 5;
-	}
-	let scale = ' scale('+zVal+') ';
-	$(`#milestone-${id}`).css({'transform':`${scale} rotate(${rotationVal}deg)`});
+	}else if(zVal < 1){
+        scaleVal = 1;
+    }
+    let baseWidth = 108;
+    let baseHeight = 95;
+    let scaledWidth = baseWidth * zVal;
+    let scaledHeight = baseHeight * zVal;
+
+	$(`#milestone-${id} .milestone-content`).css({'width':`${scaledWidth}px`, 'height':`${scaledHeight}px`});
 }
 function milestoneReset(id){
 	$(`#milestone-${id} .milestone-data .z-pos`).val(1);
@@ -5786,7 +5791,7 @@ function applyZoom() {
 	resizeJourneyMapWithPadding(-zoomLevel);
 }
 
-function resizeJourneyMapWithPadding(padding = 300, map='the-journey', milestoneContainer='.milestone-container') {
+function resizeJourneyMapWithPadding(padding = 1300, map='the-journey', milestoneContainer='.milestone-container') {
 	let $map = $('#' + map);
 
 	if(!$map.attr('data-width')){
@@ -5804,11 +5809,11 @@ function resizeJourneyMapWithPadding(padding = 300, map='the-journey', milestone
 			width: (maxX + padding) + 'px',
 			height: (maxY + padding) + 'px'
 		});
-		$map.attr('data-width', maxX + padding);
-		$map.attr('data-height', maxY + padding);
+		$map.attr('data-width', maxX);
+		$map.attr('data-height', maxY);
 	}else{
-		let currentWidth = parseInt($map.attr('data-width'));
-		let currentHeight = parseInt($map.attr('data-height'));
+		let currentWidth = parseInt($map.attr('data-width'))+300;
+		let currentHeight = parseInt($map.attr('data-height'))+300;
 		$map.css({
 			width: currentWidth + 'px',
 			height: currentHeight + 'px'

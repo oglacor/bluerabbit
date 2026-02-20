@@ -1,4 +1,4 @@
-	<div class="milestone <?= "$mi->quest_type finshed $hideByDay $left_side level{$mi->mech_level}";  ?>" id="milestone-<?= $elementID; ?>">
+	<div class="milestone <?= "$mi->quest_type finshed $hideByDay $left_side level{$mi->mech_level}";  ?>" id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
 		<input type="hidden" class="milestone-data-id" value="<?= $elementID; ?>">
 		<input type="hidden" class="milestone-data-title" value="<?= $mi->quest_title; ?>">
 		<input type="hidden" class="milestone-data-xp" value="<?= $mi->mech_xp; ?>">

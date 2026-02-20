@@ -312,15 +312,9 @@
 			<div class="nav-opener" onClick="activateStartMenu();">
 				<span class="icon icon-menu"></span>
 			</div>
-			<div class="logo">
-				<?php $main_logo = isset($config['main_logo']['value']) ? $config['main_logo']['value'] : get_bloginfo('template_directory').'/images/logo.png';?> 
-				<a href="<?= get_bloginfo('url'); ?>">
-					<img src="<?= $main_logo; ?>" height="30">
-				</a>
-			</div>
 			<?php if(isset($adventure)){ ?>
 			<div class="adventure-title" id="adventure-title-t_id">
-				<img src="<?= get_bloginfo('template_directory').'/images/adventure-title.png';; ?>" height="30" class="adventure-title-logo">
+				<img src="<?= get_bloginfo('template_directory').'/images/icons/icon-home.png';; ?>" height="30" class="adventure-title-logo">
 				<a class="adventure-title-text" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id"; ?>"><?= $adventure->adventure_title;?></a>
 			</div>
 			<?php } ?>
@@ -351,6 +345,7 @@
 						<span class="background layer black-bg opacity-20 border rounded-max absolute"></span>
 						<span class="icon icon-question grey-400"></span>
 					</button>
+                    
 				<?php } ?>
 				<a class="icon-button relative transparent-bg font _18  border rounded-max" target="_blank" href="mailto:<?= $support_email; ?>" title="<?= __("Email Support","bluerabbit"); ?>" alt="<?= __("Email Support","bluerabbit"); ?>">
 					<span class="background layer amber-bg-800 opacity-20 border rounded-max absolute"></span>

@@ -1,4 +1,4 @@
-	<div class="milestone opacity-30 unavailable <?php echo "$mi->quest_type $hideByDay level{$mi->mech_level}";  ?>"  id="milestone-<?= $elementID; ?>">
+	<div class="milestone opacity-30 unavailable <?php echo "$mi->quest_type $hideByDay level{$mi->mech_level}";  ?>"  id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
 		<div class="milestone-bg-color purple-bg-A400 opacity-50"></div>
 		<div class="milestone-bg-color grey-bg-300 opacity-20"></div>
 		<div class="milestone-bg-badge grey-bg-100 blend-luminosity opacity-50" style="background-image: url(<?= $mi->mech_badge; ?>);">
