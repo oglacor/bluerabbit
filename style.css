@@ -8350,7 +8350,7 @@ nav.tab-nav ul li.active {
 }
 .guilds .my-guild .my-guild-card .my-guild-card-bg .my-guild-card-border path {
   fill: none;
-  stroke-width: 1;
+  stroke-width: 2;
   stroke: #f7cb15;
 }
 .guilds .my-guild .my-guild-card .my-guild-card-content {
@@ -8363,6 +8363,7 @@ nav.tab-nav ul li.active {
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr 1fr;
+  align-items: center;
 }
 .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info {
   text-align: center;
@@ -8375,6 +8376,7 @@ nav.tab-nav ul li.active {
 .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats {
   padding: 0;
   border: none;
+  width: 100%;
 }
 .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr.teal {
   color: #24da98;
@@ -8399,7 +8401,6 @@ nav.tab-nav ul li.active {
   text-align: right;
   font-weight: 300;
 }
-
 .certificate-options {
   width: 100%;
   display: block;

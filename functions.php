@@ -292,6 +292,7 @@ $sql = "
 		`guild_capacity` INT NULL,
 		`guild_code` VARCHAR(50) NULL DEFAULT '',
 		`guild_group` VARCHAR(255) NULL DEFAULT '',
+		`guild_members` INT NULL DEFAULT 0,
 		`assign_on_login` TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (`guild_id`) )$charset_collate;
 

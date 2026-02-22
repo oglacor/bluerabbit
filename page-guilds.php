@@ -47,6 +47,19 @@
 			GROUP BY guilds.guild_id
 			ORDER BY total_player_xp DESC
 		");
+        $leaderboard_guilds_array = array();
+		$guild_xp_update = "INSERT INTO {$wpdb->prefix}br_guilds (guild_id, guild_xp) VALUES ";
+		$guild_xp_update_values = array();
+		$guild_xp_update_placeholders = array();
+		foreach($leaderboard_guilds as $lg){
+			array_push($guild_xp_update_values, $lg->guild_id, $lg->total_player_xp);
+			$guild_xp_update_placeholders[] = "(%d,%d)";
+            $leaderboard_guilds_array[$lg->guild_id] = $lg->total_player_xp;
+		}
+		$guild_xp_update .= implode(', ', $guild_xp_update_placeholders);
+		$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp)";
+		$guild_xp_update_query = $wpdb->query( $wpdb->prepare("$guild_xp_update ", $guild_xp_update_values));
+        print_r($wpdb->last_query);
 	}
 ?>
 
@@ -57,13 +70,11 @@
                 <span class="hud-title-label"><?= __("My Guild","bluerabbit"); ?></span>
             </h2>
         </div>
-        <div class="my-guild-card">
-            <div class="my-guild-card-bg">
-                <svg class="my-guild-card-border" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 802 502">
-                    <path d="M777,501H25l-24-24V25L25,1h752l24,24v452l-24,24Z"/>
-                </svg>
-            </div>
-        </div>       
+
+
+        <?php foreach($guilds as $g){ ?>
+            <?php include (TEMPLATEPATH . '/guild.php'); ?>
+        <?php } ?>
     </div>
 </div>
 

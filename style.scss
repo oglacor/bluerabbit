@@ -7861,7 +7861,7 @@ nav.tab-nav{
                 .my-guild-card-border{
                     path{
                         fill: none;
-                        stroke-width: 1;
+                        stroke-width: 2;
                         stroke: $new-colors-yellow;
                     }
                 }
@@ -7874,6 +7874,7 @@ nav.tab-nav{
                 display: grid;
                 gap: 10px;;
                 grid-template-columns: 1fr 1fr;
+                align-items: center;
                 .my-guild-card-info{
                     text-align: center;
                     h2.guild-name{
@@ -7884,6 +7885,7 @@ nav.tab-nav{
                     table.my-guild-card-stats{
                         padding: 0;
                         border: none;
+                        width: 100%;;
                         tbody{
                             tr{
                                 &.teal{ color: $new-colors-green;}
@@ -7904,6 +7906,9 @@ nav.tab-nav{
                             }
                         }
                     }
+                }
+                .my-guild-badge{
+                    
                 }
             }
         }
