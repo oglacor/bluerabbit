@@ -1105,3 +1105,14 @@ function getPlayerData($uID, $format='OBJECT'){
 	WHERE a.player_id=$uID ORDER BY b.hexad_id DESC", $format);
 	return $player;
 }
+function getPlayerDataJSON($uID){
+	global $wpdb; 
+	$player = $wpdb->get_row("SELECT a.*, b.hexad_answers, b.hexad_date, player_org.org_id FROM {$wpdb->prefix}br_players a
+	LEFT JOIN {$wpdb->prefix}br_hexad b
+	ON a.player_id = b.player_id
+	LEFT JOIN {$wpdb->prefix}br_player_org player_org
+	ON a.player_id = player_org.player_id
+	WHERE a.player_id=$uID ORDER BY b.hexad_id DESC");
+    echo json_encode($player);
+    die();
+}

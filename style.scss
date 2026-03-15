@@ -1382,16 +1382,37 @@ span.divider{
 			font-size: 16px;
 		}
 	}
+    h1.dashboard-title{
+        color: $new-colors-dark-blue;
+        font-weight: 600;
+        padding: 10px 20px;
+        background-color: rgba($new-colors-dark-blue,0.05);
+    }
 	.form-ui{
 		font-weight: 400;
 	}
 	& > .dashboard-sidebar{
 		order: 1;
 		width: 180px;
+        background-color: $white;
+        border-right: solid 1px rgba($new-colors-dark-grey,0.5);
 		.tabs-buttons{
 			ul{
-				li.block{
+				li{
+                    color: $new-colors-dark-blue; 
+                    display: block;
 					margin: 10px 0 0;
+                    button{
+                        display: block;
+                        border-radius: 5px;
+                        background-color: transparent;
+                        border: none;
+                        padding: 7px;
+                        width: 100%;
+                        &.active{
+                            background-color: rgba($new-colors-blue,0.15);
+                        }
+                    }
 				}
 			}
 		}
@@ -3956,6 +3977,232 @@ ul{
 		display: block;
 	}
 }
+.checkbox-group{
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    label.form-ui{
+        position: relative;
+        padding: 10px;
+        background-color: $white;
+        cursor: pointer;
+        display: block;
+        border-radius: 6px;
+        &:has(input:checked) {
+            background: rgba($new-colors-blue, 0.15);
+            border: solid 1px rgba($new-colors-blue, 1);
+            font-weight: 600;
+        }
+    }
+}
+.speakers{
+    padding: 20px;
+    position: relative;
+    .headline{
+        h1{
+            font-family: $preospe-font;
+            font-size: 30px;
+            color: $new-colors-blue;
+        }
+    }
+    .speakers-grid{
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+        gap: 20px;
+        max-width: 1200px;;
+        .speaker-item{
+            position: relative;
+            aspect-ratio: 275 / 420;
+            max-width: 350px;
+            &:hover{
+                .speaker-picture{
+                    svg.speaker-art-picture{
+                        rect.picture-bg{
+                            background-color: $white;
+                            opacity: 0;
+                            transform: scale(1.2) translateX(-10%) translateY(-10%);
+                        }
+                        image{
+                            transform: scale(1.2) translateX(-10%) translateY(-10%);
+                        }
+                        path, polyline, circle, line{
+                            &.blue-line{
+                                animation: arrow-outline-stroke-animation 12s linear infinite;
+                            }
+                            &.yellow-line{
+                                animation: arrow-outline-stroke-animation 8s linear infinite;
+                            }
+                            &.dotted{
+                                animation: warning-sign-stroke-animation 4s linear infinite;
+                            }
+                            &.yellow-fill{
+                                fill: rgba($new-colors-yellow, 0.1);
+                                stroke: none;
+                            }
+                        }
+                    }
+                }
+            }
+            .speaker-picture{
+                container-type: inline-size;
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: cover;
+                position: relative;
+                svg.speaker-art-picture{
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    rect.picture-bg{
+                        background-color: $white;
+                        mix-blend-mode: color;
+                        transition: all 0.5s ease-out;
+                    }
+                    image{
+                        fill: $white;;
+                        background-color: $white;
+                        transition: all 0.5s ease-out;
+                    }
+                    path, polyline, circle, line{
+                        stroke-width: 2px;
+                        stroke: $white;
+                        fill: none;
+                        transition: all 0.3s ease-out;
+                        &.blue-line{
+                            stroke: $new-colors-blue;
+                            stroke-dasharray: 100px 5px;
+                        }
+                        &.yellow-line{
+                            stroke: $new-colors-yellow;
+                            stroke-dasharray: 150px 5px;
+                        }
+                        &.yellow-fill{
+                            fill: rgba($white, 0.1);
+                            stroke: none;
+                        }
+                        &.dotted{
+                            stroke-dasharray: 13 4;
+                            stroke-linecap: round;
+                            stroke-linejoin: round;
+                        }
+                    }
+                }
+                .speaker-tagline{
+                    position: absolute;
+                    top: 0; right:0; 
+                    width: 100%;
+                    font-family: $special-font;
+                    font-size: clamp(14px, 5cqw, 40px);
+                    color: $white;
+                    text-align: right;
+                    padding: 0 0 0 30%;
+                    &::before{
+                        content:"..//";
+                    }
+                }
+                a{
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+                .social-icons{
+                    position: absolute;
+                    top: 38%;
+                    right:-18px;
+                    .social-icon-container{
+                        width: 50px; height: 50px;
+                        margin-bottom: 20px;
+                        background-color: $new-colors-dark-blue;
+                        border-radius: 100px;
+                        border: solid 2px $new-colors-blue;
+                        padding: 10px;
+                        transition: all 0.3s ease-out;
+                        &:hover{
+                            background-color: $new-colors-blue;
+                            border-color: $new-colors-yellow;
+                            svg{
+                                &.globe-icon{
+                                    circle, line, ellipse{
+                                        fill: none;
+                                        stroke: $new-colors-dark-blue;
+                                        stroke-width: 3px;
+                                    }
+                                }
+                                &.social-media-logo{
+                                    path{
+                                        fill: $new-colors-dark-blue;
+                                    }
+                                }
+                            }
+                        }
+                        svg{
+                            &.globe-icon{
+                                circle, line, ellipse{
+                                    transition: all 0.3s ease-out  ;
+                                    fill: none;
+                                    stroke: $new-colors-blue;
+                                    stroke-width: 3px;
+                                }
+                            }
+                            &.social-media-logo{
+                                path{
+                                    transition: all 0.3s ease-out  ;
+                                    fill: $new-colors-blue;
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        .speaker-content{
+            padding: 10px;
+            position: relative;
+            width: 100%;
+            position: relative;
+            left: 0;
+            top: -10%;
+            .speaker-name{
+                width: 100%;;
+                aspect-ratio: 245 / 48;
+                font-family: $special-font;
+                font-weight: 400;
+                font-size: 30px;
+                color: $white;
+                padding: 10px;
+                background-image: url(images/hud/speaker-name-container.svg);
+                background-repeat: no-repeat;
+            }
+            .speaker-info{
+                color: $white;
+                padding: 10px 15px;
+            }
+        }
+        .speaker-link{
+            position: absolute;
+            width: 100%;
+            text-align: right;
+            bottom: 0;
+            .speaker-button{ 
+                text-align: center;
+                display: inline-block;
+                width: 166px; height: 48px;
+                font-family: $special-font;
+                font-weight: 500;
+                font-size: 24px;
+                color: $white;
+                padding: 5px;
+                background-image: url(images/hud/hud-button-1.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                background-position: top left;
+            }
+        }
+    }
+}
+
 
 .item-thumb{
 	margin: 0 10px 10px 0;
@@ -7907,8 +8154,19 @@ nav.tab-nav{
                         }
                     }
                 }
-                .my-guild-badge{
-                    
+                .my-guild-card-badge{
+                    padding: 20px; 
+                    svg.guild-badge{
+                        polygon, path{
+                            fill: none;
+                            stroke: none;
+                            &.hexagon-overlay{ fill: rgba(#082c3c, 0.4); }
+                            &.hexagon-yellow-border{ stroke: $new-colors-yellow; stroke-width: 2; fill: none;}
+                            &.hexagon-yellow-details{ stroke: $new-colors-yellow; stroke-width: 6; stroke-dasharray: 150px 200px; animation: arrow-outline-stroke-animation 8s linear infinite;}
+                            &.hexagon-white-line-overlay{ stroke: $white; stroke-width: 2; mix-blend-mode: overlay;}
+                            &.hexagon-image{ background-repeat: no-repeat; background-position: center center; background-size: cover;}
+                        }
+                    }
                 }
             }
         }

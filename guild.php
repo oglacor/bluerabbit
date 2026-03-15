@@ -34,27 +34,40 @@
                                 </td>
                             </tr>
                             <tr class="blue">
-                                <td><?= $xp_label; ?>:</td>
+                                <td><?= $xp_long_label; ?>:</td>
                                 <td><?= $leaderboard_guilds_array[$g->guild_id]; ?></td>
                             </tr>
                             <tr class="yellow">
-                                <td><?= $bloo_label; ?>:</td>
+                                <td><?= $bloo_long_label; ?>:</td>
                                 <td><?= $g->guild_bloo; ?></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="my-guild-card-badge">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 322.12 367.54">
-                        <polygon class="hexagon-overlay" points="305.91 267.4 305.91 100.14 161.06 16.51 16.21 100.14 16.21 267.4 161.06 351.03 305.91 267.4"/>
-                        <polygon class="hexagon-yellow-border" points="319.25 275.1 319.25 92.44 161.06 1.1 2.87 92.44 2.87 275.1 161.06 366.43 319.25 275.1"/>
-                        <polygon class="hexagon-yellow-details" points="319.25 275.1 319.25 92.44 161.06 1.1 2.87 92.44 2.87 275.1 161.06 366.43 319.25 275.1"/>
-                        <polygon class="hexagon-overlay" points="299.03 263.42 299.03 104.11 161.06 24.46 23.09 104.11 23.09 263.42 161.06 343.08 299.03 263.42"/>
-                        <path class="hexagon-white-line-overlay" d="M161.06,32.54l130.97,75.62v151.23l-130.97,75.62L30.09,259.39V108.15L161.06,32.54M161.06,30.88L28.66,107.32v152.89l132.41,76.44,132.41-76.44V107.32L161.06,30.88h0Z"/>
-                        <polygon class="hexagon-white-line-overlay" points="289.4 257.86 289.4 109.68 161.06 35.58 32.73 109.68 32.73 257.86 161.06 331.95 289.4 257.86"/>
-                        <polygon class="hexagon-white-line-overlay" id="guild-<?=$g->guild_id;?>-mask" points="289.4 257.86 289.4 109.68 161.06 35.58 32.73 109.68 32.73 257.86 161.06 331.95 289.4 257.86"/>
-                    </svg>                    
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 440" class="guild-badge">
+                        <defs>
+                            <clipPath id="hexClip">
+                                <polygon points="366.89 305.42 366.89 135.8 220 50.99 73.11 135.8 73.11 305.42 220 390.22 366.89 305.42"/>
+                            </clipPath>
+                        </defs>
+                        <polygon class="hexagon-overlay" points="380.7 312.78 380.7 127.22 220 34.44 59.3 127.22 59.3 312.78 220 405.56 380.7 312.78"/>
+                        <polygon class="hexagon-overlay" points="373.06 308.37 373.06 131.63 220 43.26 66.94 131.63 66.94 308.37 220 396.74 373.06 308.37"/>
+                        <polygon class="hexagon-yellow-border" points="395.5 321.32 395.5 118.68 220 17.35 44.5 118.68 44.5 321.32 220 422.65 395.5 321.32"/>
+                        <polygon class="hexagon-yellow-details" points="395.5 321.32 395.5 118.68 220 17.35 44.5 118.68 44.5 321.32 220 422.65 395.5 321.32"/>
+                        <image 
+                            href="<?= $g->guild_logo;?>" 
+                            width="440"
+                            height="440"
+                            clip-path="url(#hexClip)"
+                            preserveAspectRatio="xMidYMid slice"
+                            filter="url(#softShadow)"
+                        />
+                        <polygon class="hexagon-white-line-overlay" points="366.89 305.42 366.89 135.8 220 50.99 73.11 135.8 73.11 305.42 220 390.22 366.89 305.42"/>
+                        <polygon class="hexagon-white-line-overlay" points="356.03 298.53 356.03 141.47 220 62.93 83.98 141.47 83.98 298.53 220 377.07 356.03 298.53"/>
+                    </svg>
                 </div>
             </div>
         </div>
         
+

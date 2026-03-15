@@ -4,150 +4,158 @@
 <?php $uMeta = get_user_meta($current_user->ID); ?>
 
 <?php $picture = $player_account->player_picture ? $player_account->player_picture : $randprof;  ?>
-
-<div class="w-full h-20"></div>
-
-<div class="w-full boxed w-max-400">
-	<div class="text-center w-full">
-		<img src="<?= $config['main_logo']['value'] ? $config['main_logo']['value'] : get_bloginfo('template_directory').'/images/logo.png';?>" class="inline-block w-200">
-	</div>
-	<div class="w-full h-20"></div>
-	<div class="text-center w-full">
-		<div class="status" style="background-image: url(<?= $picture; ?>);" id="the_player_picture_thumb">
-			<img class="rotate-R-120" src="<?= get_bloginfo('template_directory')."/images/1.png";?>">
-			<button class="icon-button absolute perfect-center green-bg-400 layer foreground font _18 padding-5" onClick="showWPUpload('the_player_picture','profile-autosave');">
-				<span class="icon icon-edit"></span>
-			</button>
-			<input type="hidden" id="the_player_picture" value="<?= $picture; ?>"/>
-		</div>
-	</div>
-	<!-- TABS BEGIN -->
-	<?php if($config['use_hexad']['value']>0 || $config['show_upgrade']['value']>0 || $config['show_anonimize_button']['value']>0) { ?>
-		<div class="tabs-buttons max-w-400 boxed text-center" id="tab-group-buttons">
-			<button class="form-ui transparent-bg relative active tab-button" id="general-tab-button" onClick="switchTabs('#tab-group','#general');">
-				<span class="text relative layer base"><?= __("General","bluerabbit"); ?></span>
-				<span class="layer background white-bg opacity-20 active-content sq-full"></span>
-			</button>
-			<?php if($config['use_hexad']['value']>0){ ?>
-				<button class="form-ui transparent-bg relative tab-button" id="hexad-tab-button" onClick="switchTabs('#tab-group','#hexad');">
-					<span class="text relative layer base"><?= __("Hexad","bluerabbit"); ?></span>
-					<span class="layer background white-bg opacity-20 active-content sq-full"></span>
-				</button>
-			<?php } ?>
-			<?php if($config['show_upgrade']['value']>0){ ?>
-				<button class="form-ui transparent-bg relative tab-button" id="account-type-tab-button" onClick="switchTabs('#tab-group','#account-type');">
-					<span class="text relative layer base"><?= __("Account","bluerabbit"); ?></span>
-					<span class="layer background white-bg opacity-20 active-content sq-full"></span>
-				</button>
-			<?php } ?>
-			<?php if($config['show_anonimize_button']['value']>0){ ?>
-				<button class="form-ui transparent-bg relative tab-button" id="anonimize-tab-button" onClick="switchTabs('#tab-group','#anonimize');">
-					<span class="text relative layer base"><?= __("Anonimize","bluerabbit"); ?></span>
-					<span class="layer background white-bg opacity-20 active-content sq-full"></span>
-				</button>
-			<?php } ?>
-		</div>
-	<?php } ?>
-	<div class="w-full boxed max-w-400 tabs white-color" id="tab-group">
-		<div class="active tab max-w-400 padding-10" id="general">
-			<div class="text-center white-color padding-20">
-				<div class="icon-group padding-10 inline-table">
-					<div class="icon-content">
-						<span class="line font _36 w300 text-right condensed"><?= __("Player Level","bluerabbit"); ?></span>
-					</div>
-					<div class="icon-button font _36 sq-50 blue-bg-700">
-						<span class="icon icon-logo"></span>
-					</div>
-					<div class="icon-content">
-						<span class="line font _36 w900"><?= $player_account->player_absolute_level; ?></span>
-					</div>
-				</div>
-			</div>
-			<div class="input-group w-full">
-				<label for="the_first_name" class="blue-bg-700"><?php _e('First name','bluerabbit'); ?></label>
-				<input class="form-ui w-full" id="the_first_name" name="the_first_name" type="text" value="<?= $player_account->player_first ? $player_account->player_first : $uMeta['first_name'][0]; ?>"  onChange="updateProfile();">
-			</div>
-			<div class="input-group w-full">
-				<label for="the_last_name" class="blue-bg-700"><?php _e('Last name','bluerabbit'); ?></label>
-				<input class="form-ui w-full" id="the_last_name" name="the_last_name" type="text" value="<?= $player_account->player_last ? $player_account->player_last : $uMeta['last_name'][0]; ?>"  onChange="updateProfile();">
-			</div>
-			<div class="input-group w-full">
-				<label class="deep-purple-bg-400"><?php _e('Nickname','bluerabbit'); ?></label>
-				<input class="form-ui w-full" readonly type="text" value="<?=$current_user->user_login; ?>">
-			</div>
-			<div class="input-group w-full">
-				<label class="blue-bg-700"><?php _e('Email','bluerabbit'); ?></label>
-				<input class="form-ui w-full blue" type="text" id="the_email" value="<?= $player_account->player_email ? $player_account->player_email : $current_user->user_email; ?>" >
-			</div>
-			<?php $locale = $player_account->player_lang; ?>
-			<?php $langs = array(
-				array("en_US","U.S. English"),
-				array("es_MX","Espa&ntilde;ol"),
-			);
-			?>
-			<div class="input-group w-full">
-				<label class="green-bg-400"><?php _e('Language','bluerabbit'); ?></label>
-				<select class="form-ui w-full" id="the_lang">
-					<?php foreach($langs as $l){ ?>
-						<option <?php if($locale == $l[0]) { echo 'selected';} ?> value="<?= $l[0];?>"><?= $l[1];?></option>
-					<?php } ?>
-				</select>
-			</div>
-			<div class="highlight padding-10 text-center">
-				<input type="hidden" id="profile_nonce" value='<?= wp_create_nonce('br_profile_post_nonce') ?>'>
-				<button class="form-ui font _24 green-bg-400" onClick="updateProfile();"><?php _e('Save','bluerabbit'); ?></button>
-			</div>
-		</div>
-		<?php if($config['show_anonimize_button']['value']>0){ ?>
-			<div class="tab max-w-400 padding-10" id="anonimize">
-				<div class="text-center">
-					<div class="icon-group padding-10 inline-table white-color">
-						<div class="icon-button font _24 sq-40 red-bg-A400">
-							<span class="icon icon-warning"></span>
-						</div>
-						<div class="icon-content text-left">
-							<span class="line font _24 w100"><?= __("Anonimizer","bluerabbit"); ?></span>
-							<span class="line font _14 w900 red-A700"><?= __("This button deletes all your personal data","bluerabbit"); ?></span>
-						</div>
-					</div>
-					<div class="padding-10 font _16 amber-bg-400 black-color">
-						<?= __("When you use the anonimizer, all your personal data converts to random names, pictures and email. Although you can still update your data back to normal, you will lose access to your account on logout. This is done with the sole purpose of keeping the demographic data of your account while protecting your privacy.","bluerabbit"); ?>
-					</div>
-					<div class="icon-group padding-10 inline-table relative">
-						<div class="icon-content">
-							<button class="form-ui red-bg-A400 white-color font _30 condensed w900 uppercase " onClick="showOverlay('#confirm-anonimize-1');">
-								<?= __("Anonimize Me","bluerabbit"); ?>
+		<div class="dashboard">
+			<div class="dashboard-sidebar relative padding-10">
+				<div class="tabs-buttons" id="tab-group-buttons">
+					<ul class="margin-0 padding-0">
+						<li>
+							<button class="tab-button active" id="general-tab-button" onClick="switchTabs('#tab-group','#general');">
+								<span class=""><?= __("Profile","bluerabbit");?></span>
 							</button>
-							<div class="confirm-action overlay-layer" id="confirm-anonimize-1">
-								<button class="form-ui amber-bg-400 black-color" onClick="showOverlay('#confirm-anonimize-2');">
-									<span class="icon-group">
-										<span class="icon-button font _24 sq-40  icon-sm orange-bg-400">
-											<span class="icon icon-warning white-color"></span>
-										</span>
-										<span class="icon-content">
-											<span class="line font _24 w900"><?= __("Are you sure about this?","bluerabbit"); ?></span>
-										</span>
-									</span>
-								</button>
-							</div>
-							<div class="confirm-action overlay-layer" id="confirm-anonimize-2">
-								<button class="form-ui orange-bg-800" onClick="randomPlayerData();updateProfile();">
-									<h3 class="text-center white-color font _18 condensed w100"><?= __("You can still update your profile, just don't close the session","bluerabbit"); ?></h3>
-									<span class="icon-group">
-										<span class="icon-button font _24 sq-40  icon-sm orange-bg-400">
-											<span class="icon icon-warning white-color"></span>
-										</span>
-										<span class="icon-content">
-											<span class="line white-color font _24 w900"><?= __("Double confirm for security","bluerabbit"); ?></span>
-										</span>
-									</span>
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		<?php } ?>
+						</li>
+                        <?php if($config['use_hexad']['value']>0){ ?>
+                            <li>
+                                <button class="tab-button" id="hexad-tab-button" onClick="switchTabs('#tab-group','#hexad');">
+                                    <span class=""><?= __("Player type","bluerabbit");?></span>
+                                </button>
+                            </li>
+                        <?php } ?>
+                        <?php if($config['show_upgrade']['value']>0){ ?>
+                            <li>
+                                <button class="tab-button" id="my-account-button" onClick="switchTabs('#tab-group','#my-account');">
+                                    <span class=""><?= __("Account","bluerabbit");?></span>
+                                </button>
+                            </li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+            <div class="dashboard-content white-bg">
+                <h1 class="dashboard-title">
+                    <?= __('My Account',"bluerabbit"); ?>
+                </h1>
+				<div class="tabs" id="tab-group">
+					<div class="active tab max-w-900 padding-10" id="general">
+						<table class="table w-full" cellpadding="0">
+							<thead>
+								<tr class="font _12 grey-600">
+									<td class="text-right w-150"><?= __('Setting','bluerabbit'); ?></td>
+									<td><?= __('Value','bluerabbit'); ?></td>
+								</tr>
+							</thead>
+							<tbody class="font _16">
+								<tr>
+									<td class="text-right w-150"><?= __('Profile Picture','bluerabbit'); ?></td>
+									<td>
+                                        <div class="status" style="background-image: url(<?= $picture; ?>);" id="the_player_picture_thumb">
+                                            <img class="rotate-R-120" src="<?= get_bloginfo('template_directory')."/images/1.png";?>">
+                                            <button class="icon-button absolute perfect-center green-bg-400 layer foreground font _18 padding-5" onClick="showWPUpload('the_player_picture','profile-autosave');">
+                                                <span class="icon icon-edit"></span>
+                                            </button>
+                                            <input type="hidden" id="the_player_picture" value="<?= $picture; ?>"/>
+                                        </div>
+									</td>
+								</tr>
+								<tr>
+									<td class="text-right w-150"><?= __('First name','bluerabbit'); ?></td>
+									<td>
+                                        <input class="form-ui w-full" id="the_first_name" name="the_first_name" type="text" value="<?= $player_account->player_first ? $player_account->player_first : $uMeta['first_name'][0]; ?>"  onChange="updateProfile();">
+									</td>
+								</tr>
+								<tr>
+									<td class="text-right w-150"><?= __('Last name','bluerabbit'); ?></td>
+									<td>
+                                        <input class="form-ui w-full" id="the_last_name" name="the_last_name" type="text" value="<?= $player_account->player_last ? $player_account->player_last : $uMeta['last_name'][0]; ?>"  onChange="updateProfile();">
+									</td>
+								</tr>
+								<tr>
+									<td class="text-right w-150"><?= __('Player Level','bluerabbit'); ?></td>
+									<td>
+                                        <h2 class="font _36 w900"><?= $player_account->player_absolute_level; ?></h2>
+                                        <p class="font _14 w500 opacity-50"><?= __("This level reflects the average between all registered adventures","bluerabbit"); ?></p>
+									</td>
+								</tr>
+								<tr>
+									<td class="text-right w-150"><?= __('Nickname','bluerabbit'); ?></td>
+									<td>
+                                        <input class="form-ui w-full" readonly type="text" value="<?=$current_user->user_login; ?>">
+									</td>
+								</tr>
+								<tr>
+									<td class="text-right w-150"><?= __('Email','bluerabbit'); ?></td>
+									<td>
+                                        <input class="form-ui w-full blue" type="text" id="the_email" value="<?= $player_account->player_email ? $player_account->player_email : $current_user->user_email; ?>" >
+									</td>
+								</tr>
+								<tr>
+									<td class="text-right w-150"><?= __('Language','bluerabbit'); ?></td>
+									<td>
+                                        <?php $locale = $player_account->player_lang; ?>
+                                        <?php $langs = array(
+                                            array("en_US","U.S. English"),
+                                            array("es_MX","Espa&ntilde;ol"),
+                                        );
+                                        ?>
+                                        <select class="form-ui w-full" id="the_lang">
+                                            <?php foreach($langs as $l){ ?>
+                                                <option <?php if($locale == $l[0]) { echo 'selected';} ?> value="<?= $l[0];?>"><?= $l[1];?></option>
+                                            <?php } ?>
+                                        </select>
+									</td>
+								</tr>
+                                <tr>
+                                    <td class="text-right w-150"><?php _e('Company Name','bluerabbit'); ?></td>
+                                    <td>
+                                        <div class="input-group w-full">
+                                            <input class="form-ui w-full" type="text" value="<?= isset($player_account->player_company) ? $player_account->player_company : ""; ?>" id="the_player_company">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right w-150"><?php _e('Website URL','bluerabbit'); ?></td>
+                                    <td>
+                                        <div class="input-group w-full">
+                                            <input class="form-ui w-full" type="text" value="<?= isset($player_account->player_website) ? $player_account->player_website : ""; ?>" id="the_player_website" placeholder="https://website.com">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right w-150"><?php _e('LinkedIn URL','bluerabbit'); ?></td>
+                                    <td>
+                                        <div class="input-group w-full">
+                                            <input class="form-ui w-full" type="text" value="<?= isset($player_account->player_linkedin) ? $player_account->player_linkedin : ""; ?>" id="the_player_linkedin" placeholder="https://linkedin.com/in/username">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right w-150"><?php _e('My Bio','bluerabbit'); ?></td>
+                                    <td>
+                                        <div class="input-group w-full">
+                                            <?php 
+                                            if($roles[0]=="administrator"){
+                                                $wp_editor_settings = array( 'quicktags'=> true,'editor_height'=>350);
+                                            }else{
+                                                $wp_editor_settings = array( 'quicktags'=> false ,'editor_height'=>350);
+                                            }
+                                            if(isset($player_account->player_bio)){ 
+                                                wp_editor( $player_account->player_bio, 'the_player_bio', $wp_editor_settings); 	
+                                            }else{
+                                                wp_editor("", 'the_player_bio', $wp_editor_settings); 	
+                                            }
+                                            ?>
+                                        </div>
+                                    </td>
+                                </tr>
+								<tr>
+									<td class="text-right w-150">&nbsp;</td>
+									<td class="text-right">
+                                        <input type="hidden" id="profile_nonce" value='<?= wp_create_nonce('br_profile_post_nonce') ?>'>
+                                        <button class="form-ui font _18 green-bg-400" onClick="updateProfile();"><?php _e('Save','bluerabbit'); ?></button>
+									</td>
+								</tr>
+                            </tbody>
+                        </table>
+		            </div>
 		
 		<?php if($config['use_hexad']['value']>0){ ?>
 			<div class="tab padding-10" id="hexad">
@@ -239,11 +247,11 @@
 			</div>
 		<?php } ?>
 		<?php if($config['show_upgrade']['value']>0){ ?>
-			<div class="tab max-w-400 padding-10" id="account-type">
-				<div class="content">
-					<div class="divider long"></div>
-					<div class="row br-sub-header theme-border text-center center-h" id="subscription">
-						<?php $subscription='free'; ?>
+			<div class="tab grey-bg-100" id="my-account">
+
+				<div class="products">
+					<div class="product-card" id="subscription">
+						<?php $subscription = 'free'; ?>
 						<div class="current-plan text-center">
 							<div class="col-6 ">
 								<h1 class="font _36 condensed padding-10 w900 uppercase"> <?php _e('Subscription','bluerabbit'); ?> </h1>
@@ -279,10 +287,65 @@
 					</div>
 					<br class="clear">
 				</div>
+                    <?php if($config['show_anonimize_button']['value']>0){ ?>
+                            <div class="text-center">
+                                <div class="icon-group padding-10 inline-table white-color">
+                                    <div class="icon-button font _24 sq-40 red-bg-A400">
+                                        <span class="icon icon-warning"></span>
+                                    </div>
+                                    <div class="icon-content text-left">
+                                        <span class="line font _24 w100"><?= __("Anonimizer","bluerabbit"); ?></span>
+                                        <span class="line font _14 w900 red-A700"><?= __("This button deletes all your personal data","bluerabbit"); ?></span>
+                                    </div>
+                                </div>
+                                <div class="padding-10 font _16 amber-bg-400 black-color">
+                                    <?= __("When you use the anonimizer, all your personal data converts to random names, pictures and email. Although you can still update your data back to normal, you will lose access to your account on logout. This is done with the sole purpose of keeping the demographic data of your account while protecting your privacy.","bluerabbit"); ?>
+                                </div>
+                                <div class="icon-group padding-10 inline-table relative">
+                                    <div class="icon-content">
+                                        <button class="form-ui red-bg-A400 white-color font _30 condensed w900 uppercase " onClick="showOverlay('#confirm-anonimize-1');">
+                                            <?= __("Anonimize Me","bluerabbit"); ?>
+                                        </button>
+                                        <div class="confirm-action overlay-layer" id="confirm-anonimize-1">
+                                            <button class="form-ui amber-bg-400 black-color" onClick="showOverlay('#confirm-anonimize-2');">
+                                                <span class="icon-group">
+                                                    <span class="icon-button font _24 sq-40  icon-sm orange-bg-400">
+                                                        <span class="icon icon-warning white-color"></span>
+                                                    </span>
+                                                    <span class="icon-content">
+                                                        <span class="line font _24 w900"><?= __("Are you sure about this?","bluerabbit"); ?></span>
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <div class="confirm-action overlay-layer" id="confirm-anonimize-2">
+                                            <button class="form-ui orange-bg-800" onClick="randomPlayerData();updateProfile();">
+                                                <h3 class="text-center white-color font _18 condensed w100"><?= __("You can still update your profile, just don't close the session","bluerabbit"); ?></h3>
+                                                <span class="icon-group">
+                                                    <span class="icon-button font _24 sq-40  icon-sm orange-bg-400">
+                                                        <span class="icon icon-warning white-color"></span>
+                                                    </span>
+                                                    <span class="icon-content">
+                                                        <span class="line white-color font _24 w900"><?= __("Double confirm for security","bluerabbit"); ?></span>
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    <?php } ?>
 			</div>
-		<?php } ?>
 
-		
-	</div>
-</div>
+
+
+
+
+            
+	            	<?php } ?>
+                <div>
+            <div>
+        </div>
+
+
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

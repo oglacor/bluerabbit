@@ -2649,9 +2649,65 @@ function updateSponsor(){
 	die();
 
 }
+
+function createQR($args){
+    require_once(get_template_directory()."/libs/phpqrcode/qrlib.php");
+    $uploads = wp_upload_dir();
+
+    if (!empty($uploads['error'])) {
+        return new WP_Error('upload_dir_error', $uploads['error']);
+    }
+
+
+
+    $filename = $args['filename'];
+    $file_path = trailingslashit($uploads['path']) . $filename;
+    $file_url  = trailingslashit($uploads['url']) . $filename;
+
+    $qrcode_content = $args['content'];
+    QRcode::png(
+        $qrcode_content,
+        $file_path,
+        QR_ECLEVEL_H, 40
+    );
+
+
+    // Start DRAWING LOGO IN QRCODE
+    if($args['logo']){
+        $QR = imagecreatefrompng($file_path);
+
+        // START TO DRAW THE IMAGE ON THE QR CODE
+        $logo = imagecreatefromstring(file_get_contents($args['logo']));
+        $QR_width = imagesx($QR);
+        $QR_height = imagesy($QR);
+
+        $logo_width = imagesx($logo);
+        $logo_height = imagesy($logo);
+        
+        $logo_qr_width = $QR_width/5;
+        $scale = $logo_width/$logo_qr_width;
+        $logo_qr_height = $logo_height/$scale;
+
+        $logo_x = ($QR_width - $logo_qr_width) / 2;
+        $logo_y = ($QR_height - $logo_qr_height) / 2;
+
+        imagecopyresampled($QR, $logo, $logo_x, $logo_y, 0, 0, $logo_qr_width, $logo_qr_height, $logo_width, $logo_height);
+        // Save QR code again, but with logo on it
+        imagepng($QR,$file_path);
+        
+    }
+
+    if(file_exists($file_path)){
+        return($file_url);
+    }else{
+        return false;
+    }
+}
 /////////////////////// UPDATE ACHIEVEMENT /////////////////////////
 function updateAchievement(){
-	global $wpdb; $current_user = wp_get_current_user();
+    global $wpdb; $current_user = wp_get_current_user();
+
+
 	
 	$data = array();
 	$errors = array();
@@ -2681,11 +2737,8 @@ function updateAchievement(){
 		$a_content = stripslashes_deep($a_data['a_content']);
 		$magic_code = trim(strtolower($a_data['magic_code']));
 		$awarded_players = $a_data['awarded_players'];
-		$libs = $a_data['libs'];
+
 		
-		if(!isset($a_data['id'])){
-			$ref_id = random_str(8,'1234567890abcdef');
-		}
 
 		if(!$a_name){
 			$errors[] = __("Please add an achievement name","bluerabbit");
@@ -2700,20 +2753,33 @@ function updateAchievement(){
 			$a_color='amber';
 		}
 		if(!$errors){
+
 			$total_achievements = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_achievements WHERE adventure_id=$adv_parent_id AND achievement_status='publish'");
 			$a_order = count($total_achievements);
-			$sql = "INSERT INTO {$wpdb->prefix}br_achievements (achievement_id, adventure_id, achievement_xp, achievement_ep, achievement_bloo, achievement_name, achievement_badge, achievement_status, achievement_color, achievement_code, achievement_content, achievement_deadline, achievement_max, achievement_order, achievement_display, achievement_path, achievement_group,ref_id)
-			VALUES (%d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d, %d, %s, %d, %s, %s)
+			$sql = "INSERT INTO {$wpdb->prefix}br_achievements (achievement_id, adventure_id, achievement_xp, achievement_ep, achievement_bloo, achievement_name, achievement_badge, achievement_status, achievement_color, achievement_code, achievement_content, achievement_deadline, achievement_max, achievement_order, achievement_display, achievement_path, achievement_group)
+			VALUES (%d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d, %d, %s, %d, %s)
 			ON DUPLICATE KEY UPDATE
 			adventure_id=%d, achievement_xp=%d, achievement_ep=%d, achievement_bloo=%d, achievement_name=%s, achievement_badge=%s, achievement_status=%s, achievement_color=%s, achievement_code=%s, achievement_content=%s, achievement_deadline=%s, achievement_max=%d, achievement_display=%s, achievement_path=%d, achievement_group=%s";
-			$sql = $wpdb->prepare($sql,$a_id,$adv_parent_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline, $a_max, $a_order, $a_display, $a_path, $a_group, $ref_id, $adventure_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline,$a_max, $a_display, $a_path, $a_group);
+			$sql = $wpdb->prepare($sql,$a_id,$adv_parent_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline, $a_max, $a_order, $a_display, $a_path, $a_group, $adventure_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline,$a_max, $a_display, $a_path, $a_group);
 			$a_query = $wpdb->query($sql);
 			if($a_query){
 				$updated_id = $wpdb->insert_id;
 			}
 			if($updated_id){
 				$data['success']=true;
-				if(!$a_id){
+                    $achQrCode = createQR($ach_args = array(
+                        'filename' => "achievement-QR-$updated_id.png",
+                        'content' => get_bloginfo('url')."/magic-link/?c=$magic_code&adv=$adventure->adventure_id",
+                        'logo' => $a_badge 
+                    ));
+                    $wpdb->update(
+                        $wpdb->prefix.'br_achievements',
+                        array('achievement_qrcode' => $achQrCode),
+                        array('achievement_id' => $updated_id)
+                    );
+                    $data['debug']= $achQrCode;
+
+                if(!$a_id){
 					$data['location']=get_bloginfo('url')."/new-achievement/?adventure_id=$adv_parent_id&achievement_id=$updated_id";
 					logActivity($adv_parent_id,'add','achievement','',$updated_id);
 				}else{
@@ -2721,13 +2787,7 @@ function updateAchievement(){
 				}
 				$data['message'] .= '<h1><strong>'.$a_name.'</strong></h1> <h4><strong>'.__("Achievement Updated!","bluerabbit").'</strong></h4> <h5>'.__("click to close","bluerabbit").'</h5>';
 				
-				if($adventure->adventure_type=='template'){
-					$children_update = "UPDATE {$wpdb->prefix}br_achievements SET achievement_xp=%d, achievement_ep=%d, achievement_bloo=%d, achievement_name=%s, achievement_badge=%s, achievement_status=%s, achievement_color=%s, achievement_code=%s, achievement_content=%s, achievement_deadline=%s, achievement_max=%d, achievement_display=%s, achievement_group=%s
-					WHERE `achievement_parent`=$updated_id AND achievement_id!=$updated_id";
-					
-					$children_update = $wpdb->query( $wpdb->prepare("$children_update ",$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline, $a_max, $a_display, $a_group));
-					logActivity($adv_parent_id,'update','achievement-children','',$updated_id);
-				}
+
 				
 			}else{
 				$data['message'] .= '<h1><span class="icon icon-cancel solid-red"></span></h1> <h4><strong>'.__("Data Base Error. Can't insert achievement","bluerabbit").'</strong></h4> <h5>'.__("contact admin please, click to close","bluerabbit").'</h5>';
@@ -2770,16 +2830,28 @@ function updateSpeaker(){
 		$speaker_linkedin = stripslashes_deep($speaker_data['linkedin']);
 		$adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
 		if ($adventure->adventure_gmt){ date_default_timezone_set($adventure->adventure_gmt); }
+        if($speaker_player_id > 0){
+            $player_data = getPlayerData($speaker_player_id);
+            if($player_data){
+                $speaker_first_name = $player_data->player_first ? $player_data->player_first : $speaker_first_name;
+                $speaker_last_name = $player_data->player_last ? $player_data->player_last : $speaker_last_name;
+                $speaker_bio = $player_data->player_bio ? $player_data->player_bio : $speaker_bio;
+                $speaker_picture = $player_data->player_picture ? $player_data->player_picture : $speaker_picture;
+                $speaker_company = $player_data->player_company ? $player_data->player_company : $speaker_company;
+                $speaker_website = $player_data->player_website ? $player_data->player_website : $speaker_website;
+                $speaker_linkedin = $player_data->player_linkedin ? $player_data->player_linkedin : $speaker_linkedin;
+            }
+        }
 		if(!$speaker_first_name){
 			$errors[] = __("Speaker name is required","bluerabbit");
 		}
 		if(!$errors){
 			$sql = "INSERT INTO {$wpdb->prefix}br_speakers
-			(`speaker_id`, `player_id`, `adventure_id`, `speaker_first_name`, `speaker_last_name`, `speaker_bio`, `speaker_picture`, `speaker_company`, `speaker_website`, `speaker_linkedin`, `speaker_twitter`)
-			VALUES (%d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s)
+			(`speaker_id`, `player_id`, `adventure_id`, `speaker_first_name`, `speaker_last_name`, `speaker_bio`, `speaker_picture`, `speaker_company`, `speaker_website`, `speaker_linkedin`)
+			VALUES (%d, %d, %d, %s, %s, %s, %s, %s, %s, %s)
 			ON DUPLICATE KEY UPDATE
-			`player_id`=%d, `adventure_id`=%d, `speaker_first_name`=%s, `speaker_last_name`=%s, `speaker_bio`=%s, `speaker_picture`=%s, `speaker_company`=%s, `speaker_website`=%s, `speaker_linkedin`=%s, `speaker_twitter`=%s";
-			$sql = $wpdb->prepare($sql,$speaker_id, $speaker_player_id, $adventure_id, $speaker_first_name, $speaker_last_name, $speaker_bio, $speaker_picture, $speaker_company, $speaker_website,  $speaker_linkedin, $speaker_twitter, $speaker_player_id, $adventure_id, $speaker_first_name, $speaker_last_name, $speaker_bio, $speaker_picture, $speaker_company, $speaker_website, $speaker_linkedin, $speaker_twitter);
+			`player_id`=%d, `adventure_id`=%d, `speaker_first_name`=%s, `speaker_last_name`=%s, `speaker_bio`=%s, `speaker_picture`=%s, `speaker_company`=%s, `speaker_website`=%s, `speaker_linkedin`=%s";
+			$sql = $wpdb->prepare($sql,$speaker_id, $speaker_player_id, $adventure_id, $speaker_first_name, $speaker_last_name, $speaker_bio, $speaker_picture, $speaker_company, $speaker_website,  $speaker_linkedin,  $speaker_player_id, $adventure_id, $speaker_first_name, $speaker_last_name, $speaker_bio, $speaker_picture, $speaker_company, $speaker_website, $speaker_linkedin);
 			$sql = $wpdb->query($sql);
 			$updated_id = $wpdb->insert_id;
 
@@ -3306,7 +3378,7 @@ function updateSession(){
 		$session_start = ($session_data['start']);
 		$session_end = ($session_data['end']);
 		$quest_id = ($session_data['quest_id']);
-		$speaker_id = ($session_data['speaker_id']);
+		$speaker_ids = implode(",",$session_data['speaker_ids']);
 		$achievement_id = ($session_data['achievement_id']);
 		$guild_id = ($session_data['guild_id']);
 		$session_status = ($session_data['status']);
@@ -3324,12 +3396,13 @@ function updateSession(){
 		}
 		if(!$errors){
 			$sql = "INSERT INTO {$wpdb->prefix}br_sessions
-			(`session_id`, `adventure_id`, `quest_id`, `speaker_id`,  `session_title`, `session_start`, `session_end`,`session_status`, `session_description`, `session_room`, `achievement_id`, `guild_id`)
-			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %d, %d)
+			(`session_id`, `adventure_id`, `quest_id`, `speaker_ids`,  `session_title`, `session_start`, `session_end`,`session_status`, `session_description`, `session_room`, `achievement_id`, `guild_id`)
+			VALUES (%d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d, %d)
 			ON DUPLICATE KEY UPDATE
-			`adventure_id`=%d, `quest_id`=%d, `speaker_id`=%d, `session_title`=%s, `session_start`=%s, `session_end`=%s, `session_status`=%s, `session_description`=%s , `session_room`=%s, `achievement_id`=%d , `guild_id`=%d ";
-			$sql = $wpdb->prepare($sql,$session_id, $adventure_id, $quest_id, $speaker_id, $session_title, $session_start, $session_end, $session_status, $session_description, $session_room,   $achievement_id,  $guild_id,  $adventure_id, $quest_id, $speaker_id, $session_title, $session_start, $session_end, $session_status, $session_description , $session_room , $achievement_id , $guild_id );
+			`adventure_id`=%d, `quest_id`=%d, `speaker_ids`=%s, `session_title`=%s, `session_start`=%s, `session_end`=%s, `session_status`=%s, `session_description`=%s , `session_room`=%s, `achievement_id`=%d , `guild_id`=%d ";
+			$sql = $wpdb->prepare($sql,$session_id, $adventure_id, $quest_id, $speaker_ids, $session_title, $session_start, $session_end, $session_status, $session_description, $session_room,   $achievement_id,  $guild_id,  $adventure_id, $quest_id, $speaker_ids, $session_title, $session_start, $session_end, $session_status, $session_description , $session_room , $achievement_id , $guild_id );
 			$sql = $wpdb->query($sql);
+            $data['debug'] = print_r($wpdb->last_query,true);
 			$updated_session_id = $wpdb->insert_id;
 			if($updated_session_id ){
 				$data['success']=true;
@@ -3646,21 +3719,21 @@ function updateProfile(){
 			"last_name"=>$the_player_data['last_name'],
 			"display_name"=>$display_name
 		);
+
 		wp_update_user($user_data);
 		update_user_meta($current_user->ID, 'locale', $the_player_data['lang']);
 		$player_picture = $the_player_data['profile_picture'];
 		if(!$player_picture){
 			$player_picture = get_bloginfo('template_directory')."/images/token-".rand(1,5).".png";
 		}
-
+        $player_bio = stripslashes_deep($the_player_data['player_bio']);
 		$update_player_sql="
 		INSERT INTO {$wpdb->prefix}br_players
-		(player_id, player_email, player_password, player_first, player_last, player_gmt, player_lang, player_picture, player_registered, player_display_name, player_nickname)
-		VALUES (%d, %s, %s, %s, %s, %s,  %s, %s, %s, %s, %s)
+		(player_id, player_email, player_password, player_first, player_last, player_gmt, player_lang, player_picture, player_registered, player_display_name, player_nickname, player_bio, player_company, player_website, player_linkedin)
+		VALUES (%d, %s, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %s, %s, %s, %s)
 		ON DUPLICATE KEY UPDATE
-		player_email=%s, player_first=%s, player_last=%s, player_gmt=%s, player_lang=%s, player_picture=%s, player_display_name=%s, player_nickname=%s
+		player_email=%s, player_first=%s, player_last=%s, player_gmt=%s, player_lang=%s, player_picture=%s, player_display_name=%s, player_nickname=%s, player_bio=%s, player_company=%s, player_website=%s, player_linkedin=%s
 		";
-		$the_player_data['birthdate'] =  date("Y-m-d H:i:s", strtotime($the_player_data['birthdate']));
 		$update_player = $wpdb->prepare(
 			$update_player_sql,
 			$current_user->ID,
@@ -3674,6 +3747,10 @@ function updateProfile(){
 			$current_user->user_registered,
 			$display_name,
 			$current_user->user_login,
+            $player_bio,
+            $the_player_data['player_company'],
+            $the_player_data['player_website'],
+            $the_player_data['player_linkedin'],
 			$the_player_data['email'],
 			$the_player_data['first_name'],
 			$the_player_data['last_name'],
@@ -3681,7 +3758,11 @@ function updateProfile(){
 			$the_player_data['lang'],
 			$player_picture,
 			$display_name,
-			$current_user->user_login
+			$current_user->user_login,
+            $player_bio,
+            $the_player_data['player_company'],
+            $the_player_data['player_website'],
+            $the_player_data['player_linkedin']
 		);
 		$update_player = $wpdb->query($update_player);
 		$data['success'] = true;
@@ -6097,12 +6178,8 @@ function getSessions($adventure_id, $p_status=''){
 		$status = "";
 	}
 	$qry = $wpdb->get_results("SELECT
-	sessions.*,
-	speakers.speaker_first_name, speakers.speaker_last_name, speakers.speaker_picture, speakers.speaker_company, speakers.speaker_bio,
-	quests.quest_title, quests.quest_type
+	sessions.*,	quests.quest_title, quests.quest_type
 		FROM {$wpdb->prefix}br_sessions sessions
-		LEFT JOIN {$wpdb->prefix}br_speakers speakers
-		ON sessions.speaker_id = speakers.speaker_id
 		LEFT JOIN {$wpdb->prefix}br_quests quests
 		ON sessions.quest_id = quests.quest_id AND quests.quest_status = 'publish'
 	WHERE sessions.adventure_id=$adventure_id $status

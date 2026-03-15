@@ -71,7 +71,6 @@ $sql = "
 		`achievement_id` BIGINT NOT NULL AUTO_INCREMENT,
 		`adventure_id` BIGINT NOT NULL,
 		`org_id` BIGINT NULL,
-		`ref_id` VARCHAR(8) NULL,
 		`achievement_parent` BIGINT NULL,
 		`achievement_name` VARCHAR(255) NULL,
 		`achievement_xp` INT NULL,
@@ -80,6 +79,7 @@ $sql = "
 		`achievement_max` INT NULL,
 		`achievement_deadline` DATETIME NULL,
 		`achievement_badge` TEXT NULL,
+		`achievement_qrcode` TEXT NULL,
 		`achievement_display` VARCHAR(50) NOT NULL DEFAULT 'badge',
 		`achievement_group` VARCHAR(50) NULL,
 		`achievement_path` BIGINT NULL,
@@ -90,6 +90,7 @@ $sql = "
 		`achievement_order` INT NULL,
 		`achievement_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
 		`achievement_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
 	PRIMARY KEY (`achievement_id`))$charset_collate;
   
 	CREATE TABLE {$wpdb->prefix}br_achievement_codes (
@@ -426,6 +427,12 @@ $sql = "
 		`player_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 		`player_system_last_login` DATETIME DEFAULT CURRENT_TIMESTAMP,
 		`player_secret_code` VARCHAR(255) NULL,
+
+		`player_bio` LONGTEXT NULL,
+		`player_company` TEXT NULL,
+		`player_website` TEXT NULL,
+		`player_linkedin` TEXT NULL,
+        
 	PRIMARY KEY (`player_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_player_meta (
@@ -682,8 +689,8 @@ $sql = "
 		`adventure_id` INT NULL,
 		`speaker_first_name` LONGTEXT NOT NULL,
 		`speaker_last_name` TEXT NULL,
-		`speaker_bio` LONGTEXT NULL,
 		`speaker_picture` TEXT NULL,
+		`speaker_bio` LONGTEXT NULL,
 		`speaker_company` TEXT NULL,
 		`speaker_website` TEXT NULL,
 		`speaker_linkedin` TEXT NULL,
@@ -794,6 +801,7 @@ $sql = "
 		`session_order` INT NOT NULL DEFAULT 0,
 		`quest_id` BIGINT NULL,
 		`speaker_id` BIGINT NULL,
+		`speaker_ids` TEXT NULL,
 		`achievement_id` BIGINT NULL DEFAULT 0,
 		`guild_id` BIGINT NULL,
 		`session_status` VARCHAR(20) NOT NULL DEFAULT 'publish',

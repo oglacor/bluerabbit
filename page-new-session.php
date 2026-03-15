@@ -6,9 +6,15 @@ if(isset($session_id)){
 }
 $quests = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adventure_id AND (quest_type='quest' OR quest_type='challenge') AND quest_status='publish'");
 $speakers = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_speakers WHERE adventure_id=$adventure_id AND speaker_status='publish' ORDER BY speaker_first_name");
+if($session->speaker_ids){
+    $speaker_ids = explode(",",$session->speaker_ids);
+}else{
+    $speaker_ids = array();
+}
 $paths = getAchievements($adventure->adventure_id, 'path|rank');
 
 $guilds = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_guilds WHERE adventure_id=$adventure->adventure_id AND guild_status='publish' ORDER BY guild_name ASC");
+
 ?>
 
 
@@ -70,7 +76,6 @@ $guilds = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_guilds WHERE adven
 					<?php } ?></h1>
 				</span>
 			</span>
-			
 		</div>
 		<div class="tabs" id="main-tabs">
 			<div class="tab max-w-900 padding-10 active" id="speaker-content">
@@ -174,17 +179,17 @@ $guilds = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_guilds WHERE adven
 							</td>
 						</tr>
 						<tr>
-							<td class="text-right w-150"><?php _e('Speaker','bluerabbit'); ?></td>
+							<td class="text-right w-150"><?php _e('Speakers','bluerabbit'); ?></td>
 							<td>
-								<div class="input-group w-full">
-									<select id="the_speaker_id" class="form-ui">
-										<option value="0"><?php _e("No speaker linked", "bluerabbit"); ?></option>
-										<?php if(isset($speakers)){ ?>
-											<?php foreach($speakers as $s){ ?>
-												<option <?php echo ($session->speaker_id==$s->speaker_id) ? 'selected' : ''; ?>   value="<?php echo $s->speaker_id; ?>" class="font _18"><?php echo "$s->speaker_first_name $s->speaker_last_name"; ?></option>
-											<?php } ?>
-										<?php } ?>
-									</select>
+								<div class="checkbox-group w-full">
+                                    <?php if(isset($speakers)){ ?>
+                                        <?php foreach($speakers as $s){ ?>
+                                            <label class="form-ui">
+                                                <input type="checkbox" class="speaker_ids" name="speaker_ids" value="<?= $s->speaker_id; ?>" <?= in_array($s->speaker_id, $speaker_ids) ? 'checked' : ''; ?>> 
+                                                <?= "$s->speaker_first_name $s->speaker_last_name"; ?>
+                                            </label>
+                                        <?php } ?>
+                                    <?php } ?>
 								</div>
 							</td>
 						</tr>

@@ -8,6 +8,13 @@
 	}else{
 		$sessions = getSessions($adventure->adventure_id, 'publish'); 
 	}
+
+$speakers = $wpdb->get_results("
+	SELECT speakers.*, players.player_first, players.player_last, players.player_display_name, players.player_picture, players.player_bio, players.player_company, players.player_website, players.player_linkedin FROM {$wpdb->prefix}br_speakers speakers
+    LEFT JOIN {$wpdb->prefix}br_players players ON speakers.player_id = players.player_id
+	WHERE speakers.adventure_id=$adventure->adventure_id
+	ORDER BY speakers.speaker_first_name, speakers.speaker_last_name
+"); 
 	$player_achievements = $wpdb->get_col("SELECT
 	achievement_id FROM {$wpdb->prefix}br_player_achievement
 	WHERE adventure_id=$adventure->adventure_id AND player_id=$current_user->ID");
@@ -113,7 +120,15 @@
 											<?= $session->session_title; ?>
 										</h2>
 										<p class="padding-10 font _16 w600 opacity-60 mix-blend-overlay">
-											<strong><?= "$session->speaker_first_name $session->speaker_last_name"; ?></strong>
+                                            <?php if($session->speaker_ids){ ?>
+                                                <?php $the_speakers = explode(",",$session->speaker_ids); ?>
+                                                <?php foreach($speakers as $sp){ ?>
+                                                    <?php if(in_array($sp->speaker_id, $the_speakers)){ ?>
+                                                        <strong><?= "$sp->speaker_first_name $sp->speaker_last_name"; ?> | </strong>
+                                                    <?php } ?>
+                                                <?php } ?>
+                                            <?php } ?>
+
 											<?php if($session->achievement_id){ ?>
 												<button class="icon-button font _24 sq-40  border border-all border-1 <?= $achievements[$session->achievement_id];?>-400 white-bg" style="background-image: url(<?= $achievement_badge[$session->achievement_id]; ?>);">
 												</button>
@@ -122,7 +137,7 @@
 												<button class="icon-button font _24 sq-40  border border-all border-1 <?= $guilds[$session->guild_id];?>-400 white-bg" style="background-image: url(<?= $guild_logos[$session->guild_id]; ?>);">
 												</button>
 											<?php } ?>
-											| <span class="icon icon-time"></span> <?= date('H:i', strtotime($session->session_start)); ?> - 
+											<span class="icon icon-time"></span> <?= date('H:i', strtotime($session->session_start)); ?> - 
 											<?= date('H:i', strtotime($session->session_end)); ?> | <?= $the_zone; ?> 
 											<?= $session->session_room ? " | <strong class='amber-400'>$session->session_room</strong>" : ''; ?>
 
@@ -179,24 +194,29 @@
 										</div>
 									</div>
 								</div>
-								<?php if($session->speaker_id){ ?>
-								<div class="highlight text-center padding-10 margin-10">
-									<div class="icon-group">
-										<div class="icon-button font _24 sq-40  border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $bg_image; ?>);" >
-											
-										</div>
-										<div class="icon-content text-left">
-											<span class="line font _24 w500">
-												<?= "$session->speaker_first_name $session->speaker_last_name"; ?>
-											</span>
-											<?php if($session->speaker_company){ ?>
-												<span class="line font _14 w100">
-													<?= "$session->speaker_company"; ?>
-												</span>
-											<?php } ?>
-										</div>
-									</div>
-								</div>
+								<?php if($session->speaker_ids){ ?>
+                                    <div class="highlight text-center padding-10 margin-10">
+                                    <?php if($session->speaker_ids){ ?>
+                                        <?php foreach($speakers as $sp){ ?>
+                                            <?php if(in_array($sp->speaker_id, $the_speakers)){ ?>
+                                                <div class="icon-group">
+                                                    <div class="icon-button font _24 sq-40  border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $sp->player_picture ? $sp->player_picture : $sp->speaker_picture; ?>);" >
+                                                    </div>
+                                                    <div class="icon-content text-left">
+                                                        <span class="line font _24 w500">
+                                                            <?= "$sp->speaker_first_name $sp->speaker_last_name"; ?>
+                                                        </span>
+                                                        <?php if($sp->speaker_company){ ?>
+                                                            <span class="line font _14 w100">
+                                                                <?= "$sp->speaker_company"; ?>
+                                                            </span>
+                                                        <?php } ?>
+                                                    </div>
+                                                </div>
+                                            <?php } ?>
+                                        <?php } ?>
+                                    <?php } ?>
+                                    </div>
 								<?php } ?>
 								<div class="highlight text-center padding-10 margin-10">
 									<?php if($session->quest_id){ ?>

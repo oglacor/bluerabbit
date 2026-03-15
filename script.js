@@ -2845,10 +2845,23 @@ function insertTabiRow(tabi_id){
     }
 }
 
-
+function getPlayerData(player_id){
+	jQuery.ajax({  
+		url: runAJAX.ajaxurl,
+		data: ({action: 'getPlayerDataJSON', player_id:player_id}),
+		method: "POST",
+		success: function(json_data) {
+			let data = JSON.parse(json_data);
+            return data;
+		}
+	});
+}
 
 function updateProfile(){
 	showLoader("small");
+	if(typeof tinyMCE=='object' && typeof tinyMCE.triggerSave == 'function') { 
+		tinyMCE.triggerSave(); 
+	}
 	let nonce = $('#profile_nonce').val();
 	let player_data = {
 		first_name: $('#the_first_name').val(),
@@ -2856,6 +2869,10 @@ function updateProfile(){
 		email: $('#the_email').val(),
 		lang: $('#the_lang').val(),
 		profile_picture : $('#the_player_picture').val(),
+		player_company : $('#the_player_company').val(),
+		player_website : $('#the_player_website').val(),
+		player_linkedin : $('#the_player_linkedin').val(),
+        player_bio : $('#the_player_bio').val(),
 	}
 	jQuery.ajax({  
 		url: runAJAX.ajaxurl,
@@ -2904,6 +2921,7 @@ function updateSpeaker(){
 	let nonce = $('#speaker_nonce').val();
 	let speaker_data = {
 		id: $('#the_speaker_id').val(),
+		player_id: $('#the_speaker_player_id').val(),
 		adventure_id: $('#the_adventure_id').val(),
 		first_name: $('#the_speaker_first_name').val(),
 		last_name: $('#the_speaker_last_name').val(),
@@ -2911,7 +2929,6 @@ function updateSpeaker(){
 		picture :$('#the_speaker_picture').val(),
 		company :$('#the_speaker_company').val(),
 		website :$('#the_speaker_website').val(),
-		twitter :$('#the_speaker_twitter').val(),
 		linkedin :$('#the_speaker_linkedin').val(),
 	}
 	jQuery.ajax({  
@@ -2920,6 +2937,9 @@ function updateSpeaker(){
 		method: "POST",
 		success: function(data_received) {
 			displayAjaxResponse(data_received);
+            if(speaker_data.player_id > 0){
+                document.location.reload();
+            }
 		}
 	});
 }
@@ -2956,7 +2976,11 @@ function updateSession(){
 		tinyMCE.triggerSave(); 
 	}
 	let nonce = $('#session_nonce').val();
-	
+    let speaker_ids = [];
+
+    $('input.speaker_ids:checked').each(function() {
+        speaker_ids.push($(this).val());
+    });	
 	let session_data = {
 		id: $('#the_session_id').val(),
 		adventure_id: $('#the_adventure_id').val(),
@@ -2965,7 +2989,7 @@ function updateSession(){
 		start: $('#the_session_start').val(),
 		end :$('#the_session_end').val(),
 		quest_id :$('#the_quest_id').val(),
-		speaker_id :$('#the_speaker_id').val(),
+		speaker_ids : speaker_ids,
 		status :$('#the_session_status').val(),
 		description :$('#the_session_description').val(),
 		achievement_id :$('#the_achievement_id').val(),
@@ -3639,10 +3663,6 @@ function updateAchievement(){
 		tinyMCE.triggerSave(); 
 	}
 	let nonce = $('#nonce').val();
-	let libs =[];
-	$('ul#libraries li.active').each(function(index, element) {
-		libs.push($('input.lib-id',this).val());
-	});
 	let awarded_players =[];
 	$('ul.player-select li.active').each(function(index, element) {
 		awarded_players.push($('input.player-id',this).val());
@@ -3665,7 +3685,6 @@ function updateAchievement(){
 		a_content : $('#the_achievement_content').val(), 
 		adventure_id : $('#the_adventure_id').val(), 
 		awarded_players:awarded_players,
-		libs:libs
 	};
 	jQuery.ajax({  
 		url: runAJAX.ajaxurl,

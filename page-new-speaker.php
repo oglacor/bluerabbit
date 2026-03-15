@@ -8,18 +8,18 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 	<div class="dashboard-sidebar grey-bg-800 sticky padding-10">
 		<div class="tabs-buttons sticky top-50" id="main-tabs-buttons">
 			<ul class="margin-0 padding-0">
-					<li class="block text-center">
-						<input type="hidden" id="speaker_nonce" value='<?php echo wp_create_nonce('br_speaker_nonce') ?>'>
-						<button id="submit-button" type="button" class="form-ui green-bg-400 w-full" onClick="updateSpeaker();">
-							<span class="icon icon-check"></span>
-							<?= ($adventure && $speaker) ? __("Update Speaker","bluerabbit") : __("Create Speaker","bluerabbit"); ?>
-						</button>
-					</li>
-					<li class="block text-center">
-						<a class="form-ui red-bg-400 font _14" href="<?php echo get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
-							<span class="icon icon-xs icon-cancel"></span><?php _e('Cancel','bluerabbit'); ?><br>
-						</a>
-					</li>
+                <li class="block text-center">
+                    <input type="hidden" id="speaker_nonce" value='<?php echo wp_create_nonce('br_speaker_nonce') ?>'>
+                    <button id="submit-button" type="button" class="form-ui green-bg-400 w-full" onClick="updateSpeaker();">
+                        <span class="icon icon-check"></span>
+                        <?= ($adventure && $speaker) ? __("Update Speaker","bluerabbit") : __("Create Speaker","bluerabbit"); ?>
+                    </button>
+                </li>
+                <li class="block text-center">
+                    <a class="form-ui red-bg-400 font _14" href="<?php echo get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
+                        <span class="icon icon-xs icon-cancel"></span><?php _e('Cancel','bluerabbit'); ?><br>
+                    </a>
+                </li>
 			</ul>
 		</div>
 	</div>
@@ -48,6 +48,37 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 					</thead>
 					<tbody class="font _16">
 						<tr>
+							<td class="text-right w-150"><?php _e('Connect to Player','bluerabbit'); ?></td>
+							<td>
+                                <?php $the_roles = array('br_npc','br_game_master','administrator'); ?>
+                                <?php $speakerUsers = get_users(array('role__in'=>$the_roles)); ?>
+                                <select id="the_speaker_player_id" class="form-ui font _24" onChange="updateSpeaker();">
+                                    <option value="0" <?php if(!$speaker->player_id) { echo'selected'; }?>><?php _e('None','bluerabbit'); ?></option>
+                                   <?php foreach($speakerUsers as $at){ ?>
+                                        <option value="<?= $at->ID; ?>" <?php if($at->ID == $speaker->player_id) { echo'selected class="green-bg-400 white-color w900 font"'; }?>>
+                                            <?php
+                                            if($at->display_name){
+                                                echo $at->display_name;
+                                            }else{
+                                                echo $at->user_email;  
+                                            }
+                                            ?>
+                                            <?php 
+                                            if($at->roles[0] =='administrator'){
+                                                echo " | Admin";
+                                            }elseif($at->roles[0] =='br_game_master'){
+                                                echo " | GM";
+                                            }elseif($at->roles[0] =='br_npc'){
+                                                echo " | NPC";
+                                            }
+                                            ?>
+                                        </option>
+                                    <?php } ?>
+                                </select>
+
+							</td>
+						</tr>
+						<tr>
 							<td class="text-right v-top">
 								<span class="font _16 block"><?= __("Speaker Picture","bluerabbit");?></span>
 								<span class="font _12 block red-500">
@@ -57,10 +88,10 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 							<td>
 								<div class="gallery">
 									<div class="gallery-item setting">
-										<div class="background" style="background-image: url(<?= isset($speaker) ? $speaker->speaker_picture : ""; ?>);" onClick="showWPUpload('the_speaker_picture');" id="the_speaker_picture_thumb"></div>
+										<div class="background speaker-editable" style="background-image: url(<?= isset($speaker) ? $speaker->speaker_picture : ""; ?>);" onClick="showWPUpload('the_speaker_picture');" id="the_speaker_picture_thumb"></div>
 										<div class="gallery-item-options relative">
-											<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_speaker_picture');"><span class="icon icon-image"></span></button>
-											<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_speaker_picture');"> <span class="icon icon-trash"></span> </button>
+											<button class="icon-button font _24 sq-40  green-bg-400 speaker-editable" onClick="showWPUpload('the_speaker_picture');"><span class="icon icon-image"></span></button>
+											<button class="icon-button font _24 sq-40  red-bg-400 speaker-editable" onClick="clearImage('#the_speaker_picture');"> <span class="icon icon-trash"></span> </button>
 											<input type="hidden" id="the_speaker_picture" value="<?= isset($speaker) ? $speaker->speaker_picture : ""; ?>"/>
 										</div>
 									</div>
@@ -71,7 +102,7 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 							<td class="text-right w-150"><?php _e('First name','bluerabbit'); ?></td>
 							<td>
 								<div class="input-group w-full">
-									<input class="form-ui font _30 w-full" type="text" value="<?= isset($speaker->speaker_first_name) ? $speaker->speaker_first_name : ""; ?>" id="the_speaker_first_name">
+									<input class="form-ui font _30 w-full speaker-editable" type="text" value="<?= isset($speaker->speaker_first_name) ? $speaker->speaker_first_name : ""; ?>" id="the_speaker_first_name">
 								</div>
 							</td>
 						</tr>
@@ -79,7 +110,7 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 							<td class="text-right w-150"><?php _e('Last name','bluerabbit'); ?></td>
 							<td>
 								<div class="input-group w-full">
-									<input class="form-ui font _30 w-full" type="text" value="<?= isset($speaker->speaker_last_name) ? $speaker->speaker_last_name : ""; ?>" id="the_speaker_last_name">
+									<input class="form-ui font _30 w-full speaker-editable" type="text" value="<?= isset($speaker->speaker_last_name) ? $speaker->speaker_last_name : ""; ?>" id="the_speaker_last_name">
 								</div>
 							</td>
 						</tr>
@@ -87,7 +118,7 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 							<td class="text-right w-150"><?php _e('Company','bluerabbit'); ?></td>
 							<td>
 								<div class="input-group w-full">
-									<input class="form-ui font _30 w-full" type="text" value="<?= isset($speaker->speaker_company) ? $speaker->speaker_company : ""; ?>" id="the_speaker_company">
+									<input class="form-ui font _30 w-full speaker-editable" type="text" value="<?= isset($speaker->speaker_company) ? $speaker->speaker_company : ""; ?>" id="the_speaker_company">
 								</div>
 							</td>
 						</tr>
@@ -95,7 +126,7 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 							<td class="text-right w-150"><?php _e('Website','bluerabbit'); ?></td>
 							<td>
 								<div class="input-group w-full">
-									<input class="form-ui font _30 w-full" type="text" value="<?= isset($speaker->speaker_website) ? $speaker->speaker_website : ""; ?>" id="the_speaker_website">
+									<input class="form-ui font _30 w-full speaker-editable" type="text" value="<?= isset($speaker->speaker_website) ? $speaker->speaker_website : ""; ?>" id="the_speaker_website">
 								</div>
 							</td>
 						</tr>
@@ -103,7 +134,7 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 							<td class="text-right w-150"><?php _e('LinkedIn','bluerabbit'); ?></td>
 							<td>
 								<div class="input-group w-full">
-									<input class="form-ui font _30 w-full" type="text" value="<?= isset($speaker->speaker_linkedin) ? $speaker->speaker_linkedin : ""; ?>" id="the_speaker_linkedin">
+									<input class="form-ui font _30 w-full speaker-editable" type="text" value="<?= isset($speaker->speaker_linkedin) ? $speaker->speaker_linkedin : ""; ?>" id="the_speaker_linkedin">
 								</div>
 							</td>
 						</tr>

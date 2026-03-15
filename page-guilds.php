@@ -57,26 +57,23 @@
             $leaderboard_guilds_array[$lg->guild_id] = $lg->total_player_xp;
 		}
 		$guild_xp_update .= implode(', ', $guild_xp_update_placeholders);
-		$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp)";
+		$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp) ORDER BY guild_xp DESC";
 		$guild_xp_update_query = $wpdb->query( $wpdb->prepare("$guild_xp_update ", $guild_xp_update_values));
-        print_r($wpdb->last_query);
 	}
 ?>
 
-<div class="guilds">
-    <div class="my-guild">
-        <div class="hud-title">
-            <h2>
-                <span class="hud-title-label"><?= __("My Guild","bluerabbit"); ?></span>
-            </h2>
+    <div class="guilds">
+        <div class="my-guild">
+            <div class="hud-title">
+                <h2>
+                    <span class="hud-title-label"><?= __("My Guilds","bluerabbit"); ?></span>
+                </h2>
+            </div>
+            <?php foreach($guilds as $g){ ?>
+                <?php include (TEMPLATEPATH . '/guild.php'); ?>
+            <?php } ?>
         </div>
-
-
-        <?php foreach($guilds as $g){ ?>
-            <?php include (TEMPLATEPATH . '/guild.php'); ?>
-        <?php } ?>
     </div>
-</div>
 
 
 

@@ -1330,15 +1330,36 @@ span.divider {
   font-weight: 500;
   font-size: 16px;
 }
+.dashboard h1.dashboard-title {
+  color: #04161e;
+  font-weight: 600;
+  padding: 10px 20px;
+  background-color: rgba(4, 22, 30, 0.05);
+}
 .dashboard .form-ui {
   font-weight: 400;
 }
 .dashboard > .dashboard-sidebar {
   order: 1;
   width: 180px;
+  background-color: #FFFFFF;
+  border-right: solid 1px rgba(29, 45, 52, 0.5);
 }
-.dashboard > .dashboard-sidebar .tabs-buttons ul li.block {
+.dashboard > .dashboard-sidebar .tabs-buttons ul li {
+  color: #04161e;
+  display: block;
   margin: 10px 0 0;
+}
+.dashboard > .dashboard-sidebar .tabs-buttons ul li button {
+  display: block;
+  border-radius: 5px;
+  background-color: transparent;
+  border: none;
+  padding: 7px;
+  width: 100%;
+}
+.dashboard > .dashboard-sidebar .tabs-buttons ul li button.active {
+  background-color: rgba(28, 194, 235, 0.15);
 }
 .dashboard > .dashboard-content {
   flex: 2;
@@ -4173,6 +4194,213 @@ ul.items li.card .item-name {
 }
 .speaker-bio.active {
   display: block;
+}
+
+.checkbox-group {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.checkbox-group label.form-ui {
+  position: relative;
+  padding: 10px;
+  background-color: #FFFFFF;
+  cursor: pointer;
+  display: block;
+  border-radius: 6px;
+}
+.checkbox-group label.form-ui:has(input:checked) {
+  background: rgba(28, 194, 235, 0.15);
+  border: solid 1px #1cc2eb;
+  font-weight: 600;
+}
+
+.speakers {
+  padding: 20px;
+  position: relative;
+}
+.speakers .headline h1 {
+  font-family: "Preospe", sans-serif;
+  font-size: 30px;
+  color: #1cc2eb;
+}
+.speakers .speakers-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+}
+.speakers .speakers-grid .speaker-item {
+  position: relative;
+  aspect-ratio: 275/420;
+  max-width: 350px;
+}
+.speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture rect.picture-bg {
+  background-color: #FFFFFF;
+  opacity: 0;
+  transform: scale(1.2) translateX(-10%) translateY(-10%);
+}
+.speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture image {
+  transform: scale(1.2) translateX(-10%) translateY(-10%);
+}
+.speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture path.blue-line, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture polyline.blue-line, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture circle.blue-line, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture line.blue-line {
+  animation: arrow-outline-stroke-animation 12s linear infinite;
+}
+.speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture path.yellow-line, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture polyline.yellow-line, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture circle.yellow-line, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture line.yellow-line {
+  animation: arrow-outline-stroke-animation 8s linear infinite;
+}
+.speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture path.dotted, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture polyline.dotted, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture circle.dotted, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture line.dotted {
+  animation: warning-sign-stroke-animation 4s linear infinite;
+}
+.speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture path.yellow-fill, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture polyline.yellow-fill, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture circle.yellow-fill, .speakers .speakers-grid .speaker-item:hover .speaker-picture svg.speaker-art-picture line.yellow-fill {
+  fill: rgba(247, 203, 21, 0.1);
+  stroke: none;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture {
+  container-type: inline-size;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  position: relative;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture {
+  width: 100%;
+  aspect-ratio: 1/1;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture rect.picture-bg {
+  background-color: #FFFFFF;
+  mix-blend-mode: color;
+  transition: all 0.5s ease-out;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture image {
+  fill: #FFFFFF;
+  background-color: #FFFFFF;
+  transition: all 0.5s ease-out;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture path, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture polyline, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture circle, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture line {
+  stroke-width: 2px;
+  stroke: #FFFFFF;
+  fill: none;
+  transition: all 0.3s ease-out;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture path.blue-line, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture polyline.blue-line, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture circle.blue-line, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture line.blue-line {
+  stroke: #1cc2eb;
+  stroke-dasharray: 100px 5px;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture path.yellow-line, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture polyline.yellow-line, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture circle.yellow-line, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture line.yellow-line {
+  stroke: #f7cb15;
+  stroke-dasharray: 150px 5px;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture path.yellow-fill, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture polyline.yellow-fill, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture circle.yellow-fill, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture line.yellow-fill {
+  fill: rgba(255, 255, 255, 0.1);
+  stroke: none;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture path.dotted, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture polyline.dotted, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture circle.dotted, .speakers .speakers-grid .speaker-item .speaker-picture svg.speaker-art-picture line.dotted {
+  stroke-dasharray: 13 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .speaker-tagline {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(14px, 5cqw, 40px);
+  color: #FFFFFF;
+  text-align: right;
+  padding: 0 0 0 30%;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .speaker-tagline::before {
+  content: "..//";
+}
+.speakers .speakers-grid .speaker-item .speaker-picture a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons {
+  position: absolute;
+  top: 38%;
+  right: -18px;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 20px;
+  background-color: #04161e;
+  border-radius: 100px;
+  border: solid 2px #1cc2eb;
+  padding: 10px;
+  transition: all 0.3s ease-out;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container:hover {
+  background-color: #1cc2eb;
+  border-color: #f7cb15;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container:hover svg.globe-icon circle, .speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container:hover svg.globe-icon line, .speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container:hover svg.globe-icon ellipse {
+  fill: none;
+  stroke: #04161e;
+  stroke-width: 3px;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container:hover svg.social-media-logo path {
+  fill: #04161e;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container svg.globe-icon circle, .speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container svg.globe-icon line, .speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container svg.globe-icon ellipse {
+  transition: all 0.3s ease-out;
+  fill: none;
+  stroke: #1cc2eb;
+  stroke-width: 3px;
+}
+.speakers .speakers-grid .speaker-item .speaker-picture .social-icons .social-icon-container svg.social-media-logo path {
+  transition: all 0.3s ease-out;
+  fill: #1cc2eb;
+}
+.speakers .speakers-grid .speaker-content {
+  padding: 10px;
+  position: relative;
+  width: 100%;
+  position: relative;
+  left: 0;
+  top: -10%;
+}
+.speakers .speakers-grid .speaker-content .speaker-name {
+  width: 100%;
+  aspect-ratio: 245/48;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 400;
+  font-size: 30px;
+  color: #FFFFFF;
+  padding: 10px;
+  background-image: url(images/hud/speaker-name-container.svg);
+  background-repeat: no-repeat;
+}
+.speakers .speakers-grid .speaker-content .speaker-info {
+  color: #FFFFFF;
+  padding: 10px 15px;
+}
+.speakers .speakers-grid .speaker-link {
+  position: absolute;
+  width: 100%;
+  text-align: right;
+  bottom: 0;
+}
+.speakers .speakers-grid .speaker-link .speaker-button {
+  text-align: center;
+  display: inline-block;
+  width: 166px;
+  height: 48px;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  color: #FFFFFF;
+  padding: 5px;
+  background-image: url(images/hud/hud-button-1.svg);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: top left;
 }
 
 .item-thumb {
@@ -8401,6 +8629,38 @@ nav.tab-nav ul li.active {
   text-align: right;
   font-weight: 300;
 }
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge {
+  padding: 20px;
+}
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path {
+  fill: none;
+  stroke: none;
+}
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-overlay, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-overlay {
+  fill: rgba(8, 44, 60, 0.4);
+}
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-yellow-border, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-yellow-border {
+  stroke: #f7cb15;
+  stroke-width: 2;
+  fill: none;
+}
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-yellow-details, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-yellow-details {
+  stroke: #f7cb15;
+  stroke-width: 6;
+  stroke-dasharray: 150px 200px;
+  animation: arrow-outline-stroke-animation 8s linear infinite;
+}
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-white-line-overlay, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-white-line-overlay {
+  stroke: #FFFFFF;
+  stroke-width: 2;
+  mix-blend-mode: overlay;
+}
+.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-image, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-image {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
 .certificate-options {
   width: 100%;
   display: block;
