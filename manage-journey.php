@@ -197,7 +197,7 @@
 										</div>
 										<?php $curlevel=$q->mech_level; ?>
 									<?php } ?>
-									<div class="row-container <?= $q->quest_type; ?> <?= $colors[$q->quest_type]; ?>" id="<?= $q->quest_type."-".$q->quest_id; ?>">
+									<div class="row-container active <?= $q->quest_type; ?> <?= $colors[$q->quest_type]; ?>" id="<?= $q->quest_type."-".$q->quest_id; ?>">
 										<div class="row admin-row <?= $use_encounters ? 'with-ep' : ''; ?>">
 											<div class="cell cell-drag drag-handle">
 												<img src="<?= get_template_directory_uri(); ?>/images/drag-handle.svg" class="drag-icon">
@@ -282,7 +282,7 @@
 											?>
 											<?php include (TEMPLATEPATH . '/component-set-color.php'); ?>
 										</div>
-										<div class="row admin-row quick-edit" id="quick-edit-<?= $q->quest_type."-".$q->quest_id; ?>">
+										<div class="row admin-row quick-edit " id="quick-edit-<?= $q->quest_type."-".$q->quest_id; ?>">
 											<div class="cell cell-start-date">
 												<div class="input-group">
 												<label>

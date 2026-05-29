@@ -246,6 +246,8 @@
 				 hash_change_type = 'quest';
 			<?php }elseif(is_page('survey')){ ?>
 				 hash_change_type = 'survey';
+			<?php }else{ ?>
+				 hash_change_type = 'settings-tab';
 			<?php } ?>
 		</script>
 		

@@ -28,6 +28,10 @@ if($adventure){
 	FROM {$wpdb->prefix}br_speakers
 	WHERE adventure_id=$adventure->adventure_id AND speaker_status='publish' ORDER BY speaker_first_name, speaker_last_name, speaker_id");
 
+	$adventure_tabis = $wpdb->get_results("SELECT *
+	FROM {$wpdb->prefix}br_tabis
+	WHERE adventure_id=$adventure->adventure_id AND tabi_status='publish' ORDER BY tabi_name");
+
 ?>
 	<div class="boxed max-w-1200">
 			<div class="text-center padding-20">
@@ -142,6 +146,47 @@ if($adventure){
 								</span>
 
 								<input type="hidden" class="reqs-id" value="<?= $a->achievement_id; ?>">
+							</li>
+						
+						<?php } ?>
+					</ul>
+				</div>
+				<div class="highlight padding-20 purple-bg-100">
+					<div class="icon-group">
+						<div class="icon-button font _24 sq-40  green-bg-400"><span class="icon icon-carrot"></span></div>
+						<div class="icon-content">
+							<div class="line font _24"><?= __("Tabis","bluerabbit");?></div>
+						</div>
+					</div>
+					<div class="icon-group pull-right">
+						<div class="icon-content">
+							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#tabis-to-duplicate li.to-duplicate');">
+								<span class="icon icon-check"></span>
+								<?php _e("Select All","bluerabbit"); ?>
+							</button>
+							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#tabis-to-duplicate li.to-duplicate');">
+								<span class="icon icon-cancel"></span>
+								<?php _e("Clear Selection","bluerabbit"); ?>
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="content">
+					<ul class="selectable-list select-multiple" id="tabis-to-duplicate">
+						<?php foreach ($adventure_tabis as $key=>$a){ ?>
+						
+							<li id="req-tabi-<?= $a->tabi_id; ?>" class="achievement white-bg to-duplicate" onClick="toggleReq('#req-tabi-<?= $a->tabi_id; ?>');">
+								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+									<span class="icon icon-carrot"></span>
+								</span>
+								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= $a->tabi_name; ?></span>
+
+								<span class="li-cell active-content green-bg-400 white-color font _18">
+									<span class="icon icon-check white-color"></span>
+								</span>
+								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $a->tabi_name; ?></span>
+
+								<input type="hidden" class="reqs-id" value="<?= $a->tabi_id; ?>">
 							</li>
 						
 						<?php } ?>

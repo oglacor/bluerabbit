@@ -8,16 +8,31 @@
         <button class="reset form-ui" onClick="resetMilestoneSizes();"><?= __("Reset Sizes","bluerabbit"); ?> </button>
     </div>
     <div class="journey-builder-container">
-        <?php if($all_quests){ ?>
+        <?php
+        $builder_tabis = getTabis($adv_parent_id);
+
+        // Count quests per tabi so the node can show the number
+        $builder_tabi_quest_count = [];
+        if($all_quests) {
+            foreach($all_quests as $q) {
+                if($q->tabi_id) {
+                    $builder_tabi_quest_count[$q->tabi_id] = ($builder_tabi_quest_count[$q->tabi_id] ?? 0) + 1;
+                }
+            }
+        }
+        ?>
+        <?php if($all_quests || $builder_tabis){ ?>
             <div class="builder" id="builder">
+
+                <?php // Free milestones — skip any quest assigned to a tabi ?>
                 <?php foreach ($all_quests as $k=>$m){ ?>
                     <?php
-                    if($m->quest_type != 'blog-post' && $m->quest_type != 'lore'){
+                    if($m->quest_type != 'blog-post' && $m->quest_type != 'lore' && !$m->tabi_id){
                         $scaleVal = $m->milestone_z;
                         if($scaleVal > 5){
                             $scaleVal = 5;
                         }elseif($scaleVal < 1){
-                            $scaleVal = 1; 
+                            $scaleVal = 1;
                         }
 
                         $baseWidth = 108;
@@ -25,9 +40,15 @@
                         $scaledWidth = $baseWidth * $scaleVal;
                         $scaledHeight = $baseHeight * $scaleVal;
                         $scale = 'width: '.$scaledWidth.'px; height: '.$scaledHeight.'px;';
-                        ?>
 
-                        <div data-id="<?= $m->quest_id;?>" data-color="<?=$m->quest_color; ?>" data-beehive="all" id="milestone-<?= $m->quest_id; ?>" class="milestone milestone-order-<?= $k; ?>  milestone-color-<?= $m->quest_color; ?>" style="top:<?=$m->milestone_top; ?>px; left:<?=$m->milestone_left; ?>px;">
+                        if(!$m->milestone_left || !$m->milestone_top){
+                            $mTop = 350; $mLeft = 350;
+                        }else{
+                            $mTop = $m->milestone_top;
+                            $mLeft = $m->milestone_left;
+                        }
+                        ?>
+                        <div data-id="<?= $m->quest_id;?>" data-color="<?=$m->quest_color; ?>" data-beehive="all" id="milestone-<?= $m->quest_id; ?>" class="milestone milestone-order-<?= $k; ?> milestone-color-<?= $m->quest_color; ?>" style="top:<?=$mTop; ?>px; left:<?=$mLeft; ?>px;">
                             <div class="milestone-name">
                                 <?= $m->quest_title; ?>
                             </div>
@@ -56,10 +77,28 @@
                         </div>
                     <?php } ?>
                 <?php } ?>
+
+                <?php // Tabi nodes — draggable units that group their quests ?>
+                <?php if($builder_tabis) { foreach($builder_tabis as $t) {
+                    $tNodeTop  = $t->tabi_top  ?: 350;
+                    $tNodeLeft = $t->tabi_left ?: 350;
+                    $qCount    = $builder_tabi_quest_count[$t->tabi_id] ?? 0;
+                    ?>
+                    <div class="builder-tabi tabi-node <?= esc_attr($t->tabi_color); ?>"
+                         id="tabi-node-<?= $t->tabi_id; ?>"
+                         data-tabi-id="<?= $t->tabi_id; ?>"
+                         style="top:<?= $tNodeTop; ?>px; left:<?= $tNodeLeft; ?>px;">
+                        <div class="tabi-node-icon"><span class="icon icon-tabi"></span></div>
+                        <div class="tabi-node-name"><?= esc_html($t->tabi_name); ?></div>
+                        <div class="tabi-node-count"><?= $qCount; ?> <?= __('quests','bluerabbit'); ?></div>
+                    </div>
+                <?php } } ?>
+
             </div>
             <script>
                 initializeBuilderMilestones();
-                resizeJourneyMapWithPadding(1000, 'builder', '.milestone');
+                initializeBuilderTabis();
+                resizeJourneyMapWithPadding(1000, 'builder', '.milestone, .builder-tabi');
             </script>
         <?php }else{ ?>
             <div class="sys-message">
@@ -68,6 +107,7 @@
         <?php } ?>
 
     </div>
+    <input type="hidden" id="tabi-position-nonce" value="<?= wp_create_nonce('tabi_position_nonce'); ?>">
 <?php }else{ ?>
 	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
 <?php } ?>

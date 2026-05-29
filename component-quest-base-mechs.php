@@ -14,19 +14,23 @@
 						</tr>
 					</thead>
 					<tbody class="font _16">
-						<?php if($quest->quest_parent != 0){ ?>
+                        <?php $tabis = getTabis($adv_parent_id); ?>
 						<tr>
-							<td class="text-right w-150"><?php _e('Quest Parent','bluerabbit'); ?></td>
+							<td class="text-right w-150"><?php _e('Tabi','bluerabbit'); ?></td>
 							<td>
-								<?php $quest_parent = getQuest($quest->quest_parent); ?>
-								<h1><?= $quest_parent->quest_title; ?></h1>
-								<h3><?= __("Adventure","bluerabbit");?>: <?= $quest_parent->adventure_title; ?></h3>
-								<?php $the_link = get_bloginfo('url')."/enroll/?enroll_code=$quest_parent->adventure_code"; ?>
-								<a href="<?= $the_link  ?>"><?= $the_link; ?></a>
+                                <div class="input-group w-full">
+                                    <label class="light-blue-bg-800 font w900"><span class="icon icon-tabi"></span></label>
+                                    <select class="form-ui w-full" id="the_tabi_id">
+                                        <option value=""><?= __("None","bluerabbit"); ?></option>
+                                        <?php if($tabis){ ?>
+                                            <?php foreach($tabis as $tabi){ ?>
+                                                <option value="<?= $tabi->tabi_id; ?>" <?= (isset($quest->tabi_id) && $quest->tabi_id == $tabi->tabi_id) ? 'selected' : ''; ?>><?= $tabi->tabi_name; ?></option>
+                                            <?php } ?>
+                                        <?php } ?>
+                                    </select>
+                                </div>
 							</td>
 						</tr>
-						
-						<?php } ?>
 						<tr>
 							<td class="text-right w-150"><?php _e('Level','bluerabbit'); ?></td>
 							<td>

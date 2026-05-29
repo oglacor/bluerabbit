@@ -181,8 +181,16 @@ $sql = "
 		`tabi_background` TEXT NULL,
 		`tabi_level` INT NULL,
 		`tabi_on_journey` TINYINT NULL,
+		`tabi_top` INT NULL DEFAULT 350,
+		`tabi_left` INT NULL DEFAULT 350,
 
 	PRIMARY KEY (`tabi_id`) )$charset_collate;
+
+	CREATE TABLE {$wpdb->prefix}br_tabi_prerequisites (
+		`prereq_id` BIGINT NOT NULL AUTO_INCREMENT,
+		`tabi_id` BIGINT NOT NULL,
+		`requires_tabi_id` BIGINT NOT NULL,
+	PRIMARY KEY (`prereq_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_blockers (
 		`blocker_id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -552,6 +560,7 @@ $sql = "
 		`quest_order` INT NOT NULL DEFAULT 0,
 		`adventure_id` BIGINT NOT NULL,
 		`org_id` BIGINT NULL,
+   		`tabi_id` BIGINT NULL,
 		`quest_parent` BIGINT NULL,
 		`achievement_id` BIGINT NULL DEFAULT 0,
 		`quest_date_posted` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1441,6 +1450,28 @@ $n = new Notification();
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );
 add_action('after_switch_theme', 'theme_core_setup');
+
+function br_migrate_tabi_tables() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+
+	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_tabis LIKE 'tabi_top'");
+	if (empty($col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_tabis ADD COLUMN `tabi_top` INT NULL DEFAULT 350");
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_tabis ADD COLUMN `tabi_left` INT NULL DEFAULT 350");
+	}
+
+	$table = $wpdb->prefix . 'br_tabi_prerequisites';
+	if($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`prereq_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`tabi_id` BIGINT NOT NULL,
+			`requires_tabi_id` BIGINT NOT NULL,
+			PRIMARY KEY (`prereq_id`)
+		) $charset_collate");
+	}
+}
+add_action('init', 'br_migrate_tabi_tables');
 add_action('switch_theme', 'delete_roles');
 add_filter('show_admin_bar', '__return_false');
 add_action('template_redirect', 'ajaxFunctions');
@@ -1566,6 +1597,8 @@ add_action("wp_ajax_setGuildCapacity", "setGuildCapacity");
 add_action("wp_ajax_setDisplayStyle", "setDisplayStyle");
 add_action("wp_ajax_setDimensions", "setDimensions");
 add_action("wp_ajax_setTabiOnJourney", "setTabiOnJourney");
+add_action("wp_ajax_saveTabiPosition", "saveTabiPosition");
+add_action("wp_ajax_saveTabiPrerequisites", "saveTabiPrerequisites");
 add_action("wp_ajax_setNickname", "setNickname");
 add_action("wp_ajax_setProfilePicture", "setProfilePicture");
 add_action("wp_ajax_exportPlayersWork", "exportPlayersWork");

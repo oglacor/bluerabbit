@@ -536,6 +536,54 @@ function setTabiOnJourney(){
 	echo json_encode($data);
 	die();
 }
+/////////////////////// SAVE Tabi Prerequisites ////////////////////
+function saveTabiPrerequisites(){
+	global $wpdb;
+	$data = [];
+	$data['success'] = false;
+	$tabi_id   = intval($_POST['tabi_id']);
+	$requires  = isset($_POST['requires']) && is_array($_POST['requires']) ? array_map('intval', $_POST['requires']) : [];
+	$nonce     = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'tabi_prereq_nonce')) {
+		$wpdb->delete("{$wpdb->prefix}br_tabi_prerequisites", ['tabi_id' => $tabi_id], ['%d']);
+		foreach($requires as $req_id) {
+			if($req_id > 0 && $req_id !== $tabi_id) {
+				$wpdb->insert("{$wpdb->prefix}br_tabi_prerequisites", [
+					'tabi_id'          => $tabi_id,
+					'requires_tabi_id' => $req_id,
+				], ['%d','%d']);
+			}
+		}
+		$data['success'] = true;
+		$notification = new Notification();
+		$data['message'] = $notification->pop(__('Prerequisites saved!','bluerabbit'), 'teal', 'check');
+		$data['just_notify'] = true;
+	} else {
+		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+	}
+	echo json_encode($data);
+	die();
+}
+/////////////////////// SAVE Tabi Position on Journey Map ////////////////////
+function saveTabiPosition(){
+	global $wpdb; $current_user = wp_get_current_user();
+	$data = array();
+	$data['success'] = false;
+	$tabi_id = intval($_POST['tabi_id']);
+	$top     = intval($_POST['top']);
+	$left    = intval($_POST['left']);
+	$nonce   = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'tabi_position_nonce')){
+		$sql = "UPDATE {$wpdb->prefix}br_tabis SET tabi_top=%d, tabi_left=%d WHERE tabi_id=%d";
+		$sql = $wpdb->prepare($sql, $top, $left, $tabi_id);
+		$wpdb->query($sql);
+		$data['success'] = true;
+	}else{
+		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+	}
+	echo json_encode($data);
+	die();
+}
 ////////////// setAchievement /////////////
 function setAchievement(){
 	global $wpdb; $current_user = wp_get_current_user();

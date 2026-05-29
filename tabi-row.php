@@ -52,6 +52,34 @@
         ?>
         <?php include (TEMPLATEPATH . '/component-set-color.php'); ?>
     </div>
+    <?php
+    global $wpdb;
+    $this_prereqs = $wpdb->get_col("SELECT requires_tabi_id FROM {$wpdb->prefix}br_tabi_prerequisites WHERE tabi_id = $a->tabi_id");
+    $this_prereqs = array_map('intval', $this_prereqs);
+    if(!isset($tabi_prereq_nonce)) { $tabi_prereq_nonce = wp_create_nonce('tabi_prereq_nonce'); }
+    ?>
+    <div class="row admin-row tabi-prereq-row" id="tabi-prereq-row-<?= $a->tabi_id; ?>">
+        <div class="cell cell-full">
+            <span class="font _12 block grey-500"><?= __('Requires (must complete before unlocking):','bluerabbit'); ?></span>
+            <div class="tabi-prereq-list">
+                <?php if(isset($tabis) && $tabis) { foreach($tabis as $pt) {
+                    if($pt->tabi_id == $a->tabi_id) continue; ?>
+                    <label class="tabi-prereq-label <?= $pt->tabi_color ?>-bg-100">
+                        <input type="checkbox"
+                               class="tabi-prereq-checkbox"
+                               data-tabi-id="<?= $a->tabi_id; ?>"
+                               value="<?= $pt->tabi_id; ?>"
+                               <?= in_array((int)$pt->tabi_id, $this_prereqs) ? 'checked' : ''; ?>
+                               onChange="saveTabiPrerequisites(<?= $a->tabi_id; ?>);">
+                        <?= esc_html($pt->tabi_name); ?>
+                    </label>
+                <?php } } else { ?>
+                    <span class="font _12 grey-400"><?= __('No other tabis in this adventure.','bluerabbit'); ?></span>
+                <?php } ?>
+            </div>
+        </div>
+        <input type="hidden" class="tabi-prereq-nonce" value="<?= $tabi_prereq_nonce; ?>">
+    </div>
     <div class="row admin-row quick-edit" id="quick-edit-tabi"<?=$a->tabi_id; ?>">
         <div class="cell cell-start-date">
         </div>

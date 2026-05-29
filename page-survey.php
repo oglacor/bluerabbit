@@ -90,62 +90,72 @@
 					<?php if($questsReady && $itemsReady && $achievementsReady ){	?>
 						<div class="steps">
 						<?php
-							$count=0;
-							foreach($qs as $key=>$q){ 
+							foreach($qs as $i =>$q){ 
 							?>
+							<div class="step <?= $q['order'] == 0 ? 'active' : ''; ?>" id="step-<?= $q['order']; ?>">
+								<div class="step-content-container jump-to">
 
-							<div class="step <?= $count==0 ? 'active' : ''; ?>" id="step-<?= $count; ?>">
-								<div class="step-content-container">
-									<div class="step-choices">
-										<div class="step-choices-cell">
-											<div class="step-system-message">
-												<div class="survey-question-block">
-													<h4> <?= __("Question","bluerabbit")." <strong>".($count+1)."</strong>/".count($qs).""; ?></h4>
-													<h2><?php echo $q['text']; ?></h2>
-													<?php if($q['survey_question_description']){ ?>
-														<div class="font _14 padding-5"><?php echo $q['survey_question_description']; ?></div>
-													<?php } ?>
-													<?php if($q['image']) { ?>
-														<div class="question-image">
-															<img src="<?php echo $q['image']; ?>">
-														</div>
-													<?php } ?>
-												</div>
-												<?php $nonceStr = "{$q['text']}-$key"; ?>
-												<input type="hidden" id="sq-nonce-<?php echo $key; ?>" value="<?php echo wp_create_nonce($nonceStr); ?>"/>
-												<div class="content">
-													<?php include (TEMPLATEPATH . "/survey-question-{$q['survey_question_type']}.php");	?>
-												</div>
-												
-												
-												
-												<div class="step-buttons">
-												<?php if($count > 0){ ?>
-													<a class="step-back-button" id="button-system-back-<?= $count;?>" href="#step-<?= $count-1; ?>">
-														<?= __("Back","bluerabbit"); ?>
-													</a>
-												<?php }?>
-												<?php if($count >= count($qs)-1){ ?>
-													<button class="finish-quest-button" id="button-system-finish-<?=$count;?>" onClick="fakeSubmit();">
-														<?= __("Finish","bluerabbit"); ?>
-													</button>
-													<?php if($show_survey_answers || $isGM|| $isAdmin){ ?>
-														<a class="form-ui orange-bg-400" href="<?php echo get_bloginfo('url')."/survey-results/?questID=$survey_id&adventure_id=$adventure_id"; ?>">
-															<?php _e('View Results','bluerabbit'); ?>
-														</a>
-													<?php } ?>
-												<?php }else{ ?>
-													<a class="step-next-button" id="button-system-next-<?= $count;?>" href="#step-<?= $count+1?>">
-														<?= __("Next","bluerabbit"); ?>
-													</a>
-												<?php } ?>
-												</div>
-											</div>
-										</div>
-									</div>
+                                    <div class="dialogue-box" id="step-content-text-<?=$q['order'];?>">
+                                        <div class="corner-tl"></div>
+                                        <div class="edge-top"></div>
+                                        <div class="corner-tr"></div>
+
+                                        <div class="edge-left"></div>
+                                        <div class="center">
+                                            <div class="step-content">	
+                                                <h4> <?= __("Question","bluerabbit")." <strong>".($q['order']+1)."</strong>/".count($qs).""; ?></h4>
+                                                <h2><?php echo $q['text']; ?></h2>
+                                                <?php if($q['survey_question_description']){ ?>
+                                                    <div class="font _14 padding-5"><?php echo $q['survey_question_description']; ?></div>
+                                                <?php } ?>
+                                                <?php if($q['image']) { ?>
+                                                    <div class="question-image">
+                                                        <img src="<?php echo $q['image']; ?>">
+                                                    </div>
+                                                <?php } ?>
+                                            </div>
+                                        </div>
+                                        <div class="edge-right"></div>
+                                        <div class="corner-bl"></div>
+                                        <div class="edge-bottom"></div>
+                                        <div class="corner-br"></div>
+                                    </div>
+                                    <?php if($q['survey_question_type'] == "rating"){ ?>
+                                        <div class="step-rating-choices">
+                                            <?php include (TEMPLATEPATH . "/survey-question-rating.php");	?>
+                                        </div>
+                                    <?php } else{ ?>
+                                    <div class="step-choices">
+                                        <?php $nonceStr = "{$q['text']}-$i"; ?>
+                                        <input type="hidden" id="sq-nonce-<?php echo $i; ?>" value="<?php echo wp_create_nonce($nonceStr); ?>"/>
+                                        <?php include (TEMPLATEPATH . "/survey-question-{$q['survey_question_type']}.php");	?>
+                                    </div>
+                                    <?php } ?>
+                                    
+                                    <div class="steps-navigation action-buttons">
+                                        <?php if($q['order'] > 0){ ?>
+                                            <a class="action-button confirm" id="button-system-back-<?= $q['order'];?>" href="#step-<?= $q['order']-1; ?>">
+                                                <?= __("Back","bluerabbit"); ?>
+                                            </a>
+                                        <?php }?>
+                                        <?php if($q['order'] >= count($qs)-1){ ?>
+                                            <button class="action-button confirm" id="last-button" onClick="fakeSubmit();">
+                                                <?= __("Finish","bluerabbit"); ?>
+                                            </button>
+                                            <?php if($show_survey_answers || $isGM|| $isAdmin){ ?>
+                                                <a class="action-button warning" href="<?php echo get_bloginfo('url')."/survey-results/?questID=$survey_id&adventure_id=$adventure_id"; ?>">
+                                                    <?php _e('View Results','bluerabbit'); ?>
+                                                </a>
+                                            <?php } ?>
+                                        <?php }else{ ?>
+                                            <a class="action-button confirm"  id="button-system-next-<?= $q['order'];?>" href="#step-<?= $q['order']+1; ?>">
+                                                <?= __("Next","bluerabbit"); ?>
+                                            </a>
+                                        <?php } ?>
+                                    </div>
 								</div>
+
 							</div>
-							<?php $count++; ?>
 							<?php } ?>
 						</div>					
 					<?php }else{ ?>

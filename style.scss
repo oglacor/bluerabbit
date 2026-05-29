@@ -17,6 +17,7 @@ Version: 12.2.1
 }
   
 $main-font: "proxima-nova", sans-serif;  
+$base-font: "proxima-nova", sans-serif;  
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
 $special-font: "Rajdhani", sans-serif;
 $preospe-font: "Preospe", sans-serif;
@@ -1911,6 +1912,7 @@ span.divider{
 			width: 100vw;
 			min-height: 100vh;
 			display: flex;
+            padding-bottom: 75px; 
 			svg.step-tag-img{
 				width: 100%; height: 100%;
 				.outline{
@@ -2051,6 +2053,18 @@ span.divider{
 
 
 
+			.step-rating-choices{
+				display: block;
+                margin: 0 auto;
+				padding: 15px 10px;
+                text-align: center;
+                width: 400px;
+                height: 112px;
+                background-image:url(images/hud/rating-selection-box.svg);
+                background-position: center center;
+                background-size: contain;
+                background-repeat: no-repeat;
+            }
 			.step-choices{
 				display: grid;
 				position: relative;
@@ -2090,6 +2104,16 @@ span.divider{
 						img{
 							transform:scale(1.1);
 						}
+					}
+					&.active{
+						color: $new-colors-dark-blue;
+						background-color: $new-colors-green;
+						img{
+							transform:scale(1.1);
+						}
+                        &:hover{
+                            animation: button-color-glow 0.3s alternate infinite; 
+                        }
 					}
 				}
 			}
@@ -2143,7 +2167,14 @@ span.divider{
 					}
 				}
 			}
-			.step-content{
+			.step-content{ 
+                color: $white;
+                img{
+                    display: inline-block;
+                    max-height: 300px;
+                    max-width: 100%;
+
+                }
 				a{
 					display: inline-block;
 					padding: 5px;
@@ -3155,6 +3186,25 @@ span.divider{
 				font: 400 16px $special-font;
 				transition: all 0.3 ease-out;
 			}
+			// Tabi nodes inside the builder are draggable units
+			&.builder-tabi {
+				cursor: grab;
+				opacity: 0.75;
+				width: 190px;
+				z-index: 10;
+				transition: opacity 0.2s ease, box-shadow 0.2s ease;
+				&:hover {
+					opacity: 1;
+					z-index: 200;
+				}
+				&.dragging {
+					opacity: 1;
+					cursor: grabbing;
+					z-index: 300;
+					box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+					transition: none;
+				}
+			}
 			.milestone-controls{
 				opacity: 0;
 				visibility: hidden;
@@ -3477,8 +3527,8 @@ span.divider{
 			.milestone-bg-badge{
 				z-index: 10;
 				position: absolute;
-				top: 10%; left: 10%;
-				width: 80%; height:80%;
+				top: 5%; left: 5%;
+				width: 90%; height:90%;
 				transform: translate(0,0);
 				opacity: 1;
 				clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
@@ -3736,6 +3786,218 @@ span.divider{
 	}
 	
 }
+
+// ==================== TABI NODES + MODAL ====================
+
+.tabi-node {
+	position: absolute;
+	cursor: pointer;
+	width: 160px;
+	padding: 14px 16px;
+	border-radius: 14px;
+	border: 2px solid rgba(255,255,255,0.15);
+	background: rgba(4, 22, 30, 0.85);
+	backdrop-filter: blur(6px);
+	z-index: 20;
+	transition: box-shadow 0.2s ease;
+	user-select: none;
+	text-align: center;
+
+	&:hover {
+		box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+	}
+
+	.tabi-node-icon {
+		font-size: 28px;
+		margin-bottom: 6px;
+		opacity: 0.8;
+	}
+	.tabi-node-name {
+		font: 700 13px $special-font;
+		color: #fff;
+		margin-bottom: 4px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.tabi-node-count {
+		font: 400 11px $base-font;
+		opacity: 0.6;
+		color: #fff;
+	}
+
+	&.locked {
+		opacity: 0.45;
+		cursor: not-allowed;
+		filter: grayscale(60%);
+		border-color: rgba(255,255,255,0.1) !important;
+		box-shadow: none !important;
+		.tabi-node-name { color: rgba(255,255,255,0.6); }
+	}
+
+	.tabi-node-lock-msg {
+		position: absolute;
+		bottom: calc(100% + 8px);
+		left: 50%;
+		transform: translateX(-50%);
+		background: rgba(4,14,20,0.95);
+		border: 1px solid rgba(255,255,255,0.15);
+		border-radius: 8px;
+		padding: 8px 12px;
+		font: 400 11px $base-font;
+		color: #fff;
+		white-space: nowrap;
+		z-index: 100;
+		pointer-events: none;
+	}
+
+	// Color borders — mirrors board-view-column palette
+	&.white       { border-color: #FFFFFF; }
+	&.red         { border-color: #EF5350; box-shadow: 0 0 18px rgba(239,83,80,0.3); }
+	&.pink        { border-color: #EC407A; box-shadow: 0 0 18px rgba(236,64,122,0.3); }
+	&.purple      { border-color: #AB47BC; box-shadow: 0 0 18px rgba(171,71,188,0.3); }
+	&.deep-purple { border-color: #7E57C2; box-shadow: 0 0 18px rgba(126,87,194,0.3); }
+	&.indigo      { border-color: #5C6BC0; box-shadow: 0 0 18px rgba(92,107,192,0.3); }
+	&.blue        { border-color: #42A5F5; box-shadow: 0 0 18px rgba(66,165,245,0.3); }
+	&.light-blue  { border-color: #29B6F6; box-shadow: 0 0 18px rgba(41,182,246,0.3); }
+	&.cyan        { border-color: #26C6DA; box-shadow: 0 0 18px rgba(38,198,218,0.3); }
+	&.teal        { border-color: #26A69A; box-shadow: 0 0 18px rgba(38,166,154,0.3); }
+	&.green       { border-color: #66BB6A; box-shadow: 0 0 18px rgba(102,187,106,0.3); }
+	&.light-green { border-color: #9CCC65; box-shadow: 0 0 18px rgba(156,204,101,0.3); }
+	&.lime        { border-color: #D4E157; box-shadow: 0 0 18px rgba(212,225,87,0.3); }
+	&.yellow      { border-color: #FFEE58; box-shadow: 0 0 18px rgba(255,238,88,0.3); }
+	&.amber       { border-color: #FFCA28; box-shadow: 0 0 18px rgba(255,202,40,0.3); }
+	&.orange      { border-color: #FFA726; box-shadow: 0 0 18px rgba(255,167,38,0.3); }
+	&.deep-orange { border-color: #FF7043; box-shadow: 0 0 18px rgba(255,112,67,0.3); }
+	&.brown       { border-color: #8D6E63; }
+	&.grey        { border-color: #BDBDBD; }
+	&.blue-grey   { border-color: #78909C; }
+	&.black       { border-color: #000000; }
+}
+
+// Blur overlay behind the tabi modal
+.tabi-modal-overlay { 
+	display: none;
+	position: fixed;
+	top: 0; left: 0; width: 100%; height: 100%;
+	z-index: 200;
+	background: rgba(4, 14, 20, 0.65);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	&.active { display: block; }
+}
+
+// Tabi modal
+.tabi-modal {
+	display: none;
+	position: fixed;
+	top: 50%; left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 201;
+	width: 92%;
+	max-width: 780px;
+	max-height: 82vh;
+	background: #0d2330;
+	border-radius: 18px;
+	overflow: hidden;
+	flex-direction: column;
+	box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+
+	&.active { display: flex; }
+
+	.tabi-modal-header {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: 18px 20px;
+		border-bottom: 1px solid rgba(255,255,255,0.08);
+		flex-shrink: 0;
+
+		.tabi-modal-color-strip {
+			width: 6px;
+			height: 36px;
+			border-radius: 4px;
+			flex-shrink: 0;
+			&.white       { background: #FFFFFF; }
+			&.red         { background: #EF5350; }
+			&.pink        { background: #EC407A; }
+			&.purple      { background: #AB47BC; }
+			&.deep-purple { background: #7E57C2; }
+			&.indigo      { background: #5C6BC0; }
+			&.blue        { background: #42A5F5; }
+			&.light-blue  { background: #29B6F6; }
+			&.cyan        { background: #26C6DA; }
+			&.teal        { background: #26A69A; }
+			&.green       { background: #66BB6A; }
+			&.light-green { background: #9CCC65; }
+			&.lime        { background: #D4E157; }
+			&.yellow      { background: #FFEE58; }
+			&.amber       { background: #FFCA28; }
+			&.orange      { background: #FFA726; }
+			&.deep-orange { background: #FF7043; }
+			&.brown       { background: #8D6E63; }
+			&.grey        { background: #BDBDBD; }
+			&.blue-grey   { background: #78909C; }
+			&.black       { background: #000000; }
+		}
+
+		.tabi-modal-title {
+			flex: 1;
+			margin: 0;
+			font: 700 20px $special-font;
+			color: #fff;
+		}
+
+		.tabi-modal-close {
+			margin-left: auto;
+			flex-shrink: 0;
+		}
+	}
+
+	.tabi-modal-board {
+		overflow-y: auto;
+		padding: 16px 20px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+
+		// Re-use board-view milestone card sizing
+		.milestone-container {
+			width: 100%;
+			height: auto;
+			position: static;
+			background-color: rgba(30, 55, 70, 0.4);
+			padding: 10px;
+			margin: 8px 0;
+			border-radius: 10px;
+			transform: translateZ(0px) scale(1) rotate(0deg) !important;
+		}
+	}
+}
+
+// Tabi prerequisites UI (in adventure settings)
+.tabi-prereq-row {
+	.cell-full { width: 100%; padding: 8px 12px; }
+	.tabi-prereq-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 6px;
+	}
+	.tabi-prereq-label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		border-radius: 20px;
+		font: 500 12px $base-font;
+		cursor: pointer;
+		border: 1px solid rgba(0,0,0,0.1);
+		input[type="checkbox"] { cursor: pointer; }
+	}
+}
+
+// ==================== END TABI ====================
 
 .milestone-preview-bg{
 	position: fixed;
@@ -6128,12 +6390,27 @@ ul.questions{
 		border: solid 2px #37474F;
 		color: #37474F;
 		font-size: 16px;
-		&.active{
-			color: #333;
-			border: solid 2px #FF6F00;
-			background-color: #FFD600;
+        transition: all 0.3s ease-out;
+		&:hover{
+			color: #FFF;
+			border: solid 2px $new-colors-dark-blue;
+			background-color: $new-colors-blue;
 			transform: scale(1);
 			font-size: 24px;
+		}
+		&.active{
+			color: $white;
+			border: solid 2px $new-colors-green;
+			background-color: $new-colors-green;
+			transform: scale(1);
+			font-size: 24px;
+            &:hover{
+                color: #FFF;
+                border: solid 2px $new-colors-dark-blue;
+                background-color: $new-colors-yellow;
+                transform: scale(1);
+                font-size: 24px;
+            }
 		}
 		&.star-0{
 			&.active{
@@ -8977,4 +9254,8 @@ nav.tab-nav{
 @keyframes arrow-fade{
 	0% { opacity: 0.1; }
 	100% { opacity: 0.5; }
+}
+@keyframes button-color-glow{
+	0% { background-color: $new-colors-blue; }
+	100% { background-color: $new-colors-yellow; }
 }

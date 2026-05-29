@@ -1841,7 +1841,7 @@ function displayAchievementCard(){
 		$isEarned = $a->player_id==$current_user->ID ? true : false;
 		
 		$data['achievement']=$a;
-		$data['achievement_content']=apply_filters("the_content",$a->achievement_content);
+		$data['achievement_content'] = apply_filters("the_content", $a->achievement_content);
 		if(isset($a->achievement_applied)){
 			$earned = date('jS, M Y', strtotime($a->achievement_applied));
 			$data['achievement']->achievement_earned = __("Earned: ","bluerabbit")." $earned";
@@ -2280,6 +2280,7 @@ function updateQuest(){
 		$quest_secondary_headline = stripslashes_deep($quest_data['quest_secondary_headline']);
 		$quest_style = $quest_data['quest_style'];
 		$quest_objectives = $quest_data['quest_objectives'];
+		$tabi_id = $quest_data['tabi_id'];
 		$steps_order = $quest_data['steps_order'];
 
 		if(!$quest_title){
@@ -2327,9 +2328,9 @@ function updateQuest(){
 				`mech_min_words`,`mech_min_links`,`mech_min_images`,
 				`mech_max_attempts`,`mech_free_attempts`,`mech_attempt_cost`,`mech_questions_to_display`,`mech_answers_to_win`,`mech_time_limit`,`mech_show_answers`,
 				`mech_item_reward`,`mech_achievement_reward`,
-				`quest_order`, `quest_guild`
+				`quest_order`, `quest_guild`, `tabi_id`
 			)
-			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %d, %d, %d, %d, %s, %s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)
+			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %d, %d, %d, %d, %s, %s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)
 			
 			ON DUPLICATE KEY UPDATE
 				`quest_author`=%d, `adventure_id`=%d, `achievement_id`=%d,
@@ -2341,7 +2342,7 @@ function updateQuest(){
 				`mech_min_words`=%d, `mech_min_links`=%d, `mech_min_images`=%d,
 				`mech_max_attempts`=%d, `mech_free_attempts`=%d, `mech_attempt_cost`=%d, `mech_questions_to_display`=%d, `mech_answers_to_win`=%d, `mech_time_limit`=%d, `mech_show_answers`=%d,
 				`mech_item_reward`=%d, `mech_achievement_reward`=%d,
-				`quest_order`=%d, `quest_guild`=%d
+				`quest_order`=%d, `quest_guild`=%d, `tabi_id`=%d
 			";
 			$sql = $wpdb->prepare(
 				
@@ -2359,7 +2360,7 @@ function updateQuest(){
 				$quest_mechs['mech_min_words'], $quest_mechs['mech_min_links'], $quest_mechs['mech_min_images'],
 				$quest_mechs['mech_max_attempts'], $quest_mechs['mech_free_attempts'], $quest_mechs['mech_attempt_cost'], $quest_mechs['mech_questions_to_display'], $quest_mechs['mech_answers_to_win'], $quest_mechs['mech_time_limit'], $quest_mechs['mech_show_answers'],
 				$quest_mechs['mech_item_reward'], $quest_mechs['mech_achievement_reward'],
-				$quest_order, $quest_guild,
+				$quest_order, $quest_guild,$tabi_id,
 				
 				$quest_author,
 				$adventure_id, $achievement_id,
@@ -2372,7 +2373,7 @@ function updateQuest(){
 				$quest_mechs['mech_min_words'], $quest_mechs['mech_min_links'], $quest_mechs['mech_min_images'],
 				$quest_mechs['mech_max_attempts'], $quest_mechs['mech_free_attempts'], $quest_mechs['mech_attempt_cost'], $quest_mechs['mech_questions_to_display'], $quest_mechs['mech_answers_to_win'], $quest_mechs['mech_time_limit'], $quest_mechs['mech_show_answers'],
 				$quest_mechs['mech_item_reward'], $quest_mechs['mech_achievement_reward'],
-				$quest_order, $quest_guild
+				$quest_order, $quest_guild, $tabi_id
 			);
 			$wpdb->query($sql);
 			if($wpdb->insert_id){
@@ -6072,6 +6073,7 @@ function getSurvey($survey_id){
 		$questions[$qs->survey_question_id]['survey_question_description']=$qs->survey_question_description;
 		$questions[$qs->survey_question_id]['survey_question_display']=$qs->survey_question_display;
 		$questions[$qs->survey_question_id]['survey_question_type']=$qs->survey_question_type;
+		$questions[$qs->survey_question_id]['order']=$qs->survey_question_order;
 		$questions[$qs->survey_question_id]['options'][$qs->survey_option_id]['text']=$qs->survey_option_text;
 		$questions[$qs->survey_question_id]['options'][$qs->survey_option_id]['image']=$qs->survey_option_image;
 		if(isset($answers['a_'.$qs->survey_question_id])){
@@ -6266,6 +6268,53 @@ function getTabis($adventure_id){
 	$result = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_tabis
 	WHERE adventure_id=$adventure_id AND tabi_status='publish'");
 	return $result;
+}
+
+// Returns [ tabi_id => [required_tabi_id, ...], ... ] for all tabis in an adventure
+function getTabiPrerequisitesMap($adventure_id) {
+	global $wpdb;
+	$rows = $wpdb->get_results("
+		SELECT tp.tabi_id, tp.requires_tabi_id
+		FROM {$wpdb->prefix}br_tabi_prerequisites tp
+		JOIN {$wpdb->prefix}br_tabis t ON tp.tabi_id = t.tabi_id
+		WHERE t.adventure_id = $adventure_id
+	");
+	$map = [];
+	foreach($rows as $r) {
+		$map[$r->tabi_id][] = (int)$r->requires_tabi_id;
+	}
+	return $map;
+}
+
+// Returns array of tabi_ids where the player has completed ALL published quests (pp_status='publish')
+function getCompletedTabiIds($adventure_id, $player_id) {
+	global $wpdb;
+	$totals = $wpdb->get_results("
+		SELECT tabi_id, COUNT(*) AS total
+		FROM {$wpdb->prefix}br_quests
+		WHERE adventure_id = $adventure_id AND tabi_id > 0 AND quest_status = 'publish'
+		GROUP BY tabi_id
+	");
+	if(empty($totals)) return [];
+
+	$done = $wpdb->get_results("
+		SELECT q.tabi_id, COUNT(*) AS completed
+		FROM {$wpdb->prefix}br_player_posts pp
+		JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
+		WHERE q.adventure_id = $adventure_id AND q.tabi_id > 0
+		AND pp.player_id = $player_id AND pp.pp_status = 'publish'
+		GROUP BY q.tabi_id
+	");
+	$done_map = [];
+	foreach($done as $d) { $done_map[$d->tabi_id] = (int)$d->completed; }
+
+	$completed = [];
+	foreach($totals as $t) {
+		if(($done_map[$t->tabi_id] ?? 0) >= (int)$t->total) {
+			$completed[] = (int)$t->tabi_id;
+		}
+	}
+	return $completed;
 }
 function getTabi($tabi_id){
 	global $wpdb;
@@ -6493,11 +6542,15 @@ function addTabi(){
 	die();
 }
 function insertTabiRow($p_tabi_id){
-	global $wpdb; 
+	global $wpdb;
 	$current_user = wp_get_current_user();
 	$tabi_id = $p_tabi_id ? $p_tabi_id : $_POST['tabi_id'];
 	if($tabi_id){
 		$a = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_tabis WHERE tabi_id=$tabi_id AND tabi_status='publish'");
+		if($a) {
+			$tabis = getTabis($a->adventure_id);
+			$tabi_prereq_nonce = wp_create_nonce('tabi_prereq_nonce');
+		}
 		$theFile = (get_template_directory()."/tabi-row.php");
 		if(file_exists($theFile)) {
 			include ($theFile);
@@ -6733,14 +6786,17 @@ function duplicateQuestProcess($quest_id, $adventure_id, $from_template=NULL ){
 	global $wpdb; $current_user = wp_get_current_user();
 	$quest = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=$quest_id");
 	
+
+		
+
 	if(!isset($from_template)){
 		$duplication = "
 			INSERT INTO {$wpdb->prefix}br_quests
-	(`quest_id`, `quest_author`, `quest_order`, `adventure_id`, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`, `quest_style`, `quest_secondary_headline`, `quest_color`)
+	(`quest_id`, `quest_author`, `quest_order`, `adventure_id`, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`, `quest_style`, `quest_secondary_headline`, `quest_color`, `milestone_top`, `milestone_left`, `milestone_x`, `milestone_y`, `milestone_z`, `milestone_rotation`)
 
 			SELECT 
 
-	 '',`quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`	
+	 NULL,`quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, `milestone_top`, `milestone_left`, `milestone_x`, `milestone_y`, `milestone_z`, `milestone_rotation`	
 
 			FROM  {$wpdb->prefix}br_quests WHERE `quest_id` = %d;
 		";
@@ -6749,15 +6805,15 @@ function duplicateQuestProcess($quest_id, $adventure_id, $from_template=NULL ){
 	}else{
 		$duplication = "
 			INSERT INTO {$wpdb->prefix}br_quests
-	(`quest_id`, `quest_author`, `quest_order`, `adventure_id`, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`, `quest_style`, `quest_secondary_headline`, `quest_color`, `quest_parent`)
+	(`quest_author`, `quest_order`, `adventure_id`, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`, `quest_style`, `quest_secondary_headline`, `quest_color`, `milestone_top`, `milestone_left`, `milestone_x`, `milestone_y`, `milestone_z`, `milestone_rotation`)
 
 			SELECT 
 
-	 '',`quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, %d	
+	 `quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, `milestone_top`, `milestone_left`, `milestone_x`, `milestone_y`, `milestone_z`, `milestone_rotation`	
 
 			FROM  {$wpdb->prefix}br_quests WHERE `quest_id` = %d;
 		";
-		$sql = $wpdb->prepare($duplication, $adventure_id, $quest_id, $quest_id);
+		$sql = $wpdb->prepare($duplication, $adventure_id, $quest_id);
 	}
 	
 	
@@ -7013,6 +7069,7 @@ function duplicateQuests(){
 	$adventure_id  = isset($_POST['adventure_target']) ? $_POST['adventure_target'] : 0;
 	$duplicates = isset($_POST['duplicates']) ? $_POST['duplicates'] : [] ;
 	$achievement_duplicates = isset($_POST['achievement_duplicates']) ? $_POST['achievement_duplicates'] : [];
+	$tabi_duplicates = isset($_POST['tabi_duplicates']) ? $_POST['tabi_duplicates'] : [];
 	$item_duplicates = isset($_POST['item_duplicates']) ? $_POST['item_duplicates'] : [];
 	$enc_duplicates = isset($_POST['enc_duplicates']) ? $_POST['enc_duplicates'] : [];
 	$speakers_duplicates = isset($_POST['speakers_duplicates']) ? $_POST['speakers_duplicates'] : [];
@@ -7020,7 +7077,7 @@ function duplicateQuests(){
 	$data['success']=false;
 	if(wp_verify_nonce($nonce, 'duplicate_nonce')){
 		$total = 0;
-		if(!empty($duplicates) || !empty($achievement_duplicates) || !empty($item_duplicates) || !empty($enc_duplicates)){
+		if(!empty($duplicates) || !empty($achievement_duplicates) || !empty($item_duplicates) || !empty($tabi_duplicates) || !empty($enc_duplicates)){
 			$data['message'] .='<div class="boxed max-w-600 padding-20 white-color"><h1 class="font _30 w900">'.__("Duplicating","bluerabbit").'</h1> <ul class="margin-0 padding-0">';
 			if(!empty($duplicates)){
 				///////////////// QUESTS
@@ -7069,7 +7126,24 @@ function duplicateQuests(){
 						";
 						$data['clones']['items'][$clone->ref_id] = $clone;
 					}else{
-						$data['message'] .=   "<li>".__("Error duplicating item",'bluerabbit')." -[ $d ]-</li>";
+						$data['message'] .=   "<li>".__("Error duplicating item",'bluerabbit')." -[ $d ]- ".$clone->error."</li>";
+					}
+				}
+			}
+			if(!empty($tabi_duplicates)){
+				$data['message'] .= '<br class="clear">';
+				foreach($tabi_duplicates as $d){
+					$clone = duplicateObjectProcess($d,$adventure_id,'tabi');
+					if($clone->tabi_id){
+						$total++;
+						$data['message'] .= "
+							<li class='font _20 block padding-5 teal-500'>
+								<span class='icon icon-activity'></span> $clone->tabi_name
+							</li>
+						";
+						$data['clones']['tabis'][] = $clone;
+					}else{
+						$data['message'] .=   "<li>".__("Error duplicating Tabi",'bluerabbit')." -[ $d ]- ".$clone."</li>";
 					}
 				}
 			}
@@ -7288,10 +7362,10 @@ function duplicateObjectProcess($id,$adventure_id, $type, $from_template=NULL){
 			$clone_sql = "
 				INSERT INTO {$wpdb->prefix}br_items
 
-				(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `item_parent`, `ref_id`)
+				(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `item_parent`, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` )
 
 				SELECT 
-				%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, %d, `ref_id`
+				%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, %d, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` 
 				
 				FROM  {$wpdb->prefix}br_items WHERE `item_id` = %d;
 			";
@@ -7300,10 +7374,10 @@ function duplicateObjectProcess($id,$adventure_id, $type, $from_template=NULL){
 			$clone_sql = "
 				INSERT INTO {$wpdb->prefix}br_items
 
-				(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `item_parent`,`ref_id`)
+				(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `item_parent`,`ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` )
 
 				SELECT 
-				%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`,%d, %s
+				%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`,%d, %s, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` 
 				
 				FROM  {$wpdb->prefix}br_items WHERE `item_id` = %d;
 			";
@@ -7313,6 +7387,25 @@ function duplicateObjectProcess($id,$adventure_id, $type, $from_template=NULL){
 		$clone_id=$wpdb->insert_id;
 		logActivity($adventure_id,'duplicate','item',"",$id);
 		$clone = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id=".$clone_id);
+	}elseif($type=='tabi'){
+        $clone_sql = "
+            INSERT INTO {$wpdb->prefix}br_tabis
+
+            (`adventure_id`, `tabi_name`, `tabi_status`, `tabi_width`, `tabi_height`, `tabi_color`, `tabi_background`, `tabi_level`, `tabi_on_journey` )
+
+            SELECT 
+            %d, `tabi_name`, `tabi_status`, `tabi_width`, `tabi_height`, `tabi_color`, `tabi_background`, `tabi_level`, `tabi_on_journey`
+            
+            FROM  {$wpdb->prefix}br_tabis WHERE `tabi_id` = %d;
+        ";
+        $clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id));
+		$clone_id=$wpdb->insert_id;
+        if($clone_id){
+            logActivity($adventure_id,'duplicate','tabi',"",$id);
+            $clone = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id=".$clone_id);
+        }else{
+            $clone = print_r($wpdb->last_query,true);
+        }
 	}elseif($type=='encounter'){
 		if(isset($from_template)){
 			$clone_sql = "

@@ -16,6 +16,7 @@ $adv_config=array(
 		'label'=>__("Zoom Level","bluerabbit"),
 		'icon'=>'lock',
 		'type'=>'select',
+		'default'=>'0',
 		'options' => array(
 			array( "-1000", "10%" ),
 			array( "-900", "20%" ),
@@ -914,11 +915,12 @@ $image_types = array(
 										</div>
 									</div>
 									<?php if($tabis){ ?>
+										<?php $tabi_prereq_nonce = wp_create_nonce('tabi_prereq_nonce'); ?>
 										<?php foreach($tabis as $avKey=>$a){ ?>
-											<?php 
+											<?php
 												$rowNumber = $avKey+1;
-												include (get_stylesheet_directory() . '/tabi-row.php'); 
-												?>
+												include (get_stylesheet_directory() . '/tabi-row.php');
+											?>
 										<?php } ?>
 									<?php } ?>
 								</div>
@@ -1213,8 +1215,10 @@ $image_types = array(
 														<input class="form-ui setting-value" type="text" value="<?= isset($adv_settings[$sKey]['value']) ? $adv_settings[$sKey]['value'] : ""; ?>">
 													<?php }elseif($s['type']=='select'){ ?>
 														<select class="form-ui setting-value">
-															<?php foreach($s['options'] as $opt){ ?>
-																<option <?php if(isset($adv_settings[$sKey]['value']) && $adv_settings[$sKey]['value'] == $opt[0]) { echo 'selected';} ?> value="<?= $opt[0]; ?>">
+															<?php
+															$currentSelectVal = isset($adv_settings[$sKey]['value']) ? $adv_settings[$sKey]['value'] : (isset($s['default']) ? $s['default'] : '');
+															foreach($s['options'] as $opt){ ?>
+																<option <?php if($currentSelectVal == $opt[0]) { echo 'selected';} ?> value="<?= $opt[0]; ?>">
 																	<?= $opt[1]; ?>
 																</option>
 															<?php } ?>

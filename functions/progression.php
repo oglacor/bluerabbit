@@ -168,8 +168,9 @@ function getPlayerProgress($adventure_id, $uID){
 
 
 		foreach($quests as $qKey=>$quest){
-			if($player_work[$quest->quest_id]->pp_status == 'publish'){
-				$pp = $player_work[$quest->quest_id];
+            $pp = isset($player_work[$quest->quest_id]) ? $player_work[$quest->quest_id] : false;
+			if(isset($pp->pp_status) && $pp->pp_status == 'publish'){
+				
 				if($pp->pp_grade > 0 && $after == "after" || $after == "before"){
 					if(!in_array($quest->quest_id,$fqs)){
 						$myEP += $quest->mech_ep;

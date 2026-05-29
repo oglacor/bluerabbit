@@ -120,14 +120,116 @@
 
 		<div class="journey-container">
 			<?php
-            if($journey_style == 'board'){
-                include (TEMPLATEPATH . '/journey-board.php');
-            }else{
-                include (TEMPLATEPATH . '/journey.php'); 
-            }
-            
-            ?>
+			if($journey_style == 'board'){
+				include (TEMPLATEPATH . '/journey-board.php');
+			}else{
+				include (TEMPLATEPATH . '/journey.php');
+			}
+			?>
 		</div>
+
+		<?php // Tabi modals — only relevant on map view where tabi nodes are shown
+		if($journey_style != 'board' && isset($tabis) && $tabis) { ?>
+		<div class="tabi-modal-overlay" id="tabi-modal-overlay" onclick="closeTabiModal()"></div>
+		<?php
+		$tabi_position_nonce = wp_create_nonce('tabi_position_nonce');
+		foreach($tabis as $t) {
+			$modal_quests = isset($tabi_quest_map[$t->tabi_id]) ? $tabi_quest_map[$t->tabi_id] : [];
+			?>
+			<div class="tabi-modal" id="tabi-modal-<?= $t->tabi_id; ?>" data-locked="<?= (!empty($tabi_locked[$t->tabi_id])) ? '1' : '0'; ?>">
+				<div class="tabi-modal-header">
+					<div class="tabi-modal-color-strip <?= esc_attr($t->tabi_color); ?>"></div>
+					<h2 class="tabi-modal-title"><?= esc_html($t->tabi_name); ?></h2>
+					<button class="tabi-modal-close action-button" onclick="closeTabiModal()">
+						<span class="icon icon-close"></span>
+					</button>
+				</div>
+				<div class="tabi-modal-board">
+					<?php foreach($modal_quests as $mi) {
+						$scale = '';
+						$hideByDay = '';
+						$allReqs = false;
+						if($mi->quest_type != 'blog-post' && $mi->quest_type != 'lore') {
+							if($hide_quests == 'before'){
+								if($mi->mech_start_date != '0000-00-00 00:00:00' && $mi->mech_start_date != NULL){
+									$date = date('YmdHi', strtotime($mi->mech_start_date));
+									if($today < $date){ $hideByDay = 'hidden'; }
+								}
+							} elseif($hide_quests == 'after'){
+								if($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL){
+									$date = date('YmdHi', strtotime($mi->mech_deadline));
+									if($today > $date){ $hideByDay = 'hidden'; }
+								}
+							} elseif($hide_quests == 'both'){
+								if(($mi->mech_start_date != '0000-00-00 00:00:00' && $mi->mech_start_date != NULL) || ($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL)){
+									$start = date('YmdHi', strtotime($mi->mech_start_date));
+									$end   = date('YmdHi', strtotime($mi->mech_deadline));
+									if($today < $start || $today > $end){ $hideByDay = 'hidden'; }
+								}
+							}
+							if(($isAdmin || $isGM || $isNPC) && $hide_quests != 'never' && $hideByDay == 'hidden'){
+								$hideByDay = 'opacity-60';
+							}
+							if($hideByDay != 'hidden') {
+								$elementID = $mi->quest_id;
+								$permalink = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
+								?>
+								<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="order:<?= $mi->quest_order; ?>">
+								<?php
+								if(in_array($mi->achievement_id, $player_achievements) || !$mi->achievement_id) {
+									if(in_array($mi->quest_id, $player['fqs'])){
+										include (TEMPLATEPATH . '/milestone-finished.php');
+									} else {
+										if($current_player->player_level < $mi->mech_level){
+											include (TEMPLATEPATH . '/milestone-levelup.php');
+										} else {
+											if($mi->mech_unlock_cost > 0 && !in_array($mi->quest_id, $player['unlocks'])){
+												include (TEMPLATEPATH . '/milestone-unlock.php');
+											} else {
+												if($today < date('YmdHi', strtotime($mi->mech_start_date))){
+													include (TEMPLATEPATH . '/milestone-startdate.php');
+												} else {
+													if($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL && $today > date('YmdHi', strtotime($mi->mech_deadline)) && $mi->mech_deadline_cost <= 0){
+														include (TEMPLATEPATH . '/milestone-deadline.php');
+													} elseif($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL && $today > date('YmdHi', strtotime($mi->mech_deadline)) && $mi->mech_deadline_cost > 0 && !in_array($mi->quest_id, $player['deadlines'])){
+														include (TEMPLATEPATH . '/milestone-deadline-cost.php');
+													} else {
+														if(!empty($player['fqs']) && isset($reqs_ids[$mi->quest_id])){
+															$reqs_finished = $player['fqs'] ? array_intersect($player['fqs'], $reqs_ids[$mi->quest_id]) : 0;
+															if($reqs_finished != $reqs_ids[$mi->quest_id]){
+																include (TEMPLATEPATH . '/milestone-requirements.php');
+															} else {
+																$allReqs = true;
+															}
+														} else {
+															$allReqs = true;
+														}
+														if($allReqs){
+															if($player['debt'] <= 0){
+																include (TEMPLATEPATH . '/milestone.php');
+															} else {
+																include (TEMPLATEPATH . '/milestone-blocked.php');
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								} else {
+									include (TEMPLATEPATH . '/milestone-unavailable.php');
+								}
+								?>
+								</div>
+								<?php
+							}
+						}
+					} ?>
+				</div>
+			</div>
+		<?php } ?>
+		<input type="hidden" id="tabi-position-nonce" value="<?= $tabi_position_nonce; ?>">
+		<?php } ?>
 
 
 
@@ -209,12 +311,23 @@
 
 
 	<?php }else{?>	
-		<div class="overflow-hidden perfect-center w-300 border rounded-8 absolute layer base padding-10 text-center">
-			<div class="layer absolute background white-bg opacity-80"></div>
-			<div class="layer base relative font _24 w900 uppercase blue-500">
-				<?php _e("This is one empty journey","bluerabbit"); ?>
-			</div>
-		</div>
+        <div class="adventures">
+            <ul>
+                <li class="adventure add-new">
+                    <a class="" href="<?= get_bloginfo('url'); ?>/new-quest/?adventure_id=<?= $adv_child_id; ?>">
+                        <span class="icon icon-add"></span><br>
+                        <span class="hex-text"><?= __("Create a new Quest","bluerabbit"); ?></span>
+                    </a>
+                </li>
+                <li class="adventure add-new">
+                    <a class="" href="<?= get_bloginfo('url'); ?>/new-adventure/?adventure_id=<?= $adv_child_id; ?>#tabis-settings">
+                        <span class="icon icon-add"></span><br>
+                        <span class="hex-text"><?= __("Create new Tabi","bluerabbit"); ?></span>
+                    </a>
+                </li>
+            </ul>
+            </ul>
+        </div>
 	<?php } ?>	
 
 	<?php if($isGM){ ?>

@@ -15,6 +15,16 @@ function jumpToQuestionByHash(){
 	}
 	
 }
+function changeTabByHash(){
+	let tabToOpen = window.location.hash.substring(1);
+    if(tabToOpen){
+        if($('#tab-group')){
+            switchTabs('#tab-group','#'+tabToOpen);
+        }else if($('#main-tabs')){
+            switchTabs('#main-tabs','#'+tabToOpen);
+        }
+    }   
+}
 
 function registerNewPlayer(){
 	showLoader();
@@ -745,7 +755,7 @@ function editTabiPiece(item_id){
 	}
 }
 function resetTabiPiece(item_id){
-	$(`#tabi-piece-${item_id} .tabi-piece-data input.piece-scale`).val(10);
+	$(`#tabi-piece-${item_id} .tabi-piece-data input.piece-scale`).val(1);
 	$(`#tabi-piece-${item_id} .tabi-piece-data input.piece-rotation`).val(0);
 	$(`#tabi-piece-${item_id} .tabi-piece-data input.piece-z`).val(1);
 	$(`#tabi-piece-${item_id} .tabi-piece-data input.piece-x`).val(10);
@@ -759,7 +769,7 @@ function applyTransform(item_id, setup=null){
     if(zIndex < 1) { zIndex = 1; }
 	let xPos = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-x`).val();
 	let yPos = $(`#tabi-piece-${item_id} .tabi-piece-data input.piece-y`).val();
-	let transform_values = `scale(${zIndex}) rotate(${rotationVal}deg)`;
+	let transform_values = `scale(${scaleVal}) rotate(${rotationVal}deg)`;
 
 	$('#tabi-piece-image-'+item_id).css({'transform':transform_values});
 	$('#tabi-piece-'+item_id).css({'z-index':zIndex, 'width':scaleVal+'%'});
@@ -802,14 +812,14 @@ function zDown(id){
 function scaleUp(id){
 	let $scaleInput = $(`#tabi-piece-${id} .piece-scale`);
 	if($scaleInput.val() < 100){
-		$scaleInput.val(+$scaleInput.val() + 1);
+		$scaleInput.val(+$scaleInput.val() + 0.25);
 	}
 	applyTransform(id);
 }
 function scaleDown(id){
 	let $scaleInput = $(`#tabi-piece-${id} .piece-scale`);
 	if($scaleInput.val() > 1){
-		$scaleInput.val(+$scaleInput.val() - 1);
+		$scaleInput.val(+$scaleInput.val() - 0.25);
 	}
 	applyTransform(id);
 }
@@ -890,6 +900,17 @@ function initializeBuilderMilestones(){
 		}
 	});
 }
+function initializeBuilderTabis(){
+	$('#builder .builder-tabi').draggable({
+		start: function () {
+			$(this).addClass('dragging');
+		},
+		stop: function () {
+			updateTabiPosition($(this).data('tabi-id'));
+			$(this).removeClass('dragging');
+		}
+	});
+}
 function resetMilestonesToList(){
 	$(`.milestone .milestone-data .z-pos`).val(0);
 	$(`.milestone .milestone-data .rotation`).val(0);
@@ -928,19 +949,28 @@ function generateHexFilled(radius) {
 	return results;
 }
 
-function resetMilestonePositions(groupby= 'data-color', spacing = 50, delayStep = 5, maxRowWidth = 1500, originOffset = 250) {
+function resetMilestonePositions(groupby= 'data-color', spacing = 50, delayStep = 5, maxRowWidth = 2500, originOffset = 500) {
 	const $milestones = $('.milestone');
 	const groups = {
+        'orange': [],
 		'red': [],
-		'pink': [],
-		'teal': [],
-		'indigo': [],
-		'blue': [],
-		'cyan': [],
-		'deep-orange': [],
-		'purple': [],
-		'brown': [],
-		'amber': []
+        'pink': [],
+        'purple': [],
+        'deep-purple': [],
+        'indigo': [],
+        'blue': [],
+        'light-blue': [],
+        'cyan': [],
+        'teal': [],
+        'green': [],
+        'light-green': [],
+        'lime': [],
+        'yellow': [],
+        'amber': [],
+        'deep-orange': [],
+        'brown': [],
+        'grey': [],
+        'blue-grey': []
 	};
 
 	// 1. Group by color
@@ -995,6 +1025,7 @@ const axialOffsets = [
 			// Convert axial to pixel (pointy-topped hex layout)
 			const x = spacing * Math.sqrt(3) * q + offsetX + originOffset;
 			const y = spacing * 2 * (r + q / 2) + offsetY + originOffset;
+            console.log(`Milestone ${$m.data('id')} - Axial: (${q}, ${r}) => Pixel: (${x}, ${y})`);
 
 
 			setTimeout(() => {
@@ -1117,7 +1148,7 @@ function displayAchievementCard(achievement_id=0){
 			}
 			$('#achievements-display .achievement-card-badge .decor-border path').removeClass().addClass(data.achievement.achievement_color);
 			$('#achievements-display .achievement-card-title').text(data.achievement.achievement_name);
-			$('#achievements-display .achievement-card-message').html(data.achievement.achievement_content);
+			$('#achievements-display .achievement-card-message').html(data.achievement_content);
 			$('#achievements-display .achievement-card-earned').text(data.achievement.achievement_earned);
 			
 			if($('#achievement-card-actions')){
@@ -2148,10 +2179,10 @@ function fakeSubmit(){
 	});
 }
 function submitSurveyAnswer(question_id,option_id=0, style=""){
+	showLoader("small");
 	let survey_id = $('#the_survey_id').val();
 	let adventure_id = $('#the_adventure_id').val();
 	let value = $('#question-answer-value-'+question_id).val();
-	showLoader("small");
 	let send_answer = false;
 	if(option_id > 0){
 		if($("#option-"+style+option_id).hasClass('active')){
@@ -3374,6 +3405,7 @@ function updateQuest(){
 		quest_guild : $('#the_quest_guild').val(),
 		adventure_id : $('#the_adventure_id').val(),
 		achievement_id : $('#the_achievement_id').val(),
+		tabi_id : $('#the_tabi_id').val(),
 		quest_reqs:quest_reqs,
 		quest_libs:quest_libs,
 		quest_item_required:quest_item_required,
@@ -4748,6 +4780,62 @@ function setTabiOnJourney(id){
 		}
 	});
 }
+///////////////////////// Tabi Modal  //////////////////
+
+function openTabiModal(tabiId) {
+	let $node = $('#tabi-node-' + tabiId);
+	if($node.data('locked') == 1) {
+		let label = $node.data('lock-label') || '';
+		let msg = label
+			? '🔒 Complete <strong>' + label + '</strong> first to unlock this.'
+			: '🔒 This tabi is locked. Complete the required tabis first.';
+		$node.find('.tabi-node-lock-msg').remove();
+		$node.append('<div class="tabi-node-lock-msg">' + msg + '</div>');
+		setTimeout(function(){ $node.find('.tabi-node-lock-msg').fadeOut(400, function(){ $(this).remove(); }); }, 3000);
+		return;
+	}
+	$('.tabi-modal').removeClass('active');
+	$('#tabi-modal-' + tabiId).addClass('active');
+	$('#tabi-modal-overlay').addClass('active');
+	$('body').css('overflow', 'hidden');
+}
+
+function saveTabiPrerequisites(tabiId) {
+	let nonce = $('#tabi-prereq-row-' + tabiId + ' .tabi-prereq-nonce').val();
+	let requires = [];
+	$('.tabi-prereq-checkbox[data-tabi-id="' + tabiId + '"]:checked').each(function(){
+		requires.push($(this).val());
+	});
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'saveTabiPrerequisites', tabi_id: tabiId, requires: requires, nonce: nonce },
+		method: 'POST',
+		success: function(data_received) {
+			displayAjaxResponse(data_received);
+		}
+	});
+}
+
+function closeTabiModal() {
+	$('.tabi-modal').removeClass('active');
+	$('#tabi-modal-overlay').removeClass('active');
+	$('body').css('overflow', '');
+}
+
+function updateTabiPosition(tabiId) {
+	let nonce = $('#tabi-position-nonce').val();
+	let top   = parseInt($('#tabi-node-' + tabiId).css('top'), 10);
+	let left  = parseInt($('#tabi-node-' + tabiId).css('left'), 10);
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'saveTabiPosition', tabi_id: tabiId, top: top, left: left, nonce: nonce },
+		method: 'POST',
+		success: function(data_received) {
+			displayAjaxResponse(data_received);
+		}
+	});
+}
+
 ///////////////////////// Set Achievement  //////////////////
 function setAchievement(id,type){
 	showLoader('small');
@@ -5218,6 +5306,7 @@ function duplicateQuests(){
 	let duplicates =[];
 	let achievement_duplicates =[];
 	let item_duplicates =[];
+	let tabi_duplicates =[];
 	let enc_duplicates =[];
 	let speakers_duplicates =[];
 	
@@ -5229,6 +5318,9 @@ function duplicateQuests(){
 	});
 	$('ul#items-to-duplicate li.active.to-duplicate').each(function(index, element) {
 		item_duplicates.push($('input.reqs-id',this).val());
+	});
+	$('ul#tabis-to-duplicate li.active.to-duplicate').each(function(index, element) {
+		tabi_duplicates.push($('input.reqs-id',this).val());
 	});
 	$('ul#encounters-to-duplicate li.active.to-duplicate').each(function(index, element) {
 		enc_duplicates.push($('input.reqs-id',this).val());
@@ -5249,6 +5341,7 @@ function duplicateQuests(){
 			duplicates : duplicates,
 			achievement_duplicates : achievement_duplicates,
 			item_duplicates : item_duplicates,
+			tabi_duplicates : tabi_duplicates,
 			enc_duplicates : enc_duplicates
 		}),
 		method: "POST",
@@ -5909,7 +6002,11 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 	if(hash_change_type=='survey'){
 		jumpToQuestionByHash();
-		window.addEventListener("hashchange", jumpToQuestionByHash);
+		window.addEventListener("hashchange", jumpToStepByHash);
+	}
+	if(hash_change_type=='settings-tab'){
+		changeTabByHash();
+		window.addEventListener("hashchange", changeTabByHash);
 	}
 });
 
