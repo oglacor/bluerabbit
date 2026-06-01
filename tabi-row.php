@@ -40,7 +40,7 @@
         </div>
         <div class="cell cell-location">
             <div class="input-group">
-                <input type="checkbox" class="form-ui tabi-on-journey-checkbox" id="tabi-on-journey-<?= $a->tabi_id; ?>" <?= $a->tabi_fixed ? 'checked' : ''; ?> onChange="setTabiOnJourney(<?= $a->tabi_id; ?>);">
+                <input type="checkbox" class="form-ui tabi-on-journey-checkbox" id="tabi-on-journey-<?= $a->tabi_id; ?>" <?= $a->tabi_on_journey ? 'checked' : ''; ?> onChange="setTabiOnJourney(<?= $a->tabi_id; ?>);">
             </div>
         </div>
     </div>
@@ -51,6 +51,17 @@
         $object_type='tabi';
         ?>
         <?php include (TEMPLATEPATH . '/component-set-color.php'); ?>
+    </div>
+    <div class="row admin-row tabi-prereq-row">
+        <div class="cell cell-full">
+            <div class="tabi-prereq-list">
+                <label class="tabi-prereq-label orange-bg-100">
+                    <?= __('Use to group quests','bluerabbit'); ?>
+                    <?php if(!isset($tabi_as_category_nonce)) { $tabi_as_category_nonce = wp_create_nonce('tabi_as_category_nonce'); } ?>
+                    <input type="checkbox" class="form-ui tabi-as-category-checkbox" id="tabi-as-category-<?= $a->tabi_id; ?>" <?= $a->tabi_as_category ? 'checked' : ''; ?> onChange="setTabiAsCategory(<?= $a->tabi_id; ?>);">
+                </label>
+            </div>
+        </div>
     </div>
     <?php
     global $wpdb;

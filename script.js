@@ -881,11 +881,19 @@ function updateMilestonePosition(id){
 	});
 }
 function initializeBuilderMilestones(){
+	// Set explicit dimensions on .milestone so jQuery UI resizable has a size to work from
+	$('#builder .milestone').each(function(){
+		let $c = $(this).find('.milestone-content');
+		$(this).css({ width: $c.outerWidth(), height: $c.outerHeight() });
+	});
+
 	$('#builder .milestone').draggable({
 		handle: '.milestone-handle',
-		snap:true,
+		cancel: '.ui-resizable-handle',
+		snap: true,
 		snapTolerance: 5,
 		start: function () {
+			$(this).css('transition', 'none');
 			$(this).addClass("dragging");
 		},
 		drag: function (event, ui) {
@@ -895,19 +903,243 @@ function initializeBuilderMilestones(){
 			$(`.milestone-data input.left`,this).val(posLeft);
 		},
 		stop: function () {
+			$(this).css('transition', '');
 			updateMilestonePosition($(this).data('id'));
 			$(this).removeClass("dragging");
 		}
+	}).resizable({ 
+		handles: 'se',
+		aspectRatio: 105/90,
+		minWidth: 105,
+		minHeight: 90,
+		maxHeight: 300,
+		maxWidth: Math.round(300 * 105/90),
+		start: function() {
+			$(this).css('transition', 'none');
+			$(this).find('.milestone-content').css('transition', 'none');
+		},
+		resize: function(event, ui) {
+			$(this).find('.milestone-content').css({
+				width: ui.size.width + 'px',
+				height: ui.size.height + 'px'
+			});
+		},
+		stop: function(event, ui) {
+			$(this).css('transition', '');
+			$(this).find('.milestone-content').css('transition', '');
+			let id = $(this).data('id');
+			let newH = Math.round(ui.size.height);
+			let zVal = parseFloat((newH / 90).toFixed(2));
+			zVal = Math.max(1, Math.min(5, zVal));
+			$(this).find('.milestone-data .z-pos').val(zVal);
+			updateMilestonePosition(id);
+		}
 	});
 }
+///////////////////////// Journey Assets //////////////////
+
+function initializeBuilderAssets(){
+	$('#builder .builder-asset').draggable({
+		cancel: '.ui-resizable-handle, .asset-rotate-btn',
+		start: function(){ $(this).addClass('dragging'); },
+		stop: function(){
+			let id = $(this).data('asset-id');
+			let top  = parseInt($(this).css('top'), 10);
+			let left = parseInt($(this).css('left'), 10);
+			let nonce = $(this).find('.asset-nonce').val();
+			jQuery.ajax({
+				url: runAJAX.ajaxurl,
+				data: { action: 'saveJourneyAssetPosition', asset_id: id, top: top, left: left, nonce: nonce },
+				method: 'POST'
+			});
+			$(this).removeClass('dragging');
+		}
+	}).resizable({
+		handles: 'se',
+		minWidth: 40,
+		stop: function(event, ui) {
+			let id = $(this).data('asset-id');
+			let newWidth = Math.round(ui.size.width);
+			$(this).css('height', '');
+			$(this).find('.asset-width-val').val(newWidth);
+			_saveAssetProperties(id);
+		}
+	});
+}
+
+function _saveAssetProperties(id){
+	let $el    = $('#journey-asset-' + id);
+	let nonce  = $el.find('.asset-nonce').val();
+	let width  = parseInt($el.find('.asset-width-val').val(), 10);
+	let z      = parseInt($el.find('.asset-z-val').val(), 10);
+	let rot    = parseInt($el.find('.asset-rotation-val').val(), 10);
+	$el.css({ width: width + 'px', zIndex: z });
+	$el.find('.asset-visual').css('transform', 'rotate(' + rot + 'deg)');
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'saveJourneyAssetProperties', asset_id: id, width: width, z: z, rotation: rot, nonce: nonce },
+		method: 'POST'
+	});
+}
+
+function assetZUp(id){
+	let $z = $('#journey-asset-' + id + ' .asset-z-val');
+	$z.val(parseInt($z.val(), 10) + 1);
+	_saveAssetProperties(id);
+}
+function assetZDown(id){
+	let $z = $('#journey-asset-' + id + ' .asset-z-val');
+	$z.val(Math.max(0, parseInt($z.val(), 10) - 1));
+	_saveAssetProperties(id);
+}
+function startAssetRotate(event, id) {
+	event.preventDefault();
+	event.stopPropagation();
+	let $el      = $('#journey-asset-' + id);
+	let $vis     = $el.find('.asset-visual');
+	let offset   = $vis.offset();
+	let centerX  = offset.left + $vis.outerWidth()  / 2;
+	let centerY  = offset.top  + $vis.outerHeight() / 2;
+	let initRot  = parseInt($el.find('.asset-rotation-val').val(), 10) || 0;
+	let startAng = Math.atan2(event.pageY - centerY, event.pageX - centerX) * 180 / Math.PI;
+
+	$('body').addClass('asset-rotating');
+
+	function onMove(e) {
+		let angle  = Math.atan2(e.pageY - centerY, e.pageX - centerX) * 180 / Math.PI;
+		let newRot = Math.round((initRot + angle - startAng) % 360);
+		$el.find('.asset-rotation-val').val(newRot);
+		$vis.css('transform', 'rotate(' + newRot + 'deg)');
+	}
+	function onUp() {
+		$('body').removeClass('asset-rotating');
+		$(document).off('mousemove.assetRotate mouseup.assetRotate');
+		_saveAssetProperties(id);
+	}
+	$(document).on('mousemove.assetRotate', onMove).on('mouseup.assetRotate', onUp);
+}
+
+function pickJourneyAssetImage(id){
+	let file_frame = wp.media({ title: 'Select Graphic', button: { text: 'Use this image' }, multiple: false });
+	file_frame.on('select', function(){
+		let url   = file_frame.state().get('selection').first().toJSON().url;
+		let $el   = $('#journey-asset-' + id);
+		let $vis  = $el.find('.asset-visual');
+		let nonce = $el.find('.asset-nonce').val();
+		$vis.find('.asset-empty-placeholder').remove();
+		if($vis.find('.asset-img').length){
+			$vis.find('.asset-img').attr('src', url);
+		} else {
+			$vis.prepend('<img class="asset-img" src="' + url + '" alt="" draggable="false">');
+		}
+		jQuery.ajax({
+			url: runAJAX.ajaxurl,
+			data: { action: 'setJourneyAssetImage', asset_id: id, image: url, nonce: nonce },
+			method: 'POST'
+		});
+	});
+	file_frame.open();
+}
+
+function addJourneyAsset(){
+	let nonce = $('#journey-asset-nonce').val();
+	let adv_id = $('#builder-adventure-id').val();
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'addJourneyAsset', adventure_id: adv_id, nonce: nonce },
+		method: 'POST',
+		success: function(r){
+			let d = JSON.parse(r);
+			if(d.success && d.html){
+				$('#builder').append(d.html);
+				let $newAsset = $('#journey-asset-' + d.asset_id);
+				$newAsset.draggable({
+					cancel: '.ui-resizable-handle, .asset-rotate-btn',
+					start: function(){ $(this).addClass('dragging'); },
+					stop: function(){
+						let top  = parseInt($(this).css('top'), 10);
+						let left = parseInt($(this).css('left'), 10);
+						let n = $(this).find('.asset-nonce').val();
+						jQuery.ajax({ url: runAJAX.ajaxurl, data: { action:'saveJourneyAssetPosition', asset_id: d.asset_id, top: top, left: left, nonce: n }, method:'POST' });
+						$(this).removeClass('dragging');
+					}
+				}).resizable({
+					handles: 'se, e, s',
+					minWidth: 40,
+					stop: function(event, ui) {
+						$(this).css('height', '');
+						$(this).find('.asset-width-val').val(Math.round(ui.size.width));
+						_saveAssetProperties(d.asset_id);
+					}
+				});
+			}
+		}
+	});
+}
+
+function trashJourneyAsset(id){
+	let nonce = $('#journey-asset-' + id + ' .asset-nonce').val();
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'trashJourneyAsset', asset_id: id, nonce: nonce },
+		method: 'POST',
+		success: function(r){
+			let d = JSON.parse(r);
+			if(d.success){ $('#journey-asset-' + id).remove(); }
+		}
+	});
+}
+
+function duplicateJourneyAsset(id){
+	let nonce = $('#journey-asset-' + id + ' .asset-nonce').val();
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'duplicateJourneyAsset', asset_id: id, nonce: nonce },
+		method: 'POST',
+		success: function(r){
+			let d = JSON.parse(r);
+			if(d.success && d.html){
+				$('#builder').append(d.html);
+				$('#journey-asset-' + d.asset_id).draggable({
+					cancel: '.ui-resizable-handle, .asset-rotate-btn',
+					start: function(){ $(this).addClass('dragging'); },
+					stop: function(){
+						let top  = parseInt($(this).css('top'), 10);
+						let left = parseInt($(this).css('left'), 10);
+						let n = $(this).find('.asset-nonce').val();
+						jQuery.ajax({ url: runAJAX.ajaxurl, data: { action:'saveJourneyAssetPosition', asset_id: d.asset_id, top: top, left: left, nonce: n }, method:'POST' });
+						$(this).removeClass('dragging');
+					}
+				}).resizable({
+					handles: 'se, e, s',
+					minWidth: 40,
+					stop: function(event, ui) {
+						$(this).css('height', '');
+						$(this).find('.asset-width-val').val(Math.round(ui.size.width));
+						_saveAssetProperties(d.asset_id);
+					}
+				});
+			}
+		}
+	});
+}
+
 function initializeBuilderTabis(){
 	$('#builder .builder-tabi').draggable({
-		start: function () {
-			$(this).addClass('dragging');
-		},
+		cancel: '.ui-resizable-handle',
+		start: function () { $(this).addClass('dragging'); },
 		stop: function () {
 			updateTabiPosition($(this).data('tabi-id'));
 			$(this).removeClass('dragging');
+		}
+	}).resizable({
+		handles: 'se, e, s',
+        class:'br-resize-handle',
+		minWidth: 80,
+		minHeight: 60,
+		stop: function(event, ui) {
+			let id = $(this).data('tabi-id');
+			_saveTabiSize(id, Math.round(ui.size.width), Math.round(ui.size.height));
 		}
 	});
 }
@@ -4754,7 +4986,7 @@ function setDimensions(id,type){
 function setTabiOnJourney(id){
 	let nonce = $("#tabi-on-journey-nonce").val();
 	let adventure_id = $("#the_adventure_id").val();
-	showLoader('small'); 
+	showLoader('small');
 	let tabi_id;
 
 	$(function() {
@@ -4765,16 +4997,30 @@ function setTabiOnJourney(id){
 				$('.tabi-on-journey-checkbox').prop('checked', false);
 			}
 		});
-	});	
+	});
 	if($("#tabi-on-journey-"+id).is(':checked')){
 		tabi_id = id;
 	}else{
 		tabi_id = 0;
 	}
-	jQuery.ajax({  
+	jQuery.ajax({
 		url: runAJAX.ajaxurl,
 		data: ({action: 'setTabiOnJourney', id:tabi_id, adventure_id:adventure_id, nonce:nonce}),
 		method: "POST",
+		success: function(data_received) {
+			displayAjaxResponse(data_received);
+		}
+	});
+}
+function setTabiAsCategory(id){
+	let nonce = $("#tabi-as-category-nonce").val();
+	let adventure_id = $("#the_adventure_id").val();
+	let val = $("#tabi-as-category-" + id).is(':checked') ? 1 : 0;
+	showLoader('small');
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'setTabiAsCategory', id: id, val: val, adventure_id: adventure_id, nonce: nonce },
+		method: 'POST',
 		success: function(data_received) {
 			displayAjaxResponse(data_received);
 		}
@@ -4833,6 +5079,15 @@ function updateTabiPosition(tabiId) {
 		success: function(data_received) {
 			displayAjaxResponse(data_received);
 		}
+	});
+}
+
+function _saveTabiSize(id, width, height) {
+	let nonce = $('#tabi-position-nonce').val();
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'saveTabiSize', tabi_id: id, width: width, height: height, nonce: nonce },
+		method: 'POST'
 	});
 }
 

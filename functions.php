@@ -181,10 +181,23 @@ $sql = "
 		`tabi_background` TEXT NULL,
 		`tabi_level` INT NULL,
 		`tabi_on_journey` TINYINT NULL,
+		`tabi_as_category` TINYINT NULL DEFAULT 0,
 		`tabi_top` INT NULL DEFAULT 350,
 		`tabi_left` INT NULL DEFAULT 350,
 
 	PRIMARY KEY (`tabi_id`) )$charset_collate;
+
+	CREATE TABLE {$wpdb->prefix}br_journey_assets (
+		`asset_id` BIGINT NOT NULL AUTO_INCREMENT,
+		`adventure_id` BIGINT NOT NULL,
+		`asset_image` TEXT NULL,
+		`asset_top` INT NULL DEFAULT 350,
+		`asset_left` INT NULL DEFAULT 350,
+		`asset_width` INT NULL DEFAULT 200,
+		`asset_z` INT NULL DEFAULT 5,
+		`asset_rotation` INT NULL DEFAULT 0,
+		`asset_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
+	PRIMARY KEY (`asset_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_tabi_prerequisites (
 		`prereq_id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -1461,6 +1474,11 @@ function br_migrate_tabi_tables() {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_tabis ADD COLUMN `tabi_left` INT NULL DEFAULT 350");
 	}
 
+	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_tabis LIKE 'tabi_as_category'");
+	if (empty($col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_tabis ADD COLUMN `tabi_as_category` TINYINT NULL DEFAULT 0");
+	}
+
 	$table = $wpdb->prefix . 'br_tabi_prerequisites';
 	if($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
 		$wpdb->query("CREATE TABLE $table (
@@ -1468,6 +1486,22 @@ function br_migrate_tabi_tables() {
 			`tabi_id` BIGINT NOT NULL,
 			`requires_tabi_id` BIGINT NOT NULL,
 			PRIMARY KEY (`prereq_id`)
+		) $charset_collate");
+	}
+
+	$table = $wpdb->prefix . 'br_journey_assets';
+	if($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`asset_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`adventure_id` BIGINT NOT NULL,
+			`asset_image` TEXT NULL,
+			`asset_top` INT NULL DEFAULT 350,
+			`asset_left` INT NULL DEFAULT 350,
+			`asset_width` INT NULL DEFAULT 200,
+			`asset_z` INT NULL DEFAULT 5,
+			`asset_rotation` INT NULL DEFAULT 0,
+			`asset_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
+			PRIMARY KEY (`asset_id`)
 		) $charset_collate");
 	}
 }
@@ -1597,8 +1631,16 @@ add_action("wp_ajax_setGuildCapacity", "setGuildCapacity");
 add_action("wp_ajax_setDisplayStyle", "setDisplayStyle");
 add_action("wp_ajax_setDimensions", "setDimensions");
 add_action("wp_ajax_setTabiOnJourney", "setTabiOnJourney");
+add_action("wp_ajax_setTabiAsCategory", "setTabiAsCategory");
+add_action("wp_ajax_saveTabiSize", "saveTabiSize");
 add_action("wp_ajax_saveTabiPosition", "saveTabiPosition");
 add_action("wp_ajax_saveTabiPrerequisites", "saveTabiPrerequisites");
+add_action("wp_ajax_addJourneyAsset", "addJourneyAsset");
+add_action("wp_ajax_trashJourneyAsset", "trashJourneyAsset");
+add_action("wp_ajax_duplicateJourneyAsset", "duplicateJourneyAsset");
+add_action("wp_ajax_saveJourneyAssetPosition", "saveJourneyAssetPosition");
+add_action("wp_ajax_saveJourneyAssetProperties", "saveJourneyAssetProperties");
+add_action("wp_ajax_setJourneyAssetImage", "setJourneyAssetImage");
 add_action("wp_ajax_setNickname", "setNickname");
 add_action("wp_ajax_setProfilePicture", "setProfilePicture");
 add_action("wp_ajax_exportPlayersWork", "exportPlayersWork");

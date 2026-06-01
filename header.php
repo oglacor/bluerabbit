@@ -281,7 +281,6 @@
 		<input type="hidden" id="template_directory" value="<?php echo get_bloginfo('template_directory'); ?>">
 		<input type="hidden" id="bloginfo_url" value="<?php echo get_bloginfo('url'); ?>">
 		<?php $mime = (wp_check_filetype($bg));?>
-		
 		<?php if(!is_page('certificate')){ ?>
 			<?php if(strstr($mime['type'], "video")){ ?>
 				<div class="deep-bg black-bg fixed fixed-bg sq-full"></div>

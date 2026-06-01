@@ -152,10 +152,25 @@
 
 	<?php } //end foreach; ?>
 
-	<?php // Render tabi nodes on the map
+	<?php // Render journey graphic assets (display only — no controls)
+	$journey_assets = getJourneyAssets($adv_parent_id);
+	if($journey_assets) { foreach($journey_assets as $ja) { ?>
+		<div class="journey-asset"
+		     id="journey-asset-<?= $ja->asset_id; ?>"
+		     style="top:<?= $ja->asset_top; ?>px; left:<?= $ja->asset_left; ?>px; width:<?= $ja->asset_width; ?>px; z-index:<?= $ja->asset_z; ?>; transform:rotate(<?= $ja->asset_rotation; ?>deg);">
+			<?php if($ja->asset_image) { ?>
+				<img src="<?= esc_url($ja->asset_image); ?>" alt="" draggable="false">
+			<?php } ?>
+		</div>
+	<?php } } ?>
+
+	<?php // Render tabi nodes on the map — only tabis flagged as categories
 	if($tabis) { foreach($tabis as $t) {
+		if(!$t->tabi_as_category) continue;
 		$tNodeTop   = $t->tabi_top  ?: 350;
 		$tNodeLeft  = $t->tabi_left ?: 350;
+		$tNodeWidth  = ($t->tabi_width  && $t->tabi_width  >= 80 && $t->tabi_width  <= 600) ? $t->tabi_width  : 160;
+		$tNodeHeight = ($t->tabi_height && $t->tabi_height >= 60 && $t->tabi_height <= 600) ? $t->tabi_height : 100;
 		$questCount = isset($tabi_quest_map[$t->tabi_id]) ? count($tabi_quest_map[$t->tabi_id]) : 0;
 		$isLocked   = $tabi_locked[$t->tabi_id] ?? false;
 
@@ -176,7 +191,7 @@
 			 data-tabi-id="<?= $t->tabi_id; ?>"
 			 data-locked="<?= $isLocked ? '1' : '0'; ?>"
 			 data-lock-label="<?= esc_attr($lock_label); ?>"
-			 style="top:<?= $tNodeTop; ?>px; left:<?= $tNodeLeft; ?>px;"
+			 style="top:<?= $tNodeTop; ?>px; left:<?= $tNodeLeft; ?>px; width:<?= $tNodeWidth; ?>px; height:<?= $tNodeHeight; ?>px; background-image: url('<?= esc_url($t->tabi_background); ?>');"
 			 onclick="openTabiModal(<?= $t->tabi_id; ?>)">
 			<div class="tabi-node-icon">
 				<?php if($isLocked) { ?><span class="icon icon-lock"></span><?php } else { ?><span class="icon icon-tabi"></span><?php } ?>
@@ -190,7 +205,7 @@
 
 
 zoomLevel = <?= $journey_zoom_level; ?>; 
-resizeJourneyMapWithPadding(-zoomLevel);
+resizeJourneyMapWithPadding(-zoomLevel, 'the-journey', '.milestone-container, .journey-asset, .tabi-node');
 
 centerJourneyMap();
 applyZoom();

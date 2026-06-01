@@ -6,6 +6,7 @@
         <button class="reset form-ui" onClick="resetMilestonesToList();"><?= __("List","bluerabbit"); ?> </button>
         <button class="reset form-ui" onClick="resetMilestonePositions('data-beehive',50, 10, 1500, <?= $quests ? count($quests)/20*150 : "250" ; ?>);"><?= __("All together","bluerabbit"); ?> </button>
         <button class="reset form-ui" onClick="resetMilestoneSizes();"><?= __("Reset Sizes","bluerabbit"); ?> </button>
+        <button class="reset form-ui" onClick="addJourneyAsset();"><?= __("+ Graphic","bluerabbit"); ?></button>
     </div>
     <div class="journey-builder-container">
         <?php
@@ -78,19 +79,29 @@
                     <?php } ?>
                 <?php } ?>
 
+                <?php // Journey graphic assets — draggable image elements ?>
+                <?php
+                $journey_assets = getJourneyAssets($adv_parent_id);
+                $journey_asset_nonce = wp_create_nonce('journey_asset_nonce');
+                if($journey_assets) { foreach($journey_assets as $a) {
+                    include(get_stylesheet_directory() . '/journey-asset-builder.php');
+                } } ?>
+
                 <?php // Tabi nodes — draggable units that group their quests ?>
                 <?php if($builder_tabis) { foreach($builder_tabis as $t) {
-                    $tNodeTop  = $t->tabi_top  ?: 350;
-                    $tNodeLeft = $t->tabi_left ?: 350;
-                    $qCount    = $builder_tabi_quest_count[$t->tabi_id] ?? 0;
+                    $tNodeTop   = $t->tabi_top  ?: 350;
+                    $tNodeLeft  = $t->tabi_left ?: 350;
+                    $qCount     = $builder_tabi_quest_count[$t->tabi_id] ?? 0;
+                    $tNodeWidth  = ($t->tabi_width  && $t->tabi_width  >= 80  && $t->tabi_width  <= 600) ? $t->tabi_width  : 160;
+                    $tNodeHeight = ($t->tabi_height && $t->tabi_height >= 60  && $t->tabi_height <= 600) ? $t->tabi_height : 100;
                     ?>
-                    <div class="builder-tabi tabi-node <?= esc_attr($t->tabi_color); ?>"
+                    <div class="builder-tabi tabi-node <?= esc_attr($t->tabi_color); ?> <?= $t->tabi_as_category ? '' : 'journey-hidden'; ?>"
                          id="tabi-node-<?= $t->tabi_id; ?>"
                          data-tabi-id="<?= $t->tabi_id; ?>"
-                         style="top:<?= $tNodeTop; ?>px; left:<?= $tNodeLeft; ?>px;">
+                         style="top:<?= $tNodeTop; ?>px; left:<?= $tNodeLeft; ?>px; width:<?= $tNodeWidth; ?>px; height:<?= $tNodeHeight; ?>px; background-image: url('<?= esc_url($t->tabi_background); ?>');">
                         <div class="tabi-node-icon"><span class="icon icon-tabi"></span></div>
                         <div class="tabi-node-name"><?= esc_html($t->tabi_name); ?></div>
-                        <div class="tabi-node-count"><?= $qCount; ?> <?= __('quests','bluerabbit'); ?></div>
+                        <div class="tabi-node-count"><?= $t->tabi_as_category ? $qCount.' '.__('quests','bluerabbit') : __('Not a category','bluerabbit'); ?></div>
                     </div>
                 <?php } } ?>
 
@@ -98,7 +109,8 @@
             <script>
                 initializeBuilderMilestones();
                 initializeBuilderTabis();
-                resizeJourneyMapWithPadding(1000, 'builder', '.milestone, .builder-tabi');
+                initializeBuilderAssets();
+                resizeJourneyMapWithPadding(1000, 'builder', '.milestone, .builder-tabi, .builder-asset');
             </script>
         <?php }else{ ?>
             <div class="sys-message">
@@ -108,6 +120,8 @@
 
     </div>
     <input type="hidden" id="tabi-position-nonce" value="<?= wp_create_nonce('tabi_position_nonce'); ?>">
+    <input type="hidden" id="journey-asset-nonce" value="<?= wp_create_nonce('journey_asset_nonce'); ?>">
+    <input type="hidden" id="builder-adventure-id" value="<?= $adv_parent_id; ?>">
 <?php }else{ ?>
 	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
 <?php } ?>

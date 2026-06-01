@@ -3209,12 +3209,13 @@ span.divider {
 .journey-builder-container .builder .milestone.dragging {
   opacity: 1;
   transition: none;
+  z-index: 30000 !important;
 }
 .journey-builder-container .builder .milestone.dragging .milestone-name {
   visibility: visible;
 }
 .journey-builder-container .builder .milestone:hover {
-  z-index: 200;
+  z-index: 30000 !important;
   opacity: 1;
 }
 .journey-builder-container .builder .milestone:hover .milestone-name {
@@ -3238,6 +3239,24 @@ span.divider {
   text-align: center;
   font: 400 16px "Rajdhani", sans-serif;
   transition: all 0.3 ease-out;
+}
+.journey-builder-container .builder .milestone.builder-tabi {
+  cursor: grab;
+  opacity: 0.75;
+  width: 190px;
+  z-index: 10;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+.journey-builder-container .builder .milestone.builder-tabi:hover {
+  opacity: 1;
+  z-index: 30000 !important;
+}
+.journey-builder-container .builder .milestone.builder-tabi.dragging {
+  opacity: 1;
+  cursor: grabbing;
+  z-index: 30000 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  transition: none;
 }
 .journey-builder-container .builder .milestone .milestone-controls {
   opacity: 0;
@@ -3314,9 +3333,6 @@ span.divider {
   left: 0;
   perspective: 1000px;
   transform-style: preserve-3d;
-}
-
-.journey {
   margin: 0 auto;
   position: relative;
   z-index: 26;
@@ -3324,7 +3340,20 @@ span.divider {
   transition: all 0.5s ease-out;
   min-width: 100vw;
   min-height: 100vh;
+  background-image: linear-gradient(rgba(0, 140, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 140, 255, 0.07) 1px, transparent 1px), linear-gradient(rgba(0, 140, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 140, 255, 0.03) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+  background-attachment: fixed;
+  position: relative;
 }
+.journey-container::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(0, 80, 200, 0.18) 0%, transparent 70%), radial-gradient(ellipse 80% 30% at 50% 0%, rgba(5, 10, 40, 0.6) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .journey .milestone-container {
   transition: all 0.3s ease-out;
 }
@@ -3955,20 +3984,19 @@ span.divider {
   cursor: pointer;
   width: 160px;
   padding: 14px 16px;
-  border-radius: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  background: rgba(4, 22, 30, 0.85);
-  backdrop-filter: blur(6px);
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   z-index: 20;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease;
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
   text-align: center;
 }
-.tabi-node:hover {
-  transform: scale(1.06);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+.tabi-node:hover .tabi-node-count {
+  display: block;
 }
 .tabi-node .tabi-node-icon {
   font-size: 28px;
@@ -3976,84 +4004,104 @@ span.divider {
   opacity: 0.8;
 }
 .tabi-node .tabi-node-name {
-  font: 700 13px "Rajdhani", sans-serif;
+  font: 700 16px "Rajdhani", sans-serif;
   color: #fff;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
 }
 .tabi-node .tabi-node-count {
+  display: none;
   font: 400 11px "proxima-nova", sans-serif;
   opacity: 0.6;
   color: #fff;
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.tabi-node.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(60%);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+}
+.tabi-node.locked .tabi-node-name {
+  color: rgba(255, 255, 255, 0.6);
+}
+.tabi-node .tabi-node-lock-msg {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(4, 14, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: 400 11px "proxima-nova", sans-serif;
+  color: #fff;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
 }
 .tabi-node.white {
   border-color: #FFFFFF;
 }
 .tabi-node.red {
   border-color: #EF5350;
-  box-shadow: 0 0 18px rgba(239, 83, 80, 0.3);
 }
 .tabi-node.pink {
   border-color: #EC407A;
-  box-shadow: 0 0 18px rgba(236, 64, 122, 0.3);
 }
 .tabi-node.purple {
   border-color: #AB47BC;
-  box-shadow: 0 0 18px rgba(171, 71, 188, 0.3);
 }
 .tabi-node.deep-purple {
   border-color: #7E57C2;
-  box-shadow: 0 0 18px rgba(126, 87, 194, 0.3);
 }
 .tabi-node.indigo {
   border-color: #5C6BC0;
-  box-shadow: 0 0 18px rgba(92, 107, 192, 0.3);
 }
 .tabi-node.blue {
   border-color: #42A5F5;
-  box-shadow: 0 0 18px rgba(66, 165, 245, 0.3);
 }
 .tabi-node.light-blue {
   border-color: #29B6F6;
-  box-shadow: 0 0 18px rgba(41, 182, 246, 0.3);
 }
 .tabi-node.cyan {
   border-color: #26C6DA;
-  box-shadow: 0 0 18px rgba(38, 198, 218, 0.3);
 }
 .tabi-node.teal {
   border-color: #26A69A;
-  box-shadow: 0 0 18px rgba(38, 166, 154, 0.3);
 }
 .tabi-node.green {
   border-color: #66BB6A;
-  box-shadow: 0 0 18px rgba(102, 187, 106, 0.3);
 }
 .tabi-node.light-green {
   border-color: #9CCC65;
-  box-shadow: 0 0 18px rgba(156, 204, 101, 0.3);
 }
 .tabi-node.lime {
   border-color: #D4E157;
-  box-shadow: 0 0 18px rgba(212, 225, 87, 0.3);
 }
 .tabi-node.yellow {
   border-color: #FFEE58;
-  box-shadow: 0 0 18px rgba(255, 238, 88, 0.3);
 }
 .tabi-node.amber {
   border-color: #FFCA28;
-  box-shadow: 0 0 18px rgba(255, 202, 40, 0.3);
 }
 .tabi-node.orange {
   border-color: #FFA726;
-  box-shadow: 0 0 18px rgba(255, 167, 38, 0.3);
 }
 .tabi-node.deep-orange {
   border-color: #FF7043;
-  box-shadow: 0 0 18px rgba(255, 112, 67, 0.3);
 }
 .tabi-node.brown {
   border-color: #8D6E63;
@@ -4206,6 +4254,191 @@ span.divider {
   margin: 8px 0;
   border-radius: 10px;
   transform: translateZ(0px) scale(1) rotate(0deg) !important;
+}
+
+.journey-builder-container .builder .builder-tabi, .journey-builder-container .builder .milestone, .journey-builder-container .builder .builder-asset {
+  overflow: visible;
+}
+.journey-builder-container .builder .builder-tabi .ui-resizable-se, .journey-builder-container .builder .builder-tabi .ui-resizable-s, .journey-builder-container .builder .builder-tabi .ui-resizable-e, .journey-builder-container .builder .milestone .ui-resizable-se, .journey-builder-container .builder .milestone .ui-resizable-s, .journey-builder-container .builder .milestone .ui-resizable-e, .journey-builder-container .builder .builder-asset .ui-resizable-se, .journey-builder-container .builder .builder-asset .ui-resizable-s, .journey-builder-container .builder .builder-asset .ui-resizable-e {
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background-image: url("images/tabi-ux/tabi-piece-controller-scale.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.journey-builder-container .builder .builder-tabi .ui-resizable-se, .journey-builder-container .builder .milestone .ui-resizable-se, .journey-builder-container .builder .builder-asset .ui-resizable-se {
+  right: -10px;
+  bottom: -10px;
+  cursor: se-resize;
+}
+.journey-builder-container .builder .builder-tabi .ui-resizable-s, .journey-builder-container .builder .milestone .ui-resizable-s, .journey-builder-container .builder .builder-asset .ui-resizable-s {
+  left: 50%;
+  bottom: -10px;
+  margin-left: -10px;
+  cursor: s-resize;
+  transform: rotate(45deg);
+}
+.journey-builder-container .builder .builder-tabi .ui-resizable-e, .journey-builder-container .builder .milestone .ui-resizable-e, .journey-builder-container .builder .builder-asset .ui-resizable-e {
+  top: 50%;
+  right: -10px;
+  margin-bottom: -10px;
+  cursor: e-resize;
+  transform: rotate(-45deg);
+}
+.journey-builder-container .builder .builder-tabi:hover, .journey-builder-container .builder .builder-tabi.ui-resizable-resizing, .journey-builder-container .builder .milestone:hover, .journey-builder-container .builder .milestone.ui-resizable-resizing, .journey-builder-container .builder .builder-asset:hover, .journey-builder-container .builder .builder-asset.ui-resizable-resizing {
+  z-index: 30000 !important;
+  background-color: rgba(4, 14, 20, 0.85);
+}
+.journey-builder-container .builder .builder-tabi:hover .ui-resizable-se, .journey-builder-container .builder .builder-tabi:hover .ui-resizable-s, .journey-builder-container .builder .builder-tabi:hover .ui-resizable-e, .journey-builder-container .builder .builder-tabi.ui-resizable-resizing .ui-resizable-se, .journey-builder-container .builder .builder-tabi.ui-resizable-resizing .ui-resizable-s, .journey-builder-container .builder .builder-tabi.ui-resizable-resizing .ui-resizable-e, .journey-builder-container .builder .milestone:hover .ui-resizable-se, .journey-builder-container .builder .milestone:hover .ui-resizable-s, .journey-builder-container .builder .milestone:hover .ui-resizable-e, .journey-builder-container .builder .milestone.ui-resizable-resizing .ui-resizable-se, .journey-builder-container .builder .milestone.ui-resizable-resizing .ui-resizable-s, .journey-builder-container .builder .milestone.ui-resizable-resizing .ui-resizable-e, .journey-builder-container .builder .builder-asset:hover .ui-resizable-se, .journey-builder-container .builder .builder-asset:hover .ui-resizable-s, .journey-builder-container .builder .builder-asset:hover .ui-resizable-e, .journey-builder-container .builder .builder-asset.ui-resizable-resizing .ui-resizable-se, .journey-builder-container .builder .builder-asset.ui-resizable-resizing .ui-resizable-s, .journey-builder-container .builder .builder-asset.ui-resizable-resizing .ui-resizable-e {
+  opacity: 1;
+}
+
+.journey-builder-container .builder .builder-tabi.journey-hidden {
+  opacity: 0.35;
+  filter: grayscale(70%);
+  border-style: dashed;
+}
+
+.journey-asset {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+.journey-asset img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  pointer-events: none;
+}
+
+.journey-builder-container .builder .builder-asset {
+  pointer-events: auto;
+  cursor: grab;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+  overflow: visible;
+}
+.journey-builder-container .builder .builder-asset .asset-visual {
+  display: block;
+  width: 100%;
+}
+.journey-builder-container .builder .builder-asset:hover {
+  z-index: 30000 !important;
+}
+.journey-builder-container .builder .builder-asset:hover .asset-rotate-btn {
+  opacity: 1;
+}
+.journey-builder-container .builder .builder-asset:hover .asset-controls {
+  opacity: 1;
+  visibility: visible;
+}
+.journey-builder-container .builder .builder-asset.dragging {
+  cursor: grabbing;
+  opacity: 1;
+  transition: none;
+}
+.journey-builder-container .builder .builder-asset .asset-empty-placeholder {
+  width: 160px;
+  height: 80px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 400 11px "proxima-nova", sans-serif;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 8px;
+}
+.journey-builder-container .builder .builder-asset .asset-controls {
+  position: absolute;
+  top: -38px;
+  left: 0;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  z-index: 10;
+  pointer-events: auto;
+  height: 50px;
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-btn {
+  background: rgba(4, 14, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  transition: background 0.15s;
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-btn:hover {
+  background: rgba(66, 165, 245, 0.5);
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-btn.danger:hover {
+  background: rgba(239, 83, 80, 0.6);
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-btn.asset-rotate-btn {
+  cursor: grab;
+}
+.journey-builder-container .builder .builder-asset .asset-rotate-btn {
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  left: -10px;
+  bottom: -10px;
+  cursor: url("images/tabi-ux/tabi-piece-controller-rotate.svg"), grab;
+}
+.journey-builder-container .builder .builder-asset .asset-rotate-btn:active {
+  cursor: grabbing;
+}
+
+body.asset-rotating,
+body.asset-rotating * {
+  cursor: grabbing !important;
+}
+
+.tabi-prereq-row {
+  display: block !important;
+}
+.tabi-prereq-row .cell-full {
+  width: 100%;
+  padding: 8px 12px;
+}
+.tabi-prereq-row .tabi-prereq-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.tabi-prereq-row .tabi-prereq-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font: 500 12px "proxima-nova", sans-serif;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.tabi-prereq-row .tabi-prereq-label input[type=checkbox] {
+  cursor: pointer;
 }
 
 .milestone-preview-bg {

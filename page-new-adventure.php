@@ -912,6 +912,7 @@ $image_types = array(
 											<div class="cell cell-width"><?= __("Width","bluerabbit");?></div>
 											<div class="cell cell-height"><?= __("Height","bluerabbit");?></div>
 											<div class="cell cell-location"><?= __("Show in Journey","bluerabbit");?></div>
+											<div class="cell cell-category"><?= __("Use as Category","bluerabbit");?></div>
 										</div>
 									</div>
 									<?php if($tabis){ ?>
@@ -1336,6 +1337,7 @@ $image_types = array(
 	<input type="hidden" id="title-nonce" value="<?php echo wp_create_nonce('title_nonce'); ?>" />
 	<input type="hidden" id="dimensions-nonce" value="<?php echo wp_create_nonce('dimensions_nonce'); ?>" />
 	<input type="hidden" id="tabi-on-journey-nonce" value="<?php echo wp_create_nonce('tabi_on_journey_nonce'); ?>" />
+	<input type="hidden" id="tabi-as-category-nonce" value="<?php echo wp_create_nonce('tabi_as_category_nonce'); ?>" />
 	<input type="hidden" id="add-tabi-nonce" value="<?php echo wp_create_nonce('add_tabi_nonce'); ?>" />
 
 

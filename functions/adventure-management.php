@@ -501,11 +501,119 @@ function setDimensions(){
 	echo json_encode($data);
 	die();
 }
+/////////////////////// JOURNEY ASSETS ////////////////////
+function addJourneyAsset(){
+	global $wpdb;
+	$data = [];
+	$adventure_id = intval($_POST['adventure_id']);
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->insert("{$wpdb->prefix}br_journey_assets", [
+			'adventure_id' => $adventure_id,
+			'asset_top' => 350, 'asset_left' => 350,
+			'asset_width' => 200, 'asset_z' => 5, 'asset_rotation' => 0,
+			'asset_status' => 'publish',
+		], ['%d','%d','%d','%d','%d','%d','%s']);
+		$asset_id = $wpdb->insert_id;
+		$data['html'] = renderJourneyAssetHTML($asset_id);
+		$data['success'] = true;
+		$data['asset_id'] = $asset_id;
+	}
+	echo json_encode($data);
+	die();
+}
+function trashJourneyAsset(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->update("{$wpdb->prefix}br_journey_assets", ['asset_status'=>'trash'], ['asset_id'=>$asset_id], ['%s'], ['%d']);
+		$data['success'] = true;
+	}
+	echo json_encode($data);
+	die();
+}
+function duplicateJourneyAsset(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$src = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_journey_assets WHERE asset_id=$asset_id");
+		if($src){
+			$wpdb->insert("{$wpdb->prefix}br_journey_assets", [
+				'adventure_id' => $src->adventure_id,
+				'asset_image'  => $src->asset_image,
+				'asset_top'    => $src->asset_top  + 30,
+				'asset_left'   => $src->asset_left + 30,
+				'asset_width'  => $src->asset_width,
+				'asset_z'      => $src->asset_z,
+				'asset_rotation' => $src->asset_rotation,
+				'asset_status' => 'publish',
+			], ['%d','%s','%d','%d','%d','%d','%d','%s']);
+			$new_id = $wpdb->insert_id;
+			$data['html'] = renderJourneyAssetHTML($new_id);
+			$data['success'] = true;
+			$data['asset_id'] = $new_id;
+		}
+	}
+	echo json_encode($data);
+	die();
+}
+function saveJourneyAssetPosition(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$top  = intval($_POST['top']);
+	$left = intval($_POST['left']);
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->update("{$wpdb->prefix}br_journey_assets",
+			['asset_top'=>$top, 'asset_left'=>$left],
+			['asset_id'=>$asset_id], ['%d','%d'], ['%d']);
+		$data['success'] = true;
+	}
+	echo json_encode($data);
+	die();
+}
+function saveJourneyAssetProperties(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$width    = intval($_POST['width']);
+	$z        = intval($_POST['z']);
+	$rotation = intval($_POST['rotation']);
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->update("{$wpdb->prefix}br_journey_assets",
+			['asset_width'=>$width, 'asset_z'=>$z, 'asset_rotation'=>$rotation],
+			['asset_id'=>$asset_id], ['%d','%d','%d'], ['%d']);
+		$data['success'] = true;
+	}
+	echo json_encode($data);
+	die();
+}
+function setJourneyAssetImage(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$image    = esc_url_raw($_POST['image']);
+	$nonce    = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->update("{$wpdb->prefix}br_journey_assets",
+			['asset_image'=>$image], ['asset_id'=>$asset_id], ['%s'], ['%d']);
+		$data['success'] = true;
+		$data['image']   = $image;
+	}
+	echo json_encode($data);
+	die();
+}
 /////////////////////// SET Tabi on Journey ////////////////////
 function setTabiOnJourney(){
 	global $wpdb; $current_user = wp_get_current_user();
 	$data = array();
-	
+
 	$data['success'] = false;
 	$id = $_POST['id'];
 	$adventure_id = $_POST['adventure_id'];
@@ -524,13 +632,43 @@ function setTabiOnJourney(){
 			logActivity($adventure_id, "removed","tabi_on_journey","tabi",$id);
 			$msg_content = __('Tabi removed from journey!','bluerabbit');
 		}
-		
+
 		$data['success'] = true;
-	
+
 		$notification = new Notification();
 		$data['message'] = $notification->pop($msg_content,'deep-purple','stats');
 		$data['just_notify'] =true;
 	}else{
+		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+	}
+	echo json_encode($data);
+	die();
+}
+/////////////////////// SET Tabi as Category ////////////////////
+function setTabiAsCategory(){
+	global $wpdb;
+	$data = [];
+	$data['success'] = false;
+	$id           = intval($_POST['id']);
+	$val          = intval($_POST['val']);
+	$adventure_id = intval($_POST['adventure_id']);
+	$nonce        = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'tabi_as_category_nonce')){
+		$wpdb->update(
+			"{$wpdb->prefix}br_tabis",
+			['tabi_as_category' => $val],
+			['tabi_id' => $id, 'adventure_id' => $adventure_id],
+			['%d'], ['%d', '%d']
+		);
+		$msg_content = $val
+			? __('Tabi used as category!','bluerabbit')
+			: __('Tabi removed from categories!','bluerabbit');
+		logActivity($adventure_id, $val ? "set" : "removed", "tabi_as_category", "tabi", $id);
+		$data['success'] = true;
+		$notification = new Notification();
+		$data['message'] = $notification->pop($msg_content, 'teal', 'stats');
+		$data['just_notify'] = true;
+	} else {
 		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
 	}
 	echo json_encode($data);
@@ -581,6 +719,37 @@ function saveTabiPosition(){
 	}else{
 		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
 	}
+	echo json_encode($data);
+	die();
+}
+function saveTabiSize(){
+	global $wpdb;
+	$data = [];
+	$tabi_id = intval($_POST['tabi_id']);
+	$width   = intval($_POST['width']);
+	$height  = intval($_POST['height']);
+	$nonce   = $_POST['nonce'];
+    $data['just_notify'] =true;
+    $notification = new Notification();
+
+
+
+	if(wp_verify_nonce($nonce, 'tabi_position_nonce')){
+		$wpdb->update(
+			"{$wpdb->prefix}br_tabis",
+			['tabi_width' => $width, 'tabi_height' => $height],
+			['tabi_id' => $tabi_id],
+			['%d', '%d'], ['%d']
+		);
+		$data['success'] = true;
+        $msg_content = __("Tabi size updated".$width." - ".$height."- tabi:".$tabi_id,'bluerabbit');
+        $data['message'] = $notification->pop($msg_content,'green','check'); 
+	}else{
+        $data['success'] = false;
+        $msg_content = __("Can't assign that achievement",'bluerabbit');
+        $data['message'] = $notification->pop($msg_content,'red','cancel');
+    }
+    $data['debug'] = "Tabi size updated".$width." - ".$height."- tabi:".$tabi_id;
 	echo json_encode($data);
 	die();
 }

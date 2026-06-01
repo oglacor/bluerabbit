@@ -6270,6 +6270,29 @@ function getTabis($adventure_id){
 	return $result;
 }
 
+function getJourneyAssets($adventure_id) {
+	global $wpdb;
+	return $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_journey_assets
+		WHERE adventure_id=$adventure_id AND asset_status='publish'
+		ORDER BY asset_z ASC, asset_id ASC");
+}
+
+function renderJourneyAssetHTML($asset_id) {
+	global $wpdb;
+	$a = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_journey_assets WHERE asset_id=$asset_id AND asset_status='publish'");
+	if(!$a) return '';
+	$journey_asset_nonce = wp_create_nonce('journey_asset_nonce');
+	$theFile = get_template_directory() . '/journey-asset-builder.php';
+	if(!file_exists($theFile)) return '';
+	ob_start();
+	include($theFile);
+	return ob_get_clean();
+}
+function insertJourneyAssetRow($asset_id) {
+	echo renderJourneyAssetHTML($asset_id);
+	die();
+}
+
 // Returns [ tabi_id => [required_tabi_id, ...], ... ] for all tabis in an adventure
 function getTabiPrerequisitesMap($adventure_id) {
 	global $wpdb;
@@ -7391,10 +7414,10 @@ function duplicateObjectProcess($id,$adventure_id, $type, $from_template=NULL){
         $clone_sql = "
             INSERT INTO {$wpdb->prefix}br_tabis
 
-            (`adventure_id`, `tabi_name`, `tabi_status`, `tabi_width`, `tabi_height`, `tabi_color`, `tabi_background`, `tabi_level`, `tabi_on_journey` )
+            (`adventure_id`, `tabi_name`, `tabi_status`, `tabi_width`, `tabi_height`, `tabi_color`, `tabi_background`, `tabi_level`, `tabi_on_journey`, `tabi_as_category` )
 
-            SELECT 
-            %d, `tabi_name`, `tabi_status`, `tabi_width`, `tabi_height`, `tabi_color`, `tabi_background`, `tabi_level`, `tabi_on_journey`
+            SELECT
+            %d, `tabi_name`, `tabi_status`, `tabi_width`, `tabi_height`, `tabi_color`, `tabi_background`, `tabi_level`, `tabi_on_journey`, `tabi_as_category`
             
             FROM  {$wpdb->prefix}br_tabis WHERE `tabi_id` = %d;
         ";

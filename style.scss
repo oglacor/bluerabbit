@@ -3158,12 +3158,13 @@ span.divider{
 			&.dragging{
 				opacity: 1;
 				transition: none;
+                z-index: 30000 !important;
 				.milestone-name{
 					visibility: visible;
 				}
 			}
 			&:hover{
-				z-index: 200;
+				z-index: 30000 !important;
 				opacity: 1;
 				.milestone-name{
 					opacity: 1; visibility: visible;
@@ -3195,12 +3196,12 @@ span.divider{
 				transition: opacity 0.2s ease, box-shadow 0.2s ease;
 				&:hover {
 					opacity: 1;
-					z-index: 200;
+					z-index: 30000 !important;
 				}
 				&.dragging {
 					opacity: 1;
 					cursor: grabbing;
-					z-index: 300;
+					z-index: 30000 !important;
 					box-shadow: 0 12px 40px rgba(0,0,0,0.6);
 					transition: none;
 				}
@@ -3250,16 +3251,35 @@ span.divider{
 	width: 100vw; height: 100vh; z-index: 26; top: 0; left: 0;
 	perspective: 1000px;
 	transform-style: preserve-3d;
-}
-.journey{
 	margin: 0 auto;
 	position: relative;
 	z-index: 26;
 	display: block;
 	transition: all 0.5s ease-out;
 	min-width: 100vw;
-	min-height: 100vh;
-
+    min-height: 100vh;
+    background-image:
+        linear-gradient(rgba(0,140,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,140,255,0.07) 1px, transparent 1px),
+        linear-gradient(rgba(0,140,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,140,255,0.03) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    background-attachment: fixed;
+    position: relative;
+    &::before{
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 60% 40% at 50% 100%,
+            rgba(0,80,200,0.18) 0%, transparent 70%),
+            radial-gradient(ellipse 80% 30% at 50% 0%,
+            rgba(5,10,40,0.6) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+    }
+}
+.journey{
 	.milestone-container{
 		transition: all .3s ease-out;
 	}
@@ -3794,17 +3814,18 @@ span.divider{
 	cursor: pointer;
 	width: 160px;
 	padding: 14px 16px;
-	border-radius: 14px;
-	border: 2px solid rgba(255,255,255,0.15);
-	background: rgba(4, 22, 30, 0.85);
-	backdrop-filter: blur(6px);
+	background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 	z-index: 20;
 	transition: box-shadow 0.2s ease;
 	user-select: none;
 	text-align: center;
-
 	&:hover {
-		box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        .tabi-node-count { 
+            display: block; 
+        }
 	}
 
 	.tabi-node-icon {
@@ -3813,17 +3834,27 @@ span.divider{
 		opacity: 0.8;
 	}
 	.tabi-node-name {
-		font: 700 13px $special-font;
+		font: 700 16px $special-font;
 		color: #fff;
 		margin-bottom: 4px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+        position: absolute;
+        top:110%; left: 50%;
+        transform: translateX(-50%);
+        text-align:center;
+
 	}
 	.tabi-node-count {
+        display: none;
 		font: 400 11px $base-font;
 		opacity: 0.6;
 		color: #fff;
+        position: absolute;
+        bottom: 110%; left: 50%;
+        transform: translateX(-50%);
+        text-align:center;
 	}
 
 	&.locked {
@@ -3853,22 +3884,22 @@ span.divider{
 
 	// Color borders — mirrors board-view-column palette
 	&.white       { border-color: #FFFFFF; }
-	&.red         { border-color: #EF5350; box-shadow: 0 0 18px rgba(239,83,80,0.3); }
-	&.pink        { border-color: #EC407A; box-shadow: 0 0 18px rgba(236,64,122,0.3); }
-	&.purple      { border-color: #AB47BC; box-shadow: 0 0 18px rgba(171,71,188,0.3); }
-	&.deep-purple { border-color: #7E57C2; box-shadow: 0 0 18px rgba(126,87,194,0.3); }
-	&.indigo      { border-color: #5C6BC0; box-shadow: 0 0 18px rgba(92,107,192,0.3); }
-	&.blue        { border-color: #42A5F5; box-shadow: 0 0 18px rgba(66,165,245,0.3); }
-	&.light-blue  { border-color: #29B6F6; box-shadow: 0 0 18px rgba(41,182,246,0.3); }
-	&.cyan        { border-color: #26C6DA; box-shadow: 0 0 18px rgba(38,198,218,0.3); }
-	&.teal        { border-color: #26A69A; box-shadow: 0 0 18px rgba(38,166,154,0.3); }
-	&.green       { border-color: #66BB6A; box-shadow: 0 0 18px rgba(102,187,106,0.3); }
-	&.light-green { border-color: #9CCC65; box-shadow: 0 0 18px rgba(156,204,101,0.3); }
-	&.lime        { border-color: #D4E157; box-shadow: 0 0 18px rgba(212,225,87,0.3); }
-	&.yellow      { border-color: #FFEE58; box-shadow: 0 0 18px rgba(255,238,88,0.3); }
-	&.amber       { border-color: #FFCA28; box-shadow: 0 0 18px rgba(255,202,40,0.3); }
-	&.orange      { border-color: #FFA726; box-shadow: 0 0 18px rgba(255,167,38,0.3); }
-	&.deep-orange { border-color: #FF7043; box-shadow: 0 0 18px rgba(255,112,67,0.3); }
+	&.red         { border-color: #EF5350; }
+	&.pink        { border-color: #EC407A; }
+	&.purple      { border-color: #AB47BC; }
+	&.deep-purple { border-color: #7E57C2;  }
+	&.indigo      { border-color: #5C6BC0;  }
+	&.blue        { border-color: #42A5F5;  }
+	&.light-blue  { border-color: #29B6F6;  }
+	&.cyan        { border-color: #26C6DA;  }
+	&.teal        { border-color: #26A69A;  }
+	&.green       { border-color: #66BB6A;  }
+	&.light-green { border-color: #9CCC65;  }
+	&.lime        { border-color: #D4E157;  }
+	&.yellow      { border-color: #FFEE58;  }
+	&.amber       { border-color: #FFCA28; }
+	&.orange      { border-color: #FFA726;  }
+	&.deep-orange { border-color: #FF7043;  }
 	&.brown       { border-color: #8D6E63; }
 	&.grey        { border-color: #BDBDBD; }
 	&.blue-grey   { border-color: #78909C; }
@@ -3895,7 +3926,7 @@ span.divider{
 	transform: translate(-50%, -50%);
 	z-index: 201;
 	width: 92%;
-	max-width: 780px;
+	max-width: 780px; 
 	max-height: 82vh;
 	background: #0d2330;
 	border-radius: 18px;
@@ -3975,8 +4006,163 @@ span.divider{
 	}
 }
 
+// Builder tabi — jQuery UI resizable handle (SE corner grip)
+.journey-builder-container .builder  {
+    .builder-tabi, .milestone, .builder-asset {
+	    // make sure jQuery UI can position the handle inside the node
+        overflow: visible;
+        .ui-resizable-se, .ui-resizable-s, .ui-resizable-e{
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            background-image: url("images/tabi-ux/tabi-piece-controller-scale.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+        }
+        .ui-resizable-se{
+            right: -10px;
+            bottom: -10px;
+            cursor: se-resize;
+        }
+        .ui-resizable-s{
+            left: 50%;
+            bottom: -10px;
+            margin-left: -10px;
+            cursor: s-resize;
+            transform: rotate(45deg);
+        }
+        .ui-resizable-e{
+            top: 50%;
+            right: -10px;
+            margin-bottom: -10px;
+            cursor: e-resize;
+            transform: rotate(-45deg);
+        }
+        &:hover, &.ui-resizable-resizing  {
+            z-index: 30000 !important;
+            background-color: rgba(4,14,20,0.85);
+            .ui-resizable-se, .ui-resizable-s, .ui-resizable-e { opacity: 1; }
+        }
+    }
+}
+
+// Builder tabi — hidden from journey indicator (selector standalone because tabi-node doesn't carry .milestone)
+.journey-builder-container .builder .builder-tabi.journey-hidden {
+	opacity: 0.35;
+	filter: grayscale(70%);
+	border-style: dashed;
+}
+
+// ==================== JOURNEY GRAPHIC ASSETS ====================
+
+.journey-asset {
+	position: absolute;
+	display: block;
+	pointer-events: none;
+
+	img {
+		display: block;
+		width: 100%;
+		height: auto;
+		user-select: none;
+		pointer-events: none;
+	}
+}
+
+.journey-builder-container .builder {
+	.builder-asset {
+		pointer-events: auto;
+		cursor: grab;
+		opacity: 0.9;
+		transition: opacity 0.2s;
+		overflow: visible;
+
+		.asset-visual {
+			display: block;
+			width: 100%;
+		}
+
+		&:hover {
+            z-index: 30000 !important;
+            .asset-rotate-btn { opacity: 1; }
+			.asset-controls { opacity: 1; visibility: visible; }
+		}
+		&.dragging {
+			cursor: grabbing;
+			opacity: 1;
+			transition: none;
+		}
+
+		.asset-empty-placeholder {
+			width: 160px; height: 80px;
+			border: 2px dashed rgba(255,255,255,0.3);
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font: 400 11px $base-font;
+			color: rgba(255,255,255,0.5);
+			text-align: center;
+			padding: 8px;
+		}
+
+		.asset-controls {
+			position: absolute;
+			top: -38px;
+			left: 0;
+			display: flex;
+			gap: 3px;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.2s;
+			z-index: 10;
+			pointer-events: auto;
+            height: 50px;
+			.asset-btn {
+				background: rgba(4,14,20,0.85);
+				border: 1px solid rgba(255,255,255,0.15);
+				color: #fff;
+				border-radius: 5px;
+				width: 30px; height: 30px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				cursor: pointer;
+				font-size: 13px;
+				padding: 0;
+				transition: background 0.15s;
+
+				&:hover { background: rgba(66,165,245,0.5); }
+				&.danger:hover { background: rgba(239,83,80,0.6); }
+				&.asset-rotate-btn { cursor: grab; }
+			}
+		}
+        .asset-rotate-btn {
+            background-color:transparent;
+            border:none;
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            left: -10px;
+            bottom: -10px;
+            cursor:  url("images/tabi-ux/tabi-piece-controller-rotate.svg"), grab;
+            &:active { cursor: grabbing; }
+        }
+	}
+}
+
+body.asset-rotating,
+body.asset-rotating * { cursor: grabbing !important; }
+
+// ==================== END JOURNEY GRAPHIC ASSETS ====================
+
 // Tabi prerequisites UI (in adventure settings)
 .tabi-prereq-row {
+    display: block !important;
 	.cell-full { width: 100%; padding: 8px 12px; }
 	.tabi-prereq-list {
 		display: flex;
