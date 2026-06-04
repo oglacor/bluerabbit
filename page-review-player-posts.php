@@ -22,7 +22,7 @@
 							<h3 class="white-color font _18 uppercase">
 								<?= __("Quest review","bluerabbit"); ?>
 							</h3>
-							<h1 class="white-color font _30 w900">
+							<h1 class="white-color font _30 w900" id="quest-review-title">
 								<?= $q->quest_title;?>
 							</h1>
 						</td>
@@ -42,8 +42,8 @@
 							<div class="layer background sq-full absolute top left blue-bg-400 opacity-50"></div>
 							<div class="layer base w-full relative flex padding-20">
 								<div class="grow-1">
-									<h2 class="font _30 padding-10 text-center layer base w700 "><?= $isAdmin ? $pp->player_id." | " : ""; ?><?= $pp->player_display_name; ?></h2>
-									<h3 class="font _18 text-center layer base w300 grey-300"><?= $pp->player_email; ?></h3>
+									<h2 class="font _30 padding-10 text-center layer base w700 "><?= $isAdmin ? $pp->player_id." | " : ""; ?><span class="player-name"><?= $pp->player_display_name; ?></span></h2>
+									<h3 class="font _18 text-center layer base w300 grey-300"><span class="player-email"><?= $pp->player_email; ?></span></h3>
 								</div>
 								<?php if($config['rate_quests']['value']>0){ ?>
 									<div class="grow-1">
@@ -60,9 +60,9 @@
 										<div class="input-group">
 											<label class="blue-grey-bg-600 font w900"><span class="icon icon-progression"></span><?= __("Grade","bluerabbit"); ?></label>
 											<?php if($adventure->adventure_grade_scale == "percentage"){ ?>
-												<input onChange="setGrade(<?= "$q->quest_id,$pp->player_id"; ?>);" type="number" min="0" max="100" class="form-ui blue-grey-bg-800 white-color border border-all blue-grey-border-800"  id="<?= "the_post_grade_{$q->quest_id}_{$pp->player_id}"; ?>" value="<?= $the_grade; ?>">
+												<input onChange="setGrade(<?= "$q->quest_id,$pp->player_id"; ?>);" type="number" min="0" max="100" class="form-ui blue-grey-bg-800 white-color border border-all blue-grey-border-800 player-grade"  id="<?= "the_post_grade_{$q->quest_id}_{$pp->player_id}"; ?>" value="<?= $the_grade; ?>">
 											<?php }elseif($adventure->adventure_grade_scale == "letters"){   ?>
-												<select class="form-ui" id="<?= "the_post_grade_{$q->quest_id}_{$pp->player_id}"; ?>" onChange="setGrade(<?= "$q->quest_id,$pp->player_id"; ?>);">
+												<select class="form-ui player-grade" id="<?= "the_post_grade_{$q->quest_id}_{$pp->player_id}"; ?>" onChange="setGrade(<?= "$q->quest_id,$pp->player_id"; ?>);">
 													<option value="100" <?php if($the_grade == 100){ echo 'selected'; } ?>>A</option>
 													<option value="91.75" <?php if($the_grade < 100 && $the_grade >= 91.75){ echo 'selected';  }?>>A-</option>
 													<option value="83.25" <?php if($the_grade < 91.75 && $the_grade >= 83.25){ echo 'selected';  }?>>B+</option>
@@ -78,6 +78,21 @@
 										</div>
 									</div>
 								<?php }  ?>
+								<?php if($q->mech_validate){ ?>
+									<div class="grow-1">
+										<div class="input-group">
+                                            <?php $validate_status = ($pp->pp_grade > 0) ? true : false; ?>
+                                            
+                                            <button class="form-ui <?= $validate_status ? 'grey-bg-500' :'green-bg-600'; ?>  white-color font w900" <?= $validate_status ? 'disabled' :''; ?> onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'validate');" id="validate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
+                                                <span class="icon icon-check"></span><?= __("Validate","bluerabbit"); ?>
+                                            </button>
+											
+                                            <button class="form-ui <?= !$validate_status ? 'grey-bg-500' :'red-bg-800'; ?>  white-color font w900"  <?= !$validate_status ? 'disabled' :''; ?> onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'invalidate');" id="invalidate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
+                                                <span class="icon icon-cancel"></span><?= __("Invalidate","bluerabbit"); ?>
+                                            </button>
+										</div>
+									</div>
+								<?php } ?>
 								
 							</div>
 							<div class="layer base w-full relative flex">
@@ -88,7 +103,7 @@
 										</h4>
 										<h2 class="font _18 yellow-400 w900 uppercase"><?= __("Player Entry","bluerabbit"); ?>:</h2>
 									</div>
-									<div class="padding-5">
+									<div class="padding-5 player-entry-content">
 										<?= apply_filters('the_content',$pp->pp_content); ?>
 									</div>
 								</div>
@@ -107,6 +122,9 @@
 							</span>
 						</span>
 						<input type="hidden" id="file_prefix" value="<?= $q->quest_type.'-'.$q->quest_id.'-'; ?>">
+						<span class="icon-content">
+							<button class="form-ui teal-bg-600" onClick="downloadQuestCSV();"><span class="icon icon-download"></span><?= __("Download CSV","bluerabbit"); ?></button>
+						</span>
 						<span class="icon-content">
 							<button id="create-zip" class="form-ui blue-bg-400" onClick="downloadAllImages();"><span class="icon icon-image"></span><?= __("Create Images Zip","bluerabbit"); ?></button>
 						</span>

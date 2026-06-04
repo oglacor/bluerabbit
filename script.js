@@ -3671,6 +3671,8 @@ function updateQuest(){
 			mech_show_answers : $('#the_quest_show_answers').val(),
 			mech_item_reward:mech_item_reward,
 			mech_achievement_reward:mech_achievement_reward,
+			mech_optional: $('#the_quest_optional').is(':checked') ? 1 : 0,
+			mech_validate: $('#the_quest_validate').is(':checked') ? 1 : 0,
 		},
 		quest_questions:quest_questions
 	};
@@ -4773,6 +4775,65 @@ function setGrade(quest_id,player_id){
 
 
 
+//////////////////  DOWNLOAD QUEST REVIEW CSV ////////////////
+function downloadQuestCSV(){
+	let questTitle = (document.getElementById('quest-review-title') ? document.getElementById('quest-review-title').innerText : 'quest-review').trim().replace(/[^a-z0-9\-_ ]/gi,'');
+	let rows = [['Player Name','Email','Grade','Entry']];
+
+	document.querySelectorAll('#player-submissions .margin-10').forEach(function(card){
+		let name    = card.querySelector('.player-name') ? card.querySelector('.player-name').innerText.trim() : '';
+		let email   = card.querySelector('.player-email') ? card.querySelector('.player-email').innerText.trim() : '';
+		let gradeEl = card.querySelector('.player-grade');
+		let grade   = '';
+		if(gradeEl){
+			grade = gradeEl.tagName === 'SELECT' ? (gradeEl.options[gradeEl.selectedIndex] ? gradeEl.options[gradeEl.selectedIndex].text : '') : gradeEl.value;
+		}
+		let content = card.querySelector('.player-entry-content') ? card.querySelector('.player-entry-content').innerText.trim() : '';
+		rows.push([name, email, grade, content]);
+	});
+
+	let csv = rows.map(function(r){
+		return r.map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
+	}).join('\n');
+
+	let blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8;'});
+	let url  = URL.createObjectURL(blob);
+	let a    = document.createElement('a');
+	a.href     = url;
+	a.download = questTitle + '.csv';
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+}
+
+
+//////////////////  VALIDATE QUEST (sets grade + pp_status) ////////////////
+// validate_action: 'validate' (grade=100, publish) or 'invalidate' (grade=0, draft)
+function validateQuest(quest_id, player_id, validate_action){
+	let nonce = $("#grade_nonce").val();
+	let adventure_id = $("#the_adventure_id").val();
+	showLoader('small');
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: ({action: 'validatePlayerPost', quest_id:quest_id, player_id:player_id, validate_action:validate_action, adventure_id:adventure_id, nonce:nonce}),
+		method: "POST",
+		success: function(data_received) {
+			displayAjaxResponse(data_received);
+			let grade = validate_action == 'validate' ? 100 : 0;
+            if(grade > 0){
+                $("#validate-btn-"+player_id+"-"+quest_id).addClass('grey-bg-500').removeClass('green-bg-600').prop('disabled', true);
+                $("#invalidate-btn-"+player_id+"-"+quest_id).removeClass('grey-bg-500').addClass('red-bg-800').prop('disabled', false);
+            }else{
+                $("#validate-btn-"+player_id+"-"+quest_id).removeClass('grey-bg-500').addClass('green-bg-600').prop('disabled', false);
+                $("#invalidate-btn-"+player_id+"-"+quest_id).addClass('grey-bg-500').removeClass('red-bg-800').prop('disabled', true);
+            }
+			$("#the_post_grade_"+quest_id+"_"+player_id).val(grade);
+		}
+	});
+}
+
+
 //////////////////  DELETE POST ////////////////
 
 function updateStatus(id,type){  //////////////// DEPRECATED !!!!!!!
@@ -5029,17 +5090,6 @@ function setTabiAsCategory(id){
 ///////////////////////// Tabi Modal  //////////////////
 
 function openTabiModal(tabiId) {
-	let $node = $('#tabi-node-' + tabiId);
-	if($node.data('locked') == 1) {
-		let label = $node.data('lock-label') || '';
-		let msg = label
-			? '🔒 Complete <strong>' + label + '</strong> first to unlock this.'
-			: '🔒 This tabi is locked. Complete the required tabis first.';
-		$node.find('.tabi-node-lock-msg').remove();
-		$node.append('<div class="tabi-node-lock-msg">' + msg + '</div>');
-		setTimeout(function(){ $node.find('.tabi-node-lock-msg').fadeOut(400, function(){ $(this).remove(); }); }, 3000);
-		return;
-	}
 	$('.tabi-modal').removeClass('active');
 	$('#tabi-modal-' + tabiId).addClass('active');
 	$('#tabi-modal-overlay').addClass('active');

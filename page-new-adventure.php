@@ -912,7 +912,6 @@ $image_types = array(
 											<div class="cell cell-width"><?= __("Width","bluerabbit");?></div>
 											<div class="cell cell-height"><?= __("Height","bluerabbit");?></div>
 											<div class="cell cell-location"><?= __("Show in Journey","bluerabbit");?></div>
-											<div class="cell cell-category"><?= __("Use as Category","bluerabbit");?></div>
 										</div>
 									</div>
 									<?php if($tabis){ ?>

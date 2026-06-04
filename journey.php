@@ -186,7 +186,7 @@
 			$lock_label = implode(', ', $req_names);
 		}
 		?>
-		<div class="tabi-node <?= esc_attr($t->tabi_color); ?> <?= $isLocked ? 'locked' : ''; ?>"
+		<div class="tabi-node <?= esc_attr($t->tabi_color); ?> <?= $isLocked ? 'locked unavailable' : ''; ?>"
 			 id="tabi-node-<?= $t->tabi_id; ?>"
 			 data-tabi-id="<?= $t->tabi_id; ?>"
 			 data-locked="<?= $isLocked ? '1' : '0'; ?>"

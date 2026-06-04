@@ -1489,6 +1489,16 @@ function br_migrate_tabi_tables() {
 		) $charset_collate");
 	}
 
+	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_quests LIKE 'mech_optional'");
+	if (empty($col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_quests ADD COLUMN `mech_optional` TINYINT NULL DEFAULT 0");
+	}
+
+	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_quests LIKE 'mech_validate'");
+	if (empty($col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_quests ADD COLUMN `mech_validate` TINYINT NULL DEFAULT 0");
+	}
+
 	$table = $wpdb->prefix . 'br_journey_assets';
 	if($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
 		$wpdb->query("CREATE TABLE $table (
@@ -1524,6 +1534,7 @@ add_action("wp_ajax_resetGuilds", "resetGuilds");
 add_action("wp_ajax_resetPlayerAdventure", "resetPlayerAdventure");
 add_action("wp_ajax_updatePlayer", "updatePlayer");
 add_action("wp_ajax_setGrade", "setGrade");
+add_action("wp_ajax_validatePlayerPost", "validatePlayerPost");
 add_action("wp_ajax_updateProfile", "updateProfile");
 add_action("wp_ajax_nopriv_bluerabbit_add_new_player", "bluerabbit_add_new_player");
 add_action("wp_ajax_bluerabbit_add_new_player", "bluerabbit_add_new_player");

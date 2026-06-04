@@ -101,5 +101,25 @@
 								</div>
 							</td>
 						</tr>
+						<tr>
+							<td class="text-right w-150"><?php _e('Optional','bluerabbit'); ?></td>
+							<td>
+								<div class="input-group w-full">
+									<label class="amber-bg-600 font w900"><span class="icon icon-star"></span></label>
+									<input type="checkbox" class="form-ui" id="the_quest_optional" <?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'checked' : ''; ?>>
+									<label class="form-ui grey-800"><?php _e("Optional (doesn't count toward Tabi unlock)","bluerabbit"); ?></label>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td class="text-right w-150"><?php _e('Validate','bluerabbit'); ?></td>
+							<td>
+								<div class="input-group w-full">
+									<label class="green-bg-600 font w900"><span class="icon icon-check"></span></label>
+									<input type="checkbox" class="form-ui" id="the_quest_validate" <?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'checked' : ''; ?>>
+									<label class="form-ui grey-800"><?php _e("Require validation before awarding resources","bluerabbit"); ?></label>
+								</div>
+							</td>
+						</tr>
 					</tbody>
 				</table>

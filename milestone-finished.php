@@ -8,6 +8,29 @@
 		<input type="hidden" class="milestone-data-bg" value="<?= $mi->mech_badge; ?>">
 		<input type="hidden" class="milestone-data-color" value="<?= $mi->mech_color; ?>">
 		<input type="hidden" class="milestone-data-type" value="finished">
+        <div class="milestone-modal-content">
+            <div class="milestone-image" style="background-image: url(<?= $mi->mech_badge; ?>);">
+                <span class="icon icon-check"></span>
+            </div>
+            <h1 class="milestone-headline"><?= $mi->quest_title; ?></h1>
+            <?php if($mi->quest_secondary_headline){ ?>
+                <h2 class="milestone-subheadline">
+                    <?= $mi->quest_secondary_headline; ?>
+                </h2>
+            <?php } ?>
+            <div class="milestone-action">
+                <a class="action-button finished" href="<?= $permalink ; ?>">
+                    <?= $mi->quest_type." Completed!"; ?><br><em><?=__("Review","bluerabbit"); ?></em>
+                </a>
+            </div>
+            <div class="milestone-modal-divider"></div>
+            <h2 class="milestone-level"><?= __("Level","bluerabbit"); ?>: <?= $mi->mech_level; ?></h2>
+            <h2 class="milestone-xp"><?=$xp_label; ?>: <?= $mi->mech_xp; ?></h2>
+            <h2 class="milestone-bloo"><?=$bloo_label; ?>: <?= $mi->mech_bloo; ?></h2>
+            <?php if($mi->mech_ep > 0){ ?>
+                <h2 class="milestone-ep"><?=$ep_label; ?>: <?= $mi->mech_ep; ?></h2>
+            <?php } ?>
+        </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">
 				<h2 class="blue-grey-900 lime-bg-A400"><span class="icon icon-check"></span></h2>

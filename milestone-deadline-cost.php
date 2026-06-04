@@ -8,7 +8,29 @@
 		<input type="hidden" class="milestone-data-bg" value="<?= $mi->mech_badge; ?>">
 		<input type="hidden" class="milestone-data-color" value="red">
 		<input type="hidden" class="milestone-data-type" value="deadline-cost">
-		
+        <div class="milestone-modal-content">
+            <div class="milestone-image" style="background-image: url(<?= $mi->mech_badge; ?>);">
+            </div>
+            <h1 class="milestone-headline"><?= $mi->quest_title; ?></h1>
+            <?php if($mi->quest_secondary_headline){ ?>
+                <h2 class="milestone-subheadline">
+                    <?= $mi->quest_secondary_headline; ?>
+                </h2>
+            <?php } ?>
+            <div class="milestone-action">
+                <button class="action-button deadline-unlock" onClick='payment(<?=$mi->quest_id;?>,"deadline");'>
+                    <?= __("Deadline missed","bluerabbit")." ".date('D, M jS, Y | H:i',strtotime($mi->mech_deadline)); ?><br>
+					<?= __("Unlock for","bluerabbit");?><span class='icon icon-bloo'></span><?= toMoney($mi->mech_deadline_cost,""); ?>
+                </button>
+            </div>
+            <div class="milestone-modal-divider"></div>
+            <h2 class="milestone-level"><?= __("Level","bluerabbit"); ?>: <?= $mi->mech_level; ?></h2>
+            <h2 class="milestone-xp"><?=$xp_label; ?>: <?= $mi->mech_xp; ?></h2>
+            <h2 class="milestone-bloo"><?=$bloo_label; ?>: <?= $mi->mech_bloo; ?></h2>
+            <?php if($mi->mech_ep > 0){ ?>
+                <h2 class="milestone-ep"><?=$ep_label; ?>: <?= $mi->mech_ep; ?></h2>
+            <?php } ?>
+        </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">
 				<h2><span class="icon icon-lock"></span></h2>

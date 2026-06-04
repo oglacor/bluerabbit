@@ -2281,6 +2281,8 @@ function updateQuest(){
 		$quest_style = $quest_data['quest_style'];
 		$quest_objectives = $quest_data['quest_objectives'];
 		$tabi_id = $quest_data['tabi_id'];
+		$mech_optional = intval($quest_data['quest_mechs']['mech_optional']);
+		$mech_validate = intval($quest_data['quest_mechs']['mech_validate']);
 		$steps_order = $quest_data['steps_order'];
 
 		if(!$quest_title){
@@ -2328,13 +2330,13 @@ function updateQuest(){
 				`mech_min_words`,`mech_min_links`,`mech_min_images`,
 				`mech_max_attempts`,`mech_free_attempts`,`mech_attempt_cost`,`mech_questions_to_display`,`mech_answers_to_win`,`mech_time_limit`,`mech_show_answers`,
 				`mech_item_reward`,`mech_achievement_reward`,
-				`quest_order`, `quest_guild`, `tabi_id`
+				`quest_order`, `quest_guild`, `tabi_id`, `mech_optional`, `mech_validate`
 			)
-			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %d, %d, %d, %d, %s, %s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)
-			
+			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %d, %d, %d, %d, %s, %s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)
+
 			ON DUPLICATE KEY UPDATE
 				`quest_author`=%d, `adventure_id`=%d, `achievement_id`=%d,
-				`quest_status`=%s, `quest_title`=%s, `quest_content`=%s, `quest_success_message`=%s, `quest_type`=%s,`quest_secondary_headline`=%s, `quest_style`=%s,  `quest_color`=%s,  `quest_icon`=%s, 
+				`quest_status`=%s, `quest_title`=%s, `quest_content`=%s, `quest_success_message`=%s, `quest_type`=%s,`quest_secondary_headline`=%s, `quest_style`=%s,  `quest_color`=%s,  `quest_icon`=%s,
 				`quest_date_modified`=%s,
 				`quest_relevance`=%s,
 				`mech_level`=%d, `mech_xp`=%d, `mech_bloo`=%d, `mech_ep`=%d, `mech_badge`=%s,
@@ -2342,7 +2344,7 @@ function updateQuest(){
 				`mech_min_words`=%d, `mech_min_links`=%d, `mech_min_images`=%d,
 				`mech_max_attempts`=%d, `mech_free_attempts`=%d, `mech_attempt_cost`=%d, `mech_questions_to_display`=%d, `mech_answers_to_win`=%d, `mech_time_limit`=%d, `mech_show_answers`=%d,
 				`mech_item_reward`=%d, `mech_achievement_reward`=%d,
-				`quest_order`=%d, `quest_guild`=%d, `tabi_id`=%d
+				`quest_order`=%d, `quest_guild`=%d, `tabi_id`=%d, `mech_optional`=%d, `mech_validate`=%d
 			";
 			$sql = $wpdb->prepare(
 				
@@ -2360,8 +2362,8 @@ function updateQuest(){
 				$quest_mechs['mech_min_words'], $quest_mechs['mech_min_links'], $quest_mechs['mech_min_images'],
 				$quest_mechs['mech_max_attempts'], $quest_mechs['mech_free_attempts'], $quest_mechs['mech_attempt_cost'], $quest_mechs['mech_questions_to_display'], $quest_mechs['mech_answers_to_win'], $quest_mechs['mech_time_limit'], $quest_mechs['mech_show_answers'],
 				$quest_mechs['mech_item_reward'], $quest_mechs['mech_achievement_reward'],
-				$quest_order, $quest_guild,$tabi_id,
-				
+				$quest_order, $quest_guild, $tabi_id, $mech_optional, $mech_validate,
+
 				$quest_author,
 				$adventure_id, $achievement_id,
 				$quest_status,
@@ -2373,7 +2375,7 @@ function updateQuest(){
 				$quest_mechs['mech_min_words'], $quest_mechs['mech_min_links'], $quest_mechs['mech_min_images'],
 				$quest_mechs['mech_max_attempts'], $quest_mechs['mech_free_attempts'], $quest_mechs['mech_attempt_cost'], $quest_mechs['mech_questions_to_display'], $quest_mechs['mech_answers_to_win'], $quest_mechs['mech_time_limit'], $quest_mechs['mech_show_answers'],
 				$quest_mechs['mech_item_reward'], $quest_mechs['mech_achievement_reward'],
-				$quest_order, $quest_guild, $tabi_id
+				$quest_order, $quest_guild, $tabi_id, $mech_optional, $mech_validate
 			);
 			$wpdb->query($sql);
 			if($wpdb->insert_id){
@@ -5850,18 +5852,17 @@ function getQuests($adventure_id, $quest_type="", $quest_type_exclude="", $order
 ////////////////////////////////////// GET MY QUESTS //////////////////////////////////
 function getMyQuests($adventure_id){
 	global $wpdb; $current_user = wp_get_current_user();
-	
-	$adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
 
-	$qry = $wpdb->get_results("SELECT *	FROM {$wpdb->prefix}br_player_posts 
-	WHERE adventure_id=$adventure_id AND player_id=$current_user->ID AND pp_status = 'publish'");
+	$qry = $wpdb->get_results("
+		SELECT pp.*, q.mech_validate
+		FROM {$wpdb->prefix}br_player_posts pp
+		JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
+		WHERE pp.adventure_id=$adventure_id AND pp.player_id=$current_user->ID AND pp.pp_status = 'publish'
+	");
 	$result = array();
-	$after = $adventure->adventure_progression_type;
-	foreach($qry as $ppKey=>$pp){
-		if($pp->pp_status == "publish"){
-			if($pp->pp_grade > 0 && $after == "after" || $after == "before"){
-				$result[]=$pp->quest_id;
-			}
+	foreach($qry as $pp){
+		if(!$pp->mech_validate || $pp->pp_grade > 0){
+			$result[]=$pp->quest_id;
 		}
 	}
 	return $result;
@@ -6266,7 +6267,7 @@ function getObjective($obj_id='', $player_id=null){
 function getTabis($adventure_id){
 	global $wpdb;
 	$result = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_tabis
-	WHERE adventure_id=$adventure_id AND tabi_status='publish'");
+	WHERE adventure_id=$adventure_id AND tabi_status='publish' ORDER BY tabi_level ASC, tabi_id ASC");
 	return $result;
 }
 
@@ -6315,7 +6316,7 @@ function getCompletedTabiIds($adventure_id, $player_id) {
 	$totals = $wpdb->get_results("
 		SELECT tabi_id, COUNT(*) AS total
 		FROM {$wpdb->prefix}br_quests
-		WHERE adventure_id = $adventure_id AND tabi_id > 0 AND quest_status = 'publish'
+		WHERE adventure_id = $adventure_id AND tabi_id > 0 AND quest_status = 'publish' AND (mech_optional IS NULL OR mech_optional = 0)
 		GROUP BY tabi_id
 	");
 	if(empty($totals)) return [];
@@ -6325,6 +6326,7 @@ function getCompletedTabiIds($adventure_id, $player_id) {
 		FROM {$wpdb->prefix}br_player_posts pp
 		JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
 		WHERE q.adventure_id = $adventure_id AND q.tabi_id > 0
+		AND (q.mech_optional IS NULL OR q.mech_optional = 0)
 		AND pp.player_id = $player_id AND pp.pp_status = 'publish'
 		GROUP BY q.tabi_id
 	");
@@ -6798,6 +6800,54 @@ function setGrade(){
         $msg_content = __("Post doesn't exist!",'bluerabbit').'<br>'.__('check again and reload','bluerabbit');
         $data['message'] = $notification->pop($msg_content,'red','cancel');
         $data['just_notify'] =true;
+	}
+	echo json_encode($data);
+	die();
+}
+
+/////////////////////// VALIDATE PLAYER POST ////////////////////
+function validatePlayerPost(){
+	global $wpdb; $current_user = wp_get_current_user();
+	$data = array();
+	$data['success'] = false;
+	$player_id = intval($_POST['player_id']);
+	$quest_id  = intval($_POST['quest_id']);
+	$adventure_id = intval($_POST['adventure_id']);
+	$validate_action = sanitize_text_field($_POST['validate_action']); // 'validate' or 'invalidate'
+	$nonce = $_POST['nonce'];
+	$notification = new Notification();
+
+	if(wp_verify_nonce($nonce, 'br_grade_nonce')){
+		if($validate_action == 'validate'){
+			$grade     = 100;
+			$pp_status = 'publish';
+			$msg       = __('Quest Validated','bluerabbit');
+			$log_type  = 'validate';
+			$notif_color = 'green';
+			$notif_icon  = 'check';
+		} else {
+			$grade     = 0;
+			$pp_status = 'draft';
+			$msg       = __('Quest Invalidated','bluerabbit');
+			$log_type  = 'invalidate';
+			$notif_color = 'red';
+			$notif_icon  = 'cancel';
+		}
+		$sql = $wpdb->prepare(
+			"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%d, pp_status=%s WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
+			$grade, $pp_status, $quest_id, $player_id, $adventure_id
+		);
+		$wpdb->query($sql);
+		$data['success'] = true;
+		$data['message'] = $notification->pop($msg, $notif_color, $notif_icon);
+		$data['just_notify'] = true;
+		$data['new_grade_nonce'] = wp_create_nonce('br_grade_nonce');
+		logActivity($adventure_id, 'set', $log_type, "", $quest_id, $player_id);
+	} else {
+		$data['success'] = false;
+		$msg_content = __("Unauthorized access",'bluerabbit');
+		$data['message'] = $notification->pop($msg_content,'red','cancel');
+		$data['just_notify'] = true;
 	}
 	echo json_encode($data);
 	die();

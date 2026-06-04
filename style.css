@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*
 Theme Name: BLUERABBIT v12
 Theme URI: https://bluerabbit.io
@@ -3334,7 +3335,6 @@ span.divider {
   perspective: 1000px;
   transform-style: preserve-3d;
   margin: 0 auto;
-  position: relative;
   z-index: 26;
   display: block;
   transition: all 0.5s ease-out;
@@ -3343,15 +3343,6 @@ span.divider {
   background-image: linear-gradient(rgba(0, 140, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 140, 255, 0.07) 1px, transparent 1px), linear-gradient(rgba(0, 140, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 140, 255, 0.03) 1px, transparent 1px);
   background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
   background-attachment: fixed;
-  position: relative;
-}
-.journey-container::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(0, 80, 200, 0.18) 0%, transparent 70%), radial-gradient(ellipse 80% 30% at 50% 0%, rgba(5, 10, 40, 0.6) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
 }
 
 .journey .milestone-container {
@@ -3478,6 +3469,9 @@ span.divider {
 .journey.journey-board .board-view-column .milestone-container.baseZ {
   transform: translateZ(0px) rotate(0deg) !important;
   z-index: 1000 !important;
+}
+.journey.journey-board .milestone .milestone-modal-content {
+  display: none;
 }
 .journey.journey-board .milestone ::-webkit-scrollbar-track {
   background-color: #263238;
@@ -3654,6 +3648,9 @@ span.divider {
 .journey.journey-map .milestone-container.baseZ {
   transform: translateZ(0px) rotate(0deg) !important;
   z-index: 1000 !important;
+}
+.journey.journey-map .milestone .milestone-modal-content {
+  display: none;
 }
 .journey.journey-map .milestone {
   font-size: 16px;
@@ -4004,7 +4001,7 @@ span.divider {
   opacity: 0.8;
 }
 .tabi-node .tabi-node-name {
-  font: 700 16px "Rajdhani", sans-serif;
+  font: 500 20px "Rajdhani", sans-serif;
   color: #fff;
   margin-bottom: 4px;
   white-space: nowrap;
@@ -4027,14 +4024,14 @@ span.divider {
   transform: translateX(-50%);
   text-align: center;
 }
-.tabi-node.locked {
-  opacity: 0.45;
-  cursor: not-allowed;
-  filter: grayscale(60%);
+.tabi-node.locked, .tabi-node.unavailable {
+  opacity: 1;
+  cursor: pointer;
+  filter: grayscale(100%);
   border-color: rgba(255, 255, 255, 0.1) !important;
   box-shadow: none !important;
 }
-.tabi-node.locked .tabi-node-name {
+.tabi-node.locked .tabi-node-name, .tabi-node.unavailable .tabi-node-name {
   color: rgba(255, 255, 255, 0.6);
 }
 .tabi-node .tabi-node-lock-msg {
@@ -4254,6 +4251,205 @@ span.divider {
   margin: 8px 0;
   border-radius: 10px;
   transform: translateZ(0px) scale(1) rotate(0deg) !important;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone {
+  display: flex;
+  position: relative;
+  transition: all 0.3s ease-out;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone.finished .milestone-modal-content {
+  background-color: rgba(36, 218, 152, 0.25);
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone.finished .milestone-modal-content .milestone-image {
+  background-color: rgba(36, 218, 152, 0.25);
+  background-blend-mode: luminosity;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content {
+  display: grid;
+  color: #FFFFFF;
+  width: 100%;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: auto;
+  grid-template-areas: "image headline headline headline headline headline action action" "image subheadline subheadline subheadline subheadline subheadline action action" "image line line line line line action action" "image . milestone_level xp bloo ep action action";
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-image {
+  grid-area: image;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-image span.icon {
+  font-size: 60px;
+  color: #FFFFFF;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-headline {
+  padding: 0 10px;
+  grid-area: headline;
+  font: 300 26px "proxima-nova", sans-serif;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-subheadline {
+  padding: 0 10px;
+  grid-area: subheadline;
+  font: 400 16px "proxima-nova", sans-serif;
+  opacity: 0.8;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action {
+  grid-area: action;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  background-color: #24da98;
+  color: #04161e;
+  border-radius: 5px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+  border: none;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button:hover, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button:hover {
+  transform: scale(1.1);
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.blocked, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.blocked {
+  background-color: #9f40e2;
+  color: #FFFFFF;
+  font-size: 50px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.unlock-cost, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.unlock-cost {
+  background-color: #f7cb15;
+  color: #04161e;
+  font-size: 18px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.unavailable, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.unavailable {
+  background-color: #f7cb15;
+  color: #04161e;
+  font-size: 50px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.startdate, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.startdate {
+  background-color: #1cc2eb;
+  color: #04161e;
+  font-size: 18px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.deadline, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.deadline-unlock, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.deadline, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.deadline-unlock {
+  background-color: #e24040;
+  color: #FFFFFF;
+  font-size: 18px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.levelup, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.levelup {
+  background-color: #9f40e2;
+  color: #FFFFFF;
+  font-size: 40px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.levelup em, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.levelup em {
+  font-style: normal;
+  font-size: 18px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.finished, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.finished {
+  background-color: #24da98;
+  color: #FFFFFF;
+  font-size: 30px;
+  line-height: 1;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action button.action-button.finished em, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-action a.action-button.finished em {
+  font-weight: 400;
+  font-style: normal;
+  font-size: 18px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-modal-divider {
+  grid-area: line;
+  width: 100%;
+  border-top: solid 1px rgba(28, 194, 235, 0.3);
+  margin: 10px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-level {
+  display: block;
+  text-align: center;
+  grid-area: milestone_level;
+  font: 300 16px "Rajdhani", sans-serif;
+  border-right: solid 1px rgba(28, 194, 235, 0.2);
+  padding: 10px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-xp {
+  grid-area: xp;
+  text-align: center;
+  font: 300 16px "Rajdhani", sans-serif;
+  border-right: solid 1px rgba(28, 194, 235, 0.2);
+  padding: 10px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-bloo {
+  grid-area: bloo;
+  text-align: center;
+  font: 300 16px "Rajdhani", sans-serif;
+  border-right: solid 1px rgba(28, 194, 235, 0.2);
+  padding: 10px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-ep {
+  grid-area: ep;
+  text-align: center;
+  font: 300 16px "Rajdhani", sans-serif;
+  padding: 10px;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-bg-color, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-bg-badge, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-cta, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-level, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-resources, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-action-button, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-description, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-lock-type {
+  display: none;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-edit-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tabi-modal-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 28px 36px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+}
+.tabi-modal-locked .icon-lock {
+  font-size: 48px;
+  opacity: 0.5;
+}
+.tabi-modal-locked p {
+  margin: 0;
+  font: 400 14px "proxima-nova", sans-serif;
+  color: rgba(255, 255, 255, 0.6);
+}
+.tabi-modal-locked .tabi-prereq-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.tabi-modal-locked .tabi-prereq-list li {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font: 600 15px "Rajdhani", sans-serif;
+  color: #fff;
+}
+.tabi-modal-locked .tabi-prereq-list li::before {
+  content: "🔒 ";
 }
 
 .journey-builder-container .builder .builder-tabi, .journey-builder-container .builder .milestone, .journey-builder-container .builder .builder-asset {

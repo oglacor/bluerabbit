@@ -12,7 +12,6 @@ function getPlayerProgress($adventure_id, $uID){
         
         if ($adventure->adventure_gmt){ date_default_timezone_set($adventure->adventure_gmt); }
 		$today = date('Y-m-d H:i:s');
-		$after = $adventure->adventure_progression_type;
 		$errors = array();
 
 		$myItems = getMyItems($adventure->adventure_id, $user->player_id);
@@ -170,12 +169,12 @@ function getPlayerProgress($adventure_id, $uID){
 		foreach($quests as $qKey=>$quest){
             $pp = isset($player_work[$quest->quest_id]) ? $player_work[$quest->quest_id] : false;
 			if(isset($pp->pp_status) && $pp->pp_status == 'publish'){
-				
-				if($pp->pp_grade > 0 && $after == "after" || $after == "before"){
+
+				if(!$quest->mech_validate || $pp->pp_grade > 0){
 					if(!in_array($quest->quest_id,$fqs)){
 						$myEP += $quest->mech_ep;
 						$myXP += $quest->mech_xp;
-						if($after == "after"){
+						if($quest->mech_validate && $pp->pp_grade > 0){
 							$myBloo += ($quest->mech_bloo*$pp->pp_grade/100);
 						}else{
 							$myBloo += $quest->mech_bloo;

@@ -136,14 +136,36 @@
 		foreach($tabis as $t) {
 			$modal_quests = isset($tabi_quest_map[$t->tabi_id]) ? $tabi_quest_map[$t->tabi_id] : [];
 			?>
-			<div class="tabi-modal" id="tabi-modal-<?= $t->tabi_id; ?>" data-locked="<?= (!empty($tabi_locked[$t->tabi_id])) ? '1' : '0'; ?>">
+			<?php
+				$modal_is_locked = !empty($tabi_locked[$t->tabi_id]);
+				$modal_req_names = [];
+				if($modal_is_locked && !empty($tabi_prereq_map[$t->tabi_id])) {
+					foreach($tabis as $rt) {
+						if(in_array($rt->tabi_id, $tabi_prereq_map[$t->tabi_id]) && !in_array($rt->tabi_id, $completed_tabis)) {
+							$modal_req_names[] = esc_html($rt->tabi_name);
+						}
+					}
+				}
+			?>
+			<div class="tabi-modal" id="tabi-modal-<?= $t->tabi_id; ?>" data-locked="<?= $modal_is_locked ? '1' : '0'; ?>">
 				<div class="tabi-modal-header">
 					<div class="tabi-modal-color-strip <?= esc_attr($t->tabi_color); ?>"></div>
 					<h2 class="tabi-modal-title"><?= esc_html($t->tabi_name); ?></h2>
 					<button class="tabi-modal-close action-button" onclick="closeTabiModal()">
-						<span class="icon icon-close"></span>
+						<span class="icon icon-cancel font _24"></span>
 					</button>
 				</div>
+				<?php if($modal_is_locked) { ?>
+				<div class="tabi-modal-locked">
+					<span class="icon icon-lock"></span>
+					<p><?= __('Complete these tabis first to unlock this one:', 'bluerabbit'); ?></p>
+					<ul class="tabi-prereq-list">
+						<?php foreach($modal_req_names as $rn) { ?>
+							<li><?= $rn; ?></li>
+						<?php } ?>
+					</ul>
+				</div>
+				<?php } else { ?>
 				<div class="tabi-modal-board">
 					<?php foreach($modal_quests as $mi) {
 						$scale = '';
@@ -226,6 +248,7 @@
 						}
 					} ?>
 				</div>
+				<?php } // end else (unlocked) ?>
 			</div>
 		<?php } ?>
 		<input type="hidden" id="tabi-position-nonce" value="<?= $tabi_position_nonce; ?>">
