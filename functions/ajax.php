@@ -1407,6 +1407,7 @@ function updateQuestion(){
 	}else if($type == 'challenge'){
 		$questions_query = "UPDATE {$wpdb->prefix}br_challenge_questions SET question_title=%s, question_image=%s WHERE question_id=%d";
 		$qs_insert = $wpdb->query( $wpdb->prepare($questions_query, $q_text, $q_image, $id));
+        $data['debug'] = print_r($wpdb->last_query,true);
 		if($qs_insert){
 			$data['success'] = true;
 			$msg_content = __('Question Updated','bluerabbit');
@@ -1418,13 +1419,6 @@ function updateQuestion(){
 
 		
 			$adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-			if($adventure->adventure_type=='template'){
-				$children_update = "UPDATE {$wpdb->prefix}br_challenge_questions SET question_title=%s, question_image=%s WHERE question_parent=$id AND question_id!=$id";
-
-				$children_update = $wpdb->query( $wpdb->prepare($children_update, $q_text, $q_image));
-				
-				logActivity($adventure_id,'update','challenge-question-children','',$quest_id,$id);
-			}
 		
 		
 		}else{

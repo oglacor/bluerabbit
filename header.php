@@ -257,6 +257,9 @@
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/jquery-ui.min.js"></script>
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/jquery.datetimepicker.full.min.js"></script>
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/Chart.js"></script>
+        <?php if(is_page('challenge')){ ?>
+            <script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/hud-audio.js"></script>
+        <?php } ?>
         <script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/script.js"></script>
 		<?php $gads_id = $config['google_property_id']['value'] ? $config['google_property_id']['value'] : 'G-F1QPQC2JZL' ;	?>
 		

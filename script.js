@@ -2261,7 +2261,9 @@ function updateQuestion(type,id){
 	let adventure_id = $("#the_adventure_id").val();
 	let quest_id = $("#the_quest_id").val();
 	let q_text = $("#question-text-"+id).val();
-	let q_image = $("#question-"+id+"-img").attr('src');
+	let q_image = $("#question-"+id+"-img").val();
+    
+
 	let q_description=$("#question-description-"+id).val();
 	let q_range=$("#question-range-"+id).val();
 	let q_display=$("#question-display-"+id).val();
