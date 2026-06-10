@@ -550,8 +550,10 @@ function duplicateJourneyAsset(){
 				'asset_width'  => $src->asset_width,
 				'asset_z'      => $src->asset_z,
 				'asset_rotation' => $src->asset_rotation,
+				'asset_type'   => $src->asset_type ?? 'graphic',
+				'asset_link'   => $src->asset_link ?? '',
 				'asset_status' => 'publish',
-			], ['%d','%s','%d','%d','%d','%d','%d','%s']);
+			], ['%d','%s','%d','%d','%d','%d','%d','%s','%s','%s']);
 			$new_id = $wpdb->insert_id;
 			$data['html'] = renderJourneyAssetHTML($new_id);
 			$data['success'] = true;
@@ -605,6 +607,23 @@ function setJourneyAssetImage(){
 			['asset_image'=>$image], ['asset_id'=>$asset_id], ['%s'], ['%d']);
 		$data['success'] = true;
 		$data['image']   = $image;
+	}
+	echo json_encode($data);
+	die();
+}
+function saveJourneyAssetMeta(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$type     = sanitize_text_field($_POST['asset_type'] ?? 'graphic');
+	$link     = esc_url_raw($_POST['asset_link'] ?? '');
+	$nonce    = $_POST['nonce'];
+	if(!in_array($type, ['graphic','widget-status','widget-leaderboard'])) $type = 'graphic';
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->update("{$wpdb->prefix}br_journey_assets",
+			['asset_type'=>$type, 'asset_link'=>$link],
+			['asset_id'=>$asset_id], ['%s','%s'], ['%d']);
+		$data['success'] = true;
 	}
 	echo json_encode($data);
 	die();

@@ -4312,16 +4312,46 @@ span.divider{
 
 		.asset-controls {
 			position: absolute;
-			top: -38px;
+			bottom: calc(100% + 4px);
+			top: auto;
 			left: 0;
 			display: flex;
-			gap: 3px;
+			flex-direction: column;
+			gap: 4px;
 			opacity: 0;
 			visibility: hidden;
 			transition: opacity 0.2s;
 			z-index: 10;
 			pointer-events: auto;
-            height: 50px;
+			.asset-controls-row {
+				display: flex;
+				gap: 3px;
+				align-items: center;
+			}
+			.asset-sep {
+				display: inline-block;
+				width: 1px;
+				height: 20px;
+				background: rgba(255,255,255,0.2);
+				margin: 0 2px;
+			}
+			.asset-link-row {
+				display: none;
+				gap: 4px;
+				align-items: center;
+				.asset-link-input {
+					height: 28px;
+					font-size: 11px;
+					padding: 0 8px;
+					background: rgba(4,14,20,0.9);
+					border: 1px solid rgba(255,255,255,0.25);
+					color: #fff;
+					border-radius: 4px;
+					width: 200px;
+					outline: none;
+					&::placeholder { color: rgba(255,255,255,0.35); }
+				}
+			}
 			.asset-btn {
 				background: rgba(4,14,20,0.85);
 				border: 1px solid rgba(255,255,255,0.15);
@@ -4332,14 +4362,34 @@ span.divider{
 				align-items: center;
 				justify-content: center;
 				cursor: pointer;
-				font-size: 13px;
+				font-size: 11px;
+				font-weight: 700;
 				padding: 0;
 				transition: background 0.15s;
 
 				&:hover { background: rgba(66,165,245,0.5); }
 				&.danger:hover { background: rgba(239,83,80,0.6); }
 				&.asset-rotate-btn { cursor: grab; }
+				&.active {
+					background: rgba(66,165,245,0.6);
+					border-color: rgba(66,165,245,0.8);
+				}
 			}
+		}
+		.asset-widget-preview {
+			width: 100%;
+			min-height: 60px;
+			background: rgba(0,0,0,0.35);
+			border: 2px dashed rgba(255,255,255,0.3);
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			font: 700 12px $base-font;
+			color: rgba(255,255,255,0.65);
+			text-align: center;
+			padding: 10px;
 		}
         .asset-rotate-btn {
             background-color:transparent;
@@ -4360,6 +4410,35 @@ span.divider{
 body.asset-rotating,
 body.asset-rotating * { cursor: grabbing !important; }
 
+// Journey widget front-end styles
+.journey-asset-link {
+	display: block;
+	cursor: pointer;
+	text-decoration: none;
+}
+.journey-asset-widget {
+	pointer-events: auto;
+}
+.journey-widget {
+	width: 100%;
+	border-radius: 8px;
+	background: rgba(0,0,0,0.55);
+	backdrop-filter: blur(6px);
+	padding: 10px 12px;
+	box-sizing: border-box;
+	color: #fff;
+}
+.journey-widget-status {
+	.stat { margin-bottom: 8px; }
+	.stat-legend { overflow: hidden; margin-bottom: 4px; }
+	.progress-bar { height: 8px; border-radius: 4px; overflow: hidden; position: relative; }
+	.progress { position: absolute; top: 0; left: 0; height: 100%; border-radius: 4px; }
+}
+.journey-widget-leaderboard {
+	h3 { margin: 0 0 6px; }
+	table { border-collapse: collapse; width: 100%; }
+	td { padding: 3px 4px; vertical-align: middle; border: none; color: #fff; }
+}
 // ==================== END JOURNEY GRAPHIC ASSETS ====================
 
 // Tabi prerequisites UI (in adventure settings)

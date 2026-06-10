@@ -84,6 +84,15 @@
 		<a href="<?=get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id";?>" class="form-ui white-bg padding-5 margin-5 blue-A400 font _18 w900 uppercase opacity-50">
 			<span class="icon icon-journey"></span><?= __("Back to the journey!","bluerabbit"); ?>
 		</a>
+		<?php
+		$nextMilestone = (isset($playerState) && isset($adv_parent_id))
+			? getNextAvailableMilestone($adv_parent_id, $adv_child_id, $challenge->quest_id, $adventure, $playerState)
+			: null;
+		if ($nextMilestone): ?>
+		<a href="<?= get_bloginfo('url')."/$nextMilestone->quest_type/?questID=$nextMilestone->quest_id&adventure_id=$adv_child_id"; ?>" class="form-ui orange-bg-400 white-color padding-5 margin-5 font _18 w900 uppercase">
+			<?= esc_html($nextMilestone->quest_title); ?> <span class="icon icon-arrow-right"></span>
+		</a>
+		<?php endif; ?>
 	</div>
 </div>
 <script>

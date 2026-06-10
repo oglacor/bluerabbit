@@ -282,6 +282,94 @@ function getPlayerProgress($adventure_id, $uID){
 	return $data;
 }
 
+/**
+ * Returns the milestone template filename (without .php) for a given quest and player state.
+ * Replaces the nested-if cascade used in journey.php and page-adventure.php.
+ */
+function resolveMilestoneTemplate($mi, $player, $player_level, $player_achievements, $reqs_ids, $today) {
+	if ($mi->achievement_id && !in_array($mi->achievement_id, $player_achievements)) {
+		return 'milestone-unavailable';
+	}
+	if (in_array($mi->quest_id, $player['fqs'])) return 'milestone-finished';
+	if ($mi->quest_status === 'locked')           return 'milestone-locked';
+	if ($player_level < $mi->mech_level)           return 'milestone-levelup';
+	if ($mi->mech_unlock_cost > 0 && !in_array($mi->quest_id, $player['unlocks'])) return 'milestone-unlock';
+	if ($mi->mech_start_date && $mi->mech_start_date !== '0000-00-00 00:00:00' && $today < date('YmdHi', strtotime($mi->mech_start_date))) {
+		return 'milestone-startdate';
+	}
+	if ($mi->mech_deadline && $mi->mech_deadline !== '0000-00-00 00:00:00' && $today > date('YmdHi', strtotime($mi->mech_deadline))) {
+		if ($mi->mech_deadline_cost <= 0)                              return 'milestone-deadline';
+		if (!in_array($mi->quest_id, $player['deadlines']))            return 'milestone-deadline-cost';
+	}
+	if (!empty($player['fqs']) && isset($reqs_ids[$mi->quest_id])) {
+		$done = array_intersect($player['fqs'], $reqs_ids[$mi->quest_id]);
+		if ($done != $reqs_ids[$mi->quest_id]) return 'milestone-requirements';
+	}
+	return ($player['debt'] > 0) ? 'milestone-blocked' : 'milestone';
+}
+
+/**
+ * Finds the next fully-playable quest after the given quest in the same adventure.
+ * Returns a quest object or null if none found.
+ */
+function getNextAvailableMilestone($adv_parent_id, $adv_child_id, $current_quest_id, $adventure, $playerState) {
+	global $wpdb;
+	if (!$playerState || !isset($playerState['player'])) return null;
+
+	$player  = $playerState['player'];
+	$fqs     = $player['fqs']             ?? [];
+	$ach_ids = $playerState['achievements_ids'] ?? [];
+	$req_ids = $playerState['reqs_ids']   ?? [];
+
+	if ($adventure->adventure_gmt) date_default_timezone_set($adventure->adventure_gmt);
+	$today       = date('YmdHi');
+	$hide_quests = $adventure->adventure_hide_quests ?? 'never';
+
+	$current = $wpdb->get_row($wpdb->prepare(
+		"SELECT quest_order FROM {$wpdb->prefix}br_quests WHERE quest_id = %d", $current_quest_id
+	));
+	if (!$current) return null;
+
+	$candidates = $wpdb->get_results($wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}br_quests
+		 WHERE adventure_id = %d
+		   AND quest_status = 'publish'
+		   AND (tabi_id IS NULL OR tabi_id = 0)
+		   AND quest_type NOT IN ('blog-post', 'lore')
+		   AND (quest_order > %d OR (quest_order = %d AND quest_id != %d))
+		 ORDER BY quest_order, mech_level, mech_start_date, quest_title",
+		$adv_parent_id,
+		(int)$current->quest_order, (int)$current->quest_order, (int)$current_quest_id
+	));
+
+	foreach ($candidates as $mi) {
+		if (in_array($mi->quest_id, $fqs)) continue;
+
+		// Date-visibility gate (mirrors journey.php hide_quests logic)
+		$hideByDay = false;
+		if ($hide_quests === 'before' && $mi->mech_start_date && $mi->mech_start_date !== '0000-00-00 00:00:00') {
+			if ($today < date('YmdHi', strtotime($mi->mech_start_date))) $hideByDay = true;
+		} elseif ($hide_quests === 'after' && $mi->mech_deadline && $mi->mech_deadline !== '0000-00-00 00:00:00') {
+			if ($today > date('YmdHi', strtotime($mi->mech_deadline))) $hideByDay = true;
+		} elseif ($hide_quests === 'both') {
+			$hasStart    = $mi->mech_start_date && $mi->mech_start_date !== '0000-00-00 00:00:00';
+			$hasDeadline = $mi->mech_deadline   && $mi->mech_deadline   !== '0000-00-00 00:00:00';
+			if ($hasStart || $hasDeadline) {
+				$s = $hasStart    ? date('YmdHi', strtotime($mi->mech_start_date)) : '000000000000';
+				$e = $hasDeadline ? date('YmdHi', strtotime($mi->mech_deadline))   : '999999999999';
+				if ($today < $s || $today > $e) $hideByDay = true;
+			}
+		}
+		if ($hideByDay) continue;
+
+		if (resolveMilestoneTemplate($mi, $player, $player['level'], $ach_ids, $req_ids, $today) === 'milestone') {
+			return $mi;
+		}
+	}
+
+	return null;
+}
+
 function getRequirements($quest_id, $adv_id){
 	global $wpdb; $current_user = wp_get_current_user();
     $data = array();

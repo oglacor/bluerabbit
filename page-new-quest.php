@@ -131,12 +131,14 @@ if($adventure && ($isGM || $isAdmin)){
 								<select id="the_quest_status" class="form-ui">
 									<option value="publish" <?php if(!$quest->quest_status|| $quest->quest_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
 									<option value="draft" <?php if($quest->quest_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
+									<option value="locked" <?php if($quest->quest_status == 'locked'){ echo 'selected'; }?>><?php _e('Locked','bluerabbit'); ?></option>
 									<option value="trash" <?php if($quest->quest_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
 								</select>
 							<?php }else{ ?>
 								<select id="the_quest_status" class="form-ui">
 									<option value="publish" ><?php _e('Publish','bluerabbit'); ?></option>
 									<option value="draft"><?php _e('Draft','bluerabbit'); ?></option>
+									<option value="locked"><?php _e('Locked','bluerabbit'); ?></option>
 									<option value="trash"><?php _e('Trash','bluerabbit'); ?></option>
 								</select>
 							<?php } ?>
@@ -184,6 +186,26 @@ if($adventure && ($isGM || $isAdmin)){
 									<input type="hidden" id="duplicator_nonce" value="<?= wp_create_nonce('duplicate_nonce'); ?>"/>
 								</div>
 							</li>
+							<?php if(isset($quest) && $quest->quest_qr_token){ ?>
+							<li class="block text-center padding-10">
+								<h4 class="white-color padding-5 text-center font _18 condensed"><span class="icon icon-qr"></span> <?= __("QR Completion","bluerabbit"); ?></h4>
+								<?php
+								$qr_url      = get_bloginfo('url')."/quest-qr/?token=".$quest->quest_qr_token;
+								$qr_dir      = WP_CONTENT_DIR . '/uploads/br-quest-qr/';
+								$qr_url_base = content_url('uploads/br-quest-qr/');
+								if (!file_exists($qr_dir)) wp_mkdir_p($qr_dir);
+								$qr_filename  = 'quest-' . $quest->quest_id . '.png';
+								$qr_file_path = $qr_dir . $qr_filename;
+								$qr_file_url  = $qr_url_base . $qr_filename;
+								if (!file_exists($qr_file_path)) {
+									require_once(get_template_directory()."/libs/phpqrcode/qrlib.php");
+									QRcode::png($qr_url, $qr_file_path, QR_ECLEVEL_M, 6);
+								}
+								?>
+								<img src="<?= esc_url($qr_file_url); ?>" style="max-width:160px; display:block; margin:8px auto; image-rendering:pixelated;">
+								<input type="text" class="form-ui w-full" readonly value="<?= esc_attr($qr_url); ?>" onClick="this.select();" style="font-size:10px;">
+							</li>
+							<?php } ?>
 						<?php } ?>
 					</ul>
 				</div>

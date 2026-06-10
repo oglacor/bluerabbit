@@ -194,53 +194,13 @@
 							}
 							if($hideByDay != 'hidden') {
 								$elementID = $mi->quest_id;
-								$permalink = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
+								$permalink  = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
+								$today_map  = date('YmdHi');
 								?>
 								<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="order:<?= $mi->quest_order; ?>">
 								<?php
-								if(in_array($mi->achievement_id, $player_achievements) || !$mi->achievement_id) {
-									if(in_array($mi->quest_id, $player['fqs'])){
-										include (TEMPLATEPATH . '/milestone-finished.php');
-									} else {
-										if($current_player->player_level < $mi->mech_level){
-											include (TEMPLATEPATH . '/milestone-levelup.php');
-										} else {
-											if($mi->mech_unlock_cost > 0 && !in_array($mi->quest_id, $player['unlocks'])){
-												include (TEMPLATEPATH . '/milestone-unlock.php');
-											} else {
-												if($today < date('YmdHi', strtotime($mi->mech_start_date))){
-													include (TEMPLATEPATH . '/milestone-startdate.php');
-												} else {
-													if($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL && $today > date('YmdHi', strtotime($mi->mech_deadline)) && $mi->mech_deadline_cost <= 0){
-														include (TEMPLATEPATH . '/milestone-deadline.php');
-													} elseif($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL && $today > date('YmdHi', strtotime($mi->mech_deadline)) && $mi->mech_deadline_cost > 0 && !in_array($mi->quest_id, $player['deadlines'])){
-														include (TEMPLATEPATH . '/milestone-deadline-cost.php');
-													} else {
-														if(!empty($player['fqs']) && isset($reqs_ids[$mi->quest_id])){
-															$reqs_finished = $player['fqs'] ? array_intersect($player['fqs'], $reqs_ids[$mi->quest_id]) : 0;
-															if($reqs_finished != $reqs_ids[$mi->quest_id]){
-																include (TEMPLATEPATH . '/milestone-requirements.php');
-															} else {
-																$allReqs = true;
-															}
-														} else {
-															$allReqs = true;
-														}
-														if($allReqs){
-															if($player['debt'] <= 0){
-																include (TEMPLATEPATH . '/milestone.php');
-															} else {
-																include (TEMPLATEPATH . '/milestone-blocked.php');
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								} else {
-									include (TEMPLATEPATH . '/milestone-unavailable.php');
-								}
+								$miTemplate = resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today_map);
+								include (TEMPLATEPATH . "/$miTemplate.php");
 								?>
 								</div>
 								<?php

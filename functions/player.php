@@ -851,6 +851,7 @@ function resetPlayer($adventure_id, $uID){
 		$pp_values = array();
 
 		foreach($quests as $ppKey=>$pp){
+			if($pp->quest_status == 'locked') continue;
 			if($pp->quest_type == 'quest' && $pp->pp_content !=""){
 				if($pp->pp_grade > 0 && $after == "after" || $after == "before"){
 					if(!in_array($pp->quest_id,$fqs)){
@@ -905,6 +906,7 @@ function resetPlayer($adventure_id, $uID){
 		}
 		/// MISSIONS
 		foreach($quests as $ppKey=>$pp){
+			if($pp->quest_status == 'locked') continue;
 			if($pp->quest_type == 'mission'){
 				$objectives = getObjectives($pp->adventure_id, $pp->quest_id, $user->player_id);
 				$objectives_completed = 0;

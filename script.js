@@ -940,7 +940,7 @@ function initializeBuilderMilestones(){
 
 function initializeBuilderAssets(){
 	$('#builder .builder-asset').draggable({
-		cancel: '.ui-resizable-handle, .asset-rotate-btn',
+		cancel: '.ui-resizable-handle, .asset-rotate-btn, .asset-link-input, .asset-controls',
 		start: function(){ $(this).addClass('dragging'); },
 		stop: function(){
 			let id = $(this).data('asset-id');
@@ -1032,6 +1032,7 @@ function pickJourneyAssetImage(id){
 		} else {
 			$vis.prepend('<img class="asset-img" src="' + url + '" alt="" draggable="false">');
 		}
+		$el.find('#journey-asset-img-' + id).val(url);
 		jQuery.ajax({
 			url: runAJAX.ajaxurl,
 			data: { action: 'setJourneyAssetImage', asset_id: id, image: url, nonce: nonce },
@@ -1039,6 +1040,67 @@ function pickJourneyAssetImage(id){
 		});
 	});
 	file_frame.open();
+}
+
+function setAssetType(id, type) {
+	let $el = $('#journey-asset-' + id);
+	$el.attr('data-asset-type', type);
+	$el.find('.asset-type-val').val(type);
+	$el.find('.asset-type-btn').removeClass('active');
+	$el.find('.asset-type-btn[data-type="' + type + '"]').addClass('active');
+	// Show/hide the Set Image button
+	if(type === 'graphic') {
+		$el.find('.asset-graphic-only').show();
+	} else {
+		$el.find('.asset-graphic-only').hide();
+	}
+	// Update the visual preview
+	let $vis = $el.find('.asset-visual');
+	if(type === 'widget-status') {
+		$vis.html('<div class="asset-widget-preview asset-widget-status-preview"><span class="icon icon-star"></span> Status Widget</div>');
+	} else if(type === 'widget-leaderboard') {
+		$vis.html('<div class="asset-widget-preview asset-widget-leaderboard-preview"><span class="icon icon-level"></span> Leaderboard Widget</div>');
+	} else {
+		let imgUrl = $el.find('#journey-asset-img-' + id).val();
+		if(imgUrl) {
+			$vis.html('<img class="asset-img" src="' + imgUrl + '" alt="" draggable="false">');
+		} else {
+			$vis.html('<div class="asset-empty-placeholder pointer-cursor" onclick="pickJourneyAssetImage(' + id + ')">Click to set graphic</div>');
+		}
+	}
+	_saveAssetMeta(id);
+}
+
+function toggleAssetLink(id) {
+	let $el  = $('#journey-asset-' + id);
+	let $row = $el.find('.asset-link-row');
+	$row.toggle();
+	if($row.is(':visible')) {
+		$row.find('.asset-link-input').focus();
+	}
+}
+
+function saveAssetLink(id, url) {
+	let $el = $('#journey-asset-' + id);
+	$el.find('.asset-link-val').val(url);
+	if(url) {
+		$el.find('.asset-link-toggle').addClass('active');
+	} else {
+		$el.find('.asset-link-toggle').removeClass('active');
+	}
+	_saveAssetMeta(id);
+}
+
+function _saveAssetMeta(id) {
+	let $el   = $('#journey-asset-' + id);
+	let nonce = $el.find('.asset-nonce').val();
+	let type  = $el.find('.asset-type-val').val();
+	let link  = $el.find('.asset-link-val').val();
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'saveJourneyAssetMeta', asset_id: id, asset_type: type, asset_link: link, nonce: nonce },
+		method: 'POST'
+	});
 }
 
 function addJourneyAsset(){
@@ -1054,7 +1116,7 @@ function addJourneyAsset(){
 				$('#builder').append(d.html);
 				let $newAsset = $('#journey-asset-' + d.asset_id);
 				$newAsset.draggable({
-					cancel: '.ui-resizable-handle, .asset-rotate-btn',
+					cancel: '.ui-resizable-handle, .asset-rotate-btn, .asset-link-input, .asset-controls',
 					start: function(){ $(this).addClass('dragging'); },
 					stop: function(){
 						let top  = parseInt($(this).css('top'), 10);
@@ -1101,7 +1163,7 @@ function duplicateJourneyAsset(id){
 			if(d.success && d.html){
 				$('#builder').append(d.html);
 				$('#journey-asset-' + d.asset_id).draggable({
-					cancel: '.ui-resizable-handle, .asset-rotate-btn',
+					cancel: '.ui-resizable-handle, .asset-rotate-btn, .asset-link-input, .asset-controls',
 					start: function(){ $(this).addClass('dragging'); },
 					stop: function(){
 						let top  = parseInt($(this).css('top'), 10);

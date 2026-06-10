@@ -2311,6 +2311,7 @@ function updateQuest(){
 			$quest_mechs['mech_questions_to_display']=$quest_mechs['mech_answers_to_win']=$quest_mechs['mech_time_limit']=0;
 		}
 		if(!$errors){
+			$quest_qr_token = random_str(32, '0123456789abcdefghijklmnopqrstuvwxyz');
 			$sql = "INSERT INTO {$wpdb->prefix}br_quests (
 				`quest_id`,
 				`quest_author`,
@@ -2324,9 +2325,10 @@ function updateQuest(){
 				`mech_min_words`,`mech_min_links`,`mech_min_images`,
 				`mech_max_attempts`,`mech_free_attempts`,`mech_attempt_cost`,`mech_questions_to_display`,`mech_answers_to_win`,`mech_time_limit`,`mech_show_answers`,
 				`mech_item_reward`,`mech_achievement_reward`,
-				`quest_order`, `quest_guild`, `tabi_id`, `mech_optional`, `mech_validate`
+				`quest_order`, `quest_guild`, `tabi_id`, `mech_optional`, `mech_validate`,
+				`quest_qr_token`
 			)
-			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %d, %d, %d, %d, %s, %s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)
+			VALUES (%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %d, %d, %d, %d, %s, %s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %s)
 
 			ON DUPLICATE KEY UPDATE
 				`quest_author`=%d, `adventure_id`=%d, `achievement_id`=%d,
@@ -2338,7 +2340,8 @@ function updateQuest(){
 				`mech_min_words`=%d, `mech_min_links`=%d, `mech_min_images`=%d,
 				`mech_max_attempts`=%d, `mech_free_attempts`=%d, `mech_attempt_cost`=%d, `mech_questions_to_display`=%d, `mech_answers_to_win`=%d, `mech_time_limit`=%d, `mech_show_answers`=%d,
 				`mech_item_reward`=%d, `mech_achievement_reward`=%d,
-				`quest_order`=%d, `quest_guild`=%d, `tabi_id`=%d, `mech_optional`=%d, `mech_validate`=%d
+				`quest_order`=%d, `quest_guild`=%d, `tabi_id`=%d, `mech_optional`=%d, `mech_validate`=%d,
+				`quest_qr_token` = COALESCE(`quest_qr_token`, VALUES(`quest_qr_token`))
 			";
 			$sql = $wpdb->prepare(
 				
@@ -2357,6 +2360,7 @@ function updateQuest(){
 				$quest_mechs['mech_max_attempts'], $quest_mechs['mech_free_attempts'], $quest_mechs['mech_attempt_cost'], $quest_mechs['mech_questions_to_display'], $quest_mechs['mech_answers_to_win'], $quest_mechs['mech_time_limit'], $quest_mechs['mech_show_answers'],
 				$quest_mechs['mech_item_reward'], $quest_mechs['mech_achievement_reward'],
 				$quest_order, $quest_guild, $tabi_id, $mech_optional, $mech_validate,
+				$quest_qr_token,
 
 				$quest_author,
 				$adventure_id, $achievement_id,
@@ -4032,13 +4036,13 @@ function submitPlayerWork(){
 					}
 					$achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=$quest->mech_achievement_reward");
 				}
-				resetPlayer($adv_child_id, $player_id);
+				$playerState = resetPlayer($adv_child_id, $player_id);
 				$adv_settings = getSettings($adv_parent_id);
-				
+
 				$xp_label = $adventure->adventure_xp_label ? $adventure->adventure_xp_label : "XP";
 				$bloo_label = $adventure->adventure_bloo_label ? $adventure->adventure_bloo_label : "BLOO";
 				$ep_label = $adventure->adventure_ep_label ? $adventure->adventure_ep_label : "EP";
-				
+
 				$theFile = (get_template_directory()."/completed-quest.php");
 				
 				if(file_exists($theFile)) {
@@ -4308,9 +4312,9 @@ function gradeChallenge($attempt_id=0){
 
 		logActivity($adv_child_id,'complete','challenge',"", $challenge->quest_id, $att_id);
 
-		resetPlayer($adv_child_id, $player_id);
+		$playerState = resetPlayer($adv_child_id, $player_id);
 		$adv_settings = getSettings($adv_child_id);
-				
+
 		$xp_label = $adventure->adventure_xp_label ? $adventure->adventure_xp_label : "XP";
 		$bloo_label = $adventure->adventure_bloo_label ? $adventure->adventure_bloo_label : "BLOO";
 		$ep_label = $adventure->adventure_ep_label ? $adventure->adventure_ep_label : "EP";

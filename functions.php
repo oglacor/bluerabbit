@@ -196,6 +196,8 @@ $sql = "
 		`asset_width` INT NULL DEFAULT 200,
 		`asset_z` INT NULL DEFAULT 5,
 		`asset_rotation` INT NULL DEFAULT 0,
+		`asset_type` VARCHAR(30) NOT NULL DEFAULT 'graphic',
+		`asset_link` TEXT NULL,
 		`asset_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
 	PRIMARY KEY (`asset_id`) )$charset_collate;
 
@@ -915,6 +917,7 @@ $sql = "
 		"Player",
 		"Players",
 		"Post",
+        "Quest QR",
 		"Quest",
 		"Register",
 		"Report",
@@ -1494,6 +1497,12 @@ function br_migrate_tabi_tables() {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_quests ADD COLUMN `mech_optional` TINYINT NULL DEFAULT 0");
 	}
 
+	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_quests LIKE 'quest_qr_token'");
+	if (empty($col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_quests ADD COLUMN `quest_qr_token` VARCHAR(40) NULL DEFAULT NULL");
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_quests ADD UNIQUE INDEX `quest_qr_token` (`quest_qr_token`)");
+	}
+
 	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_quests LIKE 'mech_validate'");
 	if (empty($col)) {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_quests ADD COLUMN `mech_validate` TINYINT NULL DEFAULT 0");
@@ -1510,9 +1519,19 @@ function br_migrate_tabi_tables() {
 			`asset_width` INT NULL DEFAULT 200,
 			`asset_z` INT NULL DEFAULT 5,
 			`asset_rotation` INT NULL DEFAULT 0,
+			`asset_type` VARCHAR(30) NOT NULL DEFAULT 'graphic',
+			`asset_link` TEXT NULL,
 			`asset_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
 			PRIMARY KEY (`asset_id`)
 		) $charset_collate");
+	} else {
+		$cols = $wpdb->get_col("SHOW COLUMNS FROM $table");
+		if(!in_array('asset_type', $cols)){
+			$wpdb->query("ALTER TABLE $table ADD COLUMN `asset_type` VARCHAR(30) NOT NULL DEFAULT 'graphic'");
+		}
+		if(!in_array('asset_link', $cols)){
+			$wpdb->query("ALTER TABLE $table ADD COLUMN `asset_link` TEXT NULL DEFAULT NULL");
+		}
 	}
 }
 add_action('init', 'br_migrate_tabi_tables');
@@ -1652,6 +1671,7 @@ add_action("wp_ajax_duplicateJourneyAsset", "duplicateJourneyAsset");
 add_action("wp_ajax_saveJourneyAssetPosition", "saveJourneyAssetPosition");
 add_action("wp_ajax_saveJourneyAssetProperties", "saveJourneyAssetProperties");
 add_action("wp_ajax_setJourneyAssetImage", "setJourneyAssetImage");
+add_action("wp_ajax_saveJourneyAssetMeta", "saveJourneyAssetMeta");
 add_action("wp_ajax_setNickname", "setNickname");
 add_action("wp_ajax_setProfilePicture", "setProfilePicture");
 add_action("wp_ajax_exportPlayersWork", "exportPlayersWork");

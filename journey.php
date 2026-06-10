@@ -101,50 +101,8 @@
 						$first_milestone_for_tutorial = $elementID;
 					}
 					$permalink = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
-					if(in_array($mi->achievement_id, $player_achievements) || !$mi->achievement_id){ 
-						if(in_array($mi->quest_id, $player['fqs'])){
-							include (TEMPLATEPATH . '/milestone-finished.php');
-						}else{
-							if($current_player->player_level < $mi->mech_level){ 
-								include (TEMPLATEPATH . '/milestone-levelup.php');
-							}else{ 
-								if($mi->mech_unlock_cost > 0 && !in_array($mi->quest_id,$player['unlocks'])){
-									include (TEMPLATEPATH . '/milestone-unlock.php');
-								}else{ 
-									if($today < date('YmdHi',strtotime($mi->mech_start_date))){
-										include (TEMPLATEPATH . '/milestone-startdate.php');
-									}else{
-										if($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL && $today > date('YmdHi',strtotime($mi->mech_deadline )) && $mi->mech_deadline_cost <= 0){ 
-											include (TEMPLATEPATH . '/milestone-deadline.php');
-										}elseif($mi->mech_deadline != '0000-00-00 00:00:00' && $mi->mech_deadline != NULL && $today > date('YmdHi',strtotime($mi->mech_deadline)) && $mi->mech_deadline_cost > 0 && !in_array($mi->quest_id,$player['deadlines'])) {
-											include (TEMPLATEPATH . '/milestone-deadline-cost.php');
-										}else{
-											if(!empty($player['fqs']) && isset($reqs_ids[$mi->quest_id])){
-												$reqs_finished = $player['fqs'] ? array_intersect($player['fqs'], $reqs_ids[$mi->quest_id]) : 0;
-												if($reqs_finished != $reqs_ids[$mi->quest_id]){
-													include (TEMPLATEPATH . '/milestone-requirements.php');
-												}else{
-													$allReqs = true;
-												}
-											}else{
-												$allReqs = true;
-											}
-											if($allReqs){
-												if($player['debt']<=0){
-
-													include (TEMPLATEPATH . '/milestone.php');
-												}else{
-													include (TEMPLATEPATH . '/milestone-blocked.php');
-												}//has debt
-											}//hasReqs
-										}//isAlive
-									} //isOpen
-								} //isUnlockable
-							} //isLevel
-						}
-					}else{
-						include (TEMPLATEPATH . '/milestone-unavailable.php');
-					} //isLevel
+					$miTemplate = resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today);
+					include (TEMPLATEPATH . "/$miTemplate.php");
 				}
 			?>
 			</div>
@@ -154,13 +112,113 @@
 
 	<?php // Render journey graphic assets (display only — no controls)
 	$journey_assets = getJourneyAssets($adv_parent_id);
-	if($journey_assets) { foreach($journey_assets as $ja) { ?>
-		<div class="journey-asset"
+	// Pre-query leaderboard data if any leaderboard widget exists
+	$_lb_players = null;
+	if($journey_assets) {
+		foreach($journey_assets as $_ja) {
+			if(($_ja->asset_type ?? 'graphic') === 'widget-leaderboard') {
+				$_lb_limit = isset($leaderboard_limit) && $leaderboard_limit ? $leaderboard_limit : 5;
+				$_lb_players = $wpdb->get_results("
+					SELECT a.player_level, b.player_display_name, b.player_picture
+					FROM {$wpdb->prefix}br_player_adventure a
+					LEFT JOIN {$wpdb->prefix}br_players b ON a.player_id=b.player_id
+					WHERE a.adventure_id={$adventure->adventure_id}
+					AND a.player_adventure_status='in' AND a.player_adventure_role='player'
+					GROUP BY a.player_id ORDER BY a.player_xp DESC, a.player_level DESC LIMIT $_lb_limit
+				");
+				break;
+			}
+		}
+	}
+	if($journey_assets) { foreach($journey_assets as $ja) {
+		$_ja_type = $ja->asset_type ?? 'graphic';
+		$_ja_link = $ja->asset_link ?? '';
+	?>
+		<div class="journey-asset<?= $_ja_type !== 'graphic' ? ' journey-asset-widget' : ''; ?>"
 		     id="journey-asset-<?= $ja->asset_id; ?>"
 		     style="top:<?= $ja->asset_top; ?>px; left:<?= $ja->asset_left; ?>px; width:<?= $ja->asset_width; ?>px; z-index:<?= $ja->asset_z; ?>; transform:rotate(<?= $ja->asset_rotation; ?>deg);">
-			<?php if($ja->asset_image) { ?>
+			<?php if($_ja_link): ?><a href="<?= esc_url($_ja_link); ?>" target="_blank" rel="noopener" class="journey-asset-link"><?php endif; ?>
+
+			<?php if($_ja_type === 'widget-status'): ?>
+				<?php if(isset($current_player) && isset($adventure)): ?>
+				<div class="journey-widget journey-widget-status status-stats">
+					<div class="stat w-full">
+						<div class="stat-legend font _14">
+							<div class="left-legend w-half text-left pull-left uppercase font w900">
+								<span class="icon icon-star"></span> <?= $xp_long_label; ?>
+							</div>
+							<div class="right-legend w-third text-right pull-right">
+								<strong><?= toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= toMoney($nextLevel); ?></span>
+							</div>
+						</div>
+						<div class="progress-bar gradient-xp-bar relative w-full">
+							<div class="progress layer base black-bg opacity-60" style="width: <?= 100-round($percXP,3); ?>%"></div>
+						</div>
+					</div>
+					<div class="stat w-full">
+						<div class="stat-legend font _14 padding-5">
+							<div class="left-legend w-half text-left pull-left uppercase font w900">
+								<span class="icon icon-bloo"></span> <?= $bloo_long_label; ?>
+							</div>
+							<div class="right-legend w-third text-right pull-right">
+								<strong><?= toMoney($player['bloo'],"$"); ?></strong> /
+								<strong><?= toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
+							</div>
+						</div>
+						<div class="progress-bar relative w-full">
+							<div class="layer background absolute sq-full white-bg opacity-10"></div>
+							<div class="progress layer base light-green-bg-400 border rounded-max" style="width: <?= round($percBLOO,3); ?>%"></div>
+						</div>
+					</div>
+					<?php if($use_encounters && isset($adventure)): ?>
+					<div class="stat w-full">
+						<div class="stat-legend font _14 padding-5">
+							<div class="left-legend w-half text-left pull-left uppercase font w900">
+								<span class="icon icon-activity"></span> <?= $ep_long_label; ?>
+							</div>
+							<div class="right-legend w-third text-right pull-right">
+								<strong><?= $current_player->player_ep; ?></strong> / <span class="font condensed kerning-1"><?= $maxEP; ?></span>
+							</div>
+						</div>
+						<div class="progress-bar relative w-full">
+							<div class="layer background absolute sq-full white-bg opacity-10"></div>
+							<div class="progress layer base cyan-bg-A400 border rounded-max" style="width: <?= round($percEP,3); ?>%"></div>
+						</div>
+					</div>
+					<?php endif; ?>
+				</div>
+				<?php endif; ?>
+
+			<?php elseif($_ja_type === 'widget-leaderboard'): ?>
+				<div class="journey-widget journey-widget-leaderboard">
+					<h3 class="font _14 w900 white-color uppercase text-center"><?= __("Leaderboard","bluerabbit"); ?></h3>
+					<?php if($_lb_players): ?>
+					<table class="w-full">
+						<tbody>
+						<?php foreach($_lb_players as $_lk => $_lp): ?>
+							<tr>
+								<td class="font _16 w900 yellow-bg-400 black-color text-center" style="width:28px;"><?= $_lk+1; ?></td>
+								<td style="padding: 2px 6px;">
+									<?php if($_lp->player_picture): ?>
+									<span class="icon-button sq-24" style="display:inline-block; background-image: url(<?= esc_url($_lp->player_picture); ?>); background-size:cover; border-radius:50%; vertical-align:middle;"></span>
+									<?php endif; ?>
+									<span class="font _13"><?= esc_html($_lp->player_display_name); ?></span>
+								</td>
+								<td class="text-center font _14 w900 purple-400" style="width:32px;">Lv<?= $_lp->player_level; ?></td>
+							</tr>
+						<?php endforeach; ?>
+						</tbody>
+					</table>
+					<?php endif; ?>
+				</div>
+
+			<?php else: ?>
+				<?php if($ja->asset_image): ?>
 				<img src="<?= esc_url($ja->asset_image); ?>" alt="" draggable="false">
-			<?php } ?>
+				<?php endif; ?>
+			<?php endif; ?>
+
+			<?php if($_ja_link): ?></a><?php endif; ?>
 		</div>
 	<?php } } ?>
 
