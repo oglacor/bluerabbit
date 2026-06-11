@@ -72,6 +72,14 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 									<span class="icon icon-xs icon-cancel"></span><?php _e('Cancel','bluerabbit'); ?><br>
 								</a>
 							</li>
+                            <?php if($a){ ?>
+							<li class="block text-center padding-10">
+								<h4 class="white-color padding-5 text-center font _18 condensed"><span class="icon icon-qr"></span> <?= __("Magic QR Code","bluerabbit"); ?></h4>
+								<img src="<?= esc_url($a->achievement_qrcode); ?>" style="max-width:160px; display:block; margin:8px auto; image-rendering:pixelated;">
+							</li>
+
+
+						    <?php } ?>
 						<?php } ?>
 					</ul>
 				</div>

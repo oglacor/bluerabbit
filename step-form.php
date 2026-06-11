@@ -52,6 +52,8 @@
 							<!-- Profile input -->
 							<option value="choose-nickname" <?= $s->step_type=='choose-nickname' ? "selected" : '';?> ><?= __("Choose Nickname","bluerabbit"); ?></option>
 							<option value="choose-avatar" <?= $s->step_type=='choose-avatar' ? "selected" : '';?> ><?= __("Choose Avatar","bluerabbit"); ?></option>
+							<!-- External content -->
+							<option value="scorm" <?= $s->step_type=='scorm' ? "selected" : '';?> ><?= __("SCORM Package","bluerabbit"); ?></option>
 						</select>
 					</td>
 				</tr>
@@ -157,6 +159,40 @@
 				<tr class="conditional-display choose-avatar-display">
 					<td class="text-center" colspan="2">
 						<h3 class="padding-5"><?= __("Upload the images of the avatars available to the players","bluerabbit"); ?></h3>
+					</td>
+				</tr>
+				<tr class="conditional-display scorm-display">
+					<td class="text-right v-top">
+						<span class="font _16 block"><?= __("SCORM Package","bluerabbit"); ?></span>
+						<span class="font _12 grey-400 block"><?= __("Upload a Genially SCORM 1.2 .zip file","bluerabbit"); ?></span>
+					</td>
+					<td>
+						<?php
+						$scorm_settings = $s->step_settings ? json_decode($s->step_settings, true) : [];
+						$scorm_url      = isset($scorm_settings['scorm_launch_url']) ? $scorm_settings['scorm_launch_url'] : '';
+						?>
+						<div id="scorm-info-<?= $s->step_id ?>" class="font _12 <?= $scorm_url ? 'green-color' : 'grey-400'; ?> padding-5-0">
+							<?php if($scorm_url): ?>
+								<span class="icon icon-check"></span> <?= esc_html($scorm_url); ?>
+							<?php else: ?>
+								<?= __("No package uploaded yet","bluerabbit"); ?>
+							<?php endif; ?>
+						</div>
+						<div class="input-group margin-top-5">
+							<input type="file" id="scorm-zip-<?= $s->step_id ?>" accept=".zip" class="form-ui white-bg">
+							<button id="scorm-upload-btn-<?= $s->step_id ?>"
+							        class="form-ui teal-bg-400 white-color"
+							        onclick="brUploadScorm(<?= $s->step_id ?>, <?= $s->adventure_id ?>);">
+								<span class="icon icon-upload"></span>
+								<?= $scorm_url ? __("Replace Package","bluerabbit") : __("Upload Package","bluerabbit"); ?>
+							</button>
+						</div>
+						<input type="hidden" id="scorm-nonce-<?= $s->step_id ?>"
+						       value="<?= wp_create_nonce('br_scorm_upload'); ?>">
+						<button class="form-ui red-bg-400 white-color font _12 margin-top-5"
+						        onclick="brResetScorm(<?= (int)$s->step_id ?>, '<?= wp_create_nonce('br_scorm_reset_all') ?>')">
+							<span class="icon icon-trash"></span> <?= __("Clear All Attempts","bluerabbit"); ?>
+						</button>
 					</td>
 				</tr>
 				<tr class="conditional-display path-choice-display">

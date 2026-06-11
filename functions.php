@@ -1449,8 +1449,9 @@ add_filter( 'ajax_query_attachments_args','filter_media' );
 //................................................................................//
 
 function ajaxFunctions() {
-	wp_enqueue_script( 'ajaxFunctions', get_template_directory_uri().'/script.js', 'jquery', true); 
+	wp_enqueue_script( 'ajaxFunctions', get_template_directory_uri().'/script.js', 'jquery', true);
 	wp_localize_script( 'ajaxFunctions', 'runAJAX', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
+	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 }
 
 require_once ("$dirName/functions/ajax.php");
@@ -1459,6 +1460,7 @@ require_once ("$dirName/functions/adventure-management.php");
 require_once ("$dirName/functions/progression.php");
 require_once ("$dirName/classes/Notification.php");
 require_once ("$dirName/classes/Project.php");
+require_once ("$dirName/classes/BR-Scorm.php");
 
 $br_project = new Project();
 $n = new Notification();
@@ -1722,5 +1724,8 @@ add_action("wp_ajax_checkPlayerSecretCode", "checkPlayerSecretCode");
 add_action("wp_ajax_loadContent", "loadContent");
 add_action("wp_ajax_loadStory", "loadStory");
 add_action("wp_ajax_br_logout", "br_logout");
+add_action("wp_ajax_br_scorm_upload",    array('BR_SCORM', 'ajax_upload'));
+add_action("wp_ajax_br_scorm_save_data", array('BR_SCORM', 'ajax_save_data'));
+add_action("wp_ajax_br_scorm_reset_all",    array('BR_SCORM', 'ajax_reset_all'));
 
 

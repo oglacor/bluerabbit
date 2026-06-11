@@ -5841,7 +5841,7 @@ function getQuests($adventure_id, $quest_type="", $quest_type_exclude="", $order
 			$result['draft'][]=$o;
 		}elseif($o->quest_status == 'hidden'){
 			$result['hidden'][]=$o;
-		}elseif($o->quest_status == 'publish'){
+		}elseif($o->quest_status == 'publish' || $o->quest_status == 'locked'){
 			$result['publish'][]=$o;
 		}
 	}

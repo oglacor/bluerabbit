@@ -2012,6 +2012,28 @@ span.divider {
   background-position: right bottom;
   background-size: auto;
 }
+.steps .step .step-content-container.scorm-step-container {
+  display: grid;
+  align-content: center;
+  justify-content: center;
+  padding: 0px;
+}
+.steps .step .step-content-container .scorm-wrapper {
+  position: relative;
+  width: 75vw;
+  aspect-ratio: 16/9;
+  min-width: 550px;
+  max-width: 1600px;
+}
+.steps .step .step-content-container .scorm-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
 .steps .step .step-content-container .step-rating-choices {
   display: block;
   margin: 0 auto;
@@ -4594,6 +4616,9 @@ span.divider {
   width: 200px;
   outline: none;
 }
+.journey-builder-container .builder .builder-asset .asset-controls .asset-link-row .asset-link-input::-moz-placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
 .journey-builder-container .builder .builder-asset .asset-controls .asset-link-row .asset-link-input::placeholder {
   color: rgba(255, 255, 255, 0.35);
 }
@@ -4667,19 +4692,21 @@ body.asset-rotating * {
   cursor: pointer;
   text-decoration: none;
 }
+
 .journey-asset-widget {
   pointer-events: auto;
 }
+
 .journey-widget {
   width: 100%;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.55);
-  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   padding: 10px 12px;
   box-sizing: border-box;
   color: #fff;
 }
+
 .journey-widget-status .stat {
   margin-bottom: 8px;
 }
@@ -4700,6 +4727,7 @@ body.asset-rotating * {
   height: 100%;
   border-radius: 4px;
 }
+
 .journey-widget-leaderboard h3 {
   margin: 0 0 6px;
 }

@@ -68,9 +68,14 @@ function getPlayerProgress($adventure_id, $uID){
         WHERE quests.adventure_id=$adv_parent_id AND (quests.quest_status='publish' OR quests.quest_status='hidden') AND (quests.achievement_id='' OR quests.achievement_id=NULL $achievements_ids_str ) ORDER BY quests.quest_color, quests.quest_order, quests.mech_level, quests.mech_start_date, quests.quest_title, quests.quest_id");
 
 		$all_quests = $wpdb->get_results("SELECT
-        quests.* FROM {$wpdb->prefix}br_quests quests
-        WHERE quests.adventure_id=$adv_parent_id AND quests.quest_status='publish' OR quests.quest_status='hidden'
-		ORDER BY quests.quest_color, quests.quest_order, quests.mech_level, quests.mech_start_date, quests.quest_title, quests.quest_id");
+        quests.*, tabis.tabi_name, tabis.tabi_color as tabi_color_name
+        FROM {$wpdb->prefix}br_quests quests
+        LEFT JOIN {$wpdb->prefix}br_tabis tabis
+            ON quests.tabi_id = tabis.tabi_id
+            AND tabis.adventure_id = $adv_parent_id
+            AND tabis.tabi_status = 'publish'
+        WHERE quests.adventure_id=$adv_parent_id AND (quests.quest_status='publish' OR quests.quest_status='hidden')
+		ORDER BY (quests.tabi_id IS NULL OR quests.tabi_id=0) ASC, quests.tabi_id ASC, quests.quest_order ASC, quests.mech_level ASC, quests.mech_start_date ASC, quests.quest_title ASC, quests.quest_id ASC");
 
 		$survey_questions = $wpdb->get_results("SELECT questions.*
 		FROM {$wpdb->prefix}br_survey_questions questions
