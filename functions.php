@@ -190,6 +190,7 @@ $sql = "
 	CREATE TABLE {$wpdb->prefix}br_journey_assets (
 		`asset_id` BIGINT NOT NULL AUTO_INCREMENT,
 		`adventure_id` BIGINT NOT NULL,
+		`tabi_id` BIGINT NULL DEFAULT 0,
 		`asset_image` TEXT NULL,
 		`asset_top` INT NULL DEFAULT 350,
 		`asset_left` INT NULL DEFAULT 350,
@@ -402,6 +403,19 @@ $sql = "
 		`org_id` BIGINT NOT NULL,
 		`adventure_id` BIGINT NOT NULL,
 	PRIMARY KEY (`org_id`,`adventure_id`) )$charset_collate;
+
+    CREATE TABLE {$wpdb->prefix}br_email_log (
+        `log_id`       BIGINT       NOT NULL AUTO_INCREMENT,
+        `user_id`      BIGINT       NOT NULL DEFAULT 0,
+        `adventure_id` BIGINT       NOT NULL DEFAULT 0,
+        `subject`      VARCHAR(255) NOT NULL DEFAULT '',
+        `status`       VARCHAR(20)  NOT NULL DEFAULT 'sent',
+        `detail`       VARCHAR(500) NOT NULL DEFAULT '',
+        `sent_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`log_id`),
+        KEY `idx_adventure` (`adventure_id`),
+        KEY `idx_user`      (`user_id`)
+    ) {$charset_collate};
 
 	CREATE TABLE {$wpdb->prefix}br_paypal_transactions (
 		`paypal_transaction_id` bigint(20) NOT NULL,
@@ -873,6 +887,7 @@ $sql = "
 		"Certificate",
 		"Config",
 		"Duplicator",
+        "Email Notifications",
 		"Encounters",
 		"Enroll",
 		"Guild",
@@ -1397,7 +1412,7 @@ CLASSES
 */
 
 
-function stepTag($the_text=""){
+function stepTag($the_text="", $id=NULL, $classes=NULL){
 	include (TEMPLATEPATH.'/step-tag.php');
 }
 
@@ -1461,6 +1476,8 @@ require_once ("$dirName/functions/progression.php");
 require_once ("$dirName/classes/Notification.php");
 require_once ("$dirName/classes/Project.php");
 require_once ("$dirName/classes/BR-Scorm.php");
+require_once ("$dirName/classes/BR-mailer.php");
+require_once ("$dirName/functions/br-email-admin.php");
 
 $br_project = new Project();
 $n = new Notification();
@@ -1534,6 +1551,9 @@ function br_migrate_tabi_tables() {
 		if(!in_array('asset_link', $cols)){
 			$wpdb->query("ALTER TABLE $table ADD COLUMN `asset_link` TEXT NULL DEFAULT NULL");
 		}
+		if(!in_array('tabi_id', $cols)){
+			$wpdb->query("ALTER TABLE $table ADD COLUMN `tabi_id` BIGINT NULL DEFAULT 0");
+		}
 	}
 }
 add_action('init', 'br_migrate_tabi_tables');
@@ -1598,6 +1618,7 @@ add_action("wp_ajax_randomEncounter", "randomEncounter");
 add_action("wp_ajax_answerEncounter", "answerEncounter");
 add_action("wp_ajax_updateAchievement", "updateAchievement");
 add_action("wp_ajax_setAchievement", "setAchievement");
+add_action("wp_ajax_setQuestTabi", "setQuestTabi");
 add_action("wp_ajax_setGuild", "setGuild");
 add_action("wp_ajax_setSpeaker", "setSpeaker");
 add_action("wp_ajax_setSpeakerData", "setSpeakerData");
@@ -1635,6 +1656,8 @@ add_action("wp_ajax_choosePath", "choosePath");
 add_action("wp_ajax_triggerAchievement", "triggerAchievement");
 add_action("wp_ajax_triggerAchievements", "triggerAchievements");
 add_action("wp_ajax_triggerGuild", "triggerGuild");
+add_action("wp_ajax_bulkAssignGuild", "bulkAssignGuild");
+add_action("wp_ajax_bulkAssignAchievement", "bulkAssignAchievement");
 add_action("wp_ajax_resetTransactions", "resetTransactions");
 add_action("wp_ajax_resetDemoAdventure", "resetDemoAdventure");
 add_action("wp_ajax_resetDemoAdventurePlayer", "resetDemoAdventurePlayer");
@@ -1674,6 +1697,7 @@ add_action("wp_ajax_saveJourneyAssetPosition", "saveJourneyAssetPosition");
 add_action("wp_ajax_saveJourneyAssetProperties", "saveJourneyAssetProperties");
 add_action("wp_ajax_setJourneyAssetImage", "setJourneyAssetImage");
 add_action("wp_ajax_saveJourneyAssetMeta", "saveJourneyAssetMeta");
+add_action("wp_ajax_saveJourneyAssetTabi", "saveJourneyAssetTabi");
 add_action("wp_ajax_setNickname", "setNickname");
 add_action("wp_ajax_setProfilePicture", "setProfilePicture");
 add_action("wp_ajax_exportPlayersWork", "exportPlayersWork");

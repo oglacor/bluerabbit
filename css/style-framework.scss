@@ -1,6 +1,9 @@
 $main-font: "proxima-nova", sans-serif;  
+$base-font: "proxima-nova", sans-serif;  
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
 $special-font: "Rajdhani", sans-serif;
+$preospe-font: "Preospe", sans-serif;
+
 
 @mixin font($fontSize,$fontWeight){
 	font-size:$fontSize; 
@@ -250,6 +253,7 @@ $special-font: "Rajdhani", sans-serif;
 	&.main{ font-family: $main-font !important; }
 	&.condensed{ font-family: $condensed-font !important; }
 	&.special{ font-family: $special-font !important; }
+	&.preospe{ font-family: $preospe-font !important; } 
 	&._6{ font-size: 6px; }
 	&._8{ font-size: 8px; }
 	&._9{ font-size: 9px; }

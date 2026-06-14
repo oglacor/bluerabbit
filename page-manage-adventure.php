@@ -189,6 +189,7 @@
 	<input type="hidden" id="draft-nonce" value="<?php echo wp_create_nonce('draft_nonce'); ?>" />
 	<input type="hidden" id="duplicator_nonce" value="<?php echo wp_create_nonce('duplicate_nonce'); ?>"/>
 	<input type="hidden" id="achievement-nonce" value="<?php echo wp_create_nonce('achievement_nonce'); ?>" />
+	<input type="hidden" id="quest-tabi-nonce" value="<?php echo wp_create_nonce('quest_tabi_nonce'); ?>" />
 	<input type="hidden" id="guild-nonce" value="<?php echo wp_create_nonce('guild_nonce'); ?>" />
 	<input type="hidden" id="xp-nonce" value="<?php echo wp_create_nonce('xp_nonce'); ?>" />
 	<input type="hidden" id="ep-nonce" value="<?php echo wp_create_nonce('ep_nonce'); ?>" />

@@ -99,6 +99,15 @@ if(isset($adventure) && $isGM){
 					<input type="text" readonly class="form-ui w-full" value="<?php echo get_bloginfo('url')."/guild-enroll/?adventure_id=$adventure->adventure_id&t=$g->guild_code"; ?>">
 				</td>
 			</tr>
+			<tr>
+                <td class="text-right w-150">
+                    <?= __('Bulk assign players','bluerabbit'); ?>
+                </td>
+                <td class="w-100">
+                    <input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" size="20" />
+                    <button type="button" onClick="assignBulkUsersToGuild();" name="upload_csv" class="form-ui button"><?= __("Upload file","bluerabbit"); ?></button>
+                </td>
+			</tr>
 			<?php } ?>
 
 <?php 
@@ -109,14 +118,33 @@ LEFT JOIN {$wpdb->prefix}br_players b
 ON a.player_id = b.player_id
 LEFT JOIN {$wpdb->prefix}br_player_guild p_guild
 ON b.player_id = p_guild.player_id AND p_guild.guild_id = $g->guild_id
-WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' LIMIT 1000
+WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' ORDER BY b.player_display_name ASC LIMIT 1000 
 "); 
 ?>
 			<tr>
 				<td class="text-right w-150"><?= __('Player in guild','bluerabbit'); ?></td>
 				<td>
 					<?php if(isset($g)){ ?>
-						<table class="table compact">
+                        <div class="input-group sticky">
+                            <label>
+                                <span class="icon icon-search"></span>
+                            </label>
+                            <input type="text" class="form-ui" id="search-players" placeholder="<?php _e("Search players","bluerabbit"); ?>">
+                            <script>
+                                $('#search-players').keyup(function(){
+                                    var valThis = $(this).val().toLowerCase();
+                                    if(valThis == ""){
+                                        $('table#player-guild-list tbody > tr').show();           
+                                    }else{
+                                        $('table#player-guild-list tbody > tr').each(function(){
+                                            var text = $(this).text().toLowerCase();
+                                            (text.indexOf(valThis) >= 0) ? $(this).show() : $(this).hide();
+                                        });
+                                    };
+                                });
+                            </script>
+                        </div>
+						<table class="table compact" id="player-guild-list">
 							<thead>
 								<tr>
 									<td><?php _e("ID","bluerabbit"); ?></td>

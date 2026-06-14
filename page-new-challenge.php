@@ -349,7 +349,7 @@ if($isAdmin || $isGM){
 									<tbody>
 										<tr>
 											<td class="w-200">
-												<label for="the_csv_file_with_questions" class="">Upload Questions:</label>
+												<label for="the_csv_file_with_questions" class=""><?= __("Upload Questions","bluerabbit"); ?>:</label>
 												<input type="file" name="the_csv_file_with_questions" id="the_csv_file_with_questions" size="20" />
 											</td>
 											<td class="w-100">

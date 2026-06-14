@@ -275,6 +275,14 @@
 							</span>
 						</a>
 					</li>
+					<li class="nav-button highlight yellow">
+						<a class="" href="<?= get_bloginfo('url')."/email-notifications/?adventure_id=$adv_parent_id";?>">
+							<span class="content">
+								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-project.png" alt=""/></span>
+								<span class="label"><?= __("Email Notifications","bluerabbit"); ?></span>
+							</span>
+						</a>
+					</li>
 					<li class="nav-button">
 						<a class="" href="<?= get_bloginfo('url')."/players/?adventure_id=$adv_child_id";?>">
 							<span class="content">

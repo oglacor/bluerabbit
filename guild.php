@@ -13,17 +13,14 @@
                         <tbody>
                             <tr class="teal">
                                 <td><?= __("Members"); ?>:</td>
-                                <?php
-                                $guild_members = $wpdb->get_results("SELECT COUNT(*) as count FROM {$wpdb->prefix}br_player_guild WHERE guild_id = $g->guild_id");
-                                ?>
-                                <td><?= count($guild_members); ?></td>
+                                <td><?= $g->guild_current_capacity; ?></td>
                             </tr>
                             <tr class="white">
                                 <td><?= __("Level"); ?>:</td>
                                 <td>
                                     <?php 
                                     $guild_level = 1;
-                                    for($l=1;$l<1000;$l++){
+                                    for($l=1;$l<30;$l++){
                                         $added += $l*1000;
                                         if(($added-1) < $g->guild_xp){
                                             $guild_level = $l+1;

@@ -12,18 +12,15 @@
             <div class="milestone-image" style="background-image: url(<?= $mi->mech_badge; ?>);">
             </div>
             <h1 class="milestone-headline"><?= $mi->quest_title; ?></h1>
-            <?php if($mi->quest_secondary_headline){ ?>
-                <h2 class="milestone-subheadline">
-                    <?= $mi->quest_secondary_headline; ?>
-                </h2>
-            <?php } ?>
+            <h2 class="milestone-subheadline">
+                <?= __("This quest is currently locked.","bluerabbit"); ?>
+            </h2>
             <div class="milestone-action">
                 <button class="action-button locked">
                     <span class="icon icon-lock inline-block"></span> <?= __("Locked","bluerabbit"); ?>
                 </button>
             </div>
             <div class="milestone-modal-divider"></div>
-            <h2 class="milestone-locked-label"><?= __("This quest is currently locked.","bluerabbit"); ?></h2>
         </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">

@@ -40,6 +40,7 @@
 	}
 	$quests = getQuests($adventure->adventure_id,'',"blog-post' AND quest_type!='lore", $order, $path);
 	$achievements = getAchievements($adventure->adventure_id, "path|rank");
+	$tabis = getTabis($adventure->adventure_id);
 ?>
 				<div class="highlight padding-10 deep-purple-bg-50">
 					<span class="icon-group">
@@ -197,7 +198,7 @@
 										</div>
 										<?php $curlevel=$q->mech_level; ?>
 									<?php } ?>
-									<div class="row-container active <?= $q->quest_type; ?> <?= $colors[$q->quest_type]; ?>" id="<?= $q->quest_type."-".$q->quest_id; ?>">
+									<div class="row-container <?= $q->quest_type; ?> <?= $colors[$q->quest_type]; ?>" id="<?= $q->quest_type."-".$q->quest_id; ?>">
 										<div class="row admin-row <?= $use_encounters ? 'with-ep' : ''; ?>">
 											<div class="cell cell-drag drag-handle">
 												<img src="<?= get_template_directory_uri(); ?>/images/drag-handle.svg" class="drag-icon">
@@ -325,6 +326,21 @@
 														<?php if($achievements['publish']){ ?>
 															<?php foreach($achievements['publish'] as $a){ ?>
 															<option value="<?= $a->achievement_id;?>" <?php if($q->achievement_id == $a->achievement_id){ echo 'selected'; }?>><?= $a->achievement_name; ?></option>
+															<?php } ?>
+														<?php } ?>
+													</select>
+												</div>
+											</div>
+											<div class="cell cell-tabi">
+												<div class="input-group">
+													<label>
+														<?= __("Tabi","bluerabbit"); ?>
+													</label>
+													<select class="form-ui update-tabi" onChange="setQuestTabi(<?= $q->quest_id; ?>,'<?= $q->quest_type; ?>')">
+														<option value="0" <?php if(!$q->tabi_id){ echo 'selected'; }?>><?php _e('None','bluerabbit'); ?></option>
+														<?php if($tabis){ ?>
+															<?php foreach($tabis as $tabi){ ?>
+															<option value="<?= $tabi->tabi_id;?>" <?php if($q->tabi_id == $tabi->tabi_id){ echo 'selected'; }?>><?= $tabi->tabi_name; ?></option>
 															<?php } ?>
 														<?php } ?>
 													</select>

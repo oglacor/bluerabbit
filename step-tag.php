@@ -1,4 +1,4 @@
-<div class="step-tag">
+<div class="step-tag" id="<?= $id ? $id : ""; ?>" class="<?= $classes ? $classes : ""; ?>">
 	<div class="step-tag-container">
 		<div class="step-tag-before">
 			<svg class="step-tag-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 54" preserveAspectRatio="none">

@@ -17,11 +17,11 @@
                     <?= $mi->quest_secondary_headline; ?>
                 </h2>
             <?php } ?>
-            <div class="milestone-action">
+            <div class="milestone-action available">
                 <a class="action-button" href="<?= $permalink ; ?>"><?= __("Do it now!","bluerabbit"); ?></a>
             </div>
             <div class="milestone-modal-divider"></div>
-            <h2 class="milestone-level"><?= __("Level","bluerabbit"); ?>: <?= $mi->mech_level; ?></h2>
+            <h2 class="milestone-level"><?=$mi->quest_type; ?> <?= __("Level","bluerabbit"); ?>: <?= $mi->mech_level; ?></h2>
             <h2 class="milestone-xp"><?=$xp_label; ?>: <?= $mi->mech_xp; ?></h2>
             <h2 class="milestone-bloo"><?=$bloo_label; ?>: <?= $mi->mech_bloo; ?></h2>
             <?php if($mi->mech_ep > 0){ ?>

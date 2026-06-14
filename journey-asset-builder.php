@@ -1,8 +1,9 @@
 <?php
-// Variables in scope: $a (asset row), $journey_asset_nonce
-$img_id     = "journey-asset-img-{$a->asset_id}";
-$asset_type = $a->asset_type ?? 'graphic';
-$asset_link = $a->asset_link ?? '';
+// Variables in scope: $a (asset row), $journey_asset_nonce, $builder_tabis
+$img_id        = "journey-asset-img-{$a->asset_id}";
+$asset_type    = $a->asset_type ?? 'graphic';
+$asset_link    = $a->asset_link ?? '';
+$asset_tabi_id = intval($a->tabi_id ?? 0);
 ?>
 <div class="journey-asset builder-asset"
      id="journey-asset-<?= $a->asset_id; ?>"
@@ -76,6 +77,19 @@ $asset_link = $a->asset_link ?? '';
                    onBlur="saveAssetLink(<?= $a->asset_id; ?>, this.value);"
                    onKeyDown="if(event.key==='Enter'){this.blur();}">
         </div>
+        <?php if(!empty($builder_tabis)): ?>
+        <div class="asset-tabi-row">
+            <span class="asset-tabi-label"><span class="icon icon-lock"></span> <?= __('Locked with Tabi','bluerabbit'); ?></span>
+            <select class="asset-tabi-select" onchange="saveAssetTabi(<?= $a->asset_id; ?>, this.value);">
+                <option value="0"><?= __('— no dependency —','bluerabbit'); ?></option>
+                <?php foreach($builder_tabis as $bt): ?>
+                    <option value="<?= $bt->tabi_id; ?>" <?= $asset_tabi_id == $bt->tabi_id ? 'selected' : ''; ?>>
+                        <?= esc_html($bt->tabi_name); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
     </div>
 
     <button class="asset-btn asset-rotate-btn" title="<?= __('Drag to rotate','bluerabbit'); ?>"
@@ -89,4 +103,5 @@ $asset_link = $a->asset_link ?? '';
     <input type="hidden" class="asset-rotation-val" value="<?= $a->asset_rotation; ?>">
     <input type="hidden" class="asset-type-val" value="<?= esc_attr($asset_type); ?>">
     <input type="hidden" class="asset-link-val" value="<?= esc_attr($asset_link); ?>">
+    <input type="hidden" class="asset-tabi-val" value="<?= $asset_tabi_id; ?>">
 </div>

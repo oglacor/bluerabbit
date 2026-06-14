@@ -232,7 +232,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 									</td>
 								</tr>
 								<tr class="conditional-display badge-display path-display">
-									<td class="text-right w-150"><?php _e('XP','bluerabbit'); ?></td>
+									<td class="text-right w-150"><?= $xp_long_label; ?></td>
 									<td>
 										<div class="input-group w-full">
 											<label class="purple-bg-800 font w900"><span class="icon icon-star"></span></label>
@@ -240,9 +240,18 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 										</div>
 									</td>
 								</tr>
+								<tr class="conditional-display badge-display path-display">
+									<td class="text-right w-150"><?= $bloo_long_label; ?></td>
+									<td>
+										<div class="input-group w-full">
+											<label class="purple-bg-800 font w900"><span class="icon icon-bloo"></span></label>
+											<input type="number" class="form-ui w-full" id="the_achievement_bloo" value="<?=  isset($a) ? $a->achievement_bloo : "";?>">
+										</div>
+									</td>
+								</tr>
 								<?php if($use_encounters){ ?>
 									<tr class="conditional-display badge-display path-display">
-										<td class="text-right w-150"><?php _e('EP','bluerabbit'); ?></td>
+										<td class="text-right w-150"><?= $ep_long_label; ?></td>
 										<td>
 											<div class="input-group w-full">
 												<label class="purple-bg-800 font w900"><span class="icon icon-activity"></span></label>
@@ -251,15 +260,6 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 										</td>
 									</tr>
 								<?php } ?>
-								<tr class="conditional-display badge-display path-display">
-									<td class="text-right w-150"><?php _e('BLOO','bluerabbit'); ?></td>
-									<td>
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-bloo"></span></label>
-											<input type="number" class="form-ui w-full" id="the_achievement_bloo" value="<?=  isset($a) ? $a->achievement_bloo : "";?>">
-										</div>
-									</td>
-								</tr>
 								<tr class="conditional-display badge-display">
 									<td class="text-right w-150"><?php _e('Deadline','bluerabbit'); ?></td>
 									<td>

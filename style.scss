@@ -1662,6 +1662,7 @@ span.divider{
 		overflow-y: auto;
 		top: 0; left: 0; bottom: 0; right: 0;
 		z-index: 20;
+        background-color:$black;
 		&.active{
 			opacity: 1;
 			visibility:visible;
@@ -1683,6 +1684,7 @@ span.divider{
 			top: 0; left: 0;
 			z-index: 1;
 			background-attachment: fixed; 
+            opacity: 0.5;
 		}
 		.step-buttons{
 			text-align: center;
@@ -1747,8 +1749,11 @@ span.divider{
 				display: block;
 				z-index: 100;
 				border: none;
-				background-color: transparent;
-				cursor: pointer;
+                background-color: rgba(0,0,0,0.75);
+                cursor: pointer;
+                padding: 10px;
+                backdrop-filter: blur(10px) grayscale(100%);
+  				cursor: pointer;
 				&:hover{
 					svg{
 						transform: scale(1);
@@ -2006,10 +2011,11 @@ span.divider{
 					background-position: left center;
 					background-size: auto;
 				}
-				.center {
-					background-color: rgba(0,0,0,0.55); // Or any content background
+				.center { 
+					background-color: rgba(0,0,0,0.85); // Or any content background
 					padding:0 20px;
 					font-size: 18px;
+                    backdrop-filter: blur(7px);
 					a{
 						display: inline-block;
 						padding: 5px;
@@ -2155,25 +2161,67 @@ span.divider{
 					max-width: 49%;
 				}
 			}
+            .path-choice-container{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-flow: column;
+                width: 100%;
+                .step-content{
+                    padding: 20px 0;
+                }
+            }
 			.path-choices{
 				display: flex;
 				flex-flow: row;
 				flex-wrap: wrap;
 				width: 100%;
-				height: 100vh;
-				top: 0; left: 0; bottom: 0; right: 0;
+				height: 500px;
+                max-width: 1200px;
+                align-items: center;
+                justify-content: center;
+                gap:20px;
 				.path{
-					flex-grow: 1;
+                    width: 280px; height: 500px;
+					flex-grow: 0;
 					border: none;
-					border-radius: 0;
+					border-radius: 8px;
+                    border: solid 3px $new-colors-dark-grey;
 					padding: 20px;
 					text-align: center;
-					margin: 0 5px;
 					background-size: cover;
 					background-position: center center;
-					opacity: 0.3;
+                    transition: all 0.3s ease-out;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transform: scale(0.9);
+                    background-color:#333;
+                    background-blend-mode: luminosity;
+                    position: relative;
+                    .path-content{
+                        display: flex;
+                        width: 100%;
+                        height: 100%;
+                        align-items: center;
+                        justify-content: center;
+                        backdrop-filter: blur(3px);
+                        transition: all 0.3s ease-out;
+                        h1{
+                            padding: 10px;
+                            background-color: rgba($new-colors-dark-grey,0.9);
+                            color: $white;
+                            border-radius: 4px;
+                        }
+                    }
 					&.selected{
-						opacity: 1;
+                        background-blend-mode: normal;
+                        transform: scale(1);
+                        border: solid 3px $new-colors-green;
+                        .path-content{
+                            backdrop-filter: blur(0px);
+                        }
+
 					}
 				}
 			}
@@ -3273,10 +3321,13 @@ span.divider{
 
 .journey-container{
 	position: fixed;
-	overflow: scroll;
+	overflow: hidden;
+	touch-action: none;
+	overscroll-behavior: none;
+	user-select: none;
+	cursor: grab;
+	&:active { cursor: grabbing; }
 	width: 100vw; height: 100vh; z-index: 26; top: 0; left: 0;
-	perspective: 1000px;
-	transform-style: preserve-3d;
 	margin: 0 auto;
 	z-index: 26;
 	display: block;
@@ -3502,10 +3553,9 @@ span.divider{
 	}
 	&.journey-map{
 		font-size: 0;
-		transform-style: preserve-3d;
-		transform-origin: top left;
+		transform-origin: 0 0;
+		will-change: transform;
 		position: absolute;
-		transform-style: preserve-3d;
 		background-position: center center;
 		background-size: cover;
 		min-width: auto;
@@ -3929,7 +3979,12 @@ span.divider{
 	background: rgba(4, 14, 20, 0.65);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	&.active { display: block; }
+    transition: all 0.3s ease-out;
+    opacity: 0;
+	&.active {
+        display: block;
+        opacity: 1;
+    }
 }
 
 // Tabi modal
@@ -4029,6 +4084,17 @@ span.divider{
                         }
                     }
                 }
+                &.locked{
+                    filter: grayscale(100%);
+                    opacity: 0.8;
+                    .milestone-modal-content{ 
+                        background-color: rgba($new-colors-green,0.25);
+                        .milestone-image{
+                            background-color: rgba($new-colors-green,0.25);
+                            background-blend-mode: luminosity;
+                        }
+                    }
+                }
                 .milestone-modal-content{ 
                     display: grid; 
                     color: $white;
@@ -4077,7 +4143,7 @@ span.divider{
                                 width: 100%;
                                 height: 100%;
                                 padding: 10px;
-                                background-color:$new-colors-green;
+                                background-color:$new-colors-blue;
                                 color: $new-colors-dark-blue;
                                 border-radius: 5px;
                                 font-size: 18px;
@@ -4297,6 +4363,10 @@ span.divider{
 		user-select: none;
 		pointer-events: none;
 	}
+    &.clickable {
+        pointer-events: auto;
+    }
+
 }
 
 .journey-builder-container .builder {
@@ -4338,7 +4408,9 @@ span.divider{
 
 		.asset-controls {
 			position: absolute;
-			bottom: calc(100% + 4px);
+			bottom: 90%;
+            height: auto;
+            padding: 0 0 20px 0;
 			top: auto;
 			left: 0;
 			display: flex;
@@ -4376,6 +4448,31 @@ span.divider{
 					width: 200px;
 					outline: none;
 					&::placeholder { color: rgba(255,255,255,0.35); }
+				}
+			}
+			.asset-tabi-row {
+				display: flex;
+				gap: 6px;
+				align-items: center;
+				padding: 4px 0 0;
+				.asset-tabi-label {
+					font: 400 11px $base-font;
+					color: rgba(255,255,255,0.5);
+					white-space: nowrap;
+					.icon { font-size: 11px; }
+				}
+				.asset-tabi-select {
+					height: 28px;
+					font-size: 11px;
+					padding: 0 6px;
+					background: rgba(4,14,20,0.9);
+					border: 1px solid rgba(255,255,255,0.25);
+					color: #fff;
+					border-radius: 4px;
+					flex: 1;
+					outline: none;
+					cursor: pointer;
+					option { background: #0a1e2a; }
 				}
 			}
 			.asset-btn {
@@ -4455,6 +4552,29 @@ body.asset-rotating * { cursor: grabbing !important; }
 	color: #fff;
 }
 .journey-widget-status {
+    cursor: pointer;
+    filter:grayscale(50%);
+    transition: all 0.5s ease-out;
+    background: rgba(0, 0, 0, 0.85);
+    &:hover{
+        filter: grayscale(0%);
+        background: rgba(30, 30, 30, 0.85);
+    }
+    .player-info{
+        text-align: center;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 0;
+    }
+    .status{
+        display: block;
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 500px;
+    }
 	.stat { margin-bottom: 8px; }
 	.stat-legend { overflow: hidden; margin-bottom: 4px; }
 	.progress-bar { height: 8px; border-radius: 4px; overflow: hidden; position: relative; }

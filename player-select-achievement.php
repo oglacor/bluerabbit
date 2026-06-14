@@ -10,6 +10,25 @@ $players = $wpdb->get_results("
 "); ?>
 
 
+<div class="highlight padding-10 deep-purple-bg-50 padding-0">
+    <table class="table w-full" cellpadding="0">
+        <tbody class="font _16">
+            <tr>
+                <td class="text-right w-150">
+                    <?php _e('Bulk Upload Players','bluerabbit'); ?><br>
+                    <span class="font _12 grey-600"><?=__("Upload a CSV file with a single column and the emails of the players you want to assign","bluerabbit"); ?></span>
+                </td>
+                <td>
+                    <div class="input-group w-full">
+                        <input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" size="20" />
+                        <button type="button" onClick="assignBulkUsersToAchievement();" name="upload_csv" class="form-ui button"><?= __("Upload file","bluerabbit"); ?></button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 <div class="highlight padding-10 <?= $selected_color ? $selected_color : 'purple'; ?>-bg-50 padding-0" id="tutorial-player-select">
 	<span class="icon-group">
 		<span class="icon-button font _24 sq-40  deep-purple-bg-400"><span class="icon icon-players"></span></span>

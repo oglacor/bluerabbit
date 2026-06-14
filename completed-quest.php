@@ -75,7 +75,8 @@
 		<?php } ?>
 	</div>
 	<div class="padding-10 w-full text-center">
-		<a href="<?=get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id";?>" class="form-ui white-bg padding-5 margin-5 blue-A400 font _18 w900 uppercase opacity-50">
+		<?php $back_journey_url = get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id".(!empty($quest->tabi_id) ? '#tabi-'.intval($quest->tabi_id) : ''); ?>
+		<a href="<?= $back_journey_url; ?>" class="form-ui white-bg padding-5 margin-5 blue-A400 font _18 w900 uppercase opacity-50">
 			<span class="icon icon-journey"></span><?= __("Back to the journey!","bluerabbit"); ?>
 		</a>
 		<?php

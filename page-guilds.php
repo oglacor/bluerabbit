@@ -11,22 +11,12 @@
 		LEFT JOIN {$wpdb->prefix}br_player_guild guild_players 
 		ON guilds.guild_id=guild_players.guild_id
 		
-		WHERE guilds.adventure_id=$adventure->adventure_id AND guilds.guild_status='publish'
+		WHERE guilds.adventure_id=$adv_child_id AND guilds.guild_status='publish'
 		GROUP BY guilds.guild_id ORDER BY guilds.guild_id ASC
 		");
 	}else{
-		$guilds = $wpdb->get_results("SELECT 
-			a.*, b.player_id
-
-			FROM {$wpdb->prefix}br_guilds a
-			JOIN {$wpdb->prefix}br_player_guild b
-
-			ON a.guild_id = b.guild_id
-
-			WHERE a.adventure_id=$adventure->adventure_id AND a.guild_status='publish' AND b.player_id=$current_user->ID
-			GROUP BY a.guild_id ORDER BY a.guild_xp
-			
-		");
+		$allguilds = getGuilds($adv_child_id);
+		$guilds = allguilds['publish'];
 	}
 	if($use_leaderboard){
 		$limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
@@ -89,7 +79,7 @@
 				<div class="content">
 					<?php if($leaderboard_guilds){ ?>
 						<ul class="cards guilds text-center">
-							<?php foreach($leaderboard_guilds as $g){ ?>
+							<?php foreach($leaderboard_guilds as $lg){ ?>
 								<?php include (TEMPLATEPATH . '/guild-leaderboard.php'); ?>
 							<?php } ?>
 						</ul>

@@ -4672,6 +4672,98 @@ function triggerAchievement($p_achievement_id="", $p_player_id="", $p_adventure_
 	echo json_encode($data);
 	die();
 }
+////////////// BULK ASSIGN ACHIEVEMENT /////////////
+function bulkAssignAchievement(){
+	global $wpdb;
+	$data = ['success' => false];
+	$notification = new Notification();
+
+	$achievement_id = intval($_POST['achievement_id']);
+	$adventure_id   = intval($_POST['adventure_id']);
+	$raw_emails     = isset($_POST['emails']) ? (array)$_POST['emails'] : [];
+
+	if (!$achievement_id || !$adventure_id || empty($raw_emails)) {
+		$data['message'] = $notification->pop(__('Missing data','bluerabbit'), 'red', 'cancel');
+		echo json_encode($data); die();
+	}
+
+	$adventure = $wpdb->get_row($wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id
+	));
+	if (!$adventure) {
+		$data['message'] = $notification->pop(__('Adventure not found','bluerabbit'), 'red', 'cancel');
+		echo json_encode($data); die();
+	}
+	$adv_child_id  = $adventure->adventure_id;
+	$adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
+
+	$a = $wpdb->get_row($wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=%d AND adventure_id=%d AND achievement_status='publish'",
+		$achievement_id, $adv_parent_id
+	));
+	if (!$a) {
+		$data['message'] = $notification->pop(__('Achievement not found','bluerabbit'), 'red', 'cancel');
+		echo json_encode($data); die();
+	}
+
+	if ($adventure->adventure_gmt) { date_default_timezone_set($adventure->adventure_gmt); }
+	$today = date('Y-m-d H:i:s');
+
+	$assigned     = 0;
+	$already_has  = 0;
+	$not_found    = 0;
+	$assigned_ids = [];
+
+	foreach ($raw_emails as $raw) {
+		$email = sanitize_email(strtolower(trim($raw)));
+		if (!$email) continue;
+
+		// Player must exist and be enrolled in this adventure
+		$player = $wpdb->get_row($wpdb->prepare(
+			"SELECT p.player_id FROM {$wpdb->prefix}br_players p
+			 JOIN {$wpdb->prefix}br_player_adventure pa
+			   ON p.player_id = pa.player_id AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
+			 WHERE p.player_email = %s
+			 LIMIT 1",
+			$adv_child_id, $email
+		));
+
+		if (!$player) { $not_found++; continue; }
+
+		// Already has this achievement — keep it, do nothing
+		$has_it = $wpdb->get_var($wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND player_id=%d AND adventure_id=%d",
+			$achievement_id, $player->player_id, $adv_child_id
+		));
+
+		if ($has_it) { $already_has++; continue; }
+
+		// Assign
+		$wpdb->query($wpdb->prepare(
+			"INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d, %d, %d, %s)",
+			$achievement_id, $player->player_id, $adv_child_id, $today
+		));
+		$wpdb->query($wpdb->prepare(
+			"UPDATE {$wpdb->prefix}br_player_adventure SET achievement_id=%d WHERE player_id=%d AND adventure_id=%d",
+			$achievement_id, $player->player_id, $adv_child_id
+		));
+
+		$assigned++;
+		$assigned_ids[] = $player->player_id;
+		logActivity($adv_child_id, 'earned', 'achievement', '', $player->player_id, $achievement_id);
+	}
+
+	$msg = sprintf(
+		__('%d assigned, %d already had it, %d not found / not enrolled','bluerabbit'),
+		$assigned, $already_has, $not_found
+	);
+	$data['success']      = true;
+	$data['assigned_ids'] = $assigned_ids;
+	$data['just_notify']  = true;
+	$data['message']      = $notification->pop($msg, $assigned > 0 ? 'green' : 'orange', 'achievement');
+	echo json_encode($data);
+	die();
+}
 function triggerAchievements($p_ach_id=NULL, $p_adv_id=NULL, $p_status=NULL){
 	global $wpdb; $current_user = wp_get_current_user();
 	$data = array();
@@ -4695,7 +4787,7 @@ function triggerAchievements($p_ach_id=NULL, $p_adv_id=NULL, $p_status=NULL){
 	$today = date('Y-m-d H:i:s');
 	
 	if($a){
-		if($a->achievement_display == 'badge'){
+		if($a->achievement_display !== 'rank'){
 			$sql = "DELETE FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND adventure_id=%d";
 			$sql = $wpdb->prepare ($sql, $a->achievement_id, $adv_child_id);
 			$wpdb->query($sql);
@@ -4787,6 +4879,90 @@ function triggerGuild($p_guild_id=NULL, $p_player_id=NULL, $p_adventure_id=NULL)
 		$data['message'].= '<span class="icon icon-cancel red-400 icon-lg"></span><br>';
 		$data['message'].= '<h3><strong>'.__("Guild doesn't exist!",'bluerabbit').'</strong></h3>';
 	}
+	echo json_encode($data);
+	die();
+}
+////////////// BULK ASSIGN GUILD /////////////
+function bulkAssignGuild(){
+	global $wpdb;
+	$data = ['success' => false];
+	$n = new Notification();
+
+	if (!check_ajax_referer('br_update_guild_nonce', 'nonce', false)) {
+		$data['message'] = $n->pop(__('Invalid request','bluerabbit'), 'red', 'cancel');
+		echo json_encode($data); die();
+	}
+
+	$guild_id     = intval($_POST['guild_id']);
+	$adventure_id = intval($_POST['adventure_id']);
+	$raw_emails   = isset($_POST['emails']) ? (array)$_POST['emails'] : [];
+
+	if (!$guild_id || !$adventure_id || empty($raw_emails)) {
+		$data['message'] = $n->pop(__('Missing data','bluerabbit'), 'red', 'cancel');
+		echo json_encode($data); die();
+	}
+
+	$guild = $wpdb->get_row($wpdb->prepare(
+		"SELECT guild_id FROM {$wpdb->prefix}br_guilds WHERE guild_id=%d AND adventure_id=%d AND guild_status='publish'",
+		$guild_id, $adventure_id
+	));
+	if (!$guild) {
+		$data['message'] = $n->pop(__('Guild not found','bluerabbit'), 'red', 'cancel');
+		echo json_encode($data); die();
+	}
+
+	$assigned     = 0;
+	$already_in   = 0;
+	$not_found    = 0;
+	$assigned_ids = [];
+
+	foreach ($raw_emails as $raw) {
+		$email = sanitize_email(strtolower(trim($raw)));
+		if (!$email) continue;
+
+		// Player must exist and be enrolled in this adventure
+		$player = $wpdb->get_row($wpdb->prepare(
+			"SELECT p.player_id FROM {$wpdb->prefix}br_players p
+			 JOIN {$wpdb->prefix}br_player_adventure pa
+			   ON p.player_id = pa.player_id AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
+			 WHERE p.player_email = %s
+			 LIMIT 1",
+			$adventure_id, $email
+		));
+
+		if (!$player) { $not_found++; continue; }
+
+		// Already in this exact guild — keep them, do nothing
+		$in_guild = $wpdb->get_var($wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}br_player_guild WHERE player_id=%d AND guild_id=%d",
+			$player->player_id, $guild_id
+		));
+
+		if ($in_guild) { $already_in++; continue; }
+
+		// Assign
+		$wpdb->query($wpdb->prepare(
+			"INSERT INTO {$wpdb->prefix}br_player_guild (guild_id, player_id, adventure_id) VALUES (%d, %d, %d)",
+			$guild_id, $player->player_id, $adventure_id
+		));
+		$wpdb->query($wpdb->prepare(
+			"UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=%d WHERE player_id=%d AND adventure_id=%d",
+			$guild_id, $player->player_id, $adventure_id
+		));
+
+		$assigned++;
+		$assigned_ids[] = $player->player_id;
+		logActivity($adventure_id, 'enroll', 'guild', '', $player->player_id, $guild_id);
+	}
+
+	$msg = sprintf(
+		__('%d assigned, %d already in guild, %d not found / not enrolled','bluerabbit'),
+		$assigned, $already_in, $not_found
+	);
+	$data['success']      = true;
+	$data['assigned_ids'] = $assigned_ids;
+	$data['just_notify']  = true;
+	$data['message']      = $n->pop($msg, $assigned > 0 ? 'green' : 'orange', 'guild');
 	echo json_encode($data);
 	die();
 }
@@ -6281,6 +6457,7 @@ function renderJourneyAssetHTML($asset_id) {
 	$a = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_journey_assets WHERE asset_id=$asset_id AND asset_status='publish'");
 	if(!$a) return '';
 	$journey_asset_nonce = wp_create_nonce('journey_asset_nonce');
+	$builder_tabis = getTabis($a->adventure_id);
 	$theFile = get_template_directory() . '/journey-asset-builder.php';
 	if(!file_exists($theFile)) return '';
 	ob_start();

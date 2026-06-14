@@ -133,59 +133,83 @@
 	if($journey_assets) { foreach($journey_assets as $ja) {
 		$_ja_type = $ja->asset_type ?? 'graphic';
 		$_ja_link = $ja->asset_link ?? '';
+		$_ja_tabi_id   = intval($ja->tabi_id ?? 0);
+		$_ja_tabi_locked = $_ja_tabi_id && !empty($tabi_locked[$_ja_tabi_id]);
+		$_ja_extra_style = $_ja_tabi_locked ? ' filter:grayscale(100%); pointer-events:none;' : '';
 	?>
-		<div class="journey-asset<?= $_ja_type !== 'graphic' ? ' journey-asset-widget' : ''; ?>"
+		<div class="journey-asset<?= $_ja_type !== 'graphic' ? ' journey-asset-widget' : ''; ?><?= $_ja_tabi_locked ? ' unavailable' : ''; ?> <?php if($_ja_link): ?>clickable<?php endif; ?>"
 		     id="journey-asset-<?= $ja->asset_id; ?>"
-		     style="top:<?= $ja->asset_top; ?>px; left:<?= $ja->asset_left; ?>px; width:<?= $ja->asset_width; ?>px; z-index:<?= $ja->asset_z; ?>; transform:rotate(<?= $ja->asset_rotation; ?>deg);">
+		     style="top:<?= $ja->asset_top; ?>px; left:<?= $ja->asset_left; ?>px; width:<?= $ja->asset_width; ?>px; z-index:<?= $ja->asset_z; ?>; transform:rotate(<?= $ja->asset_rotation; ?>deg);<?= $_ja_extra_style; ?>">
 			<?php if($_ja_link): ?><a href="<?= esc_url($_ja_link); ?>" target="_blank" rel="noopener" class="journey-asset-link"><?php endif; ?>
 
 			<?php if($_ja_type === 'widget-status'): ?>
 				<?php if(isset($current_player) && isset($adventure)): ?>
-				<div class="journey-widget journey-widget-status status-stats">
-					<div class="stat w-full">
-						<div class="stat-legend font _14">
-							<div class="left-legend w-half text-left pull-left uppercase font w900">
-								<span class="icon icon-star"></span> <?= $xp_long_label; ?>
-							</div>
-							<div class="right-legend w-third text-right pull-right">
-								<strong><?= toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= toMoney($nextLevel); ?></span>
-							</div>
-						</div>
-						<div class="progress-bar gradient-xp-bar relative w-full">
-							<div class="progress layer base black-bg opacity-60" style="width: <?= 100-round($percXP,3); ?>%"></div>
-						</div>
+				<div class="journey-widget journey-widget-status" onClick="activate('#profile-box');">
+                    <div class="player-info">
+                        <h1 class="font _18 w300 white-color">
+                            <?= $current_player->player_display_name; ?>
+                        </h1>
+                    </div>
+   					<div class="status" <?php if($current_player->player_picture != ''){ ?>style="background-image: url(<?= $current_player->player_picture; ?>);"<?php } ?> id="status-animated-chart">
+						<a href="<?= get_bloginfo('url')."/my-account/"; ?>" class="relative block">
+							<img class="rotate-L-20" src="<?= get_bloginfo('template_directory')."/images/4.png";?>">
+							<img class="rotate-R-30" src="<?= get_bloginfo('template_directory')."/images/3.png";?>">
+							<?php if(isset($adventure) && isset($current_player->player_level)){ ?>
+								<?php if($current_player->player_level > 11){ $level_img = 'max';}else{$level_img = $current_player->player_level;} ?>
+								<img class="rotate-L-90" src="<?= get_bloginfo('template_directory')."/images/level-$level_img.png";?>">
+							<?php } ?>
+							<img class="rotate-L-40" src="<?= get_bloginfo('template_directory')."/images/2.png";?>">
+							<img class="rotate-R-120" src="<?= get_bloginfo('template_directory')."/images/1.png";?>">
+						</a>
 					</div>
-					<div class="stat w-full">
-						<div class="stat-legend font _14 padding-5">
-							<div class="left-legend w-half text-left pull-left uppercase font w900">
-								<span class="icon icon-bloo"></span> <?= $bloo_long_label; ?>
-							</div>
-							<div class="right-legend w-third text-right pull-right">
-								<strong><?= toMoney($player['bloo'],"$"); ?></strong> /
-								<strong><?= toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
-							</div>
-						</div>
-						<div class="progress-bar relative w-full">
-							<div class="layer background absolute sq-full white-bg opacity-10"></div>
-							<div class="progress layer base light-green-bg-400 border rounded-max" style="width: <?= round($percBLOO,3); ?>%"></div>
-						</div>
-					</div>
-					<?php if($use_encounters && isset($adventure)): ?>
-					<div class="stat w-full">
-						<div class="stat-legend font _14 padding-5">
-							<div class="left-legend w-half text-left pull-left uppercase font w900">
-								<span class="icon icon-activity"></span> <?= $ep_long_label; ?>
-							</div>
-							<div class="right-legend w-third text-right pull-right">
-								<strong><?= $current_player->player_ep; ?></strong> / <span class="font condensed kerning-1"><?= $maxEP; ?></span>
-							</div>
-						</div>
-						<div class="progress-bar relative w-full">
-							<div class="layer background absolute sq-full white-bg opacity-10"></div>
-							<div class="progress layer base cyan-bg-A400 border rounded-max" style="width: <?= round($percEP,3); ?>%"></div>
-						</div>
-					</div>
-					<?php endif; ?>
+                    <div class="status-stats">
+                        <div class="stat w-full">
+                            <div class="stat-legend font _14">
+                                <div class="left-legend w-half text-left pull-left uppercase font w900">
+                                    <span class="icon icon-star"></span> <?= $xp_label; ?>
+                                </div>
+                                <div class="right-legend w-third text-right pull-right">
+                                    <strong><?= toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= toMoney($nextLevel); ?></span>
+                                </div>
+                            </div>
+                            <div class="progress-bar gradient-xp-bar relative w-full">
+                                <div class="progress layer base black-bg opacity-60" style="width: <?= 100-round($percXP,3); ?>%"></div>
+                            </div>
+                        </div>
+                        <div class="stat w-full">
+                            <div class="stat-legend font _14 padding-5">
+                                <div class="left-legend w-half text-left pull-left uppercase font w900">
+                                    <span class="icon icon-bloo"></span> <?= $bloo_label; ?>
+                                </div>
+                                <div class="right-legend w-third text-right pull-right">
+                                    <strong><?= toMoney($player['bloo'],"$"); ?></strong> /
+                                    <strong><?= toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
+                                </div>
+                            </div>
+                            <div class="progress-bar relative w-full">
+                                <div class="layer background absolute sq-full white-bg opacity-10"></div>
+                                <div class="progress layer base light-green-bg-400 border rounded-max" style="width: <?= round($percBLOO,3); ?>%"></div>
+                            </div>
+                        </div>
+                        <?php if($use_encounters && isset($adventure)): ?>
+                        <div class="stat w-full">
+                            <div class="stat-legend font _14 padding-5">
+                                <div class="left-legend w-half text-left pull-left uppercase font w900">
+                                    <span class="icon icon-activity"></span> <?= $ep_label; ?>
+                                </div>
+                                <div class="right-legend w-third text-right pull-right">
+                                    <strong><?= $current_player->player_ep; ?></strong> / <span class="font condensed kerning-1"><?= $maxEP; ?></span>
+                                </div>
+                            </div>
+                            <div class="progress-bar relative w-full">
+                                <div class="layer background absolute sq-full white-bg opacity-10"></div>
+                                <div class="progress layer base cyan-bg-A400 border rounded-max" style="width: <?= round($percEP,3); ?>%"></div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                    </div>
+                
 				</div>
 				<?php endif; ?>
 
@@ -262,28 +286,35 @@
 <script>
 
 
-zoomLevel = <?= $journey_zoom_level; ?>; 
-resizeJourneyMapWithPadding(-zoomLevel, 'the-journey', '.milestone-container, .journey-asset, .tabi-node');
+// Prevent browser pull-to-refresh and swipe-back on all mobile browsers
+document.documentElement.style.overflow = 'hidden';
+document.documentElement.style.overscrollBehavior = 'none';
+document.body.style.overflow = 'hidden';
+document.body.style.overscrollBehavior = 'none';
 
+// Convert legacy translateZ zoom level to 2D scale: scale = 1000 / (1000 - z)
+var legacyZoom = <?= intval($journey_zoom_level); ?>;
+journeyState.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, 1000 / (1000 - legacyZoom)));
+resizeJourneyMapWithPadding(300, 'the-journey', '.milestone-container, .journey-asset, .tabi-node');
 centerJourneyMap();
-applyZoom();
-
 
 // Zoom controls
 $('#zoom-in').on('click', function () {
-	zoomLevel += 100;
-	applyZoom();
+	changeScale(1.15, viewportCenterX(), viewportCenterY());
 });
 
 $('#zoom-out').on('click', function () {
-	zoomLevel -= 100;
-	applyZoom();
+	changeScale(0.87, viewportCenterX(), viewportCenterY());
 });
 
 $('#zoom-reset').on('click', function () {
-	zoomLevel = 0;
-	applyZoom();
+	journeyState = { x: 0, y: 0, scale: 1 };
 	centerJourneyMap();
+});
+document.addEventListener('DOMContentLoaded', function () {
+
+    var _tabiHash = window.location.hash.match(/^#tabi-(\d+)$/);
+    if (_tabiHash) openTabiModal(parseInt(_tabiHash[1], 10));
 });
 
 </script>

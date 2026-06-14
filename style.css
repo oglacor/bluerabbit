@@ -1618,6 +1618,7 @@ span.divider {
   bottom: 0;
   right: 0;
   z-index: 20;
+  background-color: #141d23;
 }
 .steps .step.active {
   opacity: 1;
@@ -1635,6 +1636,7 @@ span.divider {
   left: 0;
   z-index: 1;
   background-attachment: fixed;
+  opacity: 0.5;
 }
 .steps .step .step-buttons {
   text-align: center;
@@ -1698,7 +1700,10 @@ span.divider {
   display: block;
   z-index: 100;
   border: none;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.75);
+  cursor: pointer;
+  padding: 10px;
+  backdrop-filter: blur(10px) grayscale(100%);
   cursor: pointer;
 }
 .steps .step .steps-navigation .step-nav-button:hover svg {
@@ -1975,9 +1980,10 @@ span.divider {
   background-size: auto;
 }
 .steps .step .step-content-container .dialogue-box .center {
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 0, 0, 0.85);
   padding: 0 20px;
   font-size: 18px;
+  backdrop-filter: blur(7px);
 }
 .steps .step .step-content-container .dialogue-box .center a {
   display: inline-block;
@@ -2110,30 +2116,69 @@ span.divider {
   max-height: 400px;
   max-width: 49%;
 }
+.steps .step .step-content-container .path-choice-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column;
+  width: 100%;
+}
+.steps .step .step-content-container .path-choice-container .step-content {
+  padding: 20px 0;
+}
 .steps .step .step-content-container .path-choices {
   display: flex;
   flex-flow: row;
   flex-wrap: wrap;
   width: 100%;
-  height: 100vh;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  height: 500px;
+  max-width: 1200px;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 .steps .step .step-content-container .path-choices .path {
-  flex-grow: 1;
+  width: 280px;
+  height: 500px;
+  flex-grow: 0;
   border: none;
-  border-radius: 0;
+  border-radius: 8px;
+  border: solid 3px #1d2d34;
   padding: 20px;
   text-align: center;
-  margin: 0 5px;
   background-size: cover;
   background-position: center center;
-  opacity: 0.3;
+  transition: all 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.9);
+  background-color: #333;
+  background-blend-mode: luminosity;
+  position: relative;
+}
+.steps .step .step-content-container .path-choices .path .path-content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+  transition: all 0.3s ease-out;
+}
+.steps .step .step-content-container .path-choices .path .path-content h1 {
+  padding: 10px;
+  background-color: rgba(29, 45, 52, 0.9);
+  color: #FFFFFF;
+  border-radius: 4px;
 }
 .steps .step .step-content-container .path-choices .path.selected {
-  opacity: 1;
+  background-blend-mode: normal;
+  transform: scale(1);
+  border: solid 3px #24da98;
+}
+.steps .step .step-content-container .path-choices .path.selected .path-content {
+  backdrop-filter: blur(0px);
 }
 .steps .step .step-content-container .step-warning-sign {
   width: 156px;
@@ -3348,14 +3393,23 @@ span.divider {
 
 .journey-container {
   position: fixed;
-  overflow: scroll;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  cursor: grab;
+}
+.journey-container:active {
+  cursor: grabbing;
+}
+.journey-container {
   width: 100vw;
   height: 100vh;
   z-index: 26;
   top: 0;
   left: 0;
-  perspective: 1000px;
-  transform-style: preserve-3d;
   margin: 0 auto;
   z-index: 26;
   display: block;
@@ -3646,10 +3700,9 @@ span.divider {
 }
 .journey.journey-map {
   font-size: 0;
-  transform-style: preserve-3d;
-  transform-origin: top left;
+  transform-origin: 0 0;
+  will-change: transform;
   position: absolute;
-  transform-style: preserve-3d;
   background-position: center center;
   background-size: cover;
   min-width: auto;
@@ -4146,9 +4199,12 @@ span.divider {
   background: rgba(4, 14, 20, 0.65);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease-out;
+  opacity: 0;
 }
 .tabi-modal-overlay.active {
   display: block;
+  opacity: 1;
 }
 
 .tabi-modal {
@@ -4286,6 +4342,17 @@ span.divider {
   background-color: rgba(36, 218, 152, 0.25);
   background-blend-mode: luminosity;
 }
+.tabi-modal .tabi-modal-board .milestone-container .milestone.locked {
+  filter: grayscale(100%);
+  opacity: 0.8;
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone.locked .milestone-modal-content {
+  background-color: rgba(36, 218, 152, 0.25);
+}
+.tabi-modal .tabi-modal-board .milestone-container .milestone.locked .milestone-modal-content .milestone-image {
+  background-color: rgba(36, 218, 152, 0.25);
+  background-blend-mode: luminosity;
+}
 .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content {
   display: grid;
   color: #FFFFFF;
@@ -4332,7 +4399,7 @@ span.divider {
   width: 100%;
   height: 100%;
   padding: 10px;
-  background-color: #24da98;
+  background-color: #1cc2eb;
   color: #04161e;
   border-radius: 5px;
   font-size: 18px;
@@ -4534,6 +4601,9 @@ span.divider {
           user-select: none;
   pointer-events: none;
 }
+.journey-asset.clickable {
+  pointer-events: auto;
+}
 
 .journey-builder-container .builder .builder-asset {
   pointer-events: auto;
@@ -4576,7 +4646,9 @@ span.divider {
 }
 .journey-builder-container .builder .builder-asset .asset-controls {
   position: absolute;
-  bottom: calc(100% + 4px);
+  bottom: 90%;
+  height: auto;
+  padding: 0 0 20px 0;
   top: auto;
   left: 0;
   display: flex;
@@ -4621,6 +4693,35 @@ span.divider {
 }
 .journey-builder-container .builder .builder-asset .asset-controls .asset-link-row .asset-link-input::placeholder {
   color: rgba(255, 255, 255, 0.35);
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-tabi-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 0 0;
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-tabi-row .asset-tabi-label {
+  font: 400 11px "proxima-nova", sans-serif;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-tabi-row .asset-tabi-label .icon {
+  font-size: 11px;
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-tabi-row .asset-tabi-select {
+  height: 28px;
+  font-size: 11px;
+  padding: 0 6px;
+  background: rgba(4, 14, 20, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 4px;
+  flex: 1;
+  outline: none;
+  cursor: pointer;
+}
+.journey-builder-container .builder .builder-asset .asset-controls .asset-tabi-row .asset-tabi-select option {
+  background: #0a1e2a;
 }
 .journey-builder-container .builder .builder-asset .asset-controls .asset-btn {
   background: rgba(4, 14, 20, 0.85);
@@ -4707,6 +4808,31 @@ body.asset-rotating * {
   color: #fff;
 }
 
+.journey-widget-status {
+  cursor: pointer;
+  filter: grayscale(50%);
+  transition: all 0.5s ease-out;
+  background: rgba(0, 0, 0, 0.85);
+}
+.journey-widget-status:hover {
+  filter: grayscale(0%);
+  background: rgba(30, 30, 30, 0.85);
+}
+.journey-widget-status .player-info {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+}
+.journey-widget-status .status {
+  display: block;
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 500px;
+}
 .journey-widget-status .stat {
   margin-bottom: 8px;
 }
@@ -11094,4 +11220,30 @@ nav.tab-nav ul li.active {
   100% {
     transform: scaleY(1);
   }
+}
+.scorm-next-wrapper {
+  display: none;
+}
+.scorm-next-wrapper.active {
+  display: block;
+}
+
+.board-column-header {
+  width: 100%;
+  padding: 8px 12px 6px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 8px;
+}
+
+.board-column-title {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.board-column-title.no-tabi-label {
+  opacity: 0.4;
+  font-weight: 400;
 }/*# sourceMappingURL=style.css.map */

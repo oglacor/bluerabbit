@@ -1,4 +1,4 @@
-//////////////////  REGISTER NEW PLAYER  ////////////////
+﻿//////////////////  REGISTER NEW PLAYER  ////////////////
 function jumpToStepByHash(){
 	let step = window.location.hash.substring(1);
 	let step_number = step.replace('step-','');
@@ -1091,6 +1091,17 @@ function saveAssetLink(id, url) {
 	_saveAssetMeta(id);
 }
 
+function saveAssetTabi(id, tabiId) {
+	let $el   = $('#journey-asset-' + id);
+	let nonce = $el.find('.asset-nonce').val();
+	$el.find('.asset-tabi-val').val(tabiId);
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: { action: 'saveJourneyAssetTabi', asset_id: id, tabi_id: tabiId, nonce: nonce },
+		method: 'POST'
+	});
+}
+
 function _saveAssetMeta(id) {
 	let $el   = $('#journey-asset-' + id);
 	let nonce = $el.find('.asset-nonce').val();
@@ -1851,7 +1862,6 @@ function checkPath(){
 		$('.badge-display').show();
 	}else if($('#the_achievement_display').val()=='path'){
 		$('.path-display').show();
-		$("#the_achievement_xp, #the_achievement_bloo, #the_achievement_max").val('');
 	}else if($('#the_achievement_display').val()=='rank'){
 		$('.rank-display').show();
 		$("#the_achievement_code, #the_achievement_xp, #the_achievement_bloo, #the_achievement_max, #magic-link").val('');
@@ -4467,7 +4477,7 @@ function preChoosePath(step, path, label){
 	$('#path-choices-'+step+' .path').removeClass('selected');
 	$('#path-'+path).addClass('selected');
 	$('#path-choices-'+step+' input.selected-path').val(path);
-	$('#step-'+step+' .chosen-path-label').text(label);
+	$('#chosen-path-text-value .step-tag-text').text(label);
 }
 ////////////////////////////////////////// choosePath - ThroughMagicCode ////////////////////////////////////////////
 function choosePath(step, next){
@@ -4543,6 +4553,99 @@ function triggerGuild(guild_id, player_id){
 
 		}
 	});
+}
+////////////////////////////////////////// assignBulkUsersToGuild ////////////////////////////////////////////
+function assignBulkUsersToGuild() {
+	var fileInput = document.getElementById('the_csv_file_with_players');
+	if (!fileInput || !fileInput.files[0]) {
+		alert('Please select a CSV file first.');
+		return;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var lines = e.target.result.split(/[\r\n]+/);
+		var emails = [];
+		lines.forEach(function(line) {
+			// Support single-column or multi-column CSV; grab first cell, strip quotes
+			var cell = line.split(',')[0].replace(/['"]/g, '').trim().toLowerCase();
+			if (cell && cell.indexOf('@') > -1 && cell !== 'email') {
+				emails.push(cell);
+			}
+		});
+		if (!emails.length) {
+			alert('No valid email addresses found in the file.');
+			return;
+		}
+		showLoader();
+		jQuery.ajax({
+			url: runAJAX.ajaxurl,
+			data: {
+				action: 'bulkAssignGuild',
+				guild_id: $('#the_guild_id').val(),
+				adventure_id: $('#the_adventure_id').val(),
+				nonce: $('#nonce').val(),
+				emails: emails
+			},
+			method: 'POST',
+			success: function(json_text) {
+				displayAjaxResponse(json_text);
+				var d = JSON.parse(json_text);
+				if (d.success && d.assigned_ids) {
+					d.assigned_ids.forEach(function(pid) {
+						$('#player-guild-list-' + pid).addClass('active');
+					});
+				}
+				// Clear the file input so the same file can be re-submitted if needed
+				fileInput.value = '';
+			}
+		});
+	};
+	reader.readAsText(fileInput.files[0]);
+}
+////////////////////////////////////////// assignBulkUsersToAchievement ////////////////////////////////////////////
+function assignBulkUsersToAchievement() {
+	var fileInput = document.getElementById('the_csv_file_with_players');
+	if (!fileInput || !fileInput.files[0]) {
+		alert('Please select a CSV file first.');
+		return;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var lines = e.target.result.split(/[\r\n]+/);
+		var emails = [];
+		lines.forEach(function(line) {
+			var cell = line.split(',')[0].replace(/['"]/g, '').trim().toLowerCase();
+			if (cell && cell.indexOf('@') > -1 && cell !== 'email') {
+				emails.push(cell);
+			}
+		});
+		if (!emails.length) {
+			alert('No valid email addresses found in the file.');
+			return;
+		}
+		showLoader();
+		jQuery.ajax({
+			url: runAJAX.ajaxurl,
+			data: {
+				action: 'bulkAssignAchievement',
+				achievement_id: $('#the_achievement_id').val(),
+				adventure_id: $('#the_adventure_id').val(),
+				emails: emails
+			},
+			method: 'POST',
+			success: function(json_text) {
+				displayAjaxResponse(json_text);
+				var d = JSON.parse(json_text);
+				if (d.success && d.assigned_ids) {
+					d.assigned_ids.forEach(function(pid) {
+						$('#player-achievement-' + pid).addClass('active');
+					});
+				}
+				fileInput.value = '';
+			}
+		});
+	};
+	reader.readAsText(fileInput.files[0]);
 }
 ////////////////////////////////////////// postToWall ////////////////////////////////////////////
 function postToWall(ann_type, target_id=""){
@@ -5214,6 +5317,21 @@ function setAchievement(id,type){
 	jQuery.ajax({  
 		url: runAJAX.ajaxurl,
 		data: ({action: 'setAchievement', achievement_id:achievement_id, type:type, adventure_id:adventure_id, id:id, nonce:nonce}),
+		method: "POST",
+		success: function(data_received) {
+			displayAjaxResponse(data_received);
+		}
+	});
+}
+///////////////////////// Set Quest Tabi  //////////////////
+function setQuestTabi(id,type){
+	showLoader('small');
+	let nonce = $("#quest-tabi-nonce").val();
+	let tabi_id = $("#"+type+"-"+id+" select.update-tabi").val();
+	let adventure_id = $("#the_adventure_id").val();
+	jQuery.ajax({
+		url: runAJAX.ajaxurl,
+		data: ({action: 'setQuestTabi', tabi_id:tabi_id, type:type, adventure_id:adventure_id, id:id, nonce:nonce}),
 		method: "POST",
 		success: function(data_received) {
 			displayAjaxResponse(data_received);
@@ -6242,86 +6360,62 @@ function displayAjaxResponse(json_data){
 		$("#xp-nonce").val(data.new_xp_nonce);
 	}
 }
-let zoomLevel = 0;
+let journeyState = { x: 0, y: 0, scale: 1 };
+const MIN_SCALE = 0.3, MAX_SCALE = 2.0;
 
-function toggleJourneyView(){
-	$('#the-journey').toggleClass('journey-map journey-board');
-	zoomLevel = 0;
-	if(($('#the-journey').hasClass('journey-map'))){
-		resizeJourneyMapWithPadding();
-		centerJourneyMap();
-	}else{
-		zoomLevel = 0;
-	}
-}
+function viewportCenterX() { return document.querySelector('.journey-container').clientWidth / 2; }
+function viewportCenterY() { return document.querySelector('.journey-container').clientHeight / 2; }
 
 function applyZoom() {
-	if (zoomLevel > 400) { 
-		zoomLevel = 400;
-	} else if (zoomLevel < -1000) {
-		zoomLevel = -1000;
-	}
-	let transformValue = `translateZ(${zoomLevel}px)`;
-
-	if(zoomLevel >= 100){
-		transformValue = `translateZ(${zoomLevel}px) translateX(150px)`;
-	}
-
-	let $map = $('#the-journey');
-	$map.css('transform', transformValue);
-	resizeJourneyMapWithPadding(-zoomLevel);
+	document.getElementById('the-journey').style.transform =
+		`translate(${journeyState.x}px, ${journeyState.y}px) scale(${journeyState.scale})`;
 }
 
-function resizeJourneyMapWithPadding(padding = 1300, map='the-journey', milestoneContainer='.milestone-container') {
+function changeScale(delta, cx, cy) {
+	const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, journeyState.scale * delta));
+	journeyState.x = cx - (cx - journeyState.x) * (newScale / journeyState.scale);
+	journeyState.y = cy - (cy - journeyState.y) * (newScale / journeyState.scale);
+	journeyState.scale = newScale;
+	applyZoom();
+}
+
+function resizeJourneyMapWithPadding(padding = 300, map = 'the-journey', milestoneContainer = '.milestone-container') {
 	let $map = $('#' + map);
-
-	if(!$map.attr('data-width')){
-		let maxX = 0, maxY = 0;
-
-		$(milestoneContainer).each(function () {
-			let x = $(this).position().left;
-			let y = $(this).position().top;
-
-			if (x > maxX) maxX = x;
-			if (y > maxY) maxY = y;
-		});
-		// Set width/height of the map to fit all children + padding
-		$map.css({
-			width: (maxX + padding) + 'px',
-			height: (maxY + padding) + 'px'
-		});
-		$map.attr('data-width', maxX);
-		$map.attr('data-height', maxY);
-	}else{
-		let currentWidth = parseInt($map.attr('data-width'))+300;
-		let currentHeight = parseInt($map.attr('data-height'))+300;
-		$map.css({
-			width: currentWidth + 'px',
-			height: currentHeight + 'px'
-		});
-	}
-	console.log($map.css('width'), $map.css('height'));
+	let maxX = 0, maxY = 0;
+	$(milestoneContainer).each(function () {
+		let x = $(this).position().left;
+		let y = $(this).position().top;
+		if (x > maxX) maxX = x;
+		if (y > maxY) maxY = y;
+	});
+	$map.css({
+		width: (maxX + padding) + 'px',
+		height: (maxY + padding) + 'px'
+	});
 }
+
 function centerJourneyMap() {
-	let $container = $('.journey-container');
-	let $map = $('#the-journey');
-
-	let containerWidth = $container.width();
-	let containerHeight = $container.height();
-
-	let mapWidth = $map.outerWidth();
-	let mapHeight = $map.outerHeight();
-
-	let scrollLeft = (mapWidth - containerWidth) / 2;
-	let scrollTop = (mapHeight - containerHeight) / 2;
-
-	$container.animate({
-		scrollTop: scrollTop,
-		scrollLeft: scrollLeft
-	}, 400);
+	let container = document.querySelector('.journey-container');
+	let map = document.getElementById('the-journey');
+	let containerWidth = container.clientWidth;
+	let containerHeight = container.clientHeight;
+	let mapWidth = map.offsetWidth;
+	let mapHeight = map.offsetHeight;
+	journeyState.x = (containerWidth - mapWidth * journeyState.scale) / 2;
+	journeyState.y = (containerHeight - mapHeight * journeyState.scale) / 2;
+	applyZoom();
 }
 
-
+function toggleJourneyView() {
+	$('#the-journey').toggleClass('journey-map journey-board');
+	journeyState = { x: 0, y: 0, scale: 1 };
+	if ($('#the-journey').hasClass('journey-map')) {
+		resizeJourneyMapWithPadding();
+		centerJourneyMap();
+	} else {
+		applyZoom();
+	}
+}
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -6376,6 +6470,109 @@ document.addEventListener('DOMContentLoaded', function () {
 	if(hash_change_type=='settings-tab'){
 		changeTabByHash();
 		window.addEventListener("hashchange", changeTabByHash);
+	}
+	if(hash_change_type=='journey'){
+		var _tabiHash = window.location.hash.match(/^#tabi-(\d+)$/);
+		if (_tabiHash) openTabiModal(parseInt(_tabiHash[1], 10));
+	}
+
+	var journeyViewport = document.querySelector('.journey-container');
+	if (journeyViewport) {
+		var activePointers = new Map();
+		var lastPinchDist = null;
+		var dragStart = { x: 0, y: 0 };
+		var pointerDownPos = { x: 0, y: 0 };
+		var isPanning = false;
+		var hadMultiTouch = false;
+		var touchMoved = false;
+		var DRAG_THRESHOLD = 6; // px — below this is a tap, above is a pan
+
+		function getPinchMidpoint() {
+			var pts = Array.from(activePointers.values());
+			return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+		}
+		function getPinchDistance() {
+			var pts = Array.from(activePointers.values());
+			var dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
+			return Math.sqrt(dx * dx + dy * dy);
+		}
+
+		journeyViewport.addEventListener('pointerdown', function(e) {
+			activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+			if (activePointers.size === 2) {
+				hadMultiTouch = true;
+				lastPinchDist = getPinchDistance();
+				journeyViewport.setPointerCapture(e.pointerId);
+			} else if (activePointers.size === 1) {
+				hadMultiTouch = false;
+				isPanning = false;
+				pointerDownPos = { x: e.clientX, y: e.clientY };
+				dragStart = { x: e.clientX - journeyState.x, y: e.clientY - journeyState.y };
+			}
+		});
+
+		journeyViewport.addEventListener('pointermove', function(e) {
+			if (!activePointers.has(e.pointerId)) return;
+			activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+			if (activePointers.size === 2) {
+				var newDist = getPinchDistance();
+				if (lastPinchDist) {
+					var mid = getPinchMidpoint();
+					changeScale(newDist / lastPinchDist, mid.x, mid.y);
+				}
+				lastPinchDist = newDist;
+			} else if (activePointers.size === 1) {
+				if (!isPanning) {
+					// Only commit to panning once threshold is exceeded
+					var dx = e.clientX - pointerDownPos.x;
+					var dy = e.clientY - pointerDownPos.y;
+					if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
+					isPanning = true;
+					journeyViewport.setPointerCapture(e.pointerId); // capture only now
+				}
+				journeyState.x = e.clientX - dragStart.x;
+				journeyState.y = e.clientY - dragStart.y;
+				applyZoom();
+			}
+		});
+
+		journeyViewport.addEventListener('pointerup', function(e) {
+			activePointers.delete(e.pointerId);
+			lastPinchDist = null;
+			// touchmove.preventDefault() suppresses the browser-synthesized click on touch.
+			// Re-dispatch it manually for taps: single touch, no pan, no pinch, touchmove fired.
+			if (!isPanning && !hadMultiTouch && e.pointerType === 'touch' && activePointers.size === 0 && touchMoved) {
+				var tapTarget = document.elementFromPoint(e.clientX, e.clientY);
+				if (tapTarget) tapTarget.click();
+			}
+			isPanning = false;
+			if (activePointers.size === 1) {
+				var rem = activePointers.values().next().value;
+				dragStart = { x: rem.x - journeyState.x, y: rem.y - journeyState.y };
+			}
+		});
+		journeyViewport.addEventListener('pointercancel', function(e) {
+			activePointers.delete(e.pointerId);
+			lastPinchDist = null;
+			isPanning = false;
+		});
+
+		// Reset touchMoved at the start of each fresh single-finger gesture
+		journeyViewport.addEventListener('touchstart', function(e) {
+			if (e.touches.length === 1) touchMoved = false;
+		});
+		// Hard-block iOS Safari pull-to-refresh; track that touchmove fired
+		journeyViewport.addEventListener('touchmove', function(e) {
+			touchMoved = true;
+			e.preventDefault();
+		}, { passive: false });
+		// Wheel-to-zoom toward the cursor position
+		journeyViewport.addEventListener('wheel', function(e) {
+			e.preventDefault();
+			var rect = journeyViewport.getBoundingClientRect();
+			changeScale(e.deltaY < 0 ? 1.1 : 0.9, e.clientX - rect.left, e.clientY - rect.top);
+		}, { passive: false });
 	}
 });
 

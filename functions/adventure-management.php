@@ -544,6 +544,7 @@ function duplicateJourneyAsset(){
 		if($src){
 			$wpdb->insert("{$wpdb->prefix}br_journey_assets", [
 				'adventure_id' => $src->adventure_id,
+				'tabi_id'      => $src->tabi_id ?? 0,
 				'asset_image'  => $src->asset_image,
 				'asset_top'    => $src->asset_top  + 30,
 				'asset_left'   => $src->asset_left + 30,
@@ -553,7 +554,7 @@ function duplicateJourneyAsset(){
 				'asset_type'   => $src->asset_type ?? 'graphic',
 				'asset_link'   => $src->asset_link ?? '',
 				'asset_status' => 'publish',
-			], ['%d','%s','%d','%d','%d','%d','%d','%s','%s','%s']);
+			], ['%d','%d','%s','%d','%d','%d','%d','%d','%s','%s','%s']);
 			$new_id = $wpdb->insert_id;
 			$data['html'] = renderJourneyAssetHTML($new_id);
 			$data['success'] = true;
@@ -623,6 +624,21 @@ function saveJourneyAssetMeta(){
 		$wpdb->update("{$wpdb->prefix}br_journey_assets",
 			['asset_type'=>$type, 'asset_link'=>$link],
 			['asset_id'=>$asset_id], ['%s','%s'], ['%d']);
+		$data['success'] = true;
+	}
+	echo json_encode($data);
+	die();
+}
+function saveJourneyAssetTabi(){
+	global $wpdb;
+	$data = [];
+	$asset_id = intval($_POST['asset_id']);
+	$tabi_id  = intval($_POST['tabi_id']);
+	$nonce    = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'journey_asset_nonce')){
+		$wpdb->update("{$wpdb->prefix}br_journey_assets",
+			['tabi_id' => $tabi_id],
+			['asset_id' => $asset_id], ['%d'], ['%d']);
 		$data['success'] = true;
 	}
 	echo json_encode($data);
@@ -809,6 +825,42 @@ function setAchievement(){
 			$data['message'] = $notification->pop($msg_content,'purple','achievement');
 			$data['just_notify'] =true;
 			$data['new_achievement_nonce'] = wp_create_nonce('achievement_nonce');
+		}
+	}else{
+		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+	}
+	echo json_encode($data);
+	die();
+}
+////////////// setQuestTabi /////////////
+function setQuestTabi(){
+	global $wpdb;
+	$data = array();
+	$data['success'] = false;
+	$tabi_id      = intval($_POST['tabi_id']);
+	$nonce        = $_POST['nonce'];
+	$id           = intval($_POST['id']);
+	$adventure_id = intval($_POST['adventure_id']);
+	$type         = $_POST['type'];
+	if(wp_verify_nonce($nonce, 'quest_tabi_nonce')){
+		$allowed_types = ['quest','challenge','mission','survey','blog-post','lore','social'];
+		if(in_array($type, $allowed_types)){
+			$sql = "UPDATE {$wpdb->prefix}br_quests SET tabi_id=%d WHERE quest_id=%d AND adventure_id=%d";
+			$sql = $wpdb->prepare($sql, $tabi_id, $id, $adventure_id);
+			$the_query = $wpdb->query($sql);
+			$notification = new Notification();
+			if($the_query === FALSE){
+				$data['success'] = false;
+				$msg_content = __("Can't assign that tabi",'bluerabbit');
+				$data['message'] = $notification->pop($msg_content,'red','cancel');
+			}else{
+				$data['success'] = true;
+				logActivity($adventure_id, "set","tabi","$type",$id);
+				$msg_content = __('Tabi updated','bluerabbit');
+				$data['message'] = $notification->pop($msg_content,'blue','tabi');
+				$data['just_notify'] = true;
+				$data['new_quest_tabi_nonce'] = wp_create_nonce('quest_tabi_nonce');
+			}
 		}
 	}else{
 		$data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
