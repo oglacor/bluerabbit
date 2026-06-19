@@ -9,37 +9,41 @@
                     <h2 class="guild-name">
                         <?= $g->guild_name; ?>
                     </h2>
-                    <table class="my-guild-card-stats">
-                        <tbody>
-                            <tr class="teal">
-                                <td><?= __("Members"); ?>:</td>
-                                <td><?= $g->guild_current_capacity; ?></td>
-                            </tr>
-                            <tr class="white">
-                                <td><?= __("Level"); ?>:</td>
-                                <td>
-                                    <?php 
-                                    $guild_level = 1;
-                                    for($l=1;$l<30;$l++){
-                                        $added += $l*1000;
-                                        if(($added-1) < $g->guild_xp){
-                                            $guild_level = $l+1;
-                                        }
-                                    }
-                                    echo $guild_level;
-                                    ?>
-                                </td>
-                            </tr>
-                            <tr class="blue">
-                                <td><?= $xp_long_label; ?>:</td>
-                                <td><?= $leaderboard_guilds_array[$g->guild_id]; ?></td>
-                            </tr>
-                            <tr class="yellow">
-                                <td><?= $bloo_long_label; ?>:</td>
-                                <td><?= $g->guild_bloo; ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="guild-members-box">
+                        <span class="guild-members-count"><?= $g->guild_current_capacity; ?></span>
+                        <span class="guild-members-label"><?= __("Members","bluerabbit"); ?></span>
+                    </div>
+                    <?php
+                    $guild_level = 1;
+                    $added = 0;
+                    for($l=1;$l<30;$l++){
+                        $added += $l*1000;
+                        if(($added-1) < $g->guild_xp){
+                            $guild_level = $l+1;
+                        }
+                    }
+                    ?>
+                    <div class="guild-stats-list">
+                        <div class="guild-stat">
+                            <span class="guild-stat-label"><?= __("Level","bluerabbit"); ?></span>
+                            <span class="guild-stat-value level"><?= $guild_level; ?></span>
+                        </div>
+                        <div class="guild-stat">
+                            <span class="guild-stat-label"><?= $xp_long_label; ?></span>
+                            <span class="guild-stat-value xp"><?= number_format($leaderboard_guilds_array[$g->guild_id] ?? $g->guild_xp); ?></span>
+                        </div>
+                        <div class="guild-stat">
+                            <span class="guild-stat-label"><?= $bloo_long_label; ?></span>
+                            <span class="guild-stat-value bloo">$<?= number_format($leaderboard_bloo_array[$g->guild_id] ?? $g->guild_bloo); ?></span>
+                        </div>
+                    </div>
+                    <?php $this_guild_rank = isset($guild_rank_map) ? ($guild_rank_map[$g->guild_id] ?? 0) : $guild_rank; ?>
+                    <?php if(!empty($this_guild_rank)){ ?>
+                    <div class="guild-position-box">
+                        <span class="guild-position-number"><?= $this_guild_rank; ?></span>
+                        <span class="guild-position-label"><?= __("Current Position","bluerabbit"); ?></span>
+                    </div>
+                    <?php } ?>
                 </div>
                 <div class="my-guild-card-badge">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 440" class="guild-badge">
@@ -52,8 +56,8 @@
                         <polygon class="hexagon-overlay" points="373.06 308.37 373.06 131.63 220 43.26 66.94 131.63 66.94 308.37 220 396.74 373.06 308.37"/>
                         <polygon class="hexagon-yellow-border" points="395.5 321.32 395.5 118.68 220 17.35 44.5 118.68 44.5 321.32 220 422.65 395.5 321.32"/>
                         <polygon class="hexagon-yellow-details" points="395.5 321.32 395.5 118.68 220 17.35 44.5 118.68 44.5 321.32 220 422.65 395.5 321.32"/>
-                        <image 
-                            href="<?= $g->guild_logo;?>" 
+                        <image
+                            href="<?= $g->guild_logo;?>"
                             width="440"
                             height="440"
                             clip-path="url(#hexClip)"
@@ -66,5 +70,3 @@
                 </div>
             </div>
         </div>
-        
-

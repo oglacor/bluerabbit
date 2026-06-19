@@ -3,11 +3,11 @@
 		<div class="card-content">
 			<div class="card-face frontface">
 				<?php if($isGM || $isNPC || $isAdmin){ ?>
-					<a class="layer foreground icon-button font _14 sq-20 absolute top-10 left-10 green-bg-400" href="<?php echo get_bloginfo("url")."/new-achievement/?achievement_id=$a->achievement_id&adventure_id=$adv_parent_id"; ?>">
+					<a class="layer foreground button-icon font _14 sq-20 absolute top-10 left-10 green-bg-400" href="<?php echo get_bloginfo("url")."/new-achievement/?achievement_id=$a->achievement_id&adventure_id=$adv_parent_id"; ?>">
 						<span class="icon icon-edit"></span>
 					</a>
 				<?php } ?>
-				<button class="layer foreground absolute icon-button font _14 sq-20  top-10 right-10 red-bg-400" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
+				<button class="layer foreground absolute button-icon font _14 sq-20  top-10 right-10 red-bg-400" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
 				<div class="layer background absolute sq-full top left blend-luminosity grey-bg-900 opacity-80" style="background-image: url(<?= $a->achievement_badge; ?>);"></div>
 				<div class="layer background absolute sq-full top left grey-bg-900 opacity-80"></div>
 				<div class="layer background absolute sq-full top left <?=$a->achievement_color;?>-gradient-900 opacity-80"></div>

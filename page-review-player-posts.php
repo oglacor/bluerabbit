@@ -114,7 +114,7 @@
 						<h2 class="font _20 w900 uppercase padding-10"><?= __("Quest data","bluerabbit"); ?></h2>
 						<h4 class="font _14 white-color w900 uppercase padding-5 text-center"><?= __("Total Entries","bluerabbit")." <strong>".count($player_posts)."</strong>"; ?></h4>
 						<span class="icon-group">
-							<span class="icon-button font _18 sq-30  amber-bg-400">
+							<span class="button-icon font _18 sq-30  amber-bg-400">
 								<span class="icon icon-star"></span>
 							</span>
 							<span class="icon-content">

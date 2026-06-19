@@ -10,7 +10,8 @@
 				<span class="font w300"><?= __("Edit Step","bluerabbit"); ?></span>
 				<span class="font w900"><?= "[$s->step_order] - $s->step_title"; ?></span>
 			</h3>
-			<button class="icon-button red-bg-500 absolute top-5 right-5 sq-36 font _18" onClick="tinymce.remove('#<?= $step_editor_id;?>');unloadContent();"><span class="icon icon-cancel"></span></button>
+			<button class="button-icon blue-bg-400 absolute top-5 right-50 sq-36 font _18" onClick="brStartStepFormTour();" title="<?= __("Tutorial","bluerabbit"); ?>"><span class="icon icon-question"></span></button>
+			<button class="button-icon red-bg-500 absolute top-5 right-5 sq-36 font _18" onClick="tinymce.remove('#<?= $step_editor_id;?>');unloadContent();"><span class="icon icon-cancel"></span></button>
 		</div>
 		<table class="table w-full" cellpadding="0">
 			<thead>
@@ -79,7 +80,7 @@
 						<input id="step-character-name-<?=$s->step_id; ?>" type="text" maxlength="255" class="form-ui step-title white-bg w-full font _20 grey-900" value="<?= $s->step_character_name; ?>">
 					</td>
 				</tr>
-				<tr class="conditional-display dialogue-display open-display jump-display system-display win-display fail-display item-req-display item-grab-display">
+				<tr class="conditional-display dialogue-display open-display jump-display system-display win-display fail-display item-req-display item-grab-display" id="step-content-row-<?= $s->step_id; ?>">
 					<td class="text-right ">
 						<span class="conditional-display system-display">
 							<span class="font _16 block"><?= __("Content","bluerabbit"); ?></span>
@@ -138,8 +139,8 @@
 									</video>
 								</div>
 								<div class="gallery-item-options relative">
-									<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUploadVideo('<?= $thumb_id;?>');"><span class="icon icon-image"></span></button>
-									<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#<?= $thumb_id;?>');"> <span class="icon icon-trash"></span> </button>
+									<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUploadVideo('<?= $thumb_id;?>');"><span class="icon icon-image"></span></button>
+									<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?= $thumb_id;?>');"> <span class="icon icon-trash"></span> </button>
 									<input type="hidden" id="<?= $thumb_id;?>" value="<?= $s->step_image; ?>"/>
 								</div>
 							</div>
@@ -229,7 +230,7 @@
 						</div>
 					</td>
 				</tr>
-				<tr>
+				<tr id="step-background-row-<?= $s->step_id; ?>">
 					<td class="text-right v-top">
 						<span class="font _16 block"><?= __("Background","bluerabbit");?></span>
 						<span class="font _12 block grey-500">
@@ -248,7 +249,7 @@
 	<div class="step-form white-bg max-w-900 min-w-700 boxed relative layer base folder-page step-buttons" id="step-buttons-form-container">
 	</div>
 	<div class=" text-center padding-10 teal-bg-400 white-color w-full sticky bottom layer base max-w-900 min-w-700 boxed">
-		<button class="form-ui green-bg-400 white-color" onClick="updateStep(<?= $s->step_id; ?>);">
+		<button class="form-ui green-bg-400 white-color" id="step-update-button-<?= $s->step_id; ?>" onClick="updateStep(<?= $s->step_id; ?>);">
 			<span class="icon icon-check"></span><?php _e("Update Step","bluerabbit"); ?>
 		</button>
 	</div>
@@ -257,3 +258,4 @@
 	checkStepType();
 	tinyMCE.execCommand( 'mceAddEditor', true, '<?= $step_editor_id; ?>' );
 </script>
+<?php include (get_stylesheet_directory() . '/tutorials/tutorial-step-form.php'); ?>

@@ -339,8 +339,7 @@ function getNextAvailableMilestone($adv_parent_id, $adv_child_id, $current_quest
 		"SELECT * FROM {$wpdb->prefix}br_quests
 		 WHERE adventure_id = %d
 		   AND quest_status = 'publish'
-		   AND (tabi_id IS NULL OR tabi_id = 0)
-		   AND quest_type NOT IN ('blog-post', 'lore')
+		   AND quest_type IN ('mission', 'challenge', 'quest')
 		   AND (quest_order > %d OR (quest_order = %d AND quest_id != %d))
 		 ORDER BY quest_order, mech_level, mech_start_date, quest_title",
 		$adv_parent_id,

@@ -83,8 +83,8 @@
 					<div class="content">
 					<?php if($adventure->adventure_grade_scale == "none" || ($adventure->adventure_grade_scale != "none" && $adventure->adventure_progression_type=='before') || ($adventure->adventure_grade_scale != "none"  && !$q->pp_grade  && $adventure->adventure_progression_type=='after')) {	 ?>
 
-						<?php if(!empty($requirements)){ ?>
-							<?php 
+						<?php if(!empty($requirements)){ $requirements_rendered = true; ?>
+							<?php
 								$my_quests = getMyQuests($adventure->adventure_id);
 								$myKeyItems = $my_items['key'];
 							?>
@@ -197,7 +197,7 @@
 											}
 										?>
 										<?php if($questsReady && $itemsReady && $achievementsReady ){	?>
-											<?php if($player['debt']<=0){ ?>
+											<?php if($player['debt']<=0){ $quest_content_rendered = true; ?>
 												<?php include (TEMPLATEPATH . '/quest.php'); ?>
 												<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_player_post_nonce'); ?>"/>
 												<input type="hidden" id="the_quest_id" value="<?= $q->quest_id; ?>"/>

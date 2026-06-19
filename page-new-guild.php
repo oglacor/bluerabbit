@@ -12,7 +12,7 @@ if(isset($adventure) && $isGM){
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 purple-bg-50">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40 green-bg-400"><span class="icon icon-guild"></span></span>
+			<span class="button-icon font _24 sq-40 green-bg-400"><span class="icon icon-guild"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 grey-800">
 					<?= ($adventure && isset($g)) ? __("Edit Guild","bluerabbit") : __("New Guild","bluerabbit"); ?>
@@ -50,8 +50,8 @@ if(isset($adventure) && $isGM){
 						<div class="gallery-item setting">
 							<div class="background" style="background-image: url(<?= isset($g) ?  $g->guild_logo : NULL ; ?>);" onClick="showWPUpload('the_guild_logo');" id="the_guild_logo_thumb"></div>
 							<div class="gallery-item-options relative">
-								<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_guild_logo');"><span class="icon icon-image"></span></button>
-								<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_guild_logo');"> <span class="icon icon-trash"></span> </button>
+								<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_guild_logo');"><span class="icon icon-image"></span></button>
+								<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_guild_logo');"> <span class="icon icon-trash"></span> </button>
 								<input type="hidden" id="the_guild_logo" value="<?= isset($g) ?  $g->guild_logo : NULL ; ?>"/>
 							</div>
 						</div>

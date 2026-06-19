@@ -66,7 +66,7 @@ $guilds = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_guilds WHERE adven
 	<div class="dashboard-content white-bg">
 		<div class="w-full padding-10 brown-bg-50 sticky top-50 layer overlay relative">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40 brown-bg-400"><span class="icon icon-calendar"></span></span>
+				<span class="button-icon font _24 sq-40 brown-bg-400"><span class="icon icon-calendar"></span></span>
 				<span class="icon-content">
 					<h1><?php if($adventure && isset($session)){ ?>
 						<?php _e('Edit Session','bluerabbit'); ?>

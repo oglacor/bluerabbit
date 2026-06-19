@@ -24,7 +24,7 @@
 				<div class="confirm-action overlay-layer" id="confirm-gm-<?= $play->player_id; ?>">
 					<button class="form-ui white-bg" onClick="setPlayerAdventureRole(<?= "$adventure->adventure_id, $play->player_id, 'gm'"; ?>);">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  icon-sm teal-bg-400 icon-sm">
+							<span class="button-icon font _24 sq-40  icon-sm teal-bg-400 icon-sm">
 								<span class="icon icon-activity white-color"></span>
 							</span>
 							<span class="icon-content">
@@ -32,7 +32,7 @@
 							</span>
 						</span>
 					</button>
-					<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+					<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 						<span class="icon icon-cancel white-color"></span>
 					</button>
 				</div>
@@ -53,7 +53,7 @@
 			<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 				<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+						<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 							<span class="icon icon-cancel white-color"></span>
 						</span>
 						<span class="icon-content">
@@ -61,7 +61,7 @@
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+				<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>

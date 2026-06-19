@@ -11,11 +11,11 @@
 	<?php }elseif($q['survey_question_display'] =='spinner'){ ?>
 		<div class="text-center w-full">
 			<div class="spinner">
-				<button class="icon-button font _24 sq-40  spin-down deep-purple-bg-700" onClick="spinDown('#question-answer-value-<?php echo $i; ?>',0);submitSurveyAnswer(<?php echo $i; ?>);">
+				<button class="button-icon font _24 sq-40  spin-down deep-purple-bg-700" onClick="spinDown('#question-answer-value-<?php echo $i; ?>',0);submitSurveyAnswer(<?php echo $i; ?>);">
 					<div class="icon icon-remove"></div>
 				</button>
 				<input class="number text-center font _36 w900 grey-800 white-bg padding-5" disabled type="number" max="<?= $q['range']; ?>" min="0" id="question-answer-value-<?php echo $i; ?>" value="<?= $q['survey_answer_value'] ? $q['survey_answer_value'] : 0; ?>">
-				<button class="icon-button font _24 sq-40  spin-up deep-purple-bg-700" onClick="spinUp('#question-answer-value-<?php echo $i; ?>',<?= $q['range']; ?>);submitSurveyAnswer(<?php echo $i; ?>);">
+				<button class="button-icon font _24 sq-40  spin-up deep-purple-bg-700" onClick="spinUp('#question-answer-value-<?php echo $i; ?>',<?= $q['range']; ?>);submitSurveyAnswer(<?php echo $i; ?>);">
 					<div class="icon icon-add"></div>
 				</button>
 			</div>

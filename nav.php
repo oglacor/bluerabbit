@@ -1,6 +1,6 @@
 <div class="start" id="start">
 	<div class="layer background sq-full absolute" onClick="activateStartMenu();"></div>
-	<div class="nav-group">
+    <div class="nav-group">
 		<nav class="main-nav active" id="main-nav">
 			<?php if ($isAdmin || $isGM){ ?>
 				<button class="show-menu-button" onClick="showMenu('#main-nav');">
@@ -170,6 +170,14 @@
 						</a>
 					</li>
 				<?php } ?>
+				<li class="nav-button">
+					<a href="<?= get_bloginfo('url')."/my-requests/?adventure_id=$adv_child_id"; ?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-project.png" alt=""/></span>
+							<span class="label"><?= __("My Requests","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
 				<?php if(!$config['default_adventure']['value']){ ?>
 					<li class="nav-button highlighted">
 						<a href="<?= get_bloginfo('url')."/adventures"; ?>">
@@ -320,6 +328,14 @@
 							<span class="content">
 								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-transactions.png" alt=""/></span>
 								<span class="label"><?= __("Transactions","bluerabbit"); ?></span>
+							</span>
+						</a>
+					</li>
+					<li class="nav-button highlight blue">
+						<a class="" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adv_parent_id&manage=requests";?>">
+							<span class="content">
+								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-project.png" alt=""/></span>
+								<span class="label"><?= __("Player Requests","bluerabbit"); ?></span>
 							</span>
 						</a>
 					</li>

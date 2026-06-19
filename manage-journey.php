@@ -44,7 +44,7 @@
 ?>
 				<div class="highlight padding-10 deep-purple-bg-50">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  deep-purple-bg-400"><span class="icon icon-journey"></span></span>
+						<span class="button-icon font _24 sq-40  deep-purple-bg-400"><span class="icon icon-journey"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800"><?php _e('Journey','bluerabbit'); ?></span>
 							<span class="line font _14 grey-600"><?php _e("The journey is ordered first by level and then by list",'bluerabbit'); ?></span>
@@ -73,7 +73,7 @@
 				<div class="highlight padding-10 deep-purple-bg-50">
 
 					<div class="icon-group padding-10">
-						<span class="icon-button font _24 sq-40  font _16 blue-bg-400 white-color"><span class="icon icon-list"></span></span>
+						<span class="button-icon font _24 sq-40  font _16 blue-bg-400 white-color"><span class="icon icon-list"></span></span>
 						<span class="icon-content">
 							<a class="form-ui <?= !isset($_GET['order']) ? 'blue-bg-400' : ''; ?>" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id$path_str"; ?>"><?= __("Journey","bluerabbit"); ?></a>
 							<a class="form-ui <?= isset($_GET['order']) && $_GET['order']=='A' ? 'blue-bg-400' : ''; ?>" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&order=A$path_str"; ?>"><?= __("Level","bluerabbit"); ?></a>
@@ -102,11 +102,11 @@
 						<span class="icon-content">
 							<span class="line font _14 grey-800"><?php _e('Show','bluerabbit'); ?></span>
 						</span>
-	<button id="filter-all" class="icon-button font _24 sq-40  icon-sm black-bg" onClick="filterAdminTable('all','#table-quest .admin-table-body .row-container');"><span class="icon icon-infinite"></span></button>
-	<button id="filter-quest" class="icon-button font _24 sq-40  icon-sm blue-bg-400" onClick="filterAdminTable('quest','#table-quest .admin-table-body .row-container');"><span class="icon icon-quest"></span></button>
-	<button id="filter-mission" class="icon-button font _24 sq-40  icon-sm amber-bg-400" onClick="filterAdminTable('mission','#table-quest .admin-table-body .row-container');"><span class="icon icon-mission"></span></button>
-	<button id="filter-challenge" class="icon-button font _24 sq-40  icon-sm red-bg-400" onClick="filterAdminTable('challenge','#table-quest .admin-table-body .row-container');"><span class="icon icon-challenge"></span></button>
-	<button id="filter-survey" class="icon-button font _24 sq-40  icon-sm teal-bg-400" onClick="filterAdminTable('survey','#table-quest .admin-table-body .row-container');"><span class="icon icon-survey"></span></button>
+                        <button id="filter-all" class="button-icon font _24 sq-40  icon-sm black-bg" onClick="filterAdminTable('all','#table-quest .admin-table-body .row-container');"><span class="icon icon-infinite"></span></button>
+                        <button id="filter-quest" class="button-icon font _24 sq-40  icon-sm blue-bg-400" onClick="filterAdminTable('quest','#table-quest .admin-table-body .row-container');"><span class="icon icon-quest"></span></button>
+                        <button id="filter-mission" class="button-icon font _24 sq-40  icon-sm amber-bg-400" onClick="filterAdminTable('mission','#table-quest .admin-table-body .row-container');"><span class="icon icon-mission"></span></button>
+                        <button id="filter-challenge" class="button-icon font _24 sq-40  icon-sm red-bg-400" onClick="filterAdminTable('challenge','#table-quest .admin-table-body .row-container');"><span class="icon icon-challenge"></span></button>
+                        <button id="filter-survey" class="button-icon font _24 sq-40  icon-sm teal-bg-400" onClick="filterAdminTable('survey','#table-quest .admin-table-body .row-container');"><span class="icon icon-survey"></span></button>
 						<select onChange="document.location.href=$('#the_achievement_filter').val();" id="the_achievement_filter">
 							<option value="<?= get_bloginfo('url')."/manage-adventure/?adventure_id={$adventure->adventure_id}";?>"><?= __("All paths","bluerabbit"); ?></option>
 							<?php foreach($achievements['publish'] as $a){ ?>
@@ -143,7 +143,7 @@
 				<?php if(isset($current_path)) { ?>
 					<div class="highlight red-bg-100 black-color text-center">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40 " style="background-image: url(<?= $current_path->achievement_badge; ?>);"></span>
+							<span class="button-icon font _24 sq-40 " style="background-image: url(<?= $current_path->achievement_badge; ?>);"></span>
 							<span class="icon-content">
 								<span class="line font _24"><?= $current_path->achievement_name; ?></span>
 								<span class="line font _14 opacity-50"><?= __("Currently filtering this path","bluerabbit");?></span>
@@ -234,12 +234,17 @@
 											</div>
 											<div class="cell cell-badge">
 												<input type="hidden" value="<?= $q->mech_badge; ?>" id="the_quest_badge-<?= $q->quest_id; ?>">
-												<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_quest_badge-<?= $q->quest_id; ?>','a','quest',<?= $q->quest_id; ?>);" id="the_quest_badge-<?= $q->quest_id; ?>_thumb" style="background-image: url(<?= $q->mech_badge; ?>);">
+												<button class="button-icon font _24 sq-40  icon-lg" onClick="showWPUpload('the_quest_badge-<?= $q->quest_id; ?>','a','quest',<?= $q->quest_id; ?>);" id="the_quest_badge-<?= $q->quest_id; ?>_thumb" style="background-image: url(<?= $q->mech_badge; ?>);">
 												</button>
 											</div>
 											<div class="cell cell-color relative layer base">
-												<button class="icon-button font _24 sq-40 <?=$q->quest_color;?>-bg-400" id="color-trigger-quest-<?= $q->quest_id; ?>" onClick="activate('#color-select-<?=$q->quest_id;?>');">
-													<span class="icon icon-<?= $q->quest_icon; ?>"></span>
+												<button class="button-icon font _24 sq-40 <?=$q->quest_color;?>-bg-400" id="color-trigger-quest-<?= $q->quest_id; ?>" onClick="activate('#color-select-<?=$q->quest_id;?>');">
+													<?php if($q->quest_status == 'publish'){ ?>
+                                                        <span class="icon icon-<?= $q->quest_icon; ?>"></span>
+                                                    <?php }elseif($q->quest_status == 'locked'){ ?>
+													    <span class="icon icon-lock"></span>
+                                                    <?php } ?>
+
 												</button> 
 												<input type="hidden" value="<?= $q->quest_color; ?>" id="the_quest_color-<?= $q->quest_id; ?>">
 											</div>
@@ -350,13 +355,31 @@
 												<a href="<?= get_bloginfo('url')."/new-$q->quest_type/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>" class="form-ui button font _12 green-bg-400 edit-button">
 													<span class="icon icon-edit "></span> <?php _e("Edit","bluerabbit"). " $q->quest_type"; ?>
 												</a>
+												<button class="form-ui button font _12 amber-bg-200 grey-700 lock-button" onClick="showOverlay('#confirm-lock-<?= $q->quest_id; ?>');">
+													<?php _e("Lock","bluerabbit")." $q->quest_type"; ?>
+												</button>
+												<div class="confirm-action overlay-layer lock-confirm" id="confirm-lock-<?= $q->quest_id; ?>">
+													<button class="form-ui white-bg lock-confirm-button"onClick="confirmStatus(<?= $q->quest_id; ?>,'quest','locked');">
+														<span class="icon-group">
+															<span class="button-icon font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
+																<span class="icon icon-lock white-color"></span>
+															</span>
+															<span class="icon-content">
+																<span class="line amber-400 font _18 w900"><?php _e("Lock?","bluerabbit"); ?></span>
+															</span>
+														</span>
+													</button>
+													<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+														<span class="icon icon-cancel white-color"></span>
+													</button>
+												</div>
 												<button class="form-ui button font _12 amber-bg-200 grey-700 duplicate-button" onClick="showOverlay('#confirm-duplicate-<?= $q->quest_id; ?>');">
 													<?php _e("Duplicate","bluerabbit"); ?>
 												</button>
 												<div class="confirm-action overlay-layer duplicate-confirm" id="confirm-duplicate-<?= $q->quest_id; ?>">
 													<button class="form-ui white-bg duplicate-confirm-button" onClick="duplicateRow(<?= $q->quest_id; ?>);">
 														<span class="icon-group">
-															<span class="icon-button font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
+															<span class="button-icon font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
 																<span class="icon icon-duplicate white-color"></span>
 															</span>
 															<span class="icon-content">
@@ -364,7 +387,7 @@
 															</span>
 														</span>
 													</button>
-													<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+													<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 														<span class="icon icon-cancel white-color"></span>
 													</button>
 												</div>
@@ -374,7 +397,7 @@
 												<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?= $q->quest_id; ?>">
 													<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?= $q->quest_id; ?>,'quest','trash');">
 														<span class="icon-group">
-															<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+															<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 																<span class="icon icon-trash white-color"></span>
 															</span>
 															<span class="icon-content">
@@ -382,7 +405,7 @@
 															</span>
 														</span>
 													</button>
-													<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+													<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 														<span class="icon icon-cancel white-color"></span>
 													</button>
 												</div>
@@ -422,21 +445,21 @@
 							<?php $totalXP = array_sum($curXp); ?>
 							<?php $totalBLOO = array_sum($curBloo); ?>
 							<div class="icon-group">
-								<span class="icon-button font _24 sq-40  light-blue-bg-400">
+								<span class="button-icon font _24 sq-40  light-blue-bg-400">
 									<span class="icon icon-quest"></span>
 								</span>
 								<div class="icon-content">
 									<span class="line font _24 w400"> <?= count($quests['publish']); ?></span>
 									<span class="line font _14 w400"> <?= __("Total Quests","bluerabbit"); ?></span>
 								</div>
-								<span class="icon-button font _24 sq-40  amber-bg-400">
+								<span class="button-icon font _24 sq-40  amber-bg-400">
 									<span class="icon icon-star"></span>
 								</span>
 								<div class="icon-content">
 									<span class="line font _24 w400"> <?= $totalXP; ?></span>
 									<span class="line font _14 w400"> <?= __("Total","bluerabbit")." $xp_label"; ?></span>
 								</div>
-								<span class="icon-button font _24 sq-40  green-bg-400">
+								<span class="button-icon font _24 sq-40  green-bg-400">
 									<span class="icon icon-bloo"></span>
 								</span>
 								<div class="icon-content">
@@ -461,7 +484,7 @@
 					<?php if(isset($quests['draft'])){ ?>
 						<div class="highlight padding-10 amber-bg-50 ">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  amber-bg-400 icon-sm">
+								<span class="button-icon font _24 sq-40  amber-bg-400 icon-sm">
 									<span class="icon icon-document"></span>
 								</span>
 								<span class="icon-content">
@@ -507,13 +530,13 @@
 											</div>
 										</td>
 										<td class="cell-1">
-											<a href="<?= get_bloginfo('url')."/new-$q->quest_type/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>" class="icon-button font _24 sq-40  icon-sm green-bg-400">
+											<a href="<?= get_bloginfo('url')."/new-$q->quest_type/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>" class="button-icon font _24 sq-40  icon-sm green-bg-400">
 												<span class="icon icon-edit"></span>
 												<span class="tool-tip">
 													<span class="tool-tip-text"><?php _e("Edit","bluerabbit"); ?></span>
 												</span>
 											</a>
-											<a href="<?= get_bloginfo('url')."/$q->quest_type/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>" class="icon-button font _24 sq-40  icon-sm indigo-bg-300" target="_blank">
+											<a href="<?= get_bloginfo('url')."/$q->quest_type/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>" class="button-icon font _24 sq-40  icon-sm indigo-bg-300" target="_blank">
 												<span class="icon icon-view"></span>
 												<span class="tool-tip">
 													<span class="tool-tip-text"><?php _e("View","bluerabbit"); ?></span>
@@ -551,7 +574,7 @@
 						<?php if(isset($quests['trash'])){ ?>
 							<div class="highlight padding-10 red-bg-800 white-color ">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  red-bg-400 icon-sm">
+									<span class="button-icon font _24 sq-40  red-bg-400 icon-sm">
 										<span class="icon icon-trash"></span>
 									</span>
 									<span class="icon-content">
@@ -567,7 +590,7 @@
 									<div class="confirm-action overlay-layer duplicate-confirm" id="confirm-empty-trash">
 										<button class="form-ui white-bg border border-all red-border-A400 duplicate-confirm-button" onClick="emptyTrash('quest');">
 											<span class="icon-group">
-												<span class="icon-button font _24 sq-40 red-bg-A400">
+												<span class="button-icon font _24 sq-40 red-bg-A400">
 													<span class="icon icon-cancel white-color"></span>
 												</span>
 												<span class="icon-content">
@@ -575,7 +598,7 @@
 												</span>
 											</span>
 										</button>
-										<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+										<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 											<span class="icon icon-cancel white-color"></span>
 										</button>
 									</div>

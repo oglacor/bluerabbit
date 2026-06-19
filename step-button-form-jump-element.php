@@ -20,7 +20,7 @@
 							</div>
 						</td>
 						<td>
-							<button class="icon-button blue-bg-400 font _18 sq-30" onClick="updateStepButton(<?=$btn->button_id; ?>);"><span class="icon icon-check"></span></button>
-							<button class="icon-button red-bg-400 font _18 sq-30" onClick="removeStepButton(<?=$btn->button_id; ?>);"><span class="icon icon-trash"></span></button>
+							<button class="button-icon blue-bg-400 font _18 sq-30" onClick="updateStepButton(<?=$btn->button_id; ?>);"><span class="icon icon-check"></span></button>
+							<button class="button-icon red-bg-400 font _18 sq-30" onClick="removeStepButton(<?=$btn->button_id; ?>);"><span class="icon icon-trash"></span></button>
 						</td>
 					</tr>

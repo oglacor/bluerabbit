@@ -1,6 +1,6 @@
 					<div class="highlight padding-10 grey-bg-100" id="tutorial-achievement-reward">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  purple-bg-400">
+							<span class="button-icon font _24 sq-40  purple-bg-400">
 								<span class="icon icon-achievement"></span>
 							</span>
 							<span class="icon-content font _24">
@@ -26,7 +26,7 @@
 										<li id="achievement-reward-<?= $a->achievement_id; ?>" class="<?= $status; ?> purple-border-400 border border-all border-2 white-bg" onClick="toggleSingleReq('#achievement-reward-<?= $a->achievement_id; ?>'); checkPublishFor(<?= $a->achievement_id; ?>);" style="background-image: url(<?= $a->achievement_badge; ?>);">
 											<input type="hidden" class="achievement-reward-id" value="<?= $a->achievement_id; ?>">
 											<div class="layer background absolute sq-full top left color-overlay"></div>
-											<span class="icon-button green-bg-400 active-content font _18 absolute top-10 right-10">
+											<span class="button-icon green-bg-400 active-content font _18 absolute top-10 right-10">
 												<span class="icon icon-check"></span>
 											</span>
 											<div class="layer base absolute perfect-center text-center achievement-name">

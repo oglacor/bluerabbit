@@ -9,7 +9,7 @@
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 cyan-bg-50 relative">
 		<div class="icon-group">
-			<div class="icon-button font _24 sq-40 cyan-bg-A400 grey-900"><span class="icon icon-run"></span></div >
+			<div class="button-icon font _24 sq-40 cyan-bg-A400 grey-900"><span class="icon icon-run"></span></div >
 			<div class="icon-content">
 				<div class="line font _24 grey-800">
 					<?= ($adventure && isset($encounter)) ? __("Edit Encounter","bluerabbit") : __("New Encounter","bluerabbit"); ?>
@@ -89,8 +89,8 @@
 						<div class="gallery-item setting">
 							<div class="background" style="background-image: url(<?= isset($encounter->enc_badge) ? $encounter->enc_badge : "" ; ?>);" onClick="showWPUpload('the_enc_badge');" id="the_enc_badge_thumb"></div>
 							<div class="gallery-item-options relative">
-								<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_enc_badge');"><span class="icon icon-image"></span></button>
-								<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_enc_badge');"> <span class="icon icon-trash"></span> </button>
+								<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_enc_badge');"><span class="icon icon-image"></span></button>
+								<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_enc_badge');"> <span class="icon icon-trash"></span> </button>
 								<input type="hidden" id="the_enc_badge" value="<?= isset($encounter->enc_badge) ? $encounter->enc_badge : "" ; ?>"/>
 							</div>
 						</div>

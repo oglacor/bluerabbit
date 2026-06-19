@@ -3,7 +3,7 @@
 			<div class="body-ui">
 		<div class="highlight padding-10 orange-bg-50">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40  orange-bg-400"><span class="icon icon-socialiser"></span></span>
+				<span class="button-icon font _24 sq-40  orange-bg-400"><span class="icon icon-socialiser"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 grey-800"><?php _e('Adventure Speakers','bluerabbit'); ?></span>
 				</span>
@@ -75,7 +75,7 @@
 						<tr id="speaker-<?php echo $s->speaker_id;?> purple-bg-50">
 							<td class="">
 								<input type="hidden" value="<?= $s->speaker_picture; ?>" id="the_speaker_badge-<?= $s->speaker_id; ?>">
-								<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_speaker_badge-<?= $s->speaker_id; ?>','a','speaker',<?= $s->speaker_id; ?>);" id="the_speaker_badge-<?= $s->speaker_id; ?>_thumb" style="background-image: url(<?= $s->speaker_picture; ?>);">
+								<button class="button-icon font _24 sq-40  icon-lg" onClick="showWPUpload('the_speaker_badge-<?= $s->speaker_id; ?>','a','speaker',<?= $s->speaker_id; ?>);" id="the_speaker_badge-<?= $s->speaker_id; ?>_thumb" style="background-image: url(<?= $s->speaker_picture; ?>);">
 								</button>
 							</td>
 							<td class="">
@@ -98,12 +98,12 @@
 								<input type="text" class="form-ui " id="speaker-<?php echo $s->speaker_id;?>-linkedin" value="<?= $s->speaker_linkedin; ?>" onChange="setSpeakerData(<?= $s->speaker_id; ?>);">
 							</td>
 							<td class="">
-								<a class="icon-button font _24 sq-40  green-bg-400 icon-sm" href="<?php echo get_bloginfo('url')."/speaker/?adventure_id=$adventure->adventure_id&speaker_id=$s->speaker_id";?>">
+								<a class="button-icon font _24 sq-40  green-bg-400 icon-sm" href="<?php echo get_bloginfo('url')."/speaker/?adventure_id=$adventure->adventure_id&speaker_id=$s->speaker_id";?>">
 									<span class="icon icon-view">
 									</span>
 								</a>
-								<a href="<?php echo get_bloginfo('url')."/new-speaker/?adventure_id=$adventure->adventure_id&speaker_id=$s->speaker_id";?>" class="icon-button font _24 sq-40  green-bg-400"><span class="icon icon-edit"></span></a>
-								<button class="icon-button font _24 sq-40  red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?php echo $s->speaker_id; ?>');">
+								<a href="<?php echo get_bloginfo('url')."/new-speaker/?adventure_id=$adventure->adventure_id&speaker_id=$s->speaker_id";?>" class="button-icon font _24 sq-40  green-bg-400"><span class="icon icon-edit"></span></a>
+								<button class="button-icon font _24 sq-40  red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?php echo $s->speaker_id; ?>');">
 									<span class="icon icon-trash"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
@@ -112,7 +112,7 @@
 								<div class="confirm-action overlay-layer" id="confirm-option-<?php echo $s->speaker_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?php echo $s->speaker_id; ?>,'speaker','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -120,7 +120,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -142,7 +142,7 @@
 	<?php if(isset($speakers['trash'])){ ?>
 		<div class="highlight padding-10 orange-bg-50">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
+				<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 grey-800"><?php _e('Trashed Speakers','bluerabbit'); ?></span>
 				</span>
@@ -191,12 +191,12 @@
 								<input type="hidden" class="speaker-id" value="<?php echo $s->speaker_id; ?>">
 							</td>
 							<td class=""><?php echo $s->speaker_company; ?></td>
-							<td class=""><a href="<?php echo $s->speaker_website; ?>" class="icon-button font _24 sq-40 " target="_blank"><span class="icon icon-language"></span></a></td>
+							<td class=""><a href="<?php echo $s->speaker_website; ?>" class="button-icon font _24 sq-40 " target="_blank"><span class="icon icon-language"></span></a></td>
 							<td class=""><span class="icon icon-tw"></span><?php echo $s->speaker_twitter; ?></td>
 							<td class=""><a href="<?php echo $s->speaker_linkedin; ?>" class="form-ui light-blue-bg-800" target="_blank"><?php _e("LinkedIn","bluerabbit"); ?></a></td>
 							<td class="relative layer base">
-								<a href="<?php echo get_bloginfo('url')."/new-speaker/?adventure_id=$adventure->adventure_id&speaker_id=$s->speaker_id";?>" class="relative layer base icon-button font _24 sq-40 green-bg-400"><span class="icon icon-edit"></span></a>
-								<button class="icon-button font _24 sq-40  red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?php echo $s->speaker_id; ?>');">
+								<a href="<?php echo get_bloginfo('url')."/new-speaker/?adventure_id=$adventure->adventure_id&speaker_id=$s->speaker_id";?>" class="relative layer base button-icon font _24 sq-40 green-bg-400"><span class="icon icon-edit"></span></a>
+								<button class="button-icon font _24 sq-40  red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?php echo $s->speaker_id; ?>');">
 									<span class="icon icon-trash"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
@@ -205,7 +205,7 @@
 								<div class="confirm-action overlay-layer" id="confirm-option-<?php echo $s->speaker_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?php echo $s->speaker_id; ?>,'speaker','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -213,7 +213,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>

@@ -29,7 +29,7 @@
 	}
 ?>
 <div class="text-center padding-10">
-	<span class="icon-button sq-100 white-bg border border-1 border-all white-border relative" style="background-image: url(<?= $current_player->player_picture; ?>); ">
+	<span class="button-icon sq-100 white-bg border border-1 border-all white-border relative" style="background-image: url(<?= $current_player->player_picture; ?>); ">
 		<span class="icon icon-lock font _60"></span>
 	</span>
 	<h2 class="font _48 white-color"><?php _e("Blockers","bluerabbit"); ?></h2>
@@ -75,9 +75,9 @@
 							<?php }	?>
 						<?php }	?>
 						<?php if($isGM){ ?>
-							<a href="<?php echo get_bloginfo('url')."/new-blocker/?adventure_id=$adventure->adventure_id&blockerID=$b->blocker_id";?>" class="icon-button font _18 sq-30  green-bg-400"><span class="icon icon-edit"></span></a>
+							<a href="<?php echo get_bloginfo('url')."/new-blocker/?adventure_id=$adventure->adventure_id&blockerID=$b->blocker_id";?>" class="button-icon font _18 sq-30  green-bg-400"><span class="icon icon-edit"></span></a>
 
-							<button type="button" class="icon-button font _18 sq-30  red-bg-400" onClick="br_confirm_trd('trash',<?php echo $b->blocker_id; ?>,'blocker');" ><span class="icon icon-trash"></span></button>
+							<button type="button" class="button-icon font _18 sq-30  red-bg-400" onClick="br_confirm_trd('trash',<?php echo $b->blocker_id; ?>,'blocker');" ><span class="icon icon-trash"></span></button>
 
 
 						<?php } ?>

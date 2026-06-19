@@ -48,7 +48,7 @@
 	
 		<div class="milestone-bg-color teal-bg-A400"></div>
 		<div class="milestone-bg-badge blue-grey-bg-900 blend-luminosity" style="background-image: url(<?= $mi->mech_badge; ?>);">
-			<span class="icon-button absolute perfect-center block teal-bg-400 sq-40"><span class="icon icon-bloo white-color font _26"></span></span>
+			<span class="button-icon absolute perfect-center block teal-bg-400 sq-40"><span class="icon icon-bloo white-color font _26"></span></span>
 			<?php if($isAdmin || $isGM){ ?>
 				<span class="absolute v-center left block icon icon-<?= $mi->quest_type; ?> font _24 black-color opacity-50"></span>
 			<?php } ?>

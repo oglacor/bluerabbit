@@ -37,7 +37,7 @@
 							<td>
 								<span class="icon-group">
 
-									<span class="icon-button font _24 sq-40 " style="background-image: url(<?php echo $p->player_picture; ?>)"></span>
+									<span class="button-icon font _24 sq-40 " style="background-image: url(<?php echo $p->player_picture; ?>)"></span>
 									<span class="icon-content">
 										<span class="line font _18"><?= $p->player_display_name ? $p->player_display_name : $p->player_nickname; ?>
 										</span>

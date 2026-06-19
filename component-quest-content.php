@@ -1,6 +1,6 @@
 						<div class="highlight padding-10 grey-bg-200">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40 red-bg-400"><span class="icon icon-quest"></span></span>
+								<span class="button-icon font _24 sq-40 red-bg-400"><span class="icon icon-quest"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Content","bluerabbit"); ?></span>
 								</span>

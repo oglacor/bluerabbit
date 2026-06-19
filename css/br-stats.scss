@@ -1,0 +1,699 @@
+// ═══════════════════════════════════════════════════════════
+// BR Stats Dashboard
+// Compiles to br-stats.css — depends on br-table.css vars
+// ═══════════════════════════════════════════════════════════
+
+// ── Palette (same tokens as br-table) ────────────────────
+
+$br-primary:   #1cc2eb;
+$br-accent:    #f7cb15;
+$br-purple:    #9f40e2;
+$br-green:     #24da98;
+$br-red:       #f44336;
+$br-amber:     #ffc107;
+$br-orange:    #ff9800;
+$br-bg:        #04161e;
+$br-panel-bg:  rgba(11, 61, 79, 0.6);
+$br-border:    rgba(28, 194, 235, 0.2);
+$br-white:     #ffffff;
+
+$condensed:    "proxima-nova-extra-condensed", sans-serif;
+$radius:       12px;
+
+// ── Mixin ────────────────────────────────────────────────
+
+@mixin condensed-heading($size: 18px, $weight: 700) {
+  font-family: $condensed;
+  font-size: $size;
+  font-weight: $weight;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+// ── Page ─────────────────────────────────────────────────
+
+.br-stats-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+  color: $br-white;
+}
+
+// ── Section Title ────────────────────────────────────────
+
+.br-stats-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+
+  .icon {
+    font-size: 22px;
+    color: $br-primary;
+  }
+
+  h2 {
+    @include condensed-heading(28px, 900);
+    letter-spacing: 2px;
+    color: $br-white;
+    margin: 0;
+  }
+}
+
+// ── KPI Boxes ────────────────────────────────────────────
+
+.br-stats-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.br-stats-kpi {
+  background: $br-panel-bg;
+  border: 1px solid rgba($br-primary, 0.25);
+  border-radius: $radius;
+  padding: 20px 16px;
+  text-align: center;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: rgba($br-primary, 0.5); }
+  &.accent { border-color: rgba($br-accent, 0.3); }
+  &.purple { border-color: rgba($br-purple, 0.3); }
+  &.green  { border-color: rgba($br-green, 0.3); }
+}
+
+.br-stats-kpi-value {
+  display: block;
+  font-family: $condensed;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+  color: $br-primary;
+
+  .br-stats-kpi.accent & { color: $br-accent; }
+  .br-stats-kpi.purple & { color: $br-purple; }
+  .br-stats-kpi.green  & { color: $br-green; }
+}
+
+.br-stats-kpi-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.6);
+}
+
+// 5-column variant (engagement breakdown)
+.br-stats-kpis-5 {
+  grid-template-columns: repeat(5, 1fr);
+  margin-bottom: 20px;
+}
+
+.br-stats-kpi-eng .br-stats-kpi-value small {
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0.35;
+}
+
+.br-stats-kpi-detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba($br-white, 0.35);
+}
+
+// ── Panels ───────────────────────────────────────────────
+
+.br-stats-panel {
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: $radius;
+  padding: 24px;
+  margin-bottom: 20px;
+
+  h3 {
+    @include condensed-heading;
+    color: rgba($br-white, 0.7);
+    margin: 0 0 16px;
+  }
+}
+
+// ── Charts ───────────────────────────────────────────────
+
+.br-stats-chart-wrap {
+  position: relative;
+  height: 260px;
+}
+
+.br-stats-charts-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.br-stats-half {
+  flex: 1;
+  min-width: 0;
+
+  .br-stats-chart-wrap { height: 300px; }
+}
+
+.br-stats-two-thirds { flex: 2; min-width: 0; }
+.br-stats-one-third  { flex: 1; min-width: 0; }
+.br-stats-doughnut-wrap { height: 240px; }
+
+// ── Player Table ─────────────────────────────────────────
+
+.br-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead td {
+    @include condensed-heading(13px, 700);
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.5);
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba($br-primary, 0.15);
+  }
+}
+
+.br-stats-player-row {
+  cursor: pointer;
+  transition: background 0.15s;
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba($br-white, 0.04);
+    font-size: 14px;
+  }
+
+  &:hover { background: rgba($br-primary, 0.08); }
+
+  &.active {
+    background: rgba($br-primary, 0.15);
+    border-left: 3px solid $br-primary;
+  }
+}
+
+.br-stats-player-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.br-stats-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// ── Pagination ───────────────────────────────────────────
+
+.br-stats-pagination {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.br-stats-page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba($br-white, 0.5);
+  background: rgba(11, 61, 79, 0.4);
+  border: 1px solid rgba($br-primary, 0.15);
+  text-decoration: none;
+  transition: all 0.15s;
+
+  &:hover {
+    color: $br-white;
+    border-color: $br-primary;
+  }
+
+  &.active {
+    background: $br-primary;
+    color: $br-bg;
+    border-color: $br-primary;
+  }
+}
+
+// ── Hero Bar ─────────────────────────────────────────────
+
+.br-stats-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: $radius;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.br-stats-hero-avatar img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba($br-primary, 0.4);
+  object-fit: cover;
+}
+
+.br-stats-hero-name {
+  @include condensed-heading(30px, 900);
+  letter-spacing: 2px;
+  margin: 0 0 2px;
+  color: $br-white;
+}
+
+.br-stats-hero-adventure {
+  font-size: 13px;
+  color: rgba($br-white, 0.5);
+}
+
+.br-stats-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.br-stats-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba($br-primary, 0.2);
+  color: $br-primary;
+
+  &.amber  { background: rgba($br-amber, 0.2);  color: $br-amber; }
+  &.green  { background: rgba($br-green, 0.2);  color: $br-green; }
+  &.purple { background: rgba($br-purple, 0.2); color: $br-purple; }
+  &.red    { background: rgba($br-red, 0.2);    color: $br-red; }
+  &.blue   { background: rgba($br-primary, 0.2); color: $br-primary; }
+}
+
+.br-stats-hero-level {
+  font-family: $condensed;
+  font-size: 16px;
+  font-weight: 700;
+  color: $br-accent;
+}
+
+.br-stats-hero-rank {
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+// ── Currency Row ─────────────────────────────────────────
+
+.br-stats-currencies {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.br-stats-currency {
+  background: $br-panel-bg;
+  border: 1px solid rgba($br-primary, 0.25);
+  border-radius: $radius;
+  padding: 20px 16px;
+  text-align: center;
+
+  &.xp   { border-color: rgba($br-primary, 0.35); }
+  &.bloo { border-color: rgba($br-accent, 0.3); }
+  &.ep   { border-color: rgba($br-green, 0.3); }
+}
+
+.br-stats-currency-value {
+  display: block;
+  font-family: $condensed;
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1;
+
+  .br-stats-currency.xp   & { color: $br-primary; }
+  .br-stats-currency.bloo & { color: $br-accent; }
+  .br-stats-currency.ep   & { color: $br-green; }
+}
+
+.br-stats-currency-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.5);
+}
+
+// ── Quest Progress ───────────────────────────────────────
+
+.br-stats-quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.br-stats-quest-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.br-stats-quest-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  flex-shrink: 0;
+
+  .icon {
+    font-size: 16px;
+    color: rgba($br-white, 0.4);
+  }
+}
+
+.br-stats-quest-title {
+  font-size: 13px;
+  color: rgba($br-white, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.br-stats-quest-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: #0b3d4f;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.br-stats-quest-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+
+  &.complete    { background: $br-green; }
+  &.in-progress { background: $br-primary; }
+  &.locked      { background: transparent; }
+}
+
+.br-stats-quest-status {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 80px;
+  text-align: right;
+
+  &.complete    { color: $br-green; }
+  &.in-progress { color: $br-primary; }
+  &.locked      { color: rgba($br-white, 0.25); }
+}
+
+// ── Achievements Grid ────────────────────────────────────
+
+.br-stats-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 14px;
+}
+
+.br-stats-achievement {
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 10px;
+  transition: transform 0.15s;
+
+  &:hover { transform: translateY(-2px); }
+
+  img,
+  &-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    display: block;
+    object-fit: cover;
+  }
+
+  &.locked img,
+  &.locked &-placeholder {
+    filter: grayscale(1) opacity(0.3);
+  }
+
+  &.locked &-name {
+    color: rgba($br-white, 0.25);
+  }
+}
+
+.br-stats-achievement-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba($br-primary, 0.15);
+  font-size: 22px;
+  color: $br-primary;
+
+  &.amber  { background: rgba($br-amber, 0.15);  color: $br-amber; }
+  &.green  { background: rgba($br-green, 0.15);  color: $br-green; }
+  &.purple { background: rgba($br-purple, 0.15); color: $br-purple; }
+  &.red    { background: rgba($br-red, 0.15);    color: $br-red; }
+}
+
+.br-stats-achievement-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba($br-white, 0.7);
+  line-height: 1.3;
+}
+
+.br-stats-achievement-date {
+  display: block;
+  font-size: 10px;
+  color: rgba($br-white, 0.35);
+  margin-top: 2px;
+}
+
+// ── Guild Card ───────────────────────────────────────────
+
+.br-stats-guild-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.br-stats-guild-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius;
+  object-fit: cover;
+  border: 1px solid $br-border;
+}
+
+.br-stats-guild-info {
+  h4 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: $br-white;
+  }
+}
+
+.br-stats-guild-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: rgba($br-white, 0.6);
+  flex-wrap: wrap;
+
+  strong { color: rgba($br-white, 0.8); }
+}
+
+// ── SCORM Status ─────────────────────────────────────────
+
+.br-stats-scorm-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &.complete   { background: rgba($br-green, 0.15); color: $br-green; }
+  &.incomplete { background: rgba($br-white, 0.08); color: rgba($br-white, 0.4); }
+}
+
+// ── Engagement Gauge ─────────────────────────────────────
+
+.br-stats-engagement-gauge {
+  flex-shrink: 0;
+  width: 110px;
+  text-align: center;
+  margin-left: auto;
+
+  svg { width: 100px; height: 100px; }
+}
+
+.br-stats-engagement-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.4);
+}
+
+// ── Last Activity Row ────────────────────────────────────
+
+.br-stats-last-activity {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+
+  span    { font-size: 12px; color: rgba($br-white, 0.4); }
+  strong  { color: rgba($br-white, 0.7); }
+}
+
+// ── Engagement Breakdown Bars ────────────────────────────
+
+.br-stats-engagement-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.br-stats-eng-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.br-stats-eng-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba($br-white, 0.6);
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.br-stats-eng-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: rgba($br-white, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.br-stats-eng-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.br-stats-eng-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba($br-white, 0.5);
+  min-width: 40px;
+  text-align: right;
+  font-family: $condensed;
+  letter-spacing: 0.5px;
+}
+
+// ── Engagement Overview (manager) ────────────────────────
+
+.br-stats-engagement-overview {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.br-stats-engagement-avg {
+  flex-shrink: 0;
+  width: 110px;
+
+  svg { width: 110px; height: 110px; }
+}
+
+.br-stats-engagement-dist {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ── Manager divider ──────────────────────────────────────
+
+.br-stats-manager {
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+}
+
+// ── AJAX panel swap ──────────────────────────────────────
+
+#br-stats-player-panel {
+  transition: opacity 0.2s ease;
+}
+
+// ── Responsive ───────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .br-stats-kpis    { grid-template-columns: repeat(2, 1fr); }
+  .br-stats-kpis-5  { grid-template-columns: repeat(3, 1fr); }
+  .br-stats-currencies { grid-template-columns: 1fr; }
+  .br-stats-charts-row { flex-direction: column; }
+
+  .br-stats-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+  .br-stats-hero-meta       { justify-content: center; }
+  .br-stats-last-activity    { justify-content: center; }
+  .br-stats-engagement-gauge { margin: 10px auto 0; }
+  .br-stats-engagement-overview { flex-direction: column; }
+  .br-stats-engagement-avg   { margin: 0 auto; }
+
+  .br-stats-quest-row  { flex-wrap: wrap; }
+  .br-stats-quest-info { min-width: 100%; }
+
+  .br-stats-guild-content { flex-direction: column; text-align: center; }
+  .br-stats-guild-stats   { justify-content: center; }
+
+  .br-stats-table thead td:nth-child(4),
+  .br-stats-table tbody td:nth-child(4),
+  .br-stats-table thead td:nth-child(6),
+  .br-stats-table tbody td:nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .br-stats-kpis   { grid-template-columns: 1fr 1fr; }
+  .br-stats-kpis-5 { grid-template-columns: repeat(2, 1fr); }
+  .br-stats-kpi-value      { font-size: 32px; }
+  .br-stats-currency-value { font-size: 36px; }
+  .br-stats-achievements-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+}

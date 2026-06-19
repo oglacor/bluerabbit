@@ -110,14 +110,14 @@
 			</div>
 			<div class="text-center padding-10">
 				<span class="icon-group inline-table">
-					<span class="icon-button font _24 sq-40  amber-bg-400 font _28">
+					<span class="button-icon font _24 sq-40  amber-bg-400 font _28">
 						<span class="icon icon-star white-color "></span>
 					</span>
 					<span class="icon-content">
 						<span class="line font _24 w600 amber-800"><?= toMoney($q->mech_xp,""); ?></span>
 						<span class="line font _14 grey-500"><?= $xp_label; ?></span>
 					</span>
-					<span class="icon-button font _24 sq-40  green-bg-400 font _28">
+					<span class="button-icon font _24 sq-40  green-bg-400 font _28">
 						<span class="icon icon-bloo white-color "></span>
 					</span>
 					<span class="icon-content">
@@ -131,7 +131,7 @@
 					<div class="background layer absolute sq-full purple-gradient-400 opacity-50"></div>
 					<img src="<?= $achievement_reward->achievement_badge;?>" class="w-150 margin-5 grey-bg-50 overflow-hidden border rounded-max layer relative base cursor-pointer" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
 					<div class="icon-group inline-table layer relative base">
-						<button class="icon-button font _24 sq-40  purple-bg-400 font _28" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
+						<button class="button-icon font _24 sq-40  purple-bg-400 font _28" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
 							<span class="icon icon-achievement white-color"></span>
 						</button>
 						<span class="icon-content">
@@ -146,7 +146,7 @@
 					<div class="background layer absolute sq-full teal-gradient-400 opacity-50"></div>
 					<img src="<?= $item_reward->item_badge;?>" class="w-150 margin-5 grey-bg-50 overflow-hidden border rounded-max layer relative base">
 					<div class="icon-group inline-table layer relative base">
-						<a class="icon-button font _24 sq-40 teal-bg-400 font _28" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id";?>">
+						<a class="button-icon font _24 sq-40 teal-bg-400 font _28" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id";?>">
 							<span class="icon icon-backpack white-color"></span>
 						</a>
 						<span class="icon-content">
@@ -199,19 +199,19 @@
 						</span>
 					</div>
 					<div class="icon-group rating inline-table">
-						<button id="rating-star-1" class="icon-button button font _24 sq-40  <?= $q->pp_quest_rating >= 1 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,1);">
+						<button id="rating-star-1" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 1 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,1);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-2" class="icon-button button font _24 sq-40  <?= $q->pp_quest_rating >= 2 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,2);">
+						<button id="rating-star-2" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 2 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,2);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-3" class="icon-button button font _24 sq-40  <?= $q->pp_quest_rating >= 3 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,3);">
+						<button id="rating-star-3" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 3 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,3);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-4" class="icon-button button font _24 sq-40  <?= $q->pp_quest_rating >= 4 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,4);">
+						<button id="rating-star-4" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 4 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,4);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-5" class="icon-button button font _24 sq-40  <?= $q->pp_quest_rating >= 5 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,5);">
+						<button id="rating-star-5" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 5 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,5);">
 							<span class="icon icon-star"></span>
 						</button>
 					</div>
@@ -251,7 +251,7 @@
 				</div>
 				<div class="highlight padding-10 grey-bg-50">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  brown-bg-400">
+						<span class="button-icon font _24 sq-40  brown-bg-400">
 							<span class="icon icon-challenge"></span>
 						</span>
 						<span class="icon-content font _18 w700 brown-400">
@@ -294,11 +294,11 @@
 										<td>
 											<?php if($att->attempt_status=='success'){ ?>
 												<?php $att_success=true; ?>
-												<span class="icon-button font _24 sq-40  icon-sm green-bg-400">
+												<span class="button-icon font _24 sq-40  icon-sm green-bg-400">
 													<span class="icon icon-check"></span>
 												</span>
 											<?php }else{ ?>
-												<span class="icon-button font _24 sq-40  icon-sm red-bg-400">
+												<span class="button-icon font _24 sq-40  icon-sm red-bg-400">
 													<span class="icon icon-cancel"></span>
 												</span>
 											<?php } ?>

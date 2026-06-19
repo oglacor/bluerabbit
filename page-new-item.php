@@ -28,8 +28,8 @@ if($adventure && ($isGM || $isAdmin)){
 								<div class="gallery-item setting">
 									<div class="gallery-image-thumb" style="background-image: url(<?= isset($i) ? $i->item_badge : ""; ?>);" onClick="showWPUpload('the_item_badge');" id="the_item_badge_thumb"></div>
 									<div class="gallery-item-options relative">
-										<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_item_badge');"><span class="icon icon-image"></span></button>
-										<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_item_badge');"> <span class="icon icon-trash"></span> </button>
+										<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_item_badge');"><span class="icon icon-image"></span></button>
+										<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_item_badge');"> <span class="icon icon-trash"></span> </button>
 										<input type="hidden" id="the_item_badge" value="<?= isset($i) ? $i->item_badge : ""; ?>"/>
 									</div>
 								</div>
@@ -133,7 +133,7 @@ if($adventure && ($isGM || $isAdmin)){
 								</button>
 							</div>						
 						</div>
-						<div class="dashboard-grid-cell-container" style="grid-column: 13 / span 5; grid-row: 1 / span 10;">
+						<div class="dashboard-grid-cell-container" id="item-options-panel" style="grid-column: 13 / span 5; grid-row: 1 / span 10;">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Options","bluerabbit");?></h3>
 							<div class="dashboard-grid-cell-options-container">
 								<h3 class="dashboard-grid-cell-headline"><?= __("Display in shop","bluerabbit");?></h3>
@@ -185,7 +185,7 @@ if($adventure && ($isGM || $isAdmin)){
 								</div>
 							</div>
 						</div>
-						<div class="dashboard-grid-cell-container" style="grid-column: 18 / span 6; grid-row: 1 / span 10;">
+						<div class="dashboard-grid-cell-container" id="item-tabi-settings-panel" style="grid-column: 18 / span 6; grid-row: 1 / span 10;">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Tabi Settings","bluerabbit");?></h3>
 							<div class="dashboard-grid-cell-options-container">
 								<h3 class="dashboard-grid-cell-headline"><?= __("Tabi","bluerabbit");?></h3>
@@ -222,8 +222,8 @@ if($adventure && ($isGM || $isAdmin)){
 									<div class="gallery-item setting">
 										<div class="gallery-image-thumb" style="background-image: url(<?= isset($i) ? $i->item_secret_badge : ""; ?>);" onClick="showWPUpload('the_item_secret_badge');" id="the_item_secret_badge_thumb"></div>
 										<div class="gallery-item-options relative">
-											<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_item_secret_badge');"><span class="icon icon-image"></span></button>
-											<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_item_secret_badge');"> <span class="icon icon-trash"></span> </button>
+											<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_item_secret_badge');"><span class="icon icon-image"></span></button>
+											<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_item_secret_badge');"> <span class="icon icon-trash"></span> </button>
 											<input type="hidden" id="the_item_secret_badge" value="<?= isset($i) ? $i->item_secret_badge : ""; ?>"/>
 										</div>
 									</div>

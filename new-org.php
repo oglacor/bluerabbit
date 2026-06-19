@@ -11,7 +11,7 @@
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 cyan-bg-50 relative">
 		<div class="icon-group">
-			<div class="icon-button font _24 sq-40 cyan-bg-A400 grey-900"><span class="icon icon-run"></span></div >
+			<div class="button-icon font _24 sq-40 cyan-bg-A400 grey-900"><span class="icon icon-run"></span></div >
 			<div class="icon-content">
 				<div class="line font _24 grey-800">
 					<?= ($org) ? __("Edit Organization","bluerabbit") : __("New Organization","bluerabbit"); ?>

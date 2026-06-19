@@ -2,9 +2,9 @@
 		
 	<div class="message-profile-picture">
 		<?php if($m->ann_type =="announcement"){ ?>
-			<span class="icon-button font _24 sq-40  pink-bg-400 player-picture"><span class="icon-megaphone icon"></span></span>
+			<span class="button-icon font _24 sq-40  pink-bg-400 player-picture"><span class="icon-megaphone icon"></span></span>
 		<?php }else{?>
-			<span class="icon-button font _24 sq-40  player-picture <?php if($m->ann_author == $current_user->ID) { echo 'mine'; }?>" style="background-image: url('<?= $m->player_picture; ?>');">
+			<span class="button-icon font _24 sq-40  player-picture <?php if($m->ann_author == $current_user->ID) { echo 'mine'; }?>" style="background-image: url('<?= $m->player_picture; ?>');">
 				<span class="icon"></span>
 			</span>
 		<?php } ?>
@@ -23,7 +23,7 @@
 	</div>
 	<?php if($announcements['isTeacher']) {?>
 		<div class="message-settings layer base">
-			<button class="icon-button font _24 sq-40  icon-sm red-bg-400" onClick="br_confirm_trd(<?php echo "'trash', $m->ann_id, 'announcement'"; ?>);"><span class="icon icon-trash"></span></button>
+			<button class="button-icon font _24 sq-40  icon-sm red-bg-400" onClick="br_confirm_trd(<?php echo "'trash', $m->ann_id, 'announcement'"; ?>);"><span class="icon icon-trash"></span></button>
 		</div>
 	<?php } ?>
 	<br class="clear">

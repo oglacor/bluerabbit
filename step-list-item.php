@@ -31,13 +31,13 @@
 		<?= $step->step_title; ?><?= $step->step_type == 'path-choice' ? "  [Group: $step->step_achievement_group]" : ""; ?>
 	</td>
 	<td class="text-center padding-5">
-		<button class="icon-button amber-bg-400 sq-30 font _18 white-color" onClick="addStep(<?= $step->step_id;?>);">
+		<button class="button-icon amber-bg-400 sq-30 font _18 white-color" onClick="addStep(<?= $step->step_id;?>);">
 			<span class="icon icon-duplicate"></span>
 		</button>
-		<button class="icon-button green-bg-400 sq-30 font _18 white-color" onClick="editStep(<?= $step->step_id;?>);">
+		<button class="button-icon green-bg-400 sq-30 font _18 white-color" onClick="editStep(<?= $step->step_id;?>);">
 			<span class="icon icon-edit"></span>
 		</button>
-		<button class="icon-button red-bg-400 sq-30 font _18 white-color" onClick="removeStep(<?= $step->step_id;?>);">
+		<button class="button-icon red-bg-400 sq-30 font _18 white-color" onClick="removeStep(<?= $step->step_id;?>);">
 			<span class="icon icon-trash"></span>
 		</button>
 	

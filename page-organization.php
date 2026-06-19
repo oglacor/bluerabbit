@@ -42,7 +42,7 @@
 			<div class="active tab max-w-900 padding-10" id="general">
 				<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  indigo-bg-400">
+						<span class="button-icon font _24 sq-40  indigo-bg-400">
 							<span class="icon icon-adventure white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -105,7 +105,7 @@
 				?>
 				<div class="highlight padding-10 grey-bg-200" id="org-players">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-200">
+						<span class="button-icon font _24 sq-40  orange-bg-200">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -128,7 +128,7 @@
 				</div>
 				<div class="highlight padding-10 grey-bg-200" id="org-players">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-200">
+						<span class="button-icon font _24 sq-40  orange-bg-200">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -190,7 +190,7 @@
 				?>
 				<div class="highlight padding-10 grey-bg-200" id="org-adventures">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-200">
+						<span class="button-icon font _24 sq-40  orange-bg-200">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -252,7 +252,7 @@
 <div class="hidden" id="msg-player-added-to-org">
 	<li class='border green-bg-400 green-border-800'>
 		<span class='icon-group'>
-			<span class='icon-button font _24 sq-40'>
+			<span class='button-icon font _24 sq-40'>
 				<span class='icon white-color'></span>
 			</span>
 			<span class='icon-content white-color'>
@@ -264,7 +264,7 @@
 <div class="hidden" id="msg-player-not-added-to-org">
 	<li class='border red-bg-400 red-border-800'>
 		<span class='icon-group'>
-			<span class='icon-button font _24 sq-40'>
+			<span class='button-icon font _24 sq-40'>
 				<span class='icon white-color'></span>
 			</span>
 			<span class='icon-content white-color'>

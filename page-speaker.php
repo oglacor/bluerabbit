@@ -6,7 +6,7 @@
 			<div class="background fixed-bg blur7" style="background-image: url(<?= $speaker->speaker_picture; ?>);"></div>
 			<div class="background orange-bg-300 opacity-20"></div>
 			<div class="padding-20 foreground text-center">
-				<span class="icon-button font _24 sq-200" style="background-image: url(<?= $speaker->speaker_picture; ?>);"></span>
+				<span class="button-icon font _24 sq-200" style="background-image: url(<?= $speaker->speaker_picture; ?>);"></span>
 				<h1 class="text-center padding-10">
 					<span class="background light-blue-bg-700 opacity-50"></span>
 					<span class="foreground white-color font _30 w300 uppercase"><?= "$speaker->speaker_first_name $speaker->speaker_last_name"; ?></span>

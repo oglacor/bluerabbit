@@ -4,7 +4,7 @@
 <?php $speakers = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_speakers WHERE adventure_id=$adventure->adventure_id AND speaker_status='publish' ORDER BY speaker_first_name ASC"); ?>
 		<div class="highlight padding-10 indigo-bg-50">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40  indigo-bg-300"><span class="icon icon-time"></span></span>
+				<span class="button-icon font _24 sq-40  indigo-bg-300"><span class="icon icon-time"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 grey-800"><?php _e('Adventure Schedule','bluerabbit'); ?></span>
 				</span>
@@ -143,7 +143,7 @@
 								</select>
 							</td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  icon-sm amber-bg-200 grey-700 duplicate-button" onClick="showOverlay('#confirm-duplicate-<?php echo $s->session_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm amber-bg-200 grey-700 duplicate-button" onClick="showOverlay('#confirm-duplicate-<?php echo $s->session_id; ?>');">
 									<span class="icon icon-infinite"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Duplicate","bluerabbit"); ?></span>
@@ -152,7 +152,7 @@
 								<div class="confirm-action overlay-layer duplicate-confirm" id="confirm-duplicate-<?php echo $s->session_id; ?>">
 									<button class="form-ui white-bg duplicate-confirm-button" onClick="duplicateRow(<?php echo $s->session_id; ?>);">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -160,18 +160,18 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="">
-								<a href="<?php echo get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$s->session_id";?>" class="icon-button font _24 sq-40  green-bg-400 icon-sm edit-button">
+								<a href="<?php echo get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$s->session_id";?>" class="button-icon font _24 sq-40  green-bg-400 icon-sm edit-button">
 									<span class="icon icon-edit"></span>
 								</a>
 							</td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  icon-sm  red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $s->session_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm  red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $s->session_id; ?>');">
 									<span class="icon icon-trash"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
@@ -180,7 +180,7 @@
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?php echo $s->session_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $s->session_id; ?>,'session','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -188,7 +188,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -210,7 +210,7 @@
 	<?php if(isset($schedule['trash'])){ ?>
 		<div class="highlight padding-10 orange-bg-50">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
+				<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 grey-800"><?php _e('Trashed Sessions','bluerabbit'); ?></span>
 				</span>
@@ -265,8 +265,8 @@
 							<td class=""><?php echo "$s->speaker_first_name $s->speaker_last_name"; ?></td>
 							<td class=""><?php echo "$s->session_status"; ?></td>
 							<td class="">
-								<a href="<?php echo get_bloginfo('url')."/new-speaker/?adventure_id=$adventure->adventure_id&session_id=$s->session_id";?>" class="icon-button font _24 sq-40  green-bg-400"><span class="icon icon-edit"></span></a>
-								<button class="icon-button font _24 sq-40  red-bg-A400 white-color" onClick="showOverlay('#confirm-option-<?php echo $s->session_id; ?>');">
+								<a href="<?php echo get_bloginfo('url')."/new-speaker/?adventure_id=$adventure->adventure_id&session_id=$s->session_id";?>" class="button-icon font _24 sq-40  green-bg-400"><span class="icon icon-edit"></span></a>
+								<button class="button-icon font _24 sq-40  red-bg-A400 white-color" onClick="showOverlay('#confirm-option-<?php echo $s->session_id; ?>');">
 									<span class="icon icon-delete"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Delete Forever?","bluerabbit"); ?></span>
@@ -275,7 +275,7 @@
 								<div class="confirm-action overlay-layer" id="confirm-option-<?php echo $s->session_id; ?>">
 									<button class="form-ui grey-bg-800" onClick="confirmStatus(<?php echo $s->session_id; ?>,'session','delete');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-delete white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -284,7 +284,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>

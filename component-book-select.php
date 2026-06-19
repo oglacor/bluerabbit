@@ -16,8 +16,8 @@
 	<div class="gallery-item setting">
 		<div class="background" style="background-image: url(<?= isset($quest->mech_badge) ? ($quest->mech_badge) : ""; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
 		<div class="gallery-item-options relative">
-			<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-			<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
+			<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
+			<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
 		</div>
 	</div>
 </div>

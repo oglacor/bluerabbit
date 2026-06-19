@@ -4,8 +4,8 @@
 		<div class="multimedia-gallery">
 			<div class="multimedia-item setting relative" id="<?=  $thumb_id; ?>">
 				<div class="action-buttons">
-					<button class="foreground icon-button font _24 sq-40  green-bg-400" onClick="showWPUploadMultimedia('<?=  $thumb_id; ?>', 'challenge',<?=  $index; ?>);"><span class="icon icon-image"></span></button>
-					<button class="foreground icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#<?=  $thumb_id; ?>'); updateQuestion('challenge',<?=  $index; ?>);"> <span class="icon icon-trash"></span> </button>
+					<button class="foreground button-icon font _24 sq-40  green-bg-400" onClick="showWPUploadMultimedia('<?=  $thumb_id; ?>', 'challenge',<?=  $index; ?>);"><span class="icon icon-image"></span></button>
+					<button class="foreground button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?=  $thumb_id; ?>'); updateQuestion('challenge',<?=  $index; ?>);"> <span class="icon icon-trash"></span> </button>
 				</div>
 				<div class="multimedia-element">
 					<?php if(strstr($mime['type'], "image")){ ?>

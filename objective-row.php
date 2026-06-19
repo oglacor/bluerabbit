@@ -25,7 +25,7 @@
 		<div class="confirm-action overlay-layer" id="confirm-remove-<?= $c->objective_id; ?>">
 			<button class="form-ui yellow-bg-400 grey-900" onClick="removeObjective(<?= $c->objective_id; ?>);">
 				<span class="icon-group">
-					<span class="icon-button grey-bg-900 font _14 sq-20">
+					<span class="button-icon grey-bg-900 font _14 sq-20">
 						<span class="icon icon-warning yellow-400"></span>
 					</span>
 					<span class="icon-content">
@@ -34,7 +34,7 @@
 					</span>
 				</span>
 			</button>
-			<button class="close-confirm icon-button font _14 sq-20  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+			<button class="close-confirm button-icon font _14 sq-20  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 				<span class="icon icon-cancel white-color"></span>
 			</button>
 		</div>

@@ -12,7 +12,7 @@
 				<input type="hidden" id="item-cat-nonce" value="<?= wp_create_nonce('item_cat_nonce'); ?>" />
 					<div class="highlight padding-10 pink-bg-50">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  pink-bg-400"><span class="icon icon-basket"></span></span>
+							<span class="button-icon font _24 sq-40  pink-bg-400"><span class="icon icon-basket"></span></span>
 							<span class="icon-content">
 								<span class="line font _24 grey-800"><?= __('Items','bluerabbit'); ?></span>
 							</span>
@@ -95,11 +95,11 @@
 									<tr class="item-row " id="item-<?= $i->item_id;?>">
 										<td class="badge">
 											<input type="hidden" value="<?= $i->item_badge; ?>" id="the_item_badge-<?= $i->item_id; ?>">
-											<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_item_badge-<?= $i->item_id; ?>','a','item',<?= $i->item_id; ?>);" id="the_item_badge-<?= $i->item_id; ?>_thumb" style="background-image: url(<?=$i->item_badge; ?>);">
+											<button class="button-icon font _24 sq-40  icon-lg" onClick="showWPUpload('the_item_badge-<?= $i->item_id; ?>','a','item',<?= $i->item_id; ?>);" id="the_item_badge-<?= $i->item_id; ?>_thumb" style="background-image: url(<?=$i->item_badge; ?>);">
 											</button>
 										</td>
 										<td class="<?=$a_color; ?> ID">
-											<span class="icon-button <?=$i_type_colors[$i->item_type];?> sq-40 font _14 w500 white-color padding-10">
+											<span class="button-icon <?=$i_type_colors[$i->item_type];?> sq-40 font _14 w500 white-color padding-10">
 												<?= $i->item_id; ?>
 											</span>
 										</td>
@@ -162,7 +162,7 @@
 											<?php if($i->item_type == 'consumable'){ ?>
 												<span class="pink-400 font w600"><?= $i->item_stock; ?></span>
 											<?php }else{?>
-												<span class="icon-button font _24 sq-40  <?= $i_type_colors[$i->item_type]; ?>"><span class="icon icon-infinite"></span></span>
+												<span class="button-icon font _24 sq-40  <?= $i_type_colors[$i->item_type]; ?>"><span class="icon icon-infinite"></span></span>
 											<?php }?>
 										</td>
 										<td class=" <?=$a_color; ?> max">
@@ -186,7 +186,7 @@
 										</td>
 										<td class="text-center <?=$a_color; ?> step">
 											<?php if($i->step_id){ ?>
-												<a href="<?= get_bloginfo('url')."/new-quest/?adventure_id=$adventure->adventure_id&questID=$i->quest_id";?>" target="_blank" class="icon-button blue-bg-400" title="Item registered in step: <?= "[ $i->step_order ] $i->step_title";?> in Quest > <?= $i->quest_title; ?>">
+												<a href="<?= get_bloginfo('url')."/new-quest/?adventure_id=$adventure->adventure_id&questID=$i->quest_id";?>" target="_blank" class="button-icon blue-bg-400" title="Item registered in step: <?= "[ $i->step_order ] $i->step_title";?> in Quest > <?= $i->quest_title; ?>">
 													<span class="icon icon-quest"></span>
 												</a>
 											<?php }else{?>
@@ -194,16 +194,16 @@
 											<?php }?>
 										</td>
 										<td class="text-center <?=$a_color; ?>">
-											<a class="icon-button font _24 sq-40  icon-sm green-bg-400 edit-button" href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>"><span class="icon icon-edit"></span></a>
+											<a class="button-icon font _24 sq-40  icon-sm green-bg-400 edit-button" href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>"><span class="icon icon-edit"></span></a>
 										</td>
 										<td class="text-center <?=$a_color; ?>">
-											<button class="icon-button font _24 sq-40  icon-sm orange-bg-400 white-color draft-button" onClick="showOverlay('#confirm-draft-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  icon-sm orange-bg-400 white-color draft-button" onClick="showOverlay('#confirm-draft-<?= $i->item_id; ?>');">
 												<span class="icon icon-duplicate"></span>
 											</button>
 											<div class="confirm-action overlay-layer draft-confirm" id="confirm-draft-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg draft-confirm-button" onClick="confirmStatus(<?= $i->item_id; ?>,'item','draft');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  orange-bg-400 icon-sm">
+														<span class="button-icon font _24 sq-40  orange-bg-400 icon-sm">
 															<span class="icon icon-duplicate white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -211,19 +211,19 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
 										</td>
 										<td class="text-center <?=$a_color; ?>">
-											<button class="icon-button font _24 sq-40  icon-sm red-bg-400 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  icon-sm red-bg-400 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $i->item_id; ?>');">
 												<span class="icon icon-trash"></span>
 											</button>
 											<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?= $i->item_id; ?>,'item','trash');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+														<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 															<span class="icon icon-trash white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -231,19 +231,19 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
 										</td>
 										<td class="text-center <?=$a_color; ?>">
-											<button class="icon-button font _24 sq-40  icon-sm amber-bg-400 white-color duplicate-button" onClick="showOverlay('#confirm-duplicate-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  icon-sm amber-bg-400 white-color duplicate-button" onClick="showOverlay('#confirm-duplicate-<?= $i->item_id; ?>');">
 												<span class="icon icon-infinite"></span>
 											</button>
 											<div class="confirm-action overlay-layer duplicate-confirm" id="confirm-duplicate-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg duplicate-confirm-button" onClick="duplicateRow(<?= $i->item_id; ?>);">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  amber-bg-A400 icon-sm">
+														<span class="button-icon font _24 sq-40  amber-bg-A400 icon-sm">
 															<span class="icon icon-infinite white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -251,7 +251,7 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
@@ -309,7 +309,7 @@
 				<?php if(isset($items['draft'])){ ?>
 					<div class="highlight padding-10 amber-bg-50">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  amber-bg-400"><span class="icon icon-duplicate"></span></span>
+							<span class="button-icon font _24 sq-40  amber-bg-400"><span class="icon icon-duplicate"></span></span>
 							<span class="icon-content">
 								<span class="line font _24 grey-800"><?= __('Draft Items','bluerabbit'); ?></span>
 							</span>
@@ -367,9 +367,9 @@
 											<?php if($i->item_type == "consumable") { ?>
 												<button class="form-ui pink-bg-400 icon-sm"><span class="icon icon-basket"></span> <?= $i->item_stock; ?></button>
 											<?php }elseif($i->item_type == "key"){ ?>
-												<span class="icon-button font _24 sq-40  indigo-bg-400 icon-sm"><span class="icon icon-key"></span></span>
+												<span class="button-icon font _24 sq-40  indigo-bg-400 icon-sm"><span class="icon icon-key"></span></span>
 											<?php }elseif($i->item_type == "reward"){ ?>
-												<span class="icon-button font _24 sq-40  teal-bg-400 icon-sm"><span class="icon icon-achievement"></span></span>
+												<span class="button-icon font _24 sq-40  teal-bg-400 icon-sm"><span class="icon icon-achievement"></span></span>
 											<?php } ?>
 										</td>
 										<td class="text-center">
@@ -381,7 +381,7 @@
 													}
 												} 
 										  	}else{
-												echo '<span class="icon-button font _24 sq-40  deep-purple-bg-300 icon-sm"><span class="icon icon-remove"></span></span>';
+												echo '<span class="button-icon font _24 sq-40  deep-purple-bg-300 icon-sm"><span class="icon icon-remove"></span></span>';
 										  	}
 											?>
 										</td>
@@ -394,15 +394,15 @@
 													}
 												} 
 										  	}else{
-												echo '<span class="icon-button font _24 sq-40  light-green-bg-300 icon-sm"><span class="icon icon-remove"></span></span>';
+												echo '<span class="button-icon font _24 sq-40  light-green-bg-300 icon-sm"><span class="icon icon-remove"></span></span>';
 										  	}
 											?>
 										</td>
 										<td class="text-center">
-											<a href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>" class="icon-button font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit"></span></a>
+											<a href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>" class="button-icon font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit"></span></a>
 										</td>
 										<td class="text-center">
-											<button class="icon-button font _24 sq-40  blue-bg-A400 white-color icon-sm" onClick="showOverlay('#confirm-option-restore-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  blue-bg-A400 white-color icon-sm" onClick="showOverlay('#confirm-option-restore-<?= $i->item_id; ?>');">
 												<span class="icon icon-restore"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?= __("Restore","bluerabbit"); ?></span>
@@ -411,7 +411,7 @@
 											<div class="confirm-action overlay-layer" id="confirm-option-restore-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg" onClick="confirmStatus(<?= $i->item_id; ?>,'item','publish');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  blue-bg-A700 icon-sm">
+														<span class="button-icon font _24 sq-40  blue-bg-A700 icon-sm">
 															<span class="icon icon-restore white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -419,13 +419,13 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
 										</td>
 										<td>
-											<button class="icon-button font _24 sq-40  red-bg-400 white-color icon-sm"  onClick="showOverlay('#confirm-option-trash-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  red-bg-400 white-color icon-sm"  onClick="showOverlay('#confirm-option-trash-<?= $i->item_id; ?>');">
 												<span class="icon icon-trash"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?= __("Trash","bluerabbit"); ?></span>
@@ -434,7 +434,7 @@
 											<div class="confirm-action overlay-layer" id="confirm-option-trash-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg" onClick="confirmStatus(<?= $i->item_id; ?>,'item','trash');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  blue-bg-A700 icon-sm">
+														<span class="button-icon font _24 sq-40  blue-bg-A700 icon-sm">
 															<span class="icon icon-trash white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -442,7 +442,7 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
@@ -458,7 +458,7 @@
 				<?php if(isset($items['trash'])){ ?>
 					<div class="highlight padding-10 deep-purple-bg-50">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
+							<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
 							<span class="icon-content">
 								<span class="line font _24 grey-800"><?= __('Trashed Items','bluerabbit'); ?></span>
 							</span>
@@ -512,19 +512,19 @@
 											<strong><?= $i->item_type; ?></strong>
 											<br>
 											<?php if($i->item_type == "consumable") { ?>
-												<span class="icon-button font _24 sq-40  pink"><span class="icon icon-basket"></span></span>
-												<span class="icon-button font _24 sq-40  amber"><?= $i->item_stock; ?></span>
+												<span class="button-icon font _24 sq-40  pink"><span class="icon icon-basket"></span></span>
+												<span class="button-icon font _24 sq-40  amber"><?= $i->item_stock; ?></span>
 											<?php }elseif($i->item_type == "key"){ ?>
-												<span class="icon-button font _24 sq-40  indigo"><span class="icon icon-key"></span></span>
+												<span class="button-icon font _24 sq-40  indigo"><span class="icon icon-key"></span></span>
 											<?php }elseif($i->item_type == "reward"){ ?>
-												<span class="icon-button font _24 sq-40  teal"><span class="icon icon-achievement"></span></span>
+												<span class="button-icon font _24 sq-40  teal"><span class="icon icon-achievement"></span></span>
 											<?php } ?>
 										</td>
 										<td>
-											<a href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>" class="icon-button font _24 sq-40  green-bg-400"><span class="icon icon-edit"></span></a>
+											<a href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>" class="button-icon font _24 sq-40  green-bg-400"><span class="icon icon-edit"></span></a>
 
 
-											<button class="icon-button font _24 sq-40  blue-bg-A400 white-color" onClick="showOverlay('#confirm-option-restore-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  blue-bg-A400 white-color" onClick="showOverlay('#confirm-option-restore-<?= $i->item_id; ?>');">
 												<span class="icon icon-restore"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?= __("Restore","bluerabbit"); ?></span>
@@ -533,7 +533,7 @@
 											<div class="confirm-action overlay-layer" id="confirm-option-restore-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg" onClick="confirmStatus(<?= $i->item_id; ?>,'item','publish');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  blue-bg-A700 icon-sm">
+														<span class="button-icon font _24 sq-40  blue-bg-A700 icon-sm">
 															<span class="icon icon-restore white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -541,11 +541,11 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
-											<button class="icon-button font _24 sq-40  red-bg-A400 white-color" onClick="showOverlay('#confirm-option-delete-<?= $i->item_id; ?>');">
+											<button class="button-icon font _24 sq-40  red-bg-A400 white-color" onClick="showOverlay('#confirm-option-delete-<?= $i->item_id; ?>');">
 												<span class="icon icon-cancel"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?= __("Delete Forever","bluerabbit"); ?></span>
@@ -554,7 +554,7 @@
 											<div class="confirm-action overlay-layer" id="confirm-option-delete-<?= $i->item_id; ?>">
 												<button class="form-ui white-bg" onClick="confirmStatus(<?= $i->item_id; ?>,'item','delete');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+														<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 															<span class="icon icon-cancel white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -563,7 +563,7 @@
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>

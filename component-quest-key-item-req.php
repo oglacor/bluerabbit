@@ -1,6 +1,6 @@
 					<div class="highlight padding-10 grey-bg-100" id="tutorial-key-item-required">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  blue-bg-800">
+							<span class="button-icon font _24 sq-40  blue-bg-800">
 								<span class="icon icon-key"></span>
 							</span>
 							<span class="icon-content font _24">
@@ -23,7 +23,7 @@
 									<li id="item-<?= $i->item_id; ?>" class="<?= $status; ?> purple-border-400 border border-all border-2 white-bg" onClick="toggleSingleReq('#item-<?= $i->item_id; ?>');" style="background-image: url(<?= $i->item_badge; ?>);">
 										<input type="hidden" class="item-id" value="<?= $i->item_id; ?>">
 										<div class="layer background absolute sq-full top left color-overlay"></div>
-										<span class="icon-button green-bg-400 active-content font _18 absolute top-10 right-10">
+										<span class="button-icon green-bg-400 active-content font _18 absolute top-10 right-10">
 											<span class="icon icon-check"></span>
 										</span>
 										<div class="layer base absolute perfect-center text-center achievement-name">

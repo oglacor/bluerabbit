@@ -10,11 +10,11 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 
 	<div class="highlight padding-10 orange-bg-50">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40  orange-bg-400"><span class="icon icon-battle"></span></span>
+			<span class="button-icon font _24 sq-40  orange-bg-400"><span class="icon icon-battle"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 grey-800"><?php _e('Published Encounters','bluerabbit'); ?></span>
 			</span>
-			<button class="icon-button font _24 sq-40  blue-bg-700" onClick="loadContent('new-encounter');">
+			<button class="button-icon font _24 sq-40  blue-bg-700" onClick="loadContent('new-encounter');">
 				<span class="icon icon-add"></span>
 			</button>
 		</span>
@@ -90,23 +90,23 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 								</select>
 							</td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  blue-bg-400" onClick="randomEncounter(<?= $e->enc_id; ?>);">
+								<button class="button-icon font _24 sq-40  blue-bg-400" onClick="randomEncounter(<?= $e->enc_id; ?>);">
 									<span class="icon icon-view"></span>
 								</button>
 							</td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  green-bg-400" onClick="loadContent('new-encounter',<?= $e->enc_id; ?>);">
+								<button class="button-icon font _24 sq-40  green-bg-400" onClick="loadContent('new-encounter',<?= $e->enc_id; ?>);">
 									<span class="icon icon-edit"></span>
 								</button>
 							</td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?=  $e->enc_id; ?>');">
+								<button class="button-icon font _24 sq-40  red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?=  $e->enc_id; ?>');">
 									<span class="icon icon-trash"></span>
 								</button>
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?=  $e->enc_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?=  $e->enc_id; ?>,'encounter','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400">
+											<span class="button-icon font _24 sq-40  red-bg-A400">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -114,7 +114,7 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -153,13 +153,13 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 							<td class=""><?= $e->enc_bloo; ?></td>
 							<td class=""><?= $e->achievement_name; ?></td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  light-blue-bg-300 white-color restore-button" onClick="showOverlay('#confirm-restore-<?=  $e->enc_id; ?>');">
+								<button class="button-icon font _24 sq-40  light-blue-bg-300 white-color restore-button" onClick="showOverlay('#confirm-restore-<?=  $e->enc_id; ?>');">
 									<span class="icon icon-restore"></span>
 								</button>
 								<div class="confirm-action overlay-layer restore-confirm" id="confirm-restore-<?=  $e->enc_id; ?>">
 									<button class="form-ui white-bg restore-confirm-button" onClick="confirmStatus(<?=  $e->enc_id; ?>,'encounter','publish');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40 light-blue-bg-300">
+											<span class="button-icon font _24 sq-40 light-blue-bg-300">
 												<span class="icon icon-restore white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -167,19 +167,19 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _18 sq-30 blue-grey-bg-800 white-color" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _18 sq-30 blue-grey-bg-800 white-color" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="">
-								<button class="icon-button font _24 sq-40  red-bg-200 white-color delete-button" onClick="showOverlay('#confirm-delete-<?=  $e->enc_id; ?>');">
+								<button class="button-icon font _24 sq-40  red-bg-200 white-color delete-button" onClick="showOverlay('#confirm-delete-<?=  $e->enc_id; ?>');">
 									<span class="icon icon-delete"></span>
 								</button>
 								<div class="confirm-action overlay-layer delete-confirm" id="confirm-delete-<?=  $e->enc_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?=  $e->enc_id; ?>,'encounter','delete');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400">
+											<span class="button-icon font _24 sq-40  red-bg-A400">
 												<span class="icon icon-delete white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -188,7 +188,7 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _18 sq-30 blue-grey-bg-800 white-color" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _18 sq-30 blue-grey-bg-800 white-color" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>

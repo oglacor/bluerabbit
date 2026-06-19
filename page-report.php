@@ -85,14 +85,14 @@
 								<h3 class="chart-title font _18 w900 uppercase amber c-400"><?php _e("Quest Rating","bluerabbit"); ?></h3>
 								<canvas id="rating-chart-<?php echo $q->quest_id; ?>" width="250" height="125"></canvas>
 								<div class="bg-icon">
-									<span class="icon-button font _24 sq-40  amber"> <span class="icon icon-star"></span></span>
+									<span class="button-icon font _24 sq-40  amber"> <span class="icon icon-star"></span></span>
 								</div>
 							</div>
 							<div class="report-quest-chart">
 								<h3 class="chart-title font _18 w900 uppercase light-blue c-700"><?php _e("Players vs Finished","bluerabbit"); ?></h3>
 								<canvas id="posts-chart-<?php echo $q->quest_id; ?>" width="250" height="125"></canvas>
 								<div class="bg-icon">
-									<span class="icon-button font _24 sq-40  light-blue"> <span class="icon icon-quest"></span></span>
+									<span class="button-icon font _24 sq-40  light-blue"> <span class="icon icon-quest"></span></span>
 								</div>
 							</div>
 						</div>

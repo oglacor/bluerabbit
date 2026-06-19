@@ -14,11 +14,11 @@
 		</div>
 		<div class="input-group inline-table">
 			<?php if($c->objective_keyword == 'True'){ ?>
-				<span class="icon-button font _24 sq-40  square blue-grey-900 teal-bg-A400 icon-lg">
+				<span class="button-icon font _24 sq-40  square blue-grey-900 teal-bg-A400 icon-lg">
 					<span class="icon icon-like"></span>
 				</span>
 			<?php }elseif($c->objective_keyword == 'False'){ ?>
-				<span class="icon-button font _24 sq-40  square blue-grey-900 teal-bg-A400 icon-lg">
+				<span class="button-icon font _24 sq-40  square blue-grey-900 teal-bg-A400 icon-lg">
 					<span class="icon icon-dislike"></span>
 				</span>
 			<?php } ?>

@@ -28,7 +28,7 @@ if(isset($_GET['path'])){
 				<input type="hidden" id="max-players-nonce" value="<?php echo wp_create_nonce('max_players_nonce'); ?>" />
 					<div class="highlight padding-10 deep-purple-bg-50">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
+							<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
 							<span class="icon-content">
 								<span class="line font _24 grey-800"><?php _e('Achievements','bluerabbit'); ?></span>
 							</span>
@@ -37,19 +37,19 @@ if(isset($_GET['path'])){
 							<span class="icon-content">
 								<span class="line font _14 grey-800"><?php _e('Filter Path','bluerabbit'); ?></span>
 							</span>
-							<a class="icon-button font _24 sq-40  icon-sm black-bg" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=achievements";?>">
+							<a class="button-icon font _24 sq-40  icon-sm black-bg" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=achievements";?>">
 								<span class="icon icon-infinite"></span>
 							</a>
-							<a class="icon-button font _24 sq-40  icon-sm purple-bg-400" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=achievements&path=general";?>">
+							<a class="button-icon font _24 sq-40  icon-sm purple-bg-400" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=achievements&path=general";?>">
 								<span class="icon icon-achievement"></span>
 							</a>
 							<?php foreach($allPaths['publish'] as $a){ ?>
 								<?php if($a->achievement_display=='path'){ ?>
 									<?php if(isset($path) && $path == $a->achievement_id){ ?>
-										<button class="icon-button font _24 sq-40  icon-sm <?= $a->achievement_color; ?>-bg-400 blend-luminosity" style="background-image: url(<?= $a->achievement_badge; ?>)"></button>
+										<button class="button-icon font _24 sq-40  icon-sm <?= $a->achievement_color; ?>-bg-400 blend-luminosity" style="background-image: url(<?= $a->achievement_badge; ?>)"></button>
 										<?php $current_path = $a; ?>
 									<?php }else{ ?>
-										<a class="icon-button font _24 sq-40  icon-sm grey-bg-400 blend-luminosity opacity-50" style="background-image: url(<?= $a->achievement_badge; ?>)" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id={$adventure->adventure_id}&manage=achievements&path={$a->achievement_id}"; ?>"></a>
+										<a class="button-icon font _24 sq-40  icon-sm grey-bg-400 blend-luminosity opacity-50" style="background-image: url(<?= $a->achievement_badge; ?>)" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id={$adventure->adventure_id}&manage=achievements&path={$a->achievement_id}"; ?>"></a>
 									<?php } ?>
 								<?php } ?> 
 							<?php } ?> 
@@ -128,7 +128,7 @@ if(isset($_GET['path'])){
 								<tr class="unsortable opacity-100">
 									<td colspan="8">
 										<div class="icon-group">
-											<div class="icon-button font _24 sq-40  purple-bg-400">
+											<div class="button-icon font _24 sq-40  purple-bg-400">
 												<span class="icon icon-achievement"></span>
 											</div>
 											<div class="icon-content">
@@ -156,7 +156,7 @@ if(isset($_GET['path'])){
 										<tr class="unsortable opacity-100">
 											<td colspan="8"  class="">
 												<div class="icon-group">
-													<div class="icon-button font _24 sq-40  purple-bg-400">
+													<div class="button-icon font _24 sq-40  purple-bg-400">
 														<span class="icon icon-<?= $icon; ?>"></span>
 													</div>
 													<div class="icon-content">
@@ -170,12 +170,12 @@ if(isset($_GET['path'])){
 									<tr id="achievement-<?php echo $a->achievement_id;?>" class="achievement purple-bg-50">
 										<td class="">
 											<input type="hidden" value="<?= $a->achievement_badge; ?>" id="the_achievement_badge-<?= $a->achievement_id; ?>">
-											<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_achievement_badge-<?= $a->achievement_id; ?>','a','achievement',<?= $a->achievement_id; ?>);" id="the_achievement_badge-<?= $a->achievement_id; ?>_thumb" style="background-image: url(<?= $a->achievement_badge; ?>);">
+											<button class="button-icon font _24 sq-40  icon-lg" onClick="showWPUpload('the_achievement_badge-<?= $a->achievement_id; ?>','a','achievement',<?= $a->achievement_id; ?>);" id="the_achievement_badge-<?= $a->achievement_id; ?>_thumb" style="background-image: url(<?= $a->achievement_badge; ?>);">
 											</button>
 										</td>
 										<td class="color relative layer base">
 											<input type="hidden" value="<?= $a->achievement_color; ?>" id="the_achievement_color-<?= $a->achievement_id; ?>">
-											<button class="icon-button font _24 sq-40 <?=$a->achievement_color;?>-bg-400" id="color-trigger-achievement-<?= $a->achievement_id; ?>" onClick="activate('#color-select-<?=$a->achievement_id;?>');"><span class="icon icon-<?= $icon; ?>"></span>
+											<button class="button-icon font _24 sq-40 <?=$a->achievement_color;?>-bg-400" id="color-trigger-achievement-<?= $a->achievement_id; ?>" onClick="activate('#color-select-<?=$a->achievement_id;?>');"><span class="icon icon-<?= $icon; ?>"></span>
 											</button> 
 											<div class="color-select-popup" id="color-select-<?=$a->achievement_id;?>">
 												<?php
@@ -239,7 +239,7 @@ if(isset($_GET['path'])){
 											</td>
 										<?php } ?>
 										<td class="">
-											<button class="icon-button font _24 sq-40  icon-sm amber-bg-200 grey-700 duplicate-button" onClick="showOverlay('#confirm-duplicate-<?php echo $a->achievement_id; ?>');">
+											<button class="button-icon font _24 sq-40  icon-sm amber-bg-200 grey-700 duplicate-button" onClick="showOverlay('#confirm-duplicate-<?php echo $a->achievement_id; ?>');">
 												<span class="icon icon-duplicate"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?php _e("Duplicate","bluerabbit"); ?></span>
@@ -248,7 +248,7 @@ if(isset($_GET['path'])){
 											<div class="confirm-action overlay-layer duplicate-confirm" id="confirm-duplicate-<?php echo $a->achievement_id; ?>">
 												<button class="form-ui white-bg duplicate-confirm-button" onClick="duplicateRow(<?php echo $a->achievement_id; ?>);">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
+														<span class="button-icon font _24 sq-40  icon-sm amber-bg-A400 icon-sm">
 															<span class="icon icon-duplicate white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -256,19 +256,19 @@ if(isset($_GET['path'])){
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
 										</td>
 										<td class="">
-											<a href="<?php echo get_bloginfo('url')."/new-achievement/?adventure_id=$adventure->adventure_id&achievement_id=$a->achievement_id";?>" class="icon-button font _24 sq-40  icon-sm green-bg-400 edit-button"><span class="icon icon-edit "></span></a>
+											<a href="<?php echo get_bloginfo('url')."/new-achievement/?adventure_id=$adventure->adventure_id&achievement_id=$a->achievement_id";?>" class="button-icon font _24 sq-40  icon-sm green-bg-400 edit-button"><span class="icon icon-edit "></span></a>
 											<?php if($a->achievement_parent){ ?>
 											<button class="form-ui" type="button" onClick="breakParent(<?= $a->achievement_id; ?>, 'achievement');"><?= __("Break Parent","bluerabbit"); ?></button>
 											<?php } ?>
 										</td>
 										<td class="">
-											<button class="icon-button font _24 sq-40  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $a->achievement_id; ?>');">
+											<button class="button-icon font _24 sq-40  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $a->achievement_id; ?>');">
 												<span class="icon icon-trash"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
@@ -277,7 +277,7 @@ if(isset($_GET['path'])){
 											<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?php echo $a->achievement_id; ?>">
 												<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->achievement_id; ?>,'achievement','trash');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+														<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 															<span class="icon icon-trash white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -285,7 +285,7 @@ if(isset($_GET['path'])){
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
@@ -303,21 +303,21 @@ if(isset($_GET['path'])){
 						
 						<div class="highlight padding-10 deep-purple-bg-900 white-color sticky-bottom text-center">
 							<div class="icon-group">
-								<span class="icon-button font _24 sq-40  purple-bg-300">
+								<span class="button-icon font _24 sq-40  purple-bg-300">
 									<span class="icon icon-achievement"></span>
 								</span>
 								<div class="icon-content">
 									<span class="line font _24 w400"> <?php echo count($achievements['publish']); ?></span>
 									<span class="line font _14 w400"> <?php echo __("Total Achievements","bluerabbit"); ?></span>
 								</div>
-								<span class="icon-button font _24 sq-40  amber-bg-400">
+								<span class="button-icon font _24 sq-40  amber-bg-400">
 									<span class="icon icon-star"></span>
 								</span>
 								<div class="icon-content">
 									<span class="line font _24 w400"> <?php echo $curXp; ?></span>
 									<span class="line font _14 w400"> <?php echo __("Total","bluerabbit")." $xp_label"; ?></span>
 								</div>
-								<span class="icon-button font _24 sq-40  green-bg-400">
+								<span class="button-icon font _24 sq-40  green-bg-400">
 									<span class="icon icon-bloo"></span>
 								</span>
 								<div class="icon-content">
@@ -356,7 +356,7 @@ if(isset($_GET['path'])){
 				<?php if(isset($achievements['trash'])){ ?>
 					<div class="highlight padding-10 deep-purple-bg-50">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
+							<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-trash"></span></span>
 							<span class="icon-content">
 								<span class="line font _24 grey-800"><?php _e('Trashed Achievements','bluerabbit'); ?></span>
 							</span>
@@ -425,7 +425,7 @@ if(isset($_GET['path'])){
 										</td>
 										<td class="">
 
-											<button class="icon-button font _24 sq-40  blue-bg-A400 white-color" onClick="showOverlay('#confirm-option-restore-<?php echo $a->achievement_id; ?>');">
+											<button class="button-icon font _24 sq-40  blue-bg-A400 white-color" onClick="showOverlay('#confirm-option-restore-<?php echo $a->achievement_id; ?>');">
 												<span class="icon icon-restore"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?php _e("Restore","bluerabbit"); ?></span>
@@ -434,7 +434,7 @@ if(isset($_GET['path'])){
 											<div class="confirm-action overlay-layer" id="confirm-option-restore-<?php echo $a->achievement_id; ?>">
 												<button class="form-ui white-bg" onClick="confirmStatus(<?php echo $a->achievement_id; ?>,'achievement','publish');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  blue-bg-A700 icon-sm">
+														<span class="button-icon font _24 sq-40  blue-bg-A700 icon-sm">
 															<span class="icon icon-restore white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -442,11 +442,11 @@ if(isset($_GET['path'])){
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>
-											<button class="icon-button font _24 sq-40  red-bg-A400 white-color" onClick="showOverlay('#confirm-option-delete-<?php echo $a->achievement_id; ?>');">
+											<button class="button-icon font _24 sq-40  red-bg-A400 white-color" onClick="showOverlay('#confirm-option-delete-<?php echo $a->achievement_id; ?>');">
 												<span class="icon icon-cancel"></span>
 												<span class="tool-tip bottom">
 													<span class="tool-tip-text font _12"><?php _e("Delete Forever","bluerabbit"); ?></span>
@@ -455,7 +455,7 @@ if(isset($_GET['path'])){
 											<div class="confirm-action overlay-layer" id="confirm-option-delete-<?php echo $a->achievement_id; ?>">
 												<button class="form-ui white-bg" onClick="confirmStatus(<?php echo $a->achievement_id; ?>,'achievement','delete');">
 													<span class="icon-group">
-														<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+														<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 															<span class="icon icon-cancel white-color"></span>
 														</span>
 														<span class="icon-content">
@@ -464,7 +464,7 @@ if(isset($_GET['path'])){
 														</span>
 													</span>
 												</button>
-												<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+												<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 													<span class="icon icon-cancel white-color"></span>
 												</button>
 											</div>

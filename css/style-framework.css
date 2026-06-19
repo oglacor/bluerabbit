@@ -1079,7 +1079,7 @@
   font-family: "proxima-nova-extra-condensed", sans-serif !important;
 }
 .font.special {
-  font-family: "Rajdhani", sans-serif !important;
+  font-family: "proxima-nova-extra-condensed", sans-serif !important;
 }
 .font.preospe {
   font-family: "Preospe", sans-serif !important;
@@ -1699,10 +1699,10 @@ div.table-cell.bottom, span.table-cell.bottom {
   color: #fff;
 }
 .admin-table .row.level-split .cell {
-  font: 600 24px "Rajdhani", sans-serif;
+  font: 600 24px "proxima-nova-extra-condensed", sans-serif;
 }
 .admin-table .row.level-split .cell.cell-level {
-  font: 900 30px "Rajdhani", sans-serif;
+  font: 900 30px "proxima-nova-extra-condensed", sans-serif;
 }
 .admin-table .row.color-select-row {
   display: none;
@@ -1736,7 +1736,7 @@ div.table-cell.bottom, span.table-cell.bottom {
 .admin-table .row.quick-edit {
   display: none;
   width: 100%;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   background-color: #CFD8DC;
 }
 .admin-table .row .cell {

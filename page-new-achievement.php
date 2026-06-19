@@ -87,7 +87,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 			<div class="dashboard-content white-bg">
 				<div class="w-full padding-10 purple-bg-50">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40 purple-bg-400"><span class="icon icon-achievement"></span></span>
+						<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-achievement"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800">
 								<?= (isset($adventure) && isset($a)) ? __("Edit Achievement","bluerabbit")." ".$a->achievement_name : __("New Achievement","bluerabbit"); ?>
@@ -104,7 +104,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 					<div class="tab max-w-900 padding-10 active" id="general">
 						<div class="highlight padding-10 grey-bg-200">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
+								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Achievement Settings","bluerabbit"); ?></span>
 								</span>
@@ -139,8 +139,8 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 											<div class="gallery-item setting">
 												<div class="background" style="background-image: url(<?= isset($a) ? $a->achievement_badge : ""; ?>);" onClick="showWPUpload('the_achievement_badge');" id="the_achievement_badge_thumb"></div>
 												<div class="gallery-item-options relative">
-													<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
-													<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_achievement_badge');"> <span class="icon icon-trash"></span> </button>
+													<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
+													<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_achievement_badge');"> <span class="icon icon-trash"></span> </button>
 													<input type="hidden" id="the_achievement_badge" value="<?= isset($a) ? $a->achievement_badge : ""; ?>"/>
 												</div>
 											</div>
@@ -279,7 +279,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 									</td>
 									<td>
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  indigo-bg-400">
+											<span class="button-icon font _24 sq-40  indigo-bg-400">
 												<span class="icon icon-warning white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -310,7 +310,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 					<div class="tab max-w-900 padding-10" id="achievement-codes">
 						<div class="highlight padding-10 grey-bg-200">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
+								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Magic Code","bluerabbit"); ?></span>
 									<span class="line font _14 grey-800">
@@ -368,7 +368,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						</table>
 						<div class="highlight padding-10 deep-purple-bg-100">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  purple-bg-400"><span class="icon icon-qr"></span></span>
+								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-qr"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Unique Codes","bluerabbit"); ?></span>
 									<span class="line font _14 grey-800">
@@ -483,7 +483,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						<?php }else{ ?>
 							<div class="padding-20 amber-bg-200">
 								<div class="icon-group">
-									<div class="icon-button font _24 sq-48 amber-bg-500">
+									<div class="button-icon font _24 sq-48 amber-bg-500">
 										<span class="icon icon-warning white-color"></span>
 									</div>
 									<div class="icon-content">
@@ -524,7 +524,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 									?>
 									<div class="highlight padding-10 grey-bg-100" id="tutorial-earned-players">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  indigo-bg-400">
+											<span class="button-icon font _24 sq-40  indigo-bg-400">
 												<?= count($players); ?>
 											</span>
 											<span class="icon-content">
@@ -569,7 +569,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						<?php }else{ ?>
 							<div class="padding-20 amber-bg-200">
 								<div class="icon-group">
-									<div class="icon-button font _24 sq-48 amber-bg-500">
+									<div class="button-icon font _24 sq-48 amber-bg-500">
 										<span class="icon icon-warning white-color"></span>
 									</div>
 									<div class="icon-content">

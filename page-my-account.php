@@ -49,7 +49,7 @@
 									<td>
                                         <div class="status" style="background-image: url(<?= $picture; ?>);" id="the_player_picture_thumb">
                                             <img class="rotate-R-120" src="<?= get_bloginfo('template_directory')."/images/1.png";?>">
-                                            <button class="icon-button absolute perfect-center green-bg-400 layer foreground font _18 padding-5" onClick="showWPUpload('the_player_picture','profile-autosave');">
+                                            <button class="button-icon absolute perfect-center green-bg-400 layer foreground font _18 padding-5" onClick="showWPUpload('the_player_picture','profile-autosave');">
                                                 <span class="icon icon-edit"></span>
                                             </button>
                                             <input type="hidden" id="the_player_picture" value="<?= $picture; ?>"/>
@@ -188,7 +188,7 @@
 					<div class="w-full <?= $player_account->player_hexad_slug; ?> white-color">
 						<div class="text-center">
 							<div class="icon-group inline-table">
-								<span class="icon-button font _36  <?= $color[$player_account->player_hexad_slug]; ?>-bg-400">
+								<span class="button-icon font _36  <?= $color[$player_account->player_hexad_slug]; ?>-bg-400">
 									<span class="icon icon-<?= $player_account->player_hexad_slug; ?>"></span>
 								</span>
 								<div class="icon-content">
@@ -255,7 +255,7 @@
 						<div class="current-plan text-center">
 							<div class="col-6 ">
 								<h1 class="font _36 condensed padding-10 w900 uppercase"> <?php _e('Subscription','bluerabbit'); ?> </h1>
-								<a href="<?= get_bloginfo('url')."/subscribe/"; ?>" class="icon-button font _24 sq-40  icon-xxl blue-grey"><span class="icon icon-logo"></span></a>
+								<a href="<?= get_bloginfo('url')."/subscribe/"; ?>" class="button-icon font _24 sq-40  icon-xxl blue-grey"><span class="icon icon-logo"></span></a>
 							</div>
 							<div class="col-6">
 
@@ -290,7 +290,7 @@
                     <?php if($config['show_anonimize_button']['value']>0){ ?>
                             <div class="text-center">
                                 <div class="icon-group padding-10 inline-table white-color">
-                                    <div class="icon-button font _24 sq-40 red-bg-A400">
+                                    <div class="button-icon font _24 sq-40 red-bg-A400">
                                         <span class="icon icon-warning"></span>
                                     </div>
                                     <div class="icon-content text-left">
@@ -309,7 +309,7 @@
                                         <div class="confirm-action overlay-layer" id="confirm-anonimize-1">
                                             <button class="form-ui amber-bg-400 black-color" onClick="showOverlay('#confirm-anonimize-2');">
                                                 <span class="icon-group">
-                                                    <span class="icon-button font _24 sq-40  icon-sm orange-bg-400">
+                                                    <span class="button-icon font _24 sq-40  icon-sm orange-bg-400">
                                                         <span class="icon icon-warning white-color"></span>
                                                     </span>
                                                     <span class="icon-content">
@@ -322,7 +322,7 @@
                                             <button class="form-ui orange-bg-800" onClick="randomPlayerData();updateProfile();">
                                                 <h3 class="text-center white-color font _18 condensed w100"><?= __("You can still update your profile, just don't close the session","bluerabbit"); ?></h3>
                                                 <span class="icon-group">
-                                                    <span class="icon-button font _24 sq-40  icon-sm orange-bg-400">
+                                                    <span class="button-icon font _24 sq-40  icon-sm orange-bg-400">
                                                         <span class="icon icon-warning white-color"></span>
                                                     </span>
                                                     <span class="icon-content">

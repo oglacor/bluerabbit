@@ -26,7 +26,7 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 	<div class="dashboard-content white-bg">
 		<div class="w-full padding-10 brown-bg-50 sticky top-50 layer overlay relative">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40 brown-bg-400"><span class="icon icon-socialiser"></span></span>
+				<span class="button-icon font _24 sq-40 brown-bg-400"><span class="icon icon-socialiser"></span></span>
 				<span class="icon-content">
 					<h1><?php if($adventure && isset($speaker)){ ?>
 						<?php _e('Edit Speaker','bluerabbit'); ?>
@@ -90,8 +90,8 @@ $speaker = isset($_GET['speaker_id']) ? $wpdb->get_row("SELECT * FROM {$wpdb->pr
 									<div class="gallery-item setting">
 										<div class="background speaker-editable" style="background-image: url(<?= isset($speaker) ? $speaker->speaker_picture : ""; ?>);" onClick="showWPUpload('the_speaker_picture');" id="the_speaker_picture_thumb"></div>
 										<div class="gallery-item-options relative">
-											<button class="icon-button font _24 sq-40  green-bg-400 speaker-editable" onClick="showWPUpload('the_speaker_picture');"><span class="icon icon-image"></span></button>
-											<button class="icon-button font _24 sq-40  red-bg-400 speaker-editable" onClick="clearImage('#the_speaker_picture');"> <span class="icon icon-trash"></span> </button>
+											<button class="button-icon font _24 sq-40  green-bg-400 speaker-editable" onClick="showWPUpload('the_speaker_picture');"><span class="icon icon-image"></span></button>
+											<button class="button-icon font _24 sq-40  red-bg-400 speaker-editable" onClick="clearImage('#the_speaker_picture');"> <span class="icon icon-trash"></span> </button>
 											<input type="hidden" id="the_speaker_picture" value="<?= isset($speaker) ? $speaker->speaker_picture : ""; ?>"/>
 										</div>
 									</div>

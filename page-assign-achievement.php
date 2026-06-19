@@ -14,7 +14,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 			<div class="dashboard-content white-bg">
 				<div class="w-full padding-10 purple-bg-50">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40 purple-bg-400"><span class="icon icon-achievement"></span></span>
+						<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-achievement"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800">
 								<?= __("Assign Achievement","bluerabbit"); ?>
@@ -39,7 +39,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						</div>
 						<div class="highlight padding-10 grey-bg-200">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
+								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Magic Code","bluerabbit"); ?></span>
 									<span class="line font _14 grey-800">
@@ -113,7 +113,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
                                 ?>
                                 <div class="highlight padding-10 grey-bg-100" id="tutorial-earned-players">
                                     <span class="icon-group">
-                                        <span class="icon-button font _24 sq-40  indigo-bg-400">
+                                        <span class="button-icon font _24 sq-40  indigo-bg-400">
                                             <?= count($players); ?>
                                         </span>
                                         <span class="icon-content">

@@ -243,11 +243,11 @@
 						<div class="hud-screen-content">
 							<div class="tabi-pieces" style="background-image: url('<?= $adv_tabi['tabi']->tabi_background; ?>');" id="tabi-pieces-<?=$a->tabi_id; ?>">
 								<?php foreach($adv_tabi['pieces'] as $i){ ?>
-									<div class="tabi-piece" id="tabi-piece-<?=$i->item_id; ?>" style="z-index: <?= $i->item_z; ?>;top:<?= $i->item_y; ?>%; left:<?= $i->item_x; ?>%; transform:rotate(<?= $i->item_rotation; ?>deg);width:<?=$i->item_scale;?>%">
-										<div class="tabi-piece-image">
-											<img src="<?= $i->item_badge; ?>" alt="<?= $i->item_name; ?>" title="<?= $i->item_name; ?>">
-										</div>
-									</div>
+                                    <div class="tabi-piece" id="tabi-piece-<?=$i->item_id; ?>" style="z-index: <?= $i->item_z; ?>;top:<?= $i->item_y; ?>%; left:<?= $i->item_x; ?>%; transform:rotate(<?= $i->item_rotation; ?>deg);width:<?=$i->item_scale;?>%">
+                                        <div class="tabi-piece-image <?= $i->player_id == $current_user->ID ? 'active' : ''; ?>" style="transform:scale(<?=$i->item_scale;?>) rotate(<?= $i->item_rotation; ?>deg);">
+                                            <img src="<?= $i->item_badge; ?>" alt="<?= $i->item_name; ?>" title="<?= $i->item_name; ?>">
+                                        </div>
+                                    </div>
 								<?php } ?>
 							</div>
 						</div>

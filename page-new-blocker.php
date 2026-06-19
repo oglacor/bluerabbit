@@ -14,7 +14,7 @@ if($adventure && $isGM){
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 red-bg-50">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40 red-bg-400"><span class="icon icon-lock"></span></span>
+			<span class="button-icon font _24 sq-40 red-bg-400"><span class="icon icon-lock"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 grey-800">
 					<?= ($adventure && isset($blocker)) ? __("Edit Blocker","bluerabbit") : __("New Blocker","bluerabbit"); ?>

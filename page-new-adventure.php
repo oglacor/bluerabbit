@@ -235,7 +235,7 @@ $image_types = array(
 						</li>
 						
 						<li class="block text-center">
-							<button type="button" class="form-ui light-green-bg-200 green-900 font w300 _18 w-full" onClick="updateAdventure();">
+							<button type="button" id="submit-button" class="form-ui light-green-bg-200 green-900 font w300 _18 w-full" onClick="updateAdventure();">
 								<?php if($adventure_id){ ?>
 									<span class="icon icon-repeat"></span> <?= __('Update Adventure','bluerabbit'); ?>
 								<?php }else{ ?>
@@ -257,7 +257,7 @@ $image_types = array(
 					<div class="active tab max-w-900 padding-10" id="general">
 						<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  indigo-bg-400">
+								<span class="button-icon font _24 sq-40  indigo-bg-400">
 									<span class="icon icon-adventure white-color"></span>
 								</span>
 								<span class="icon-content font w500 _26">
@@ -296,8 +296,8 @@ $image_types = array(
 											<div class="gallery-item setting">
 												<div class="background" style="background-image: url(<?= $adventure->adventure_badge; ?>);" onClick="showWPUpload('the_adventure_badge');" id="the_adventure_badge_thumb"></div>
 												<div class="gallery-item-options relative">
-													<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_badge');"><span class="icon icon-image"></span></button>
-													<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_badge');"> <span class="icon icon-trash"></span> </button>
+													<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_badge');"><span class="icon icon-image"></span></button>
+													<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_badge');"> <span class="icon icon-trash"></span> </button>
 													<input type="hidden" id="the_adventure_badge" value="<?php echo $adventure->adventure_badge; ?>"/>
 												</div>
 											</div>
@@ -375,7 +375,7 @@ $image_types = array(
 						</table>
 						<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  indigo-bg-400">
+								<span class="button-icon font _24 sq-40  indigo-bg-400">
 									<span class="icon icon-config white-color"></span>
 								</span>
 								<span class="icon-content font w500 _26">
@@ -483,7 +483,7 @@ $image_types = array(
 						</table>
 						<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  indigo-bg-400">
+								<span class="button-icon font _24 sq-40  indigo-bg-400">
 									<span class="icon icon-config white-color"></span>
 								</span>
 								<span class="icon-content font w500 _26">
@@ -590,7 +590,7 @@ $image_types = array(
 						</table>
 						<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  indigo-bg-400">
+								<span class="button-icon font _24 sq-40  indigo-bg-400">
 									<span class="icon icon-config white-color"></span>
 								</span>
 								<span class="icon-content font w500 _26">
@@ -648,7 +648,7 @@ $image_types = array(
 					<div class="tab max-w-900 padding-10" id="adventure-intro">
 						<div class="highlight padding-10 grey-bg-200" id="tutorial-adventure-intro">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  indigo-bg-400">
+								<span class="button-icon font _24 sq-40  indigo-bg-400">
 									<span class="icon icon-adventure white-color"></span>
 								</span>
 								<span class="icon-content font w500 _26">
@@ -671,7 +671,7 @@ $image_types = array(
 					<div class="tab max-w-900 padding-10" id="certificate-settings">
 						<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  indigo-bg-400">
+								<span class="button-icon font _24 sq-40  indigo-bg-400">
 									<span class="icon icon-config white-color"></span>
 								</span>
 								<span class="icon-content font w500 _26">
@@ -727,8 +727,8 @@ $image_types = array(
 											<div class="gallery-item setting">
 												<div class="background" style="background-image: url(<?= $adventure->adventure_logo; ?>);" onClick="showWPUpload('the_adventure_logo');" id="the_adventure_logo_thumb"></div>
 												<div class="gallery-item-options relative">
-													<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_logo');"><span class="icon icon-image"></span></button>
-													<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_logo');"> <span class="icon icon-trash"></span> </button>
+													<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_logo');"><span class="icon icon-image"></span></button>
+													<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_logo');"> <span class="icon icon-trash"></span> </button>
 													<input type="hidden" id="the_adventure_logo" value="<?php echo $adventure->the_adventure_logo; ?>"/>
 												</div>
 											</div>
@@ -742,8 +742,8 @@ $image_types = array(
 											<div class="gallery-item setting">
 												<div class="background" style="background-image: url(<?= $adventure->adventure_certificate_signature; ?>);" onClick="showWPUpload('the_adventure_certificate_signature');" id="the_adventure_certificate_signature_thumb"></div>
 												<div class="gallery-item-options relative">
-													<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_certificate_signature');"><span class="icon icon-image"></span></button>
-													<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_certificate_signature');"> <span class="icon icon-trash"></span> </button>
+													<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_certificate_signature');"><span class="icon icon-image"></span></button>
+													<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_certificate_signature');"> <span class="icon icon-trash"></span> </button>
 													<input type="hidden" id="the_adventure_certificate_signature" value="<?php echo $adventure->adventure_certificate_signature; ?>"/>
 												</div>
 											</div>
@@ -767,7 +767,7 @@ $image_types = array(
 									<div class="layer background absolute sq-full grey-bg-900 opacity-80"></div>
 									<button class="form-ui white-bg layer relative base" onClick="resetGuilds();">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  icon-sm red-bg-400 icon-sm">
+											<span class="button-icon font _24 sq-40  icon-sm red-bg-400 icon-sm">
 												<span class="icon icon-warning white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -776,7 +776,7 @@ $image_types = array(
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40 layer base  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40 layer base  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -785,7 +785,7 @@ $image_types = array(
 						<div class="tab max-w-900 padding-10" id="ranks-settings">
 							<div class="highlight padding-10 green-bg-50" id="tutorial-adventure-ranks">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  green-bg-400">
+									<span class="button-icon font _24 sq-40  green-bg-400">
 										<span class="icon icon-rank white-color"></span>
 									</span>
 									<span class="icon-content font w500 _26">
@@ -837,7 +837,7 @@ $image_types = array(
 														</select>
 													</td>
 													<td>
-														<button class="icon-button font _24 sq-40  red-bg-A400" onClick="removeTableRow('#row-<?= $key; ?>');">
+														<button class="button-icon font _24 sq-40  red-bg-A400" onClick="removeTableRow('#row-<?= $key; ?>');">
 															<span class="icon icon-trash"></span>
 														</button>
 													</td>
@@ -864,7 +864,7 @@ $image_types = array(
 													</select>
 												</td>
 												<td>
-													<button class="icon-button font _24 sq-40  red-bg-A400 remove-row">
+													<button class="button-icon font _24 sq-40  red-bg-A400 remove-row">
 														<span class="icon icon-trash"></span>
 													</button>
 												</td>
@@ -890,7 +890,7 @@ $image_types = array(
 						<div class="tab max-w-900 padding-10" id="tabis-settings">
 							<div class="highlight padding-10 green-bg-50" id="tutorial-adventure-tabis">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  green-bg-400">
+									<span class="button-icon font _24 sq-40  green-bg-400">
 										<span class="icon icon-rank white-color"></span>
 									</span>
 									<span class="icon-content font w500 _26">
@@ -942,7 +942,7 @@ $image_types = array(
 							?>
 							<div class="highlight padding-10 grey-bg-200 h-60" id="tutorial-players">
 								<div class="icon-group">
-									<span class="icon-button font _24 sq-40  orange-bg-200">
+									<span class="button-icon font _24 sq-40  orange-bg-200">
 										<span class="icon icon-players white-color"></span>
 									</span>
 									<span class="icon-content font w500 _26">
@@ -1014,7 +1014,7 @@ $image_types = array(
 																<div class="confirm-action overlay-layer" id="confirm-gm-<?= $play->player_id; ?>">
 																	<button class="form-ui white-bg" onClick="setPlayerAdventureRole(<?= "$adventure->adventure_id, $play->player_id, 'gm'"; ?>);">
 																		<span class="icon-group">
-																			<span class="icon-button font _24 sq-40  icon-sm teal-bg-400 icon-sm">
+																			<span class="button-icon font _24 sq-40  icon-sm teal-bg-400 icon-sm">
 																				<span class="icon icon-activity white-color"></span>
 																			</span>
 																			<span class="icon-content">
@@ -1022,7 +1022,7 @@ $image_types = array(
 																			</span>
 																		</span>
 																	</button>
-																	<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+																	<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 																		<span class="icon icon-cancel white-color"></span>
 																	</button>
 																</div>
@@ -1043,7 +1043,7 @@ $image_types = array(
 															<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 																<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
 																	<span class="icon-group">
-																		<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+																		<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 																			<span class="icon icon-cancel white-color"></span>
 																		</span>
 																		<span class="icon-content">
@@ -1051,7 +1051,7 @@ $image_types = array(
 																		</span>
 																	</span>
 																</button>
-																<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+																<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 																	<span class="icon icon-cancel white-color"></span>
 																</button>
 															</div>
@@ -1078,7 +1078,7 @@ $image_types = array(
 							</div>
 							<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 								<div class="icon-group">
-									<span class="icon-button font _24 sq-40  orange-bg-200">
+									<span class="button-icon font _24 sq-40  orange-bg-200">
 										<span class="icon icon-players white-color"></span>
 									</span>
 									<span class="icon-content font w500 _26">
@@ -1133,7 +1133,7 @@ $image_types = array(
 								</div>
 								<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 									<div class="icon-group">
-										<span class="icon-button font _24 sq-40  orange-bg-200">
+										<span class="button-icon font _24 sq-40  orange-bg-200">
 											<span class="icon icon-players white-color"></span>
 										</span>
 										<span class="icon-content font w500 _26">
@@ -1175,7 +1175,7 @@ $image_types = array(
 					<div class="tab max-w-900 padding-10" id="features">
 						<div class="highlight padding-10 grey-bg-100">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  blue-bg-800"><span class="icon icon-config"></span></span>
+								<span class="button-icon font _24 sq-40  blue-bg-800"><span class="icon icon-config"></span></span>
 								<span class="icon-content font _24 grey-700"><?= __("Features","bluerabbit"); ?></span>
 								<span class="icon-content">
 								<button class="button form-ui" onClick="allToggleButtonsOn('#features');"><?= __("All On","bluerabbit"); ?></button>
@@ -1298,8 +1298,8 @@ $image_types = array(
 								<div class="gallery-item setting">
 									<div class="gallery-image-thumb" style="background-image: url(<?= $img_url; ?>);" id="<?=$iKey;?>_thumb"></div>
 									<div class="gallery-item-options">
-										<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
-										<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
+										<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
+										<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
 									</div>
 									<div class="gallery-item-description white-color foreground">
 										<div class="background black-bg opacity-50"></div>

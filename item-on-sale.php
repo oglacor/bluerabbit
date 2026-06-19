@@ -16,7 +16,7 @@
 			<div class="background black-gradient opacity-40 mix-blend-overlay blend-overlay"  style="background-image: url(<?= $i->item_badge;?>);"></div>
 			<div class="table sq-full">
 				<div class="table-cell text-center">
-					<button class="icon-button font _50 <?=$i_color;?>-400 white-bg" onClick="activate('#item-<?=$i->item_id;?>')">
+					<button class="button-icon font _50 <?=$i_color;?>-400 white-bg" onClick="activate('#item-<?=$i->item_id;?>')">
 						<span class="icon icon-<?=$icon_type;?>"></span>
 					</button>
 				</div>

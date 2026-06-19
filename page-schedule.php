@@ -113,7 +113,7 @@ $speakers = $wpdb->get_results("
 								<div class=" relative w-full padding-10 flex">
 									<div class="w-100 relative layer base">
 										<?php $session_image = $session->speaker_picture ? $session->speaker_picture : $adventure->adventure_badge;?>
-										<div class="icon-button sq-100 border border-2 border-all blue-grey-border-700 pull-left" style="background-image: url(<?= $session_image;?>);"></div>
+										<div class="button-icon sq-100 border border-2 border-all blue-grey-border-700 pull-left" style="background-image: url(<?= $session_image;?>);"></div>
 									</div>
 									<div class="icon-content text-left cursor-pointer padding-10">
 										<h2 class="font _30 w600">
@@ -130,11 +130,11 @@ $speakers = $wpdb->get_results("
                                             <?php } ?>
 
 											<?php if($session->achievement_id){ ?>
-												<button class="icon-button font _24 sq-40  border border-all border-1 <?= $achievements[$session->achievement_id];?>-400 white-bg" style="background-image: url(<?= $achievement_badge[$session->achievement_id]; ?>);">
+												<button class="button-icon font _24 sq-40  border border-all border-1 <?= $achievements[$session->achievement_id];?>-400 white-bg" style="background-image: url(<?= $achievement_badge[$session->achievement_id]; ?>);">
 												</button>
 											<?php } ?>
 											<?php if($session->guild_id){ ?>
-												<button class="icon-button font _24 sq-40  border border-all border-1 <?= $guilds[$session->guild_id];?>-400 white-bg" style="background-image: url(<?= $guild_logos[$session->guild_id]; ?>);">
+												<button class="button-icon font _24 sq-40  border border-all border-1 <?= $guilds[$session->guild_id];?>-400 white-bg" style="background-image: url(<?= $guild_logos[$session->guild_id]; ?>);">
 												</button>
 											<?php } ?>
 											<span class="icon icon-time"></span> <?= date('H:i', strtotime($session->session_start)); ?> - 
@@ -168,11 +168,11 @@ $speakers = $wpdb->get_results("
 							<div class="background black-bg opacity-40 blend-luminosity fixed cursor-pointer" style="background-image: url(<?= $bg_image; ?>);" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"></div>
 							<div class="session-detail-content white-color">
 								<div class="layer absolute top right foreground">
-									<button class="icon-button font _24 sq-40  red-bg-400 icon-xs" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"><span class="icon icon-cancel"></span></button>
+									<button class="button-icon font _24 sq-40  red-bg-400 icon-xs" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"><span class="icon icon-cancel"></span></button>
 								</div>
 								<?php if($isGM){ ?>
 									<div class="layer absolute top left foreground">
-										<a class="icon-button font _24 sq-40  icon-xs font _14 green-bg-400" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span  class="icon icon-edit"></span> </a>
+										<a class="button-icon font _24 sq-40  icon-xs font _14 green-bg-400" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span  class="icon icon-edit"></span> </a>
 									</div>
 								<?php } ?>
 								<div class="highlight text-center padding-10 margin-0">
@@ -200,7 +200,7 @@ $speakers = $wpdb->get_results("
                                         <?php foreach($speakers as $sp){ ?>
                                             <?php if(in_array($sp->speaker_id, $the_speakers)){ ?>
                                                 <div class="icon-group">
-                                                    <div class="icon-button font _24 sq-40  border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $sp->player_picture ? $sp->player_picture : $sp->speaker_picture; ?>);" >
+                                                    <div class="button-icon font _24 sq-40  border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $sp->player_picture ? $sp->player_picture : $sp->speaker_picture; ?>);" >
                                                     </div>
                                                     <div class="icon-content text-left">
                                                         <span class="line font _24 w500">
@@ -243,11 +243,11 @@ $speakers = $wpdb->get_results("
 									<div class="speaker-bio " id="speaker-bio-<?= $key; ?>">
 										<div class="background black-bg opacity-50"></div>
 										<div class="line-150 font _14 padding-10 text-center foreground">
-											<span class="icon-button font _24 sq-40  icon-xl" style="background-image: url(<?= $session->speaker_picture; ?>);"></span>
+											<span class="button-icon font _24 sq-40  icon-xl" style="background-image: url(<?= $session->speaker_picture; ?>);"></span>
 											<br>
 											<span class="font _24 w300"><?= "$session->speaker_first_name $session->speaker_last_name"; ?></span><br>
 											<?= apply_filters('the_content', $session->speaker_bio); ?>
-											<button class="icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');">
+											<button class="button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');">
 												<span class="icon icon-arrow-up white-color"></span>
 											</button>
 										</div>
@@ -260,7 +260,7 @@ $speakers = $wpdb->get_results("
 				<?php }else{ ?>
 					<div class="highlight padding-10 text-center red-bg-50 red-600">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  icon-50 white-bg red-400">
+							<span class="button-icon font _24 sq-40  icon-50 white-bg red-400">
 								<span class="icon icon-warning"></span>
 							</span>
 							<span class="icon-content">

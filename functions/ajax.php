@@ -2466,7 +2466,7 @@ function rateQuest(){
 	$sql = $wpdb->query( $wpdb->prepare($sql, $rating, $current_user->ID, $quest_id));
 	$stars = "";
 	for($i=0;$i<$rating;$i++){
-		$stars .='<span class="icon-button font _24 sq-40  amber-bg-400"><span class="icon icon-star"></span></span>';
+		$stars .='<span class="button-icon font _24 sq-40  amber-bg-400"><span class="icon icon-star"></span></span>';
 	}
 	logActivity($adventure_id,'rated','quest','',$quest_id);
 	$data['message'] = '<h1><strong>'.__("Rating updated!","bluerabbit").'</strong></h1>'.$stars.'<h5>'.__("click to close","bluerabbit").'</h5>';
@@ -4358,6 +4358,15 @@ function closeIntro($p_adv_id=0){
 	echo json_encode($data);
 	die();
 }
+/////////////////////// GENERIC TUTORIAL DISMISS ////////////////////
+
+function br_dismiss_tutorial(){
+	$current_user = wp_get_current_user();
+	$tutorial_key = sanitize_key($_POST['tutorial_key']);
+	update_user_meta($current_user->ID, 'br_tutorial_seen_'.$tutorial_key, 1);
+	echo json_encode(array('success' => true));
+	die();
+}
 ////////////// resetIntro /////////////
 function resetIntro($p_adventure_id=NULL){
 	global $wpdb; $current_user = wp_get_current_user();
@@ -5863,7 +5872,7 @@ function findPlayersToOrg(){
 			echo "
 <li class='margin-5'>
 	<div class='icon-group'>
-		<button class='icon-button player-picture white-bg sq-60'>
+		<button class='button-icon player-picture white-bg sq-60'>
 
 		</button>
 		<div class='icon-content text-left'>
@@ -6543,17 +6552,17 @@ function getMyTabi($tabi_id){
 	if($data['tabi']){
 		$tabi_id = $data['tabi']->tabi_id;
 		$pieces =$wpdb->get_results( "SELECT items.*, tabis.tabi_name,
-		trnxs.object_id, trnxs.trnx_id, trnxs.trnx_type, trnxs.trnx_date, COUNT(items.item_id) AS total_consumables
+		trnxs.object_id, trnxs.trnx_id, trnxs.player_id, trnxs.trnx_type, trnxs.trnx_date
 		FROM  {$wpdb->prefix}br_items items 
-		JOIN {$wpdb->prefix}br_transactions trnxs
-		ON items.item_id = trnxs.object_id
+		LEFT JOIN {$wpdb->prefix}br_transactions trnxs
+		ON items.item_id = trnxs.object_id AND trnxs.trnx_type='tabi-piece' AND trnxs.trnx_status='publish' AND trnxs.adventure_id=$adv_child_id 
 
 		JOIN {$wpdb->prefix}br_tabis tabis
 		ON items.tabi_id = tabis.tabi_id
 
 
-		WHERE items.adventure_id=$adv_parent_id AND items.item_status='publish' AND trnxs.player_id=$current_user->ID AND trnxs.adventure_id=$adv_child_id AND trnxs.trnx_type='tabi-piece' AND trnxs.trnx_status='publish' AND items.tabi_id=$tabi_id
-		GROUP BY trnxs.object_id, trnxs.trnx_type ORDER BY items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
+		WHERE items.adventure_id=$adv_parent_id AND items.item_status='publish' AND tabis.tabi_as_category=0
+		ORDER BY items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
 		$data['pieces'] = $pieces;
 		return $data;
 	}else{
@@ -6573,7 +6582,7 @@ function saveTabiPiecePosition(){
 	$scale = $item_data['item_scale'];
 	$rotation = $item_data['item_rotation'];
 	if($item){
-		$sql = "UPDATE {$wpdb->prefix}br_items SET item_x=%s, item_y=%s, item_z=%d, item_scale=%d, item_rotation=%d WHERE item_id=$item->item_id";
+		$sql = "UPDATE {$wpdb->prefix}br_items SET item_x=%s, item_y=%s, item_z=%d, item_scale=%s, item_rotation=%s WHERE item_id=$item->item_id";
 		$sql = $wpdb->prepare ($sql , $x, $y, $z, $scale, $rotation );
 		$wpdb->query($sql); 
 		$data['success'] = true;
@@ -6676,7 +6685,7 @@ function newUniqueAchievementCode($p_id){
 <tr class="white-bg padding-10" id="achievement-unique-code-'.$new_code_id.'">
 	<td>
 		<input id="ach-code-'.$new_code_id.'" type="hidden" class="form-ui w-full" value="'.get_bloginfo('url').'/magic-link/?c='.$c->code_value.'&adv='.$ach->adventure_id.'">
-			<button class="icon-button font _24 sq-40  white-bg purple-400" onClick="copyTextFrom('."'#ach-code-$c->code_id'".','."'#legend-<?= $c->code_id'".');">
+			<button class="button-icon font _24 sq-40  white-bg purple-400" onClick="copyTextFrom('."'#ach-code-$c->code_id'".','."'#legend-<?= $c->code_id'".');">
 				<span class="icon icon-qr font _28"></span>
 			</button>
 		<?php } ?>
@@ -6695,7 +6704,7 @@ function newUniqueAchievementCode($p_id){
 		<button class="form-ui purple-bg-400 white-color font main w300 _16" onClick="copyTextFrom('."'#ach-code-$c->code_id'".','."'#legend-<?= $c->code_id'".');">
 			<span class="line font _14">'.__("Copy link","bluerabbit").'</span>
 		</button>
-		<button class="icon-button font _24 sq-40  red-bg-400 white-color" onClick="deleteAchievementCode('.$c->code_id.');">
+		<button class="button-icon font _24 sq-40  red-bg-400 white-color" onClick="deleteAchievementCode('.$c->code_id.');">
 			<span class="icon icon-trash"></span>
 		</button>
 	</td>
@@ -7822,7 +7831,7 @@ function duplicateRow($p_id='', $p_adventure_id='', $p_type=''){
 function br_trash(){
 	global $wpdb; $current_user = wp_get_current_user();
 	$data = array();
-	
+	 
 	$data['success'] = false;
 	$type = $_POST['type'];
 	$id = $_POST['id'];
@@ -7832,24 +7841,44 @@ function br_trash(){
 	$today = date('Y-m-d g:h:s');
 	$nonce = $_POST['nonce'];
 	$reload = $_POST['reload'];
+    $n = new Notification();
+	$data['just_notify'] =true;
+
 	if(wp_verify_nonce($nonce, 'trash_nonce')){
 		$status = 'trash';
-		$data['message'] = "<span class='icon icon-trash icon-xl'></span><h1>".__("Sent to trash!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        $data['success'] = true;
+        $msg_content = __('Sent to trash!','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'red','trash');
 	}elseif(wp_verify_nonce($nonce, 'delete_nonce')){
 		$status = 'delete';
-		$data['message'] = "<span class='icon icon-cancel icon-xl'></span><h1>".__("Deleted!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        $data['success'] = true;
+        $msg_content = __('Deleted!','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'red','cancel');
+	}elseif(wp_verify_nonce($nonce, 'locked_nonce')){
+		$status = 'locked';
+        $data['success'] = true;
+        $msg_content = __('Locked!','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'grey','lock');
 	}elseif(wp_verify_nonce($nonce, 'hidden_nonce')){
 		$status = 'hidden';
-		$data['message'] = "<span class='icon icon-warning icon-xl'></span><h1>".__("Published as Hidden!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        $data['success'] = true;
+        $msg_content = __('Published as hidden','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'blue','hide');
 	}elseif(wp_verify_nonce($nonce, 'publish_nonce')){
 		$status = 'publish';
-		$data['message'] = "<span class='icon icon-restore icon-xl'></span><h1>".__("Restored Success!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        $data['success'] = true;
+        $msg_content = __('Restored!','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'green','check');
 	}elseif(wp_verify_nonce($nonce, 'draft_nonce')){
 		$status = 'draft';
-		$data['message'] = "<span class='icon icon-duplicate icon-xl'></span><h1>".__("Saved as draft!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        $data['success'] = true;
+        $msg_content = __('Restored!','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'amber','document');
 	}else{
 		$status = NULL;
-		$data['message'] .= "<h1>".__("Unauthorized access","bluerabbit")."</h1>".'<h4>'.__('check again and reload','bluerabbit').'</h4>';
+        $data['success'] = true;
+        $msg_content = __('Unauthorized access!','bluerabbit');
+        $data['message'] = $n->pop($msg_content,'red','cancel');
 		$data['location'] = get_bloginfo("url")."/adventure/?adventure_id=$adventure_id";
 	}
 	if($status){
@@ -8040,4 +8069,137 @@ function exportPlayersWork() {
 
     fclose($output);
     exit;
+}
+
+////////////////////////////////////////// REQUESTS ////////////////////////////////////////////
+
+function submitRequest(){
+	global $wpdb;
+	$current_user = wp_get_current_user();
+	$data = array();
+	$data['success'] = false;
+	$n = new Notification();
+	$data['just_notify'] =true;
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'br_request_nonce')){
+		$adventure_id = intval($_POST['adventure_id']);
+		$subject = sanitize_text_field($_POST['request_subject']);
+		$content = stripslashes_deep($_POST['request_content']);
+
+		if($subject && $content){
+			$sql = "INSERT INTO {$wpdb->prefix}br_requests
+				(adventure_id, player_id, request_subject, request_content)
+				VALUES (%d, %d, %s, %s)";
+			$result = $wpdb->query($wpdb->prepare($sql, $adventure_id, $current_user->ID, $subject, $content));
+
+			if($wpdb->insert_id){
+				logActivity($adventure_id, 'submitted-request', 'request', $subject);
+				$data['success'] = true;
+                $msg_content = __('Your request has been sent!','bluerabbit');
+                $data['message'] = $n->pop($msg_content,'green','check');
+			}
+		}else{
+            $msg_content = __('Please fill in all fields!','bluerabbit');
+            $data['message'] = $n->pop($msg_content,'red','cancel');
+		}
+	}
+	echo json_encode($data);
+	die();
+}
+
+function getRequests(){
+	global $wpdb;
+	$current_user = wp_get_current_user();
+
+	$adventure_id = intval($_POST['adventure_id']);
+	$status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : 'all';
+
+	$where = "WHERE r.adventure_id = %d";
+	$params = array($adventure_id);
+
+	if($status !== 'all'){
+		$where .= " AND r.request_status = %s";
+		$params[] = $status;
+	}
+
+	$sql = "SELECT r.*, p.player_display_name, p.player_picture, p.player_email
+		FROM {$wpdb->prefix}br_requests r
+		LEFT JOIN {$wpdb->prefix}br_players p ON r.player_id = p.player_id
+		$where
+		ORDER BY r.request_date DESC";
+
+	$requests = $wpdb->get_results($wpdb->prepare($sql, ...$params));
+
+	foreach($requests as $req){
+		include(get_template_directory().'/request-row.php');
+	}
+	die();
+}
+
+function getMyRequests(){
+	global $wpdb;
+	$current_user = wp_get_current_user();
+
+	$adventure_id = intval($_POST['adventure_id']);
+	$status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : 'all';
+
+	$where = "WHERE r.adventure_id = %d AND r.player_id = %d";
+	$params = array($adventure_id, $current_user->ID);
+
+	if($status !== 'all'){
+		$where .= " AND r.request_status = %s";
+		$params[] = $status;
+	}
+
+	$sql = "SELECT r.*
+		FROM {$wpdb->prefix}br_requests r
+		$where
+		ORDER BY r.request_date DESC";
+
+	$requests = $wpdb->get_results($wpdb->prepare($sql, ...$params));
+
+	foreach($requests as $req){
+		include(get_template_directory().'/my-request-row.php');
+	}
+
+	if(empty($requests)){
+		echo '<p class="font _16 grey-400 text-center padding-20">' . __("You haven't sent any requests yet","bluerabbit") . '</p>';
+	}
+	die();
+}
+
+function updateRequestStatus(){
+	global $wpdb;
+	$current_user = wp_get_current_user();
+	$data = array();
+	$data['success'] = false;
+
+	$nonce = $_POST['nonce'];
+	if(wp_verify_nonce($nonce, 'br_request_nonce')){
+		$request_id = intval($_POST['request_id']);
+		$new_status = sanitize_text_field($_POST['new_status']);
+		$admin_note = isset($_POST['admin_note']) ? stripslashes_deep($_POST['admin_note']) : '';
+
+		$update_data = array(
+			'request_status' => $new_status,
+			'request_admin_note' => $admin_note,
+			'request_resolved_by' => $current_user->ID,
+			'request_resolved_date' => current_time('mysql')
+		);
+
+		$result = $wpdb->update(
+			"{$wpdb->prefix}br_requests",
+			$update_data,
+			array('request_id' => $request_id),
+			array('%s','%s','%d','%s'),
+			array('%d')
+		);
+
+		if($result !== false){
+			$data['success'] = true;
+			$data['message'] = __("Request updated","bluerabbit");
+		}
+	}
+	echo json_encode($data);
+	die();
 }

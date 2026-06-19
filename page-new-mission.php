@@ -110,11 +110,21 @@
 					<h4 class="white-color padding-5 text-center font _18 condensed"><?= __("Status","bluerabbit"); ?></h4>
 				</li>
 				<li class="block">
-					<select id="the_quest_status" class="form-ui">
-						<option value="publish" <?php if(!isset($quest) || $quest->quest_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
-						<option value="draft" <?php if(isset($quest) && $quest->quest_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
-						<option value="trash" <?php if(isset($quest) && $quest->quest_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
-					</select>
+                    <?php if(isset($quest)){ ?>
+                        <select id="the_quest_status" class="form-ui">
+                            <option value="publish" <?php if(!$quest->quest_status|| $quest->quest_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
+                            <option value="draft" <?php if($quest->quest_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
+                            <option value="locked" <?php if($quest->quest_status == 'locked'){ echo 'selected'; }?>><?php _e('Locked','bluerabbit'); ?></option>
+                            <option value="trash" <?php if($quest->quest_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
+                        </select>
+                    <?php }else{ ?>
+                        <select id="the_quest_status" class="form-ui">
+                            <option value="publish"><?php _e('Publish','bluerabbit'); ?></option>
+                            <option value="draft"><?php _e('Draft','bluerabbit'); ?></option>
+                            <option value="locked"><?php _e('Locked','bluerabbit'); ?></option>
+                            <option value="trash"><?php _e('Trash','bluerabbit'); ?></option>
+                        </select>
+                    <?php } ?>
 				</li>
 				<li class="block text-center">
 					<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>"/>
@@ -136,7 +146,7 @@
 	<div class="dashboard-content white-bg">
 		<div class="w-full padding-10 amber-bg-50">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40 amber-bg-400"><span class="icon icon-mission"></span></span>
+				<span class="button-icon font _24 sq-40 amber-bg-400"><span class="icon icon-mission"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 grey-800">
 						<?= isset($quest) ? __("Edit Mission","bluerabbit") : __("New Mission","bluerabbit"); ?>
@@ -151,7 +161,7 @@
 			<div class="tab max-w-900 padding-10 active" id="general">
 				<div class="highlight padding-10 grey-bg-200">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  blue-grey-bg-400"><span class="icon icon-settings"></span></span>
+						<span class="button-icon font _24 sq-40  blue-grey-bg-400"><span class="icon icon-settings"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800"><?php _e("Basic Settings","bluerabbit"); ?></span>
 						</span>
@@ -210,8 +220,8 @@
 									<div class="gallery-item setting">
 										<div class="background" style="background-image: url(<?= isset($quest) ? $quest->mech_badge : NULL; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
 										<div class="gallery-item-options relative">
-											<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-											<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
+											<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
+											<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
 											<input type="hidden" id="the_quest_badge" value="<?= isset($quest) ? $quest->mech_badge : NULL; ?>"/>
 										</div>
 									</div>
@@ -232,7 +242,7 @@
 			<div class="tab max-w-900 padding-10" id="objectives">
 				<div class="highlight padding-10 purple-bg-200">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40 purple-bg-400"><span class="icon icon-objectives"></span></span>
+						<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-objectives"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 white-color"><?php _e("Mission Objectives","bluerabbit"); ?></span>
 						</span>

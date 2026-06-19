@@ -33,7 +33,7 @@ switch ($style){
 			<div class="question-image">
 				<img id="question-<?= $qKey; ?>-img" src="<?= $question['survey_question_image']; ?>" onClick="showWPUpload('question-<?= $qKey; ?>-img','q','survey',<?= $qKey; ?>);">
 				<div class="actions">
-					<button class="icon-button font _24 sq-40  pink-bg-400 white-color" onClick="clearImage('#question-<?= $qKey; ?>-img','survey',<?= $qKey; ?>);">
+					<button class="button-icon font _24 sq-40  pink-bg-400 white-color" onClick="clearImage('#question-<?= $qKey; ?>-img','survey',<?= $qKey; ?>);">
 						<span class="icon icon-trash"></span>
 						<span class="tool-tip bottom">
 							<span class="tool-tip-text"><?php _e("Remove image","bluerabbit"); ?></span>
@@ -121,7 +121,7 @@ switch ($style){
 			<div class="confirm-action overlay-layer" id="confirm-question-<?= $qKey; ?>">
 				<button class="form-ui white-bg" onClick="removeQuestion(<?= $qKey; ?>,'survey');">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+						<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 							<span class="icon icon-trash white-color"></span>
 						</span>
 						<span class="icon-content">
@@ -130,7 +130,7 @@ switch ($style){
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+				<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>
@@ -140,7 +140,7 @@ switch ($style){
 			<div class="confirm-action overlay-layer" id="confirm-duplicate-<?= $qKey; ?>">
 				<button class="form-ui white-bg" onClick="duplicateQuestion(<?= $qKey; ?>,'survey');">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-400 icon-sm">
+						<span class="button-icon font _24 sq-40  orange-bg-400 icon-sm">
 							<span class="icon icon-duplicate white-color"></span>
 						</span>
 						<span class="icon-content">
@@ -148,7 +148,7 @@ switch ($style){
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+				<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>

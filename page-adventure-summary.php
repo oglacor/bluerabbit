@@ -78,7 +78,7 @@
 			<div class="summary-item type-<?= $q->quest_type;?>" id="summary-item-<?= $q->quest_id; ?>">
 				<div class="summary-item-header">
 					<div class="toggle-tab" onClick="activate('#summary-item-<?= $q->quest_id; ?>',0,1);"></div>
-					<h2 onClick="activate('#summary-item-<?= $q->quest_id; ?>',0,1);"> <span class="icon-button sq-20 border rounded <?= $q->quest_color; ?>-bg-400"></span> <?= $q->quest_title; ?></h2>
+					<h2 onClick="activate('#summary-item-<?= $q->quest_id; ?>',0,1);"> <span class="button-icon sq-20 border rounded <?= $q->quest_color; ?>-bg-400"></span> <?= $q->quest_title; ?></h2>
 					<ul class="pills">
 						<li>ID: <strong><?= $q->quest_id; ?></strong></li>
 						<li><?= __("Order","bluerabbit").": <strong>$q->quest_order</strong>"; ?></li>

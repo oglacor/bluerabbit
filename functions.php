@@ -858,7 +858,20 @@ $sql = "
 		`trnx_status` VARCHAR(20) NULL DEFAULT 'publish',
 		`trnx_use` TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (`trnx_id`) )$charset_collate;
-	
+
+	CREATE TABLE {$wpdb->prefix}br_requests (
+		`request_id` BIGINT NOT NULL AUTO_INCREMENT,
+		`adventure_id` BIGINT NOT NULL,
+		`player_id` BIGINT NOT NULL,
+		`request_subject` VARCHAR(255) NOT NULL,
+		`request_content` LONGTEXT NOT NULL,
+		`request_status` VARCHAR(20) NOT NULL DEFAULT 'pending',
+		`request_admin_note` LONGTEXT NULL,
+		`request_resolved_by` BIGINT NULL,
+		`request_resolved_date` DATETIME NULL,
+		`request_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`request_id`) )$charset_collate;
+
 ";
 	
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -947,7 +960,9 @@ $sql = "
 		"Stats",
 		"Transactions",
 		"Tabis",
-		"Wall"
+		"Wall",
+		"Manage Requests",
+		"My Requests"
 	);
 	foreach ($new_pages as $np) {
 		// Exact, case-insensitive match on post_title
@@ -1081,11 +1096,11 @@ function getSysConfig($config_name=NULL){
 	if($config_name){
 		$sq = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_config WHERE config_name='$config_name'");
 		if($sq){
-			$config[$sq->config_name]['id'] = $sq->config_id;
-			$config[$sq->config_name]['label'] = $sq->config_label;
-			$config[$sq->config_name]['desc'] = $sq->config_desc;
-			$config[$sq->config_name]['type'] = $sq->config_type;
-			$config[$sq->config_name]['value'] = $sq->config_value;
+			$config['id'] = $sq->config_id;
+			$config['label'] = $sq->config_label;
+			$config['desc'] = $sq->config_desc;
+			$config['type'] = $sq->config_type;
+			$config['value'] = $sq->config_value;
 		}
 	}else{
 		$config_query = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_config");
@@ -1213,10 +1228,10 @@ function registerAdventureLogin($adventure_id) {
 function my_login_logo() { ?>
     <style type="text/css">
         #login h1 a, .login h1 a {
-            background-image: url(<?php echo get_stylesheet_directory_uri(); ?>/images/logo.png);
+            background-image: url(<?php echo get_stylesheet_directory_uri(); ?>/images/logo-unilever.png);
             padding-bottom: 30px;
 			width:230px;
-			background-size:cover;
+			background-size:contain;
         }
 		p#nav{
 			display:none;
@@ -1477,10 +1492,119 @@ require_once ("$dirName/classes/Notification.php");
 require_once ("$dirName/classes/Project.php");
 require_once ("$dirName/classes/BR-Scorm.php");
 require_once ("$dirName/classes/BR-mailer.php");
+require_once ("$dirName/classes/BR-Stats.php");
 require_once ("$dirName/functions/br-email-admin.php");
 
 $br_project = new Project();
 $n = new Notification();
+
+// ── Stats Dashboard ─────────────────────────────────────────────────────────
+function br_enqueue_analytics() {
+    // Cloudflare passes the visitor's country in this header
+    $country = $_SERVER['HTTP_CF_IPCOUNTRY'] ?? '';
+     
+    // Skip GA entirely for China
+    if ( $country === 'CN' ) return;
+    
+    $google_property = getSysConfig('google_property_id');
+    $gads_id = $google_property['value'] ? $google_property['value'] : 'G-F1QPQC2JZL';
+    // Everyone else gets GA as normal
+    wp_enqueue_script(
+        'google-analytics',
+        'https://www.googletagmanager.com/gtag/js?id='.$gads_id,
+        [], null, false
+    );
+    wp_add_inline_script('google-analytics', "
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '".$gads_id."');
+    ");
+}
+add_action('wp_enqueue_scripts', 'br_enqueue_analytics');
+
+function br_stats_enqueue_assets() {
+	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
+	if ( is_page('stats') ) {
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], '1.0' );
+		wp_enqueue_script( 'br-stats', get_template_directory_uri() . '/js/br-stats.js', ['jquery'], '1.0', true );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'br_stats_enqueue_assets' );
+
+function br_stats_is_manager( $adventure_id ) {
+	if ( current_user_can( 'manage_options' ) ) return true;
+	$pa = getPlayerAdventureData( $adventure_id, get_current_user_id() );
+	return $pa && isset( $pa->player_adventure_role )
+		&& in_array( $pa->player_adventure_role, [ 'gm', 'npc' ] );
+}
+
+function br_stats_xp_history() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$uid = isset( $_POST['user_id'] ) ? (int) $_POST['user_id'] : get_current_user_id();
+	$aid = (int) $_POST['adventure_id'];
+	if ( $uid !== get_current_user_id() && ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_player_xp_history( $uid, $aid, isset( $_POST['days'] ) ? (int) $_POST['days'] : 30 ) );
+}
+add_action( 'wp_ajax_br_stats_xp_history', 'br_stats_xp_history' );
+
+function br_stats_quest_funnel() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_quest_funnel( $aid ) );
+}
+add_action( 'wp_ajax_br_stats_quest_funnel', 'br_stats_quest_funnel' );
+
+function br_stats_xp_distribution() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_xp_distribution( $aid ) );
+}
+add_action( 'wp_ajax_br_stats_xp_distribution', 'br_stats_xp_distribution' );
+
+function br_stats_activity_heatmap() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_activity_heatmap( $aid ) );
+}
+add_action( 'wp_ajax_br_stats_activity_heatmap', 'br_stats_activity_heatmap' );
+
+function br_stats_player_panel() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$uid = (int) $_POST['user_id'];
+	$aid = (int) $_POST['adventure_id'];
+	if ( $uid !== get_current_user_id() && ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats     = new BR_Stats();
+	$adventure = getAdventure( $aid );
+	wp_send_json_success( [
+		'summary'         => array_merge(
+			$stats->get_player_summary( $uid, $aid ),
+			[ 'avatar_url' => get_avatar_url( $uid, [ 'size' => 80 ] ) ]
+		),
+		'quests'          => $stats->get_player_quest_progress( $uid, $aid ),
+		'achievements'    => $stats->get_player_achievements( $uid, $aid ),
+		'guild'           => $stats->get_player_guild( $uid, $aid ),
+		'scorm'           => $stats->get_player_scorm_completions( $uid ),
+		'tabis'           => $stats->get_player_tabi_progress( $uid, $aid ),
+		'type_completion' => $stats->get_player_type_completion( $uid, $aid ),
+		'last_activity'   => $stats->get_player_last_activity( $uid, $aid ),
+		'engagement'      => $stats->get_player_engagement( $uid, $aid ),
+		'adventure_title' => $adventure ? $adventure->adventure_title : '',
+		'labels'          => [
+			'xp'   => $adventure ? ( $adventure->adventure_xp_label ?: 'XP' ) : 'XP',
+			'bloo' => $adventure ? ( $adventure->adventure_bloo_label ?: 'BLOO' ) : 'BLOO',
+			'ep'   => $adventure ? ( $adventure->adventure_ep_label ?: 'EP' ) : 'EP',
+		],
+	] );
+}
+add_action( 'wp_ajax_br_stats_player_panel', 'br_stats_player_panel' );
 
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );
@@ -1570,6 +1694,7 @@ add_action("wp_ajax_br_notify", "notify");
 add_action("wp_ajax_switchRank", "switchRank");
 add_action("wp_ajax_closeIntro", "closeIntro");
 add_action("wp_ajax_resetIntro", "resetIntro");
+add_action("wp_ajax_br_dismiss_tutorial", "br_dismiss_tutorial");
 add_action("wp_ajax_resetPrevLevel", "resetPrevLevel");
 add_action("wp_ajax_resetGuilds", "resetGuilds");
 add_action("wp_ajax_resetPlayerAdventure", "resetPlayerAdventure");
@@ -1751,5 +1876,9 @@ add_action("wp_ajax_br_logout", "br_logout");
 add_action("wp_ajax_br_scorm_upload",    array('BR_SCORM', 'ajax_upload'));
 add_action("wp_ajax_br_scorm_save_data", array('BR_SCORM', 'ajax_save_data'));
 add_action("wp_ajax_br_scorm_reset_all",    array('BR_SCORM', 'ajax_reset_all'));
+add_action("wp_ajax_submitRequest", "submitRequest");
+add_action("wp_ajax_getRequests", "getRequests");
+add_action("wp_ajax_getMyRequests", "getMyRequests");
+add_action("wp_ajax_updateRequestStatus", "updateRequestStatus");
 
 

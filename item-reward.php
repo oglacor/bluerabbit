@@ -14,7 +14,7 @@
 				<div class="table-cell">
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  hidden-mobile <?php echo $i_color; ?>-bg-400 ">
+							<span class="button-icon font _24 sq-40  hidden-mobile <?php echo $i_color; ?>-bg-400 ">
 								<span class="icon icon-<?php echo $icon_type; ?>"></span>
 							</span>
 							<span class="icon-content">
@@ -35,15 +35,15 @@
 				<div class="spacer text-center padding-10">
 					<div class="background" onClick="flipMilestone('item-<?php echo $i->item_id; ?>');"></div>
 					<?php if($isGM){ ?>
-						<a class="icon-button font _24 sq-40  green-bg-400 foreground" href="<?php echo get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>"><span class="icon icon-edit"></span></a>
-						<button type="button" class="icon-button font _24 sq-40  red-bg-400 foreground" onClick="br_confirm_trd('trash',<?php echo $i->item_id; ?>,'item');" ><span class="icon icon-trash"></span></button>
+						<a class="button-icon font _24 sq-40  green-bg-400 foreground" href="<?php echo get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>"><span class="icon icon-edit"></span></a>
+						<button type="button" class="button-icon font _24 sq-40  red-bg-400 foreground" onClick="br_confirm_trd('trash',<?php echo $i->item_id; ?>,'item');" ><span class="icon icon-trash"></span></button>
 					<?php } ?>
 					<?php if($isGM || $isNPC){ ?>
-						<a class="icon-button font _24 sq-40  pink-bg-300 foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>">
+						<a class="button-icon font _24 sq-40  pink-bg-300 foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>">
 							<span class="icon icon-transactions"></span>
 						</a>
 					<?php } ?>
-					<button class="icon-button font _24 sq-40  blue-grey-bg-500 white-color foreground" onClick="flipMilestone('item-<?php echo $i->item_id; ?>');"><span class="icon icon-cancel"></span></button>
+					<button class="button-icon font _24 sq-40  blue-grey-bg-500 white-color foreground" onClick="flipMilestone('item-<?php echo $i->item_id; ?>');"><span class="icon icon-cancel"></span></button>
 				</div>
 
 				<div class="corner circle upper-right deep-purple-bg-400 white-color font _20 w900 foreground">
@@ -68,7 +68,7 @@
 									<button class="form-ui grey-bg-800" onClick="buyItem(<?php echo $i->item_id; ?>);">
 										<h3 class="text-center white-color font _18 condensed w100"><?php _e("Confirm","bluerabbit"); ?></h3>
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  icon-sm green-bg-400">
+											<span class="button-icon font _24 sq-40  icon-sm green-bg-400">
 												<span class="icon icon-bloo white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -105,7 +105,7 @@
 				<div class="table-cell">
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  <?php echo $i_color; ?>-bg-400 hidden-mobile">
+							<span class="button-icon font _24 sq-40  <?php echo $i_color; ?>-bg-400 hidden-mobile">
 								<span class="icon icon-<?php echo $icon_type; ?>"></span>
 							</span>
 							<span class="icon-content">
@@ -115,7 +115,7 @@
 					</div>
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  white-bg purple-400 hidden-mobile">
+							<span class="button-icon font _24 sq-40  white-bg purple-400 hidden-mobile">
 								<span class="icon icon-lock"></span>
 							</span>
 							<span class="icon-content">

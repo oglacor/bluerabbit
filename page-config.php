@@ -256,7 +256,7 @@
 ?>
 
 <h1 class="font _30 padding-20 text-center blue-bg-400 white-color w700">
-	<span class="icon-button font _24 sq-40  white-bg blue-700"><span class="icon icon-logo"></span></span>
+	<span class="button-icon font _24 sq-40  white-bg blue-700"><span class="icon icon-logo"></span></span>
 	<?php _e("System Settings","bluerabbit"); ?>
 </h1>
 <div class="dashboard white-bg">
@@ -395,8 +395,8 @@
 													<div class="gallery-item setting">
 														<div class="gallery-image-thumb" style="background-image: url(<?= $config[$sKey]['value']; ?>);" id="<?=$sKey;?>_thumb"></div>
 														<div class="gallery-item-options">
-															<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$sKey; ?>');"><span class="icon icon-image"></span></button>
-															<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$sKey; ?>');"> <span class="icon icon-trash"></span> </button>
+															<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$sKey; ?>');"><span class="icon icon-image"></span></button>
+															<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$sKey; ?>');"> <span class="icon icon-trash"></span> </button>
 														</div>
 														<div class="gallery-item-description white-color foreground">
 															<div class="background black-bg opacity-50"></div>
@@ -550,8 +550,8 @@
 							<div class="gallery-item config">
 								<div class="gallery-image-thumb" style="background-image: url(<?= $config[$iKey]['value']; ?>);" id="<?=$iKey;?>_thumb"></div>
 								<div class="gallery-item-options">
-									<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
-									<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
+									<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
+									<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
 								</div>
 								<div class="gallery-item-description white-color foreground">
 									<div class="background black-bg opacity-50"></div>

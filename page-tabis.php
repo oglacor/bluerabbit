@@ -25,19 +25,20 @@
 			$the_player_id_for_backpack = $current_user->ID;
 		}
 	
-        $tabis = getTabis($adv_parent_id);
-		$myTabiItems = $wpdb->get_results( "SELECT items.*, tabis.tabi_name,
-		trnxs.object_id, trnxs.trnx_id, trnxs.trnx_type, trnxs.trnx_date, COUNT(items.item_id) AS total_consumables
+        $tabis = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_tabis WHERE adventure_id=$adv_parent_id AND tabi_as_category=0 AND tabi_status='publish' ORDER BY tabi_level ASC, tabi_id ASC");
+
+    	$myTabiItems = $wpdb->get_results( "SELECT items.*, tabis.tabi_name,
+		trnxs.object_id, trnxs.trnx_id, trnxs.player_id, trnxs.trnx_type, trnxs.trnx_date
 		FROM  {$wpdb->prefix}br_items items 
-		JOIN {$wpdb->prefix}br_transactions trnxs
-		ON items.item_id = trnxs.object_id
+		LEFT JOIN {$wpdb->prefix}br_transactions trnxs
+		ON items.item_id = trnxs.object_id AND trnxs.trnx_type='tabi-piece' AND trnxs.trnx_status='publish' AND trnxs.adventure_id=$adv_child_id 
 
 		JOIN {$wpdb->prefix}br_tabis tabis
 		ON items.tabi_id = tabis.tabi_id
 
 
-		WHERE items.adventure_id=$adv_parent_id AND items.item_status='publish' AND trnxs.player_id=$the_player_id_for_backpack AND trnxs.adventure_id=$adv_child_id AND trnxs.trnx_type='tabi-piece' AND trnxs.trnx_status='publish'
-		GROUP BY trnxs.object_id, trnxs.trnx_type ORDER BY items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
+		WHERE items.adventure_id=$adv_parent_id AND items.item_status='publish' AND tabis.tabi_as_category=0
+		ORDER BY items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
 		?>
 		<nav class="tab-nav">
 			<ul>
@@ -73,7 +74,7 @@
                                             <?php foreach($myTabiItems as $i){ ?>
                                                 <?php if($i->tabi_id == $a->tabi_id){ ?>
                                                     <div class="tabi-piece" id="tabi-piece-<?=$i->item_id; ?>" style="z-index: <?= $i->item_z; ?>;top:<?= $i->item_y; ?>%; left:<?= $i->item_x; ?>%; transform:rotate(<?= $i->item_rotation; ?>deg);width:<?=$i->item_scale;?>%">
-                                                        <div class="tabi-piece-image">
+                                                        <div class="tabi-piece-image <?= $i->player_id == $current_user->ID ? 'active' : ''; ?>" style="transform:scale(<?=$i->item_scale;?>) rotate(<?= $i->item_rotation; ?>deg);">
                                                             <img src="<?= $i->item_badge; ?>" alt="<?= $i->item_name; ?>" title="<?= $i->item_name; ?>">
                                                         </div>
                                                     </div>

@@ -4,7 +4,7 @@
 	<?php $manage = isset($_GET['manage']) ? $_GET['manage'] : 'journey'; ?>
 	<div class="w-full padding-10 grey-bg-800">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40  orange-bg-400"><span class="icon icon-tools"></span></span>
+			<span class="button-icon font _24 sq-40  orange-bg-400"><span class="icon icon-tools"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 orange-400"><?php _e('Manage Adventure','bluerabbit'); ?></span>
 				<span class="line font _14 orange-100"><?php echo __('Managing','bluerabbit')." >>> <span class='font uppercase w700'>$manage</span>"; ?> </span>
@@ -167,6 +167,20 @@
 					<?php } ?>
 				</span>
 			<?php } ?>
+			<span class="icon-content">
+				<?php if($manage == 'requests') { ?>
+					<button class="form-ui blue-bg-400 white-color">
+						<span class="icon icon-mail"></span>
+						<?php _e("Requests","bluerabbit");?>
+					</button>
+				<?php }else{ ?>
+					<?php $link = get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=requests";  ?>
+					<a class="form-ui grey-bg-400 white-color" href="<?php echo $link;?>">
+						<span class="icon icon-mail"></span>
+						<?php _e("Requests","bluerabbit");?>
+					</a>
+				<?php } ?>
+			</span>
 		</span>
 	</div>			
 	<div class="container">
@@ -185,6 +199,7 @@
 	<input type="hidden" id="trash-nonce" value="<?php echo wp_create_nonce('trash_nonce'); ?>" />
 	<input type="hidden" id="empty-trash-nonce" value="<?php echo wp_create_nonce('empty_trash_nonce'.$current_user->ID); ?>" />
 	<input type="hidden" id="delete-nonce" value="<?php echo wp_create_nonce('delete_nonce'); ?>" />
+	<input type="hidden" id="locked-nonce" value="<?php echo wp_create_nonce('locked_nonce'); ?>" />
 	<input type="hidden" id="publish-nonce" value="<?php echo wp_create_nonce('publish_nonce'); ?>" />
 	<input type="hidden" id="draft-nonce" value="<?php echo wp_create_nonce('draft_nonce'); ?>" />
 	<input type="hidden" id="duplicator_nonce" value="<?php echo wp_create_nonce('duplicate_nonce'); ?>"/>

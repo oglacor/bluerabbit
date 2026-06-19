@@ -10,7 +10,7 @@
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 purple-bg-50">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40 purple-bg-400"><span class="icon icon-narrative"></span></span>
+			<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-narrative"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 grey-800">
 					<?= ($adventure && isset($quest)) ? __("Edit Resource","bluerabbit") : __("New Resource","bluerabbit"); ?>

@@ -136,7 +136,7 @@ if($adventure && ($isGM || $isAdmin)){
 								</select>
 							<?php }else{ ?>
 								<select id="the_quest_status" class="form-ui">
-									<option value="publish" ><?php _e('Publish','bluerabbit'); ?></option>
+									<option value="publish"><?php _e('Publish','bluerabbit'); ?></option>
 									<option value="draft"><?php _e('Draft','bluerabbit'); ?></option>
 									<option value="locked"><?php _e('Locked','bluerabbit'); ?></option>
 									<option value="trash"><?php _e('Trash','bluerabbit'); ?></option>
@@ -213,7 +213,7 @@ if($adventure && ($isGM || $isAdmin)){
 			<div class="dashboard-content white-bg">
 				<div class="w-full padding-10 blue-bg-50">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40 blue-bg-400"><span class="icon icon-quest"></span></span>
+						<span class="button-icon font _24 sq-40 blue-bg-400"><span class="icon icon-quest"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800" id="quest-title-label">
 								<?= isset($quest) ? __("Edit Quest","bluerabbit")." > $quest->quest_title" : __("New Quest","bluerabbit"); ?>
@@ -228,7 +228,7 @@ if($adventure && ($isGM || $isAdmin)){
 					<div class="tab max-w-900 padding-10 active" id="general">
 						<div class="highlight padding-10 grey-bg-200">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></span>
+								<span class="button-icon font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Basic Settings","bluerabbit"); ?></span>
 								</span>
@@ -302,8 +302,8 @@ if($adventure && ($isGM || $isAdmin)){
 											<div class="gallery-item setting">
 												<div class="background" style="background-image: url(<?= isset($quest) ? $quest->mech_badge : NULL; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
 												<div class="gallery-item-options relative">
-													<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-													<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
+													<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
+													<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
 													<input type="hidden" id="the_quest_badge" value="<?= isset($quest) ? $quest->mech_badge : NULL; ?>"/>
 												</div>
 											</div>
@@ -318,7 +318,7 @@ if($adventure && ($isGM || $isAdmin)){
 						<?php include (get_stylesheet_directory() . '/component-quest-base-mechs.php'); ?>
 						<div class="highlight padding-10 blue-bg-50">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40 blue-bg-400"><span class="icon icon-quest"></span></span>
+								<span class="button-icon font _24 sq-40 blue-bg-400"><span class="icon icon-quest"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 grey-800"><?php _e("Quest Mechanics","bluerabbit"); ?></span>
 								</span>
@@ -370,7 +370,7 @@ if($adventure && ($isGM || $isAdmin)){
 					<div class="tab max-w-1200 padding-10" id="boss-fight-steps">
 						<div class="highlight padding-10 indigo-bg-400">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  white-bg">
+								<span class="button-icon font _24 sq-40  white-bg">
 									<span class="icon icon-progression indigo-400"></span>
 								</span>
 								<span class="icon-content font _24">

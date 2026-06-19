@@ -28,7 +28,7 @@
 						<?php if($consumables){ ?>
 							<div class="highlight padding-10 pink-bg-50">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  pink-bg-700 white-color">
+									<span class="button-icon font _24 sq-40  pink-bg-700 white-color">
 										<span class="icon icon-basket"></span>
 									</span>
 									<span class="icon-content">
@@ -54,7 +54,7 @@
 										<div class="confirm-action overlay-layer" id="confirm-reset-transactions">
 											<button class="form-ui white-bg" onClick="resetTransactions(<?php echo $current_player->player_id; ?>);">
 												<span class="icon-group">
-													<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+													<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 														<span class="icon icon-trash white-color"></span>
 													</span>
 													<span class="icon-content">
@@ -63,7 +63,7 @@
 													</span>
 												</span>
 											</button>
-											<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+											<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 												<span class="icon icon-cancel white-color"></span>
 											</button>
 										</div>
@@ -75,7 +75,7 @@
 						<?php }else{ ?>
 							<div class="highlight padding-10 pink-bg-50">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  pink-bg-700 white-color">
+									<span class="button-icon font _24 sq-40  pink-bg-700 white-color">
 										<span class="icon icon-basket"></span>
 									</span>
 									<span class="icon-content">
@@ -88,7 +88,7 @@
 						<?php if($key_items){ ?>
 							<div class="highlight padding-10 indigo-bg-50">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  light-blue-bg-700 white-color">
+									<span class="button-icon font _24 sq-40  light-blue-bg-700 white-color">
 										<span class="icon icon-key"></span>
 									</span>
 									<span class="icon-content">
@@ -111,7 +111,7 @@
 						<?php if($rewards){ ?>
 							<div class="highlight padding-10 teal-bg-50">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  teal-bg-400 white-color">
+									<span class="button-icon font _24 sq-40  teal-bg-400 white-color">
 										<span class="icon icon-backpack"></span>
 									</span>
 									<span class="icon-content">
@@ -149,7 +149,7 @@
 						?>	 
 						<div class="highlight padding-10 grey-bg-50">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  orange-bg-400 white-color">
+								<span class="button-icon font _24 sq-40  orange-bg-400 white-color">
 									<span class="icon icon-transactions"></span>
 								</span>
 								<span class="icon-content">

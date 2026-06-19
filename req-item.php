@@ -18,7 +18,7 @@
 			<h3 class="font _24 w900 white-color"><?= $mi->item_name; ?></h3>
 			<div class="sq-100 relative border rounded-max text-center inline-block background text-center margin-10 overflow-hidden"  style="background-image: url(<?= $mi->item_badge; ?>);">
 			</div>
-			<span class="icon-button absolute font _36 lime-bg-400 layer overlay req-status">
+			<span class="button-icon absolute font _36 lime-bg-400 layer overlay req-status">
 				<span class="icon-check lime-900 perfect-center"></span>
 			</span>
 			<br>
@@ -29,7 +29,7 @@
 			<h3 class="font _24 w900 white-color"><?= $mi->item_name; ?></h3>
 			<div class="sq-100 relative border rounded-max text-center inline-block background text-center margin-10 overflow-hidden"  style="background-image: url(<?= $mi->item_badge; ?>);">
 			</div>
-			<span class="icon-button perfect-center absolute font _36 red-bg-400 layer overlay req-status">
+			<span class="button-icon perfect-center absolute font _36 red-bg-400 layer overlay req-status">
 				<span class="icon-cancel perfect-center"></span>
 			</span>
 			<br>

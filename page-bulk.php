@@ -9,7 +9,7 @@ if($adventure && $isAdmin){
 	<div class="boxed max-w-1200">
 			<div class="text-center padding-20">
 				<span class="icon-group inline-table">
-					<span class="icon-button font _24 sq-40  icon-lg purple-bg-400"><span class="icon icon-duplicate"></span></span>
+					<span class="button-icon font _24 sq-40  icon-lg purple-bg-400"><span class="icon icon-duplicate"></span></span>
 					<span class="icon-content">
 						<span class="line font _48 white-color">
 							<?php _e("Bulk Create","bluerabbit"); ?>
@@ -20,7 +20,7 @@ if($adventure && $isAdmin){
 			<div class="body-ui w-full white-bg">
 				<div class="highlight padding-20 blue-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></div>
+						<div class="button-icon font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Achievements","bluerabbit");?></div>
 						</div>
@@ -59,8 +59,8 @@ if($adventure && $isAdmin){
 									<div class="gallery-item setting">
 										<div class="background" style="background-image: url(<?= $a->achievement_badge; ?>);" onClick="showWPUpload('the_achievement_badge');" id="the_achievement_badge_thumb"></div>
 										<div class="gallery-item-options relative">
-											<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
-											<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_achievement_badge');"> <span class="icon icon-trash"></span> </button>
+											<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
+											<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_achievement_badge');"> <span class="icon icon-trash"></span> </button>
 											<input type="hidden" id="the_achievement_badge" value="<?php echo $a->achievement_badge; ?>"/>
 										</div>
 									</div>
@@ -103,7 +103,7 @@ if($adventure && $isAdmin){
 								</td>
 								<td>
 									<span class="icon-group">
-										<span class="icon-button font _24 sq-40  indigo-bg-400">
+										<span class="button-icon font _24 sq-40  indigo-bg-400">
 											<span class="icon icon-warning white-color"></span>
 										</span>
 										<span class="icon-content">

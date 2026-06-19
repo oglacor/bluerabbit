@@ -114,19 +114,21 @@
 					<h4 class="white-color padding-5 text-center font _18 condensed"><?= __("Status","bluerabbit"); ?></h4>
 				</li>
 				<li class="block">
-					<?php if(isset($quest)){ ?>
-						<select id="the_quest_status" class="form-ui">
-							<option value="publish" <?php if(!$quest->quest_status|| $quest->quest_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
-							<option value="draft" <?php if($quest->quest_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
-							<option value="trash" <?php if($quest->quest_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
-						</select>
-					<?php }else{ ?>
-						<select id="the_quest_status" class="form-ui">
-							<option value="publish" ><?php _e('Publish','bluerabbit'); ?></option>
-							<option value="draft"><?php _e('Draft','bluerabbit'); ?></option>
-							<option value="trash"><?php _e('Trash','bluerabbit'); ?></option>
-						</select>
-					<?php } ?>
+                    <?php if(isset($quest)){ ?>
+                        <select id="the_quest_status" class="form-ui">
+                            <option value="publish" <?php if(!$quest->quest_status|| $quest->quest_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
+                            <option value="draft" <?php if($quest->quest_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
+                            <option value="locked" <?php if($quest->quest_status == 'locked'){ echo 'selected'; }?>><?php _e('Locked','bluerabbit'); ?></option>
+                            <option value="trash" <?php if($quest->quest_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
+                        </select>
+                    <?php }else{ ?>
+                        <select id="the_quest_status" class="form-ui">
+                            <option value="publish"><?php _e('Publish','bluerabbit'); ?></option>
+                            <option value="draft"><?php _e('Draft','bluerabbit'); ?></option>
+                            <option value="locked"><?php _e('Locked','bluerabbit'); ?></option>
+                            <option value="trash"><?php _e('Trash','bluerabbit'); ?></option>
+                        </select>
+                    <?php } ?>
 				</li>
 				<li class="block text-center">
 					<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>"/>
@@ -176,7 +178,7 @@
 	<div class="dashboard-content white-bg">
 		<div class="highlight padding-10 teal-bg-50">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40 teal-bg-400"><span class="icon icon-survey"></span></span>
+				<span class="button-icon font _24 sq-40 teal-bg-400"><span class="icon icon-survey"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 grey-800">
 						<?= $quest ? __("Edit Survey","bluerabbit") : __("New Survey","bluerabbit"); ?>
@@ -192,7 +194,7 @@
 			<div class="active tab max-w-900 padding-10" id="general">
 				<div class="highlight padding-10 grey-bg-200">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  teal-bg-400"><span class="icon icon-survey"></span></span>
+						<span class="button-icon font _24 sq-40  teal-bg-400"><span class="icon icon-survey"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800"><?php _e("General Settings","bluerabbit"); ?></span>
 						</span>
@@ -250,8 +252,8 @@
 									<div class="gallery-item setting">
 										<div class="background" style="background-image: url(<?= isset($quest->mech_badge) ? $quest->mech_badge : "" ; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
 										<div class="gallery-item-options relative">
-											<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-											<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
+											<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
+											<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
 											<input type="hidden" id="the_quest_badge" value="<?= isset($quest->mech_badge) ? $quest->mech_badge : "" ; ?>"/>
 										</div>
 									</div>
@@ -268,7 +270,7 @@
 			<div class="tab max-w-900 padding-10 survey-questions-form" id="survey-questions">
 				<div class="padding-10 grey-bg-200">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40 teal-bg-400"><span class="icon icon-question"></span></span>
+						<span class="button-icon font _24 sq-40 teal-bg-400"><span class="icon icon-question"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 grey-800"><?php _e("Survey Questions","bluerabbit"); ?></span>
 						</span>

@@ -40,7 +40,7 @@
 			</div>
 		</div>
 		<div class="layer base boxed relative w-full padding-20 max-w-200 border border-bottom white-border border-1 text-center">
-			<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" class="white-color opacity-50"><strong><?php _e("Forgot password?","bluerabbit"); ?></strong></a>
+			<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" class="white-color opacity-50"><strong><?php _e("Reset password","bluerabbit"); ?></strong></a>
 		</div>
 		<?php if($config['registration']['value'] > 0){?>
 			<div class="layer base relative w-full padding-30 text-center">

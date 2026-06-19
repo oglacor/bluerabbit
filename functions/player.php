@@ -586,7 +586,7 @@ function resetPlayerPassword(){
 	$current_gm = getPlayerAdventureData($adventure_id, $current_user->ID);
 	$config_auth = getSysConfig('allow_gm_reset_password');
 	if($current_gm->player_adventure_role != 'player'){
-		if($config_auth['allow_gm_reset_password']['value'] == 1){
+		if($config_auth['value'] == 1){
 			$pass_check = wp_check_password( $current_gm_password, $current_user->user_pass, $current_user->ID );
 
 			if($pass_check){
@@ -1096,6 +1096,10 @@ function getPlayerAdventureData($adventure_id, $uID, $format='OBJECT'){
 
 	WHERE a.player_id=$uID AND a.adventure_id=$adventure_id", $format);
 	return $player;
+}
+function br_has_seen_tutorial($tutorial_key, $uID=0){
+	$uID = $uID ? $uID : wp_get_current_user()->ID;
+	return (bool) get_user_meta($uID, 'br_tutorial_seen_'.$tutorial_key, true);
 }
 function getPlayerData($uID, $format='OBJECT'){
 	global $wpdb; 

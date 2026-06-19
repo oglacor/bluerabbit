@@ -10,7 +10,7 @@
 		<div class="background layer bottom-1 absolute sq-full blue-gradient-A400 opacity-70"></div>
 		<div class="layer base relative">
 			<div class="icon-group inline-table" id="xp-number-earned-<?=$quest->quest_id; ?>">
-				<span class="icon-button font _20 sq-30  amber-bg-400">
+				<span class="button-icon font _20 sq-30  amber-bg-400">
 					<span class="icon icon-star white-color"></span>
 				</span>
 				<span class="icon-content">
@@ -20,7 +20,7 @@
 				<input type="hidden" class="end-value" value="<?=$quest->mech_xp; ?>">
 			</div>
 			<div class="icon-group inline-table" id="bloo-number-earned-<?=$quest->quest_id; ?>">
-				<span class="icon-button font _20 sq-30  light-green-bg-400">
+				<span class="button-icon font _20 sq-30  light-green-bg-400">
 					<span class="icon icon-bloo white-color"></span>
 				</span>
 				<span class="icon-content">
@@ -31,7 +31,7 @@
 			</div>
 			<?php if($adv_settings['use_encounters']['value'] > 0){ ?>
 			<div class="icon-group inline-table" id="ep-number-earned-<?=$quest->quest_id; ?>">
-				<span class="icon-button font _20 sq-30 cyan-bg-A400 ">
+				<span class="button-icon font _20 sq-30 cyan-bg-A400 ">
 					<span class="icon icon-activity blue-grey-900"></span>
 				</span>
 				<span class="icon-content">
@@ -63,7 +63,7 @@
 				<img src="<?= $item_reward->item_badge;?>" class="w-150 margin-5 overflow-hidden border rounded-max layer relative base">
 				<br>
 				<div class="icon-group inline-table layer relative base">
-					<a class="icon-button font _24 sq-40 teal-bg-400 font _28" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adv_child_id";?>">
+					<a class="button-icon font _24 sq-40 teal-bg-400 font _28" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adv_child_id";?>">
 						<span class="icon icon-backpack white-color"></span>
 					</a>
 					<span class="icon-content">

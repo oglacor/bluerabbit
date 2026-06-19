@@ -4,7 +4,7 @@
 		<?php if(isset($guilds['publish'])){ ?>
 			<div class="highlight padding-10 light-green-bg-50">
 				<span class="icon-group">
-					<span class="icon-button font _24 sq-40  light-green-bg-400"><span class="icon icon-guild"></span></span>
+					<span class="button-icon font _24 sq-40  light-green-bg-400"><span class="icon icon-guild"></span></span>
 					<span class="icon-content">
 						<span class="line font _24 grey-800"><?php _e('Published Guilds','bluerabbit'); ?></span>
 					</span>
@@ -63,12 +63,12 @@
 						<tr class="guild" id="guild-<?= $g->guild_id;?>">
 							<td class="badge">
 								<input type="hidden" value="<?= $g->guild_logo; ?>" id="the_guild_badge-<?= $g->guild_id; ?>">
-								<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_guild_badge-<?= $g->guild_id; ?>','a','guild',<?= $g->guild_id; ?>);" id="the_guild_badge-<?= $g->guild_id; ?>_thumb" style="background-image: url(<?= $g->guild_logo; ?>);">
+								<button class="button-icon font _24 sq-40  icon-lg" onClick="showWPUpload('the_guild_badge-<?= $g->guild_id; ?>','a','guild',<?= $g->guild_id; ?>);" id="the_guild_badge-<?= $g->guild_id; ?>_thumb" style="background-image: url(<?= $g->guild_logo; ?>);">
 								</button> 
 							</td>
 							<td class="color relative layer base">
 								<input type="hidden" value="<?= $g->guild_logo; ?>" id="the_guild_color-<?= $g->guild_id; ?>">
-								<button class="icon-button font _24 sq-40 <?=$g->guild_color;?>-bg-400" id="color-trigger-guild-<?= $g->guild_id; ?>" onClick="activate('#color-select-<?=$g->guild_id;?>');"><span class="icon icon-guild"></span>
+								<button class="button-icon font _24 sq-40 <?=$g->guild_color;?>-bg-400" id="color-trigger-guild-<?= $g->guild_id; ?>" onClick="activate('#color-select-<?=$g->guild_id;?>');"><span class="icon icon-guild"></span>
 								</button> 
 								<div class="color-select-popup" id="color-select-<?=$g->guild_id;?>">
 									<?php
@@ -102,16 +102,16 @@
 								</div>
 							</td>
 							<td class="text-center">
-								<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="icon-button font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit  edit-button"></span></a>
+								<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="button-icon font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit  edit-button"></span></a>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm grey-bg-800 white-color duplicate-button" onClick="showOverlay('#confirm-duplicate-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm grey-bg-800 white-color duplicate-button" onClick="showOverlay('#confirm-duplicate-<?= $g->guild_id; ?>');">
 									<span class="icon icon-infinite amber-500"></span>
 								</button>
 								<div class="confirm-action overlay-layer duplicate-confirm" id="confirm-duplicate-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg duplicate-confirm-buton" onClick="duplicateRow(<?= $g->guild_id; ?>);">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  grey-bg-800 icon-sm">
+											<span class="button-icon font _24 sq-40  grey-bg-800 icon-sm">
 												<span class="icon icon-infinite amber-500"></span>
 											</span>
 											<span class="icon-content">
@@ -119,19 +119,19 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm amber-bg-400 white-color draft-button" onClick="showOverlay('#confirm-draft-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm amber-bg-400 white-color draft-button" onClick="showOverlay('#confirm-draft-<?= $g->guild_id; ?>');">
 									<span class="icon icon-duplicate"></span>
 								</button>
 								<div class="confirm-action overlay-layer draft-confirm" id="confirm-draft-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg draft-confirm-button" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','draft');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  amber-bg-400 icon-sm">
+											<span class="button-icon font _24 sq-40  amber-bg-400 icon-sm">
 												<span class="icon icon-duplicate white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -139,19 +139,19 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm red-bg-400 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm red-bg-400 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $g->guild_id; ?>');">
 									<span class="icon icon-trash"></span>
 								</button>
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -159,7 +159,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -176,7 +176,7 @@
 		<?php if(isset($guilds['draft'])){ ?>
 			<div class="highlight padding-10 amber-bg-50">
 				<span class="icon-group">
-					<span class="icon-button font _24 sq-40  amber-bg-400"><span class="icon icon-guild"></span></span>
+					<span class="button-icon font _24 sq-40  amber-bg-400"><span class="icon icon-guild"></span></span>
 					<span class="icon-content">
 						<span class="line font _24 grey-800"><?php _e('Draft Guilds','bluerabbit'); ?></span>
 					</span>
@@ -225,16 +225,16 @@
 								<input type="hidden" class="guild-id" value="<?= $g->guild_id; ?>">
 							</td>
 							<td class="text-center">
-								<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="icon-button font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit"></span></a>
+								<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="button-icon font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit"></span></a>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm blue-bg-A400 white-color" onClick="showOverlay('#confirm-publish-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm blue-bg-A400 white-color" onClick="showOverlay('#confirm-publish-<?= $g->guild_id; ?>');">
 									<span class="icon icon-restore"></span>
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-publish-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','publish');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  blue-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  blue-bg-A400 icon-sm">
 												<span class="icon icon-restore white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -242,19 +242,19 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm red-bg-400 white-color" onClick="showOverlay('#confirm-trash-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm red-bg-400 white-color" onClick="showOverlay('#confirm-trash-<?= $g->guild_id; ?>');">
 									<span class="icon icon-trash"></span>
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-trash-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -262,7 +262,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -278,7 +278,7 @@
 		<?php if(isset($guilds['trash'])){ ?>
 			<div class="highlight padding-10 red-bg-50">
 				<span class="icon-group">
-					<span class="icon-button font _24 sq-40  red-bg-400"><span class="icon icon-guild"></span></span>
+					<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-guild"></span></span>
 					<span class="icon-content">
 						<span class="line font _24 grey-800"><?php _e('Trashed Guilds','bluerabbit'); ?></span>
 					</span>
@@ -328,16 +328,16 @@
 								<input type="hidden" class="guild-id" value="<?= $g->guild_id; ?>">
 							</td>
 							<td class="text-center">
-								<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="icon-button font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit"></span></a>
+								<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="button-icon font _24 sq-40  green-bg-400 icon-sm"><span class="icon icon-edit"></span></a>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm blue-bg-A400 white-color" onClick="showOverlay('#confirm-publish-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm blue-bg-A400 white-color" onClick="showOverlay('#confirm-publish-<?= $g->guild_id; ?>');">
 									<span class="icon icon-restore"></span>
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-publish-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','publish');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  blue-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  blue-bg-A400 icon-sm">
 												<span class="icon icon-restore white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -345,19 +345,19 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm amber-bg-400 white-color" onClick="showOverlay('#confirm-draft-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm amber-bg-400 white-color" onClick="showOverlay('#confirm-draft-<?= $g->guild_id; ?>');">
 									<span class="icon icon-duplicate"></span>
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-draft-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','draft');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  amber-bg-400 icon-sm">
+											<span class="button-icon font _24 sq-40  amber-bg-400 icon-sm">
 												<span class="icon icon-duplicate white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -365,19 +365,19 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 							</td>
 							<td class="text-center">
-								<button class="icon-button font _24 sq-40  icon-sm red-bg-A400 white-color" onClick="showOverlay('#confirm-trash-<?= $g->guild_id; ?>');">
+								<button class="button-icon font _24 sq-40  icon-sm red-bg-A400 white-color" onClick="showOverlay('#confirm-trash-<?= $g->guild_id; ?>');">
 									<span class="icon icon-cancel"></span>
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-trash-<?= $g->guild_id; ?>">
 									<button class="form-ui white-bg" onClick="confirmStatus(<?= $g->guild_id; ?>,'guild','delete');">
 										<span class="icon-group">
-											<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+											<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 												<span class="icon icon-cancel white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -386,7 +386,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>

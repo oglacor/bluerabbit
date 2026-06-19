@@ -57,6 +57,24 @@
 				<button class="foreground form-ui" onClick="hideAllOverlay();"><?= __("Cancel","bluerabbit"); ?></button>
 			</div>
 		</div>
+		<?php if(isset($adventure)){ ?>
+		<div class="magic-code-form overlay-layer layer top-overlay fixed sq-full top left" id="contact-admin-form">
+			<div class="layer absolute background blue-bg-800 opacity-80" onClick="hideAllOverlay();"></div>
+			<div class="layer absolute background black-bg opacity-60" onClick="hideAllOverlay();"></div>
+			<div class="layer relative base perfect-center text-center w-400">
+				<h3 class="white-color font _30 w700"><span class="icon icon-mail"></span> <?php _e("Contact Admin","bluerabbit"); ?></h3>
+				<p class="white-color font _14 opacity-60 padding-5"><?php _e("Send a message to the adventure admins","bluerabbit"); ?></p>
+				<input class="form-ui w-full font _16" type="text" id="request-subject" placeholder="<?php _e("Subject","bluerabbit"); ?>" maxlength="255">
+				<br>
+				<textarea class="form-ui w-full font _14" id="request-content" rows="5" placeholder="<?php _e("Describe your request...","bluerabbit"); ?>"></textarea>
+				<br>
+				<button class="form-ui blue-bg-400" onClick="submitRequest();"><span class="icon icon-check"></span> <?php _e("Send","bluerabbit"); ?></button>
+				<button class="form-ui grey-bg-600" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span> <?php _e("Cancel","bluerabbit"); ?></button>
+				<input type="hidden" id="request-nonce" value="<?php echo wp_create_nonce('br_request_nonce'); ?>" />
+			</div>
+		</div>
+		<?php } ?>
+
 		<?php if(isset($allow_magic_codes) && $allow_magic_codes==true){ ?>
 			<div class="magic-code-form overlay-layer layer top-overlay fixed sq-full top left" id="magic-code-form">
 				<div class="layer absolute background deep-purple-bg-400 opacity-80" onClick="hideAllOverlay();"></div>
@@ -142,7 +160,7 @@
             <div class="hidden" id="msg-save-first">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -154,7 +172,7 @@
             <div class="hidden" id="msg-error">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -166,7 +184,7 @@
             <div class="hidden" id="msg-new-tabi-row">
                 <li class='border green-bg-400 green-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-check green-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -178,7 +196,7 @@
             <div class="hidden" id="msg-no-id">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -190,7 +208,7 @@
             <div class="hidden" id="msg-no-path-choice">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -202,7 +220,7 @@
             <div class="hidden" id="msg-no-step-item">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -214,7 +232,7 @@
             <div class="hidden" id="msg-no-step-req-selected">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
@@ -226,7 +244,7 @@
             <div class="hidden" id="msg-new-button-added">
                 <li class='border white-bg blue-border-400'>
                     <span class='icon-group blue-grey-900'>
-                        <span class='icon-button font _24 sq-40  icon-sm blue-bg-400'>
+                        <span class='button-icon font _24 sq-40  icon-sm blue-bg-400'>
                             <span class='icon icon-check white-color'></span>
                         </span>
                         <span class='icon-content'>
@@ -238,7 +256,7 @@
             <div class="hidden" id="msg-new-button-added">
                 <li class='border white-bg blue-border-400'>
                     <span class='icon-group blue-grey-900'>
-                        <span class='icon-button font _24 sq-40  icon-sm blue-bg-400'>
+                        <span class='button-icon font _24 sq-40  icon-sm blue-bg-400'>
                             <span class='icon icon-check white-color'></span>
                         </span>
                         <span class='icon-content'>
@@ -250,7 +268,7 @@
             <div class="hidden" id="msg-text-copied">
 				<li class='border deep-purple-bg-400 purple-border-800'>
 					<span class='icon-group'>
-						<span class='icon-button font _24 sq-40'>
+						<span class='button-icon font _24 sq-40'>
 							<span class='icon white-color'></span>
 						</span>
 						<span class='icon-content white-color'>
@@ -262,7 +280,7 @@
             <div class="hidden" id="msg-no-file-selected">
 				<li class='border red-bg-400 red-border-800'>
 					<span class='icon-group'>
-						<span class='icon-button font _24 sq-40'>
+						<span class='button-icon font _24 sq-40'>
 							<span class='icon icon-cancel white-color'></span>
 						</span>
 						<span class='icon-content white-color'>
@@ -356,10 +374,10 @@
 			<div class="layer deep-bg fixed sq-full black-bg opacity-50 top left" onClick="activate('#profile-box');"></div>
 			<div class="profile-box-container layer overlay">
 				<div class="layer background black-bg absolute sq-full top left" style= "background-image: url(<?= get_bloginfo('stylesheet_directory')."/images/profile-box-bg.png"; ?>); "></div>
-				<button class="layer foreground absolute top-10 left-10 font _20 icon-button transparent-bg opacity-60" onClick="activate('#profile-box');">
+				<button class="layer foreground absolute top-10 left-10 font _20 button-icon transparent-bg opacity-60" onClick="activate('#profile-box');">
 					<span class="icon icon-cancel"></span>
 				</button>
-				<button class="layer foreground absolute top-10 right-10 font _20 icon-button transparent-bg opacity-60" id="logout-button" onClick="activate('#confirm-logout');">
+				<button class="layer foreground absolute top-10 right-10 font _20 button-icon transparent-bg opacity-60" id="logout-button" onClick="activate('#confirm-logout');">
 					<span class="icon icon-power"></span>
 				</button>
 
@@ -368,7 +386,7 @@
 						<?php if(isset($myRank)){?>
 						<button class="form-ui transparent-bg" onClick="loadAchievementCard(<?= $myRank->achievement_id; ?>);">
 							<span class="layer background absolute white-bg opacity-10 background-badge"></span>
-							<span class="layer base icon-button badge-icon sq-40 font _22 <?= $myRank->achievement_color ? $myRank->achievement_color : $adventure->adventure_color;?>-bg-400">
+							<span class="layer base button-icon badge-icon sq-40 font _22 <?= $myRank->achievement_color ? $myRank->achievement_color : $adventure->adventure_color;?>-bg-400">
 								<span class="icon icon-rank perfect-center absolute"></span>
 							</span>
 							<span class="relative layer base text"><?= $myRank->achievement_name ? $myRank->achievement_name : $adventure->adventure_nickname;?></span>
@@ -449,7 +467,7 @@
 						</div>
 					<?php } ?>
 					<?php if((!isset($adventure))){ ?>
-						<button class="icon-button red-bg-400 button-logout" onClick="activate('#confirm-logout');">
+						<button class="button-icon red-bg-400 button-logout" onClick="activate('#confirm-logout');">
 							<span class="halo rotate-L-40"></span><span class="icon icon-power white-color"></span>
 						</button>
 					<?php } ?>
@@ -462,36 +480,96 @@
 		<audio id="ui-touch-milestone-blocked" src="<?=get_bloginfo('template_directory')."/audio/milestone-blocked.mp3";?>"></audio>
 	
 		<?php if(isset($adventure) && is_page('adventure')){
-			include (get_stylesheet_directory() . '/tutorials/tutorial-journey.php'); 
-		} 
+			include (get_stylesheet_directory() . '/tutorials/tutorial-journey.php');
+		}
         ?>
         <?php if(!$current_player->player_hide_intro && !$adventure->adventure_instructions && is_page('adventure')){ ?>
             <script>
                tour.start();
             </script>
         <?php } ?>
+		<?php if(is_page('adventures')){
+			include (get_stylesheet_directory() . '/tutorials/tutorial-adventures-list.php');
+		}
+		?>
+		<?php if(is_page('adventures') && !br_has_seen_tutorial('adventures-list')){ ?>
+			<script>
+			   tour.start();
+			</script>
+		<?php } ?>
+		<?php if(isset($q) && $q && is_page('quest')){
+			include (get_stylesheet_directory() . '/tutorials/tutorial-quest.php');
+		}
+		?>
+		<?php if(isset($q) && $q && is_page('quest') && !br_has_seen_tutorial('quest')){ ?>
+			<script>
+			   tour.start();
+			</script>
+		<?php } ?>
+		<?php if(isset($challenge_data) && $challenge_data && is_page('challenge')){
+			include (get_stylesheet_directory() . '/tutorials/tutorial-challenge.php');
+		}
+		?>
+		<?php if(isset($challenge_data) && $challenge_data && is_page('challenge') && !br_has_seen_tutorial('challenge')){ ?>
+			<script>
+			   tour.start();
+			</script>
+		<?php } ?>
+		<?php if(isset($m) && $m && is_page('mission')){
+			include (get_stylesheet_directory() . '/tutorials/tutorial-mission.php');
+		}
+		?>
+		<?php if(isset($m) && $m && is_page('mission') && !br_has_seen_tutorial('mission')){ ?>
+			<script>
+			   tour.start();
+			</script>
+		<?php } ?>
+		<?php
+		$br_builder_pages = array('new-quest','new-challenge','new-mission','new-survey','new-adventure','new-achievement','new-speaker','new-session','new-guild','new-blocker','new-lore','new-blog-post','new-item');
+		foreach($br_builder_pages as $br_builder_slug){
+			if(is_page($br_builder_slug)){
+				include (get_stylesheet_directory() . "/tutorials/tutorial-$br_builder_slug.php");
+				if(!br_has_seen_tutorial($br_builder_slug)){
+					?><script>tour.start();</script><?php
+				}
+				break;
+			}
+		}
+		?>
 		<input type="hidden" id="url" value="<?= get_bloginfo('url');?>">
 		<footer class="taskbar" id="taskbar">
 			<div class="show-on-start core-nav" id="core-nav">
 				<?php if(isset($adventure)){ ?>
-					<a class="icon-button deep-purple-bg-400" id="journey-btn" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
+					<a class="button-icon deep-purple-bg-400" id="journey-btn" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
 						<span class="icon icon-journey white-color perfect-center"></span>
 					</a>
 					<?php if(isset($allow_magic_codes) && $allow_magic_codes==true){ ?>
-						<button class="icon-button amber-bg-400" id="magic-code-btn" onClick="showOverlay('#magic-code-form');">
+						<button class="button-icon amber-bg-400" id="magic-code-btn" onClick="showOverlay('#magic-code-form');">
 							<span class="icon icon-qr deep-purple-800"></span>
 						</button>
 					<?php } ?>
 					<?php if($use_item_shop){ ?>
-						<a class="icon-button pink-bg-400" id="item-shop-btn" href="<?= get_bloginfo('url')."/item-shop/?adventure_id=$adventure->adventure_id"; ?>">
+						<a class="button-icon pink-bg-400" id="item-shop-btn" href="<?= get_bloginfo('url')."/item-shop/?adventure_id=$adventure->adventure_id"; ?>">
 							<span class="icon icon-shop white-color perfect-center"></span>
 						</a>
-						<button class="icon-button brown-bg-400" id="my-backpack-btn" onClick="loadContent('backpack');">
-							<span class="icon icon-backpack "></span>
-						</button>
 					<?php } ?>
+                    <a class="button-icon grey-bg-900" id="microsoft-teams-btn" target="_blank" href="https://teams.microsoft.com/l/channel/19:thYSSRaXLdhbiZBlDt6GmAiCAhfclbur-NLwVwD1a4c1@thread.tacv2?tenantId=f66fae02-5d36-495b-bfe0-78a6ff9f8e6e">
+                        <img src="<?= get_bloginfo('template_directory')."/images/app-icons/microsoft-teams.png"; ?>">
+                    </a>
+                    <?php
+                    // Cooper: map adventure_id → Cooper client slug
+                    // Add entries here for each adventure that has Cooper enabled
+                    $cooper_slug = 'unilever-digital-factory';
+                    if ($cooper_slug): ?>
+                    <button class="button-icon blue-bg-800" id="cooper-support-btn" onclick="openCooperModal()">
+                        <img src="<?= get_bloginfo('template_directory')."/images/cooper-white.png"; ?>">
+                    </button>
+                    <?php endif; ?>
+					<button class="button-icon orange-bg-400" id="contact-admin-btn" onClick="showOverlay('#contact-admin-form');" title="<?php _e('Contact Admin','bluerabbit'); ?>">
+						<span class="icon icon-comment white-color"></span>
+					</button>
 					<?php if($use_encounters){ ?>
-						<button class="icon-button cyan-bg-A400" id="random-encounter-btn" onClick="randomEncounter();">
+						<button class="button-icon cyan-bg-A400" id="random-encounter-btn" onClick="randomEncounter();">
 							<span class="icon icon-activity grey-900"></span>
 						</button>
 					<?php } ?>
@@ -504,5 +582,111 @@
 		</footer>
 		<?php wp_enqueue_media();?>
 		<?php wp_footer(); ?>
+
+		<?php if (!empty($cooper_slug)): ?>
+		<!-- Cooper Support Modal -->
+		<div id="cooper-modal">
+			<div id="cooper-backdrop" onclick="closeCooperModal()"></div>
+			<div id="cooper-panel">
+				<button id="cooper-close" onclick="closeCooperModal()" title="Close">×</button>
+				<iframe id="cooper-iframe" src="" frameborder="0" allow="autoplay" title="Cooper Support"></iframe>
+			</div>
+		</div>
+		<style>
+			#cooper-modal {
+				display: none;
+				position: fixed;
+				inset: 0;
+				z-index: 32000;
+			}
+			#cooper-modal.open { display: block; }
+			#cooper-backdrop {
+				position: absolute;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.45);
+				backdrop-filter: blur(2px);
+			}
+			#cooper-panel {
+				position: absolute;
+				bottom: 70px;
+				right: 20px;
+				width: 420px;
+				height: 580px;
+				border-radius: 16px;
+				overflow: hidden;
+				box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+				background: #0c1929;
+				animation: cooperSlideIn 0.25s ease;
+			}
+			@keyframes cooperSlideIn {
+				from { opacity: 0; transform: translateY(20px) scale(0.97); }
+				to   { opacity: 1; transform: translateY(0) scale(1); }
+			}
+			#cooper-close {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				z-index: 1;
+				background: rgba(255,255,255,0.12);
+				border: none;
+				color: white;
+				width: 28px;
+				height: 28px;
+				border-radius: 50%;
+				cursor: pointer;
+				font-size: 18px;
+				line-height: 1;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: background 0.15s;
+			}
+			#cooper-close:hover { background: rgba(255,255,255,0.25); }
+			#cooper-iframe {
+				width: 100%;
+				height: 100%;
+				border: none;
+				display: block;
+			}
+			@media (max-width: 480px) {
+				#cooper-panel {
+					bottom: 60px;
+					right: 0;
+					left: 0;
+					width: 100%;
+					height: calc(100vh - 60px);
+					border-radius: 16px 16px 0 0;
+				}
+			}
+		</style>
+		<script>
+			var cooperEmbedUrl = 'https://support.bluerabbit.io/<?= esc_js($cooper_slug) ?>/?embed=1';
+			var cooperLoaded = false;
+
+			function openCooperModal() {
+				var modal  = document.getElementById('cooper-modal');
+				var iframe = document.getElementById('cooper-iframe');
+				if (!cooperLoaded) {
+					iframe.src = cooperEmbedUrl;
+					cooperLoaded = true;
+				}
+				modal.classList.add('open');
+				// Close the start menu if it's open
+				if (document.getElementById('start') && document.getElementById('start').classList.contains('active')) {
+					activateStartMenu();
+				}
+			}
+
+			function closeCooperModal() {
+				document.getElementById('cooper-modal').classList.remove('open');
+			}
+
+			// Close on Escape key
+			document.addEventListener('keydown', function(e) {
+				if (e.key === 'Escape') closeCooperModal();
+			});
+		</script>
+		<?php endif; ?>
+
 	</body>
 </html>

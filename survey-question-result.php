@@ -13,7 +13,7 @@ switch ($style){
 <li class="question" id="question-<?=  $key; ?>">
 	<div class="highlight padding-10 <?=$color; ?>-bg-50 <?=  !$q['image'] ? 'sticky' : ''; ?>">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40  <?=$color; ?>-bg-400 white-color">
+			<span class="button-icon font _24 sq-40  <?=$color; ?>-bg-400 white-color">
 				<span class="icon icon-<?=$icon; ?>"></span>
 			</span>
 			<span class="icon-content">
@@ -159,7 +159,7 @@ switch ($style){
 					<tr class="font _16 w300">
 						<td class="text-center">
 							<div class="icon-group">
-								<span class="icon-button font _24 sq-40 " style="background-image: url(<?=  $t->guild_logo; ?>);"></span>
+								<span class="button-icon font _24 sq-40 " style="background-image: url(<?=  $t->guild_logo; ?>);"></span>
 								<span class="icon-content">
 									<span class="line"><?=  $t->guild_name; ?></span>
 								</span>
@@ -194,7 +194,7 @@ switch ($style){
 							<td class="text-center">
 								<div class="icon-group">
 									<?php if($o['image']) { ?>
-										<span class="icon-button font _24 sq-40 " style="background-image: url(<?=  $o['image']; ?>);"></span>
+										<span class="button-icon font _24 sq-40 " style="background-image: url(<?=  $o['image']; ?>);"></span>
 									<?php } ?>
 									<span class="icon-content">
 										<span class="line"><?=  $o['text']; ?></span>
@@ -227,7 +227,7 @@ switch ($style){
 							<td class="text-center">
 								<div class="icon-group">
 									<?php if($o['image']) { ?>
-										<span class="icon-button font _24 sq-40 " style="background-image: url(<?=  $o['image']; ?>);"></span>
+										<span class="button-icon font _24 sq-40 " style="background-image: url(<?=  $o['image']; ?>);"></span>
 									<?php } ?>
 									<span class="icon-content">
 										<span class="line"><?=  $o['text']; ?></span>

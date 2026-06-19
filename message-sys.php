@@ -1,7 +1,7 @@
 
 <li class="message <?php echo $m->ann_type; ?>" id="ann-<?php echo $m->ann_id; ?>">
 	<div class="message-profile-picture">
-		<span class="icon-button font _24 sq-40  player-picture" style="background-image: url('<?php echo $m->player_picture; ?>');">
+		<span class="button-icon font _24 sq-40  player-picture" style="background-image: url('<?php echo $m->player_picture; ?>');">
 		</span>
 	</div>
 	<div class="message-content white-bg">

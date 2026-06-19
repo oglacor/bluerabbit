@@ -11,7 +11,7 @@
 <div class="card card-scene " id="<?= "item-$item->item_id"; ?>">
 	<div class="card-content">
 		<div class="card-face frontface">
-			<button class="layer foreground absolute icon-button font _14 sq-20  top-10 right-10 red-bg-400" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
+			<button class="layer foreground absolute button-icon font _14 sq-20  top-10 right-10 red-bg-400" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
 			<div class="layer background absolute sq-full top left blend-luminosity grey-bg-900 opacity-80" style="background-image: url(<?= $item->item_badge; ?>);"></div>
 			<div class="layer background absolute sq-full top left grey-bg-900 opacity-80"></div>
 			<div class="layer background absolute sq-full top left <?=$color;?>-gradient-900 opacity-80"></div>

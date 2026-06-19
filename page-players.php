@@ -147,7 +147,7 @@
 						</div>
 						<?php if(isset($isAdmin)){ ?>
 							<div class="cell player-refresh cursor-pointer w-80">
-								<button class="icon-button blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, $p->player_id"; ?>);">
+								<button class="button-icon blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, $p->player_id"; ?>);">
 									<span class="icon icon-rotate"></span>
 								</a>
 							</div>
@@ -182,7 +182,7 @@
 						<?php foreach ($quests as $k=>$q) { ?>
 							<div class="cell quest-title <?= $q->quest_type; ?> player-post cursor-pointer column-<?= $q->quest_id; ?>" id="<?= $q->quest_type; ?>-<?= $q->quest_id; ?>"  onClick="toggleColGrades('<?= $q->quest_id; ?>')">
 								<input type="hidden" class="cell-text-value" value="<?= $q->quest_title; ?>">
-								<span class="icon-button sq-40" style="background-image: url(<?= $q->mech_badge ; ?>);"></span>
+								<span class="button-icon sq-40" style="background-image: url(<?= $q->mech_badge ; ?>);"></span>
 							</div>
 						<?php } ?>
 						<?php foreach ($achievements as $akey=>$a) { ?>
@@ -204,7 +204,7 @@
 						</div>
 						<?php if($isAdmin){ ?>
 							<div class="cell player-refresh cursor-pointer w-80 text-center row-<?= $p->player_id; ?>">
-								<button class="icon-button blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, $p->player_id"; ?>);">
+								<button class="button-icon blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, $p->player_id"; ?>);">
 									<span class="icon icon-rotate"></span>
 								</a>
 							</div>
@@ -234,14 +234,14 @@
 						<div class="cell player-hexad row-<?= $p->player_id; ?>">
 								<?php if($config['use_hexad']['value']>0){ ?>
 									<?php if($p->player_adventure_role == 'gm'){ ?>
-									<span class="icon-button font _24 sq-40  border border-all border-3 teal-border-400" style="background-image: url(<?= $p->player_picture; ?>);"></span>
+									<span class="button-icon font _24 sq-40  border border-all border-3 teal-border-400" style="background-image: url(<?= $p->player_picture; ?>);"></span>
 								<?php }elseif($p->player_adventure_role == 'npc'){ ?>
-									<span class="icon-button font _24 sq-40  border border-all border-3 light-blue-border-800" style="background-image: url(<?= $p->player_picture; ?>);"></span>	
+									<span class="button-icon font _24 sq-40  border border-all border-3 light-blue-border-800" style="background-image: url(<?= $p->player_picture; ?>);"></span>	
 								<?php }else{ ?>
-									<span class="icon-button font _24 sq-40 " style="background-image: url(<?= $p->player_picture; ?>);"></span>
+									<span class="button-icon font _24 sq-40 " style="background-image: url(<?= $p->player_picture; ?>);"></span>
 								<?php } ?>
 							<?php }else{ ?>
-								<button class="icon-button font _24 sq-40  type-<?= $p->player_hexad_slug; ?>">
+								<button class="button-icon font _24 sq-40  type-<?= $p->player_hexad_slug; ?>">
 									<span class="icon icon-<?= $p->player_hexad_slug; ?>"></span>
 									<span class="tool-tip">
 
@@ -314,7 +314,7 @@
 									?>
 									<div class="relative layer base border rounded-max overflow-hidden <?=$grade_color;?>-bg-400">
 										<?php if($q->quest_type=="quest"){ ?>
-											<a class="icon-button relative layer base font _16 sq-30 transparent-bg icon-sm" href="<?= get_bloginfo('url')."/post/?adventure_id=$adventure->adventure_id&questID=$q->quest_id&uID=$p->player_id"; ?>">
+											<a class="button-icon relative layer base font _16 sq-30 transparent-bg icon-sm" href="<?= get_bloginfo('url')."/post/?adventure_id=$adventure->adventure_id&questID=$q->quest_id&uID=$p->player_id"; ?>">
 												<span class="icon icon-check white-color perfect-center"></span>
 												<?php $absoluteValues['finished']+=1; ?>
 												<?php $absoluteValues['finished_q'][$q->quest_id]['title']=$q->quest_title; ?>
@@ -366,7 +366,7 @@
 								<div class="cell quest-title player-post column-a-<?= $a->achievement_id; ?> row-<?= $p->player_id; ?>" id="<?= $q->quest_type."-".$q->quest_id."-".$p->player_id; ?>">
 									<input type="hidden" class="cell-text-value" value="<?= __("EARNED","bluerabbit"); ?>">
 									<span class="background light-green-bg-400 opacity-30"></span>
-									<span class="foreground icon-button font _24 sq-40  white-bg icon-sm">
+									<span class="foreground button-icon font _24 sq-40  white-bg icon-sm">
 										<span class="icon icon-check light-green-400"></span>
 										<?php $absoluteValues['finished']+=1; ?>
 										<?php $absoluteValues['finished_a'][$a->achievement_id]['title']=$a->achievement_name; ?>

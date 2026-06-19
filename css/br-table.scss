@@ -1,0 +1,458 @@
+// ═══════════════════════════════════════════════════════════
+// BR Table & Reusable Dark-Theme Components
+// Compiles to br-table.css
+// ═══════════════════════════════════════════════════════════
+
+// ── Palette ──────────────────────────────────────────────
+
+$br-primary:   #1cc2eb;
+$br-accent:    #f7cb15;
+$br-purple:    #9f40e2;
+$br-green:     #24da98;
+$br-red:       #f44336;
+$br-amber:     #ffc107;
+$br-teal:      #00bcd4;
+$br-orange:    #ff9800;
+$br-bg:        #04161e;
+$br-panel-bg:  rgba(11, 61, 79, 0.6);
+$br-border:    rgba(28, 194, 235, 0.2);
+$br-white:     #ffffff;
+
+$condensed:    "proxima-nova-extra-condensed", sans-serif;
+$radius:       12px;
+$radius-sm:    6px;
+$radius-pill:  20px;
+
+// ── Mixins ───────────────────────────────────────────────
+
+@mixin condensed-heading($size: 18px, $weight: 700) {
+  font-family: $condensed;
+  font-size: $size;
+  font-weight: $weight;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+@mixin color-variant($color) {
+  border-color: rgba($color, 0.25);
+  background: rgba($color, 0.08);
+  color: $color;
+
+  &:hover {
+    background: rgba($color, 0.18);
+    border-color: rgba($color, 0.4);
+    color: $br-white;
+  }
+}
+
+@mixin badge-color($color) {
+  background: rgba($color, 0.15);
+  color: $color;
+}
+
+// ── Page wrapper ─────────────────────────────────────────
+
+.br-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+  color: $br-white;
+}
+
+// ── Panel ────────────────────────────────────────────────
+
+.br-panel {
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: $radius;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.br-panel-title {
+  @include condensed-heading;
+  color: rgba($br-white, 0.7);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .icon {
+    color: rgba($br-white, 0.35);
+    font-size: 16px;
+  }
+}
+
+// ── Page Header ──────────────────────────────────────────
+
+.br-page-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.br-page-header-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba($br-primary, 0.4);
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.br-page-title {
+  @include condensed-heading(32px, 900);
+  letter-spacing: 2px;
+  color: $br-white;
+  margin: 0;
+  line-height: 1;
+}
+
+.br-page-subtitle {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+// ── Table ────────────────────────────────────────────────
+
+.br-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: $br-white;
+
+  thead th,
+  thead td {
+    @include condensed-heading(13px, 700);
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.5);
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba($br-primary, 0.15);
+    text-align: left;
+  }
+
+  tbody tr {
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba($br-primary, 0.06);
+    }
+  }
+
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba($br-white, 0.04);
+    font-size: 14px;
+    color: rgba($br-white, 0.85);
+    vertical-align: middle;
+  }
+
+  .text-center { text-align: center; }
+  .text-right  { text-align: right; }
+
+  a {
+    color: $br-primary;
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover { color: $br-white; }
+  }
+
+  // Expandable detail row
+  .br-detail-row {
+    td {
+      padding: 10px 14px 18px;
+      border-bottom: 1px solid rgba($br-primary, 0.08);
+      background: rgba($br-bg, 0.35);
+    }
+    &:hover { background: none; }
+  }
+}
+
+// ── Badges ───────────────────────────────────────────────
+
+.br-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.br-badge-green  { @include badge-color($br-green); }
+.br-badge-red    { @include badge-color($br-red); }
+.br-badge-blue   { @include badge-color($br-primary); }
+.br-badge-amber  { @include badge-color($br-amber); }
+.br-badge-purple { @include badge-color($br-purple); }
+.br-badge-teal   { @include badge-color($br-teal); }
+
+// ── Buttons ──────────────────────────────────────────────
+
+.br-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid rgba($br-primary, 0.25);
+  border-radius: $radius-sm;
+  background: rgba($br-primary, 0.08);
+  color: $br-primary;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  line-height: 1.4;
+  font-family: inherit;
+
+  &:hover {
+    background: rgba($br-primary, 0.18);
+    border-color: rgba($br-primary, 0.4);
+    color: $br-white;
+  }
+
+  .icon { font-size: 13px; }
+}
+
+.br-btn-green { @include color-variant($br-green); }
+.br-btn-red   { @include color-variant($br-red); }
+.br-btn-amber { @include color-variant($br-amber); }
+
+// ── Inline action group ──────────────────────────────────
+
+.br-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+// ── Answer pills (challenge review) ──────────────────────
+
+.br-answer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: $radius-sm;
+  font-size: 13px;
+  background: rgba($br-primary, 0.1);
+  color: rgba($br-white, 0.7);
+  margin: 3px 6px 3px 0;
+
+  .icon { font-size: 12px; }
+}
+
+.br-answer-correct {
+  background: rgba($br-green, 0.12);
+  color: $br-green;
+  border: 1px solid rgba($br-green, 0.2);
+}
+
+.br-answer-wrong {
+  background: rgba($br-red, 0.1);
+  color: $br-red;
+  border: 1px solid rgba($br-red, 0.15);
+}
+
+// ── Q&A block (challenge answer detail) ──────────────────
+
+.br-qa-block {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba($br-white, 0.04);
+
+  &:last-child { border-bottom: none; }
+}
+
+.br-qa-question {
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+  margin-bottom: 6px;
+
+  &::before {
+    content: 'Q: ';
+    font-weight: 700;
+    color: rgba($br-white, 0.55);
+  }
+}
+
+.br-qa-answer {
+  margin-top: 4px;
+}
+
+// ── Accordion ────────────────────────────────────────────
+
+.br-accordion-header {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: rgba($br-primary, 0.06);
+  }
+}
+
+.br-accordion-arrow {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid rgba($br-white, 0.3);
+  margin-right: 10px;
+  transition: transform 0.2s;
+  vertical-align: middle;
+
+  .br-accordion-open & {
+    transform: rotate(90deg);
+    border-left-color: $br-primary;
+  }
+}
+
+.br-accordion-body {
+  display: none;
+
+  > td {
+    padding: 14px 20px 18px !important;
+    background: rgba($br-bg, 0.35);
+    border-bottom: 1px solid rgba($br-primary, 0.08);
+  }
+
+  &:hover {
+    background: none !important;
+  }
+}
+
+// ── Tabs ─────────────────────────────────────────────────
+
+.br-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(11, 61, 79, 0.4);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.br-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba($br-white, 0.4);
+  @include condensed-heading(15px, 700);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:hover {
+    color: rgba($br-white, 0.7);
+    background: rgba($br-white, 0.03);
+  }
+
+  &.active {
+    background: rgba($br-primary, 0.12);
+    color: $br-primary;
+  }
+
+  .icon { font-size: 14px; }
+}
+
+// Sticky variant
+.br-tabs-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba($br-bg, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 0 0 10px 10px;
+  margin-left: -16px;
+  margin-right: -16px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+// Scroll sections
+.br-scroll-section {
+  scroll-margin-top: 70px;
+}
+
+// ── Empty state ──────────────────────────────────────────
+
+.br-empty {
+  text-align: center;
+  padding: 48px 24px;
+
+  > .icon {
+    font-size: 40px;
+    color: rgba($br-white, 0.12);
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  h3 {
+    @include condensed-heading(22px, 700);
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.35);
+    margin: 0 0 6px;
+  }
+
+  p {
+    font-size: 14px;
+    color: rgba($br-white, 0.2);
+    margin: 0;
+  }
+}
+
+// ── Confirm-delete overlay ───────────────────────────────
+
+.br-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba($br-red, 0.12);
+  border: 1px solid rgba($br-red, 0.25);
+}
+
+.br-confirm-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: $br-red;
+}
+
+// ── Responsive ───────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .br-page-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  .br-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .br-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .br-page-title { font-size: 26px; }
+  .br-tab-btn { font-size: 13px; padding: 8px 10px; }
+}

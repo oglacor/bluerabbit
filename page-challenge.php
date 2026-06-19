@@ -49,7 +49,7 @@
 			<?php if($c->mech_time_limit){ ?>
 			<div class="challenge-timer" id="challenge-timer">
 				<input type="hidden" id="the_time_limit" value="<?= $c->mech_time_limit; ?>">
-				<span class="icon-button timer-icon pink-bg-400 white-color sq-40 font _26"><span class="icon icon-stopwatch"></span></span>
+				<span class="button-icon timer-icon pink-bg-400 white-color sq-40 font _26"><span class="icon icon-stopwatch"></span></span>
 				<div class="progress" style="width:100%;"></div>
 				<span class="timer-container"><span id="timer" class="timer"><?= $c->mech_time_limit; ?></span>s</span>
 			</div>
@@ -58,7 +58,7 @@
 				<?php
 				$show = $qtd;
 				for($i=0;$i<$show;$i++){ ?>
-				<button class="icon-button question-number" id="question-number-mobile-<?= $qs[$i]->question_id; ?>" onClick="navToQuestion('<?= $qs[$i]->question_id; ?>');">
+				<button class="button-icon question-number" id="question-number-mobile-<?= $qs[$i]->question_id; ?>" onClick="navToQuestion('<?= $qs[$i]->question_id; ?>');">
 					<?= ($i+1);?>
 				</button>
 				<?php }  ?>
@@ -81,7 +81,7 @@
 					<div class="confirm-action overlay-layer" id="confirm-challenge-complete">
 						<button class="form-ui red-bg-A400" onClick="gradeChallenge();">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  icon-sm white-bg icon-sm">
+								<span class="button-icon font _24 sq-40  icon-sm white-bg icon-sm">
 									<span class="icon icon-goal blue-grey-800"></span>
 								</span>
 								<span class="icon-content">
@@ -89,7 +89,7 @@
 								</span>
 							</span>
 						</button>
-						<button class="close-confirm icon-button font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
+						<button class="close-confirm button-icon font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
 							<span class="icon icon-cancel white-color"></span>
 						</button>
 					</div>
@@ -233,7 +233,7 @@
 			<div class="confirm-action overlay-layer" id="confirm-challenge-bottom-page">
 				<button class="form-ui red-bg-A400" onClick="gradeChallenge();">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  icon-sm white-bg icon-sm">
+						<span class="button-icon font _24 sq-40  icon-sm white-bg icon-sm">
 							<span class="icon icon-goal blue-grey-800"></span>
 						</span>
 						<span class="icon-content">
@@ -241,7 +241,7 @@
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm icon-button font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
+				<button class="close-confirm button-icon font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>
@@ -265,7 +265,7 @@
 		<div class="confirm-action overlay-layer" id="confirm-challenge-complete-mobile">
 			<button class="form-ui red-bg-A400" onClick="gradeChallenge();">
 				<span class="icon-group">
-					<span class="icon-button font _24 sq-40  icon-sm white-bg icon-sm">
+					<span class="button-icon font _24 sq-40  icon-sm white-bg icon-sm">
 						<span class="icon icon-goal blue-grey-800"></span>
 					</span>
 					<span class="icon-content">
@@ -273,7 +273,7 @@
 					</span>
 				</span>
 			</button>
-			<button class="close-confirm icon-button font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
+			<button class="close-confirm button-icon font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
 				<span class="icon icon-cancel white-color"></span>
 			</button>
 		</div>

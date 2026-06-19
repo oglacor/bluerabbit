@@ -57,7 +57,7 @@
 			<div class="active tab max-w-1200 padding-10" id="active-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="tutorial-players">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-200">
+						<span class="button-icon font _24 sq-40  orange-bg-200">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -121,7 +121,7 @@
 													<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 														<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
 															<span class="icon-group">
-																<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+																<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 																	<span class="icon icon-cancel white-color"></span>
 																</span>
 																<span class="icon-content">
@@ -129,7 +129,7 @@
 																</span>
 															</span>
 														</button>
-														<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+														<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 															<span class="icon icon-cancel white-color"></span>
 														</button>
 													</div>
@@ -155,7 +155,7 @@
 			<div class="tab max-w-1200 padding-10" id="inactive-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-200">
+						<span class="button-icon font _24 sq-40  orange-bg-200">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -213,7 +213,7 @@
 												<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 													<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'in'"; ?>);">
 														<span class="icon-group">
-															<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+															<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 																<span class="icon icon-cancel white-color"></span>
 															</span>
 															<span class="icon-content">
@@ -221,7 +221,7 @@
 															</span>
 														</span>
 													</button>
-													<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+													<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 														<span class="icon icon-cancel white-color"></span>
 													</button>
 												</div>
@@ -237,7 +237,7 @@
 			<div class="tab max-w-1200 padding-10" id="add-manually-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  orange-bg-200">
+						<span class="button-icon font _24 sq-40  orange-bg-200">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
@@ -289,7 +289,7 @@
 					</div>
 					<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 						<div class="icon-group">
-							<span class="icon-button font _24 sq-40  orange-bg-200">
+							<span class="button-icon font _24 sq-40  orange-bg-200">
 								<span class="icon icon-players white-color"></span>
 							</span>
 							<span class="icon-content font w500 _26">

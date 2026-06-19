@@ -17,19 +17,7 @@
 
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/script.js"></script>
-		
-		<?php $gads_id = $config['google_property_id']['value'] ? $config['google_property_id']['value'] : 'G-F1QPQC2JZL' ;	?>
-		
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=<?= $gads_id ; ?>"></script>
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
-
-		  gtag('config', '<?= $gads_id ; ?>');
-		</script>		
-		
+				
 		<?php wp_head(); ?>
 	</head>
 	<div class="background black-bg fixed fixed-bg repeat-bg"  style="background-image: url(<?= $config['login_bg']['value'] ? $config['login_bg']['value'] : $config['default_bg']['value']; ?>)"></div>

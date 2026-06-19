@@ -1,7 +1,7 @@
 $main-font: "proxima-nova", sans-serif;  
 $base-font: "proxima-nova", sans-serif;  
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
-$special-font: "Rajdhani", sans-serif;
+$special-font: "proxima-nova-extra-condensed",sans-serif;
 $preospe-font: "Preospe", sans-serif;
 
 
@@ -620,7 +620,7 @@ div.table-cell, span.table-cell{
 		&.quick-edit{
 			display: none;
 			width: 100%;
-			grid-template-columns:repeat(4, 1fr);
+			grid-template-columns:repeat(5, 1fr);
 			background-color: #CFD8DC;
 		}
 		.cell{

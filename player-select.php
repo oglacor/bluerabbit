@@ -13,7 +13,7 @@ WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in'
 
 <div class="highlight padding-10 <?php echo $selected_color ? $selected_color : 'purple'; ?>-bg-50 padding-0">
 	<span class="icon-group">
-		<span class="icon-button font _24 sq-40  deep-purple-bg-400"><span class="icon icon-players"></span></span>
+		<span class="button-icon font _24 sq-40  deep-purple-bg-400"><span class="icon icon-players"></span></span>
 		<span class="icon-content">
 			<span class="line font _24 grey-800"><?php echo $player_select_title ? $player_select_title : __("Players","bluerabbit"); ?></span>
 			<?php if($player_select_desc){ ?>

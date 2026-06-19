@@ -224,7 +224,7 @@
 								<td class="font _16 w900 yellow-bg-400 black-color text-center" style="width:28px;"><?= $_lk+1; ?></td>
 								<td style="padding: 2px 6px;">
 									<?php if($_lp->player_picture): ?>
-									<span class="icon-button sq-24" style="display:inline-block; background-image: url(<?= esc_url($_lp->player_picture); ?>); background-size:cover; border-radius:50%; vertical-align:middle;"></span>
+									<span class="button-icon sq-24" style="display:inline-block; background-image: url(<?= esc_url($_lp->player_picture); ?>); background-size:cover; border-radius:50%; vertical-align:middle;"></span>
 									<?php endif; ?>
 									<span class="font _13"><?= esc_html($_lp->player_display_name); ?></span>
 								</td>

@@ -28,7 +28,7 @@
 							<div class="table">
 								<div class="table-cell text-center">
 									<span class="icon-group">
-										<span class="icon-button font _24 sq-40  icon-lg teal-bg-400"><span class="icon icon-survey"></span></span>
+										<span class="button-icon font _24 sq-40  icon-lg teal-bg-400"><span class="icon icon-survey"></span></span>
 										<span class="icon-content">
 											<span class="line font _48 white-color">
 												<?= $s->quest_title; ?>
@@ -54,7 +54,7 @@
 					<?php if($isGM || $isNPC || $isAdmin){ ?>
 						<div class="highlight padding-10 grey-bg-50">
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  icon-sm teal-bg-400"><span class="icon icon-star"></span></span>
+								<span class="button-icon font _24 sq-40  icon-sm teal-bg-400"><span class="icon icon-star"></span></span>
 								<span class="icon-content">
 									<span class="line font _24 teal-800"><?php _e("Rating Questions","bluerabbit"); ?></span>
 								</span>

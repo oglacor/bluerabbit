@@ -27,7 +27,7 @@
 					<li id="step-item-<?= $i->item_id; ?>" class="<?= $status; ?> purple-border-400 border border-all border-2 white-bg step-item" onClick="toggleSingleReq('#step-item-<?= $i->item_id; ?>');" style="background-image: url(<?= $i->item_badge; ?>);">
 						<input type="hidden" class="item-id" value="<?= $i->item_id; ?>">
 						<div class="layer background absolute sq-full top left color-overlay"></div>
-						<span class="icon-button green-bg-400 active-content font _18 absolute top-10 right-10">
+						<span class="button-icon green-bg-400 active-content font _18 absolute top-10 right-10">
 							<span class="icon icon-check"></span>
 						</span>
 						<div class="layer base absolute perfect-center text-center achievement-name">

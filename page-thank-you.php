@@ -8,7 +8,7 @@
 					<div class="background blue-bg-700 opacity-80"></div>
 					<div class="foreground">
 						<div class="head-floater upper-left">
-							<span class="icon-button font _24 sq-40  main-icon blue-bg-700">
+							<span class="button-icon font _24 sq-40  main-icon blue-bg-700">
 								<span class="icon icon-player white-color"></span>
 							</span>
 						</div>

@@ -122,7 +122,7 @@
 				<?php if($m->mech_xp > 0 || $m->mech_bloo > 0 ){ ?>
 					<div class="highlight padding-10 text-center" id="tutorial-rewards">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  transparent-bg font _28 border-all border amber-400">
+							<span class="button-icon font _24 sq-40  transparent-bg font _28 border-all border amber-400">
 								<span class="halo rotate-L-40"></span>
 								<span class="icon icon-star "></span>
 							</span>
@@ -132,7 +132,7 @@
 							</span>
 						</span>
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  transparent-bg font _28 border-all border green-400">
+							<span class="button-icon font _24 sq-40  transparent-bg font _28 border-all border green-400">
 								<span class="halo rotate-R-20"></span>
 								<span class="icon icon-bloo "></span>
 							</span>
@@ -143,7 +143,7 @@
 						</span>
 						<?php if($use_encounters){ ?>
 							<span class="icon-group">
-								<span class="icon-button font _24 sq-40  transparent-bg font _28 border-all border green-400">
+								<span class="button-icon font _24 sq-40  transparent-bg font _28 border-all border green-400">
 									<span class="halo rotate-R-20"></span>
 									<span class="icon icon-activity "></span>
 								</span>
@@ -162,7 +162,7 @@
 					<div class="canvas-container">
 						<canvas id="mission-status-chart" width="290" height="290"></canvas>
 					</div>
-					<span class="icon-button font _24 sq-40  grey-bg-900 icon-lg">
+					<span class="button-icon font _24 sq-40  grey-bg-900 icon-lg">
 						<span class="icon icon-mission"></span>
 						<span class="halo rotate-L-40" style="background-image: url(<?= get_bloginfo('template_directory');?>/images/cyber-button-bg.png);"></span>
 						<span class="halo halo-10 rotate-L-10" style="background-image: url(<?= get_bloginfo('template_directory');?>/images/cyber-button-bg.png);"></span>

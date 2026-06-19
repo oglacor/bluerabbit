@@ -1,7 +1,4 @@
 <script>
-function onTourCancel() {
-    closeIntro(); /// Close intro.
-}
 const tour = new Shepherd.Tour({
     defaultStepOptions: {
         classes: 'shadow-md bg-purple-dark',
@@ -158,9 +155,31 @@ const intro_steps = [
         id: 'step-2_5',
         title: "<?= __("Milestones","bluerabbit"); ?>",
         text: "<?= __("You can read the details and start the challenge.","bluerabbit"); ?>",
-        attachTo: { 
-            element: '#milestone-preview', 
-            on:'bottom' 
+        attachTo: {
+            element: '#milestone-preview',
+            on:'bottom'
+        },
+        classes: 'blue-bg-400',
+		cancelIcon: {
+			enabled:true
+		},
+        buttons: [
+            {
+              text: "<?= __("Next","bluerabbit"); ?>",
+              classes:"blue-bg-400 white-color",
+              action: function(){
+                  return this.next();
+              }
+            }
+        ]
+    },
+    {
+        id: 'step-2_5_1',
+        title: "<?= __("Rewards","bluerabbit"); ?>",
+        text: "<?= __("Here's what's waiting for you: XP, currency, and energy if your adventure uses it.","bluerabbit"); ?>",
+        attachTo: {
+            element: '.milestone-preview-resources',
+            on:'top'
         },
         classes: 'blue-bg-400',
 		cancelIcon: {
@@ -178,7 +197,55 @@ const intro_steps = [
               }
             }
         ]
-    }, 
+    },
+	<?php if($journey_style != 'board' && isset($tabis) && $tabis){ $first_tabi_for_tutorial = $tabis[0]->tabi_id; ?>
+    {
+        id: 'step-2_6_0',
+        title: "<?= __("Tabis","bluerabbit"); ?>",
+        text: "<?= __("Some adventures have special characters called Tabis. Click on one to start a conversation.","bluerabbit"); ?>",
+        attachTo: {
+            element: '#tabi-node-<?=$first_tabi_for_tutorial; ?>',
+            on:'bottom'
+        },
+        classes: 'blue-bg-400',
+		cancelIcon: {
+			enabled:true
+		},
+        buttons: [
+            {
+              text: "<?= __("Next","bluerabbit"); ?>",
+              classes:"blue-bg-400 white-color",
+              action: function(){
+                  openTabiModal(<?=$first_tabi_for_tutorial; ?>);
+                  return this.next();
+              }
+            }
+        ]
+    },
+    {
+        id: 'step-2_6_1',
+        title: "<?= __("Tabis","bluerabbit"); ?>",
+        text: "<?= __("This is where the Tabi's dialogue and related quests show up.","bluerabbit"); ?>",
+        attachTo: {
+            element: '#tabi-modal-<?=$first_tabi_for_tutorial; ?>',
+            on:'left'
+        },
+        classes: 'blue-bg-400',
+		cancelIcon: {
+			enabled:true
+		},
+        buttons: [
+            {
+              text: "<?= __("Next","bluerabbit"); ?>",
+              classes:"blue-bg-400 white-color",
+              action: function(){
+                  closeTabiModal();
+                  return this.next();
+              }
+            }
+        ]
+    },
+	<?php } ?>
     {
         id: 'step-4_0',
         title: "<?= __("Navigation","bluerabbit"); ?>",
@@ -663,8 +730,6 @@ const intro_steps = [
               text: "<?= __("Close","bluerabbit"); ?>",
               classes:"br-end-tutorial white-color",
               action: function(){
-                closeIntro();
-                    hideAllOverlay();
                     return this.complete();
               }
             }
@@ -673,5 +738,16 @@ const intro_steps = [
     
 ];
 tour.addSteps(intro_steps);
-tour.on('cancel', onTourCancel);
+tour.on('start', function() {
+    closeIntro();
+});
+tour.on('complete', function() {
+    closeIntro();
+    hideAllOverlay();
+    cleanupShepherdTour();
+});
+tour.on('cancel', function() {
+    closeIntro();
+    cleanupShepherdTour();
+});
 </script>

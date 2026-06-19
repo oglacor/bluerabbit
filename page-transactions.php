@@ -15,15 +15,15 @@
 			<div class="body-ui w-full white-bg">
 				<div class="highlight padding-10 orange-bg-200">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  indigo-bg-400"><span class="icon icon-transactions"></span></span>
+						<span class="button-icon font _24 sq-40  indigo-bg-400"><span class="icon icon-transactions"></span></span>
 						<span class="icon-content font _24 w300 indigo-800">
 							<span><?= __('Transactions','bluerabbit'); ?></span>
 						</span>
 					</div>
 					<div class="highlight-cell pull-right padding-10">
-						<button class="icon-button font _24 sq-40  icon-sm black-bg" onClick="$('#table-trnxs tbody tr').show();"><span class="icon icon-infinite"></span></button>
-						<button class="icon-button font _24 sq-40  icon-sm green-bg-400" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.new').show();"><span class="icon icon-check"></span></button>
-						<button class="icon-button font _24 sq-40  icon-sm blue-bg-400" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.used').show();"><span class="icon icon-restore"></span></button>
+						<button class="button-icon font _24 sq-40  icon-sm black-bg" onClick="$('#table-trnxs tbody tr').show();"><span class="icon icon-infinite"></span></button>
+						<button class="button-icon font _24 sq-40  icon-sm green-bg-400" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.new').show();"><span class="icon icon-check"></span></button>
+						<button class="button-icon font _24 sq-40  icon-sm blue-bg-400" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.used').show();"><span class="icon icon-restore"></span></button>
 					</div>
 					<div class="highlight-cell pull-right">
 						<div class="input-group">
@@ -116,21 +116,21 @@
 									</td>
 									<td>
 										<?php if(!$iT->trnx_use && $iT->item_type == 'consumable'){ ?>
-											<button class="icon-button font _24 sq-40  icon-sm green-bg-400" onClick="useItem(<?php echo "$iT->trnx_id , $iT->player_id, 1"; ?>);">
+											<button class="button-icon font _24 sq-40  icon-sm green-bg-400" onClick="useItem(<?php echo "$iT->trnx_id , $iT->player_id, 1"; ?>);">
 												<span class="icon icon-check"></span>
 											</button>
 										<?php } ?>
 									</td>
 									<td>
 										<?php if($iT->trnx_use){ ?>
-											<button class="icon-button font _24 sq-40  icon-sm blue-bg-300" onClick="useItem(<?php echo "$iT->trnx_id, $iT->player_id, 0"; ?>);">
+											<button class="button-icon font _24 sq-40  icon-sm blue-bg-300" onClick="useItem(<?php echo "$iT->trnx_id, $iT->player_id, 0"; ?>);">
 												<span class="icon icon-restore"></span>
 											</button>
 										<?php } ?>
 									</td>
 									<td>
 										<?php if($isGM || $isAdmin){ ?>
-											<button class="icon-button font _24 sq-40  icon-sm red-bg-400 white-color" onClick="br_confirm_trd('delete',<?php echo $iT->trnx_id; ?>,'trnx');">
+											<button class="button-icon font _24 sq-40  icon-sm red-bg-400 white-color" onClick="br_confirm_trd('delete',<?php echo $iT->trnx_id; ?>,'trnx');">
 												<span class="icon icon-cancel"></span>
 											</button>
 										<?php } ?>

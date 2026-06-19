@@ -14,7 +14,7 @@
 	<div class="body-ui w-full">
 		<div class="highlight teal-bg-800 padding-10 page-break text-center">
 			<div class="icon-group">
-				<span class="icon-button font _24 sq-40  teal-bg-400 icon-lg">
+				<span class="button-icon font _24 sq-40  teal-bg-400 icon-lg">
 					<span class="icon icon-challenge"></span>
 				</span>
 				<span class="icon-content white-color">
@@ -42,7 +42,7 @@
 						<td><?= $q->achievement_name; ?></td>
 						<td><?= date('Y - m - d H:i:s', strtotime($q->mech_start_date)); ?></td>
 						<td><?= $q->total_attempts; ?></td>
-						<td><a class="icon-button font _24 sq-40  indigo-bg-400" target="_blank" href="<?= get_bloginfo('url')."/survey-results/?questID={$q->quest_id}&adventure_id={$adventure->adventure_id}"; ?>"><span class="icon icon-view"></span></a></td>
+						<td><a class="button-icon font _24 sq-40  indigo-bg-400" target="_blank" href="<?= get_bloginfo('url')."/survey-results/?questID={$q->quest_id}&adventure_id={$adventure->adventure_id}"; ?>"><span class="icon icon-view"></span></a></td>
 					</tr>
 					<?php } ?>
 				</tbody>

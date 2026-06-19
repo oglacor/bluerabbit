@@ -118,8 +118,10 @@
 						</div>
 					<?php } ?>
 				<?php }else{ ?>
+                <div class="white-color">
 					<h1 class="text-center"><?= __("No items currently available",'bluerabbit');?></h1>
 					<h3 class="text-center"><?= __("More items are available as you earn achievements. Keep moving forward!",'bluerabbit');?></h3>
+                </div>
 				<?php }?>
 			</div>
 			<div class="hud-display item-shop-video active item-preview">

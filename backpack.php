@@ -12,7 +12,7 @@
 		<?php if($myItems){ ?>
 			<div class="relative layer base highlight padding-10 white-color">
 				<span class="icon-group">
-					<span class="icon-button font _24 sq-40  icon-lg brown-bg-400"><span class="icon icon-backpack"></span></span>
+					<span class="button-icon font _24 sq-40  icon-lg brown-bg-400"><span class="icon icon-backpack"></span></span>
 					<span class="icon-content">
 						<span class="line font _30 white-color">
 							<?php _e("Backpack","bluerabbit"); ?>

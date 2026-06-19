@@ -4,7 +4,7 @@
 		<div class="container boxed max-w-1200">
 			<div class="highlight text-center padding-20">
 				<span class="icon-group">
-					<span class="icon-button font _24 sq-40  blue-bg-600"><span class="icon icon-players"></span></span>
+					<span class="button-icon font _24 sq-40  blue-bg-600"><span class="icon icon-players"></span></span>
 					<span class="icon-content">
 						<span class="line font _36 w700">
 							<?php _e("Registered Users","bluerabbit"); ?>

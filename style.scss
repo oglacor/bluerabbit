@@ -19,7 +19,7 @@ Version: 12.2.1
 $main-font: "proxima-nova", sans-serif;  
 $base-font: "proxima-nova", sans-serif;  
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
-$special-font: "Rajdhani", sans-serif;
+$special-font: "proxima-nova-extra-condensed",sans-serif;
 $preospe-font: "Preospe", sans-serif;
 
 $white: #FFFFFF;
@@ -311,7 +311,7 @@ header.super-header{
 	&.profile{
 		order: 4;
 	}
-	button.icon-button, a.icon-button{
+	button.button-icon, a.button-icon{
 		width: 32px; height: 32px;
 		border-radius: 0;
 		margin: 0;
@@ -380,9 +380,12 @@ footer.taskbar{
 		transition: all 0.5s ease-out;
 		position: absolute;
 		bottom: 55px;
-		left:0;
-		text-align: center;
-		width: 100%;
+		left:50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap:5px;
 	}
 	&.start-active{
 		.show-on-start{
@@ -390,11 +393,10 @@ footer.taskbar{
 			opacity: 1;
 		}
 	}
-	button.icon-button, a.icon-button{
+	button.button-icon, a.button-icon{
 		width: 64px; height: 64px;
 		border-radius: 4px;
 		margin: 0;
-		display: inline-block;
 		font-size: 34px;
 		position: relative;
 	}
@@ -556,7 +558,7 @@ button.form-ui, a.form-ui, span.button-form-ui, input[type="submit"]{
 	span.disabled-text{
 		display: none;
 	}
-	.icon-button.badge-icon{
+	.button-icon.badge-icon{
 		position: absolute;
 		top: 50%; right: 100%;
 		transform: translateY(-50%);
@@ -633,26 +635,30 @@ button.action-button, a.action-button{
 	}
 
 }
-button.icon-button, a.icon-button, span.icon-button, .icon-button{
+button.button-icon, a.button-icon, span.button-icon, .button-icon{
 	position: relative;
 	border: none;
 	border-width: 0;
-	display: inline-block;
+	display: inline-flex;
+    align-items: center;
+    justify-content: center; 
 	padding: 0; margin: 0;
-	text-align: center;
 	color: #FFF;
-	vertical-align: bottom;
 	border-radius: 100em;
 	background-position: center center;
 	background-size: cover;
 	background-repeat: no-repeat;
 	min-width: 10px; min-height: 10px;
-	object-fit: cover;
 	.icon{
 		z-index: 1;
-		width: 100%;
+		width: 90%;
 		&.perfect-center{ position: absolute;}
 	}
+    img{
+        display: block;
+        max-width: 90%;
+        height: 60%;
+    }
     &.square{ border-radius: 0 !important; }
 }
 
@@ -893,7 +899,7 @@ ul.form-ui{
 			vertical-align: top;
 		}
 	}
-	.icon-button{
+	.button-icon{
 		display: table-cell;
 		vertical-align: middle;
 		position: relative;
@@ -2697,6 +2703,9 @@ span.divider{
 	opacity: 0;
 	visibility: hidden;
 	z-index: 50;
+    backdrop-filter: blur(3px);
+    display:flex;
+    justify-content: center;
 	&.active{
 		visibility: visible;
 		opacity: 1;
@@ -2706,7 +2715,6 @@ span.divider{
 		position: absolute;
 		bottom: 130px;
 		z-index: 20;
-		width: 100%;
 		text-align: center;
 		align-items: stretch;
 		justify-content: center;
@@ -3089,7 +3097,7 @@ span.divider{
 	position: relative;
 	padding: 40px 0 0 0;
 	perspective: 3000px;
-	.next.icon-button, .prev.icon-button{
+	.next.button-icon, .prev.button-icon{
 		z-index: 10;
 		.icon{
 			-webkit-transition: transform .3s;
@@ -5739,49 +5747,6 @@ svg.icon-image{
 		border: dashed 2px #CCC;
 		overflow: hidden;
 	}
-	&.encounter{
-		position: relative;
-		.energy-tank{
-			position: absolute;
-			width: 341px;
-			height: 49px;
-			top: -7px;
-			left: 50%;
-			transform: translateX(-50%);
-			img{
-				position: relative;
-				top: 0; left: 0;
-				z-index: 2;
-			}
-			.energy-bar{
-				border-radius: 100em;
-				width: 256px;
-				height: 36px;
-				position: absolute;
-				top: 6px;
-				left: 42px;
-				z-index: 1;
-				.energy-glow{
-					border-radius: 100em;
-					width: 100%;
-					height: 100%;
-					position: absolute; top: 0; left: 0;
-					z-index: 10;
-					background-image: url("images/gradient-energy.png");
-					background-repeat: repeat;
-					@include br-animation(energy-bar-animation, 3s, normal, forwards, ease-in-out, infinite);
-				}
-				.energy-color{
-					border-radius: 100em;
-					width: 100%;
-					height: 100%;
-					position: absolute; top: 0; left: 0;
-					z-index: 9;
-					background-image: linear-gradient(90deg, rgba(103,58,183,1),rgba(156,39,176,1),rgba(239,83,80,1),rgba(255,235,59,1));
-				}
-			}
-		}
-	}
 	&.card-scene{
 		width: 340px;
 		height: 560px;
@@ -5894,7 +5859,7 @@ svg.icon-image{
 		li{
 			display: inline-block;
 			margin: 0 5px;
-			.icon-button{
+			.button-icon{
 				.background{
 					border-radius: 1000em;
 				}
@@ -5929,7 +5894,7 @@ svg.icon-image{
 	&.right{
 		right: 5px;
 	}
-	.icon-button{
+	.button-icon{
 		margin: 0 0 10px 0 !important;
 	}
 }
@@ -6070,7 +6035,7 @@ svg.icon-image{
 	width: 290px;
 	height: 290px;
 	margin: 0 auto;
-	.icon-button{
+	.button-icon{
 		position: absolute;
 		top: 50%;
 		left: 50%;
@@ -6776,7 +6741,7 @@ $hud-orange:      #ffa780;
 			flex-wrap: wrap;
 			justify-content: center;
 
-			button.icon-button {
+			button.button-icon {
 				width: 28px; height: 28px;
 				border-radius: 5px;
 				background: rgba(11,61,79,.5);
@@ -7711,7 +7676,7 @@ ul.question-options{
 			.message-profile-picture{
 				position: relative;
 				float: left;
-				.icon-button{
+				.button-icon{
 					margin: 0 5px;
 					float: left;
 					&.player-picture{
@@ -7756,7 +7721,7 @@ ul.question-options{
 				position: absolute;
 				top: 0;
 				right: 0;
-				.icon-button{
+				.button-icon{
 					font-size: 12px;
 					width: 20px;
 					height: 20px;
@@ -7781,7 +7746,7 @@ ul.question-options{
 			}
 			&.public, &.teacher, &.guild{
 				.message-meta{
-					.icon-button.pink{
+					.button-icon.pink{
 						display: none;
 					}
 				}
@@ -8131,7 +8096,7 @@ ul.pagination{
 			}
 			&.player-hexad{
 				width: 100px;
-				.icon-button{
+				.button-icon{
 					padding: 6px;
 					font-size:18px;
 					width:30px; height: 30px;
@@ -8334,7 +8299,7 @@ ul.blog{
 		    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 		}
 	}
-	button.icon-button{
+	button.button-icon{
 		position: absolute;
 		z-index: 12;
 		top: 50%;
@@ -9390,7 +9355,15 @@ nav.tab-nav{
 							position: relative;
 							img{
 								max-width: 100%; max-height: 100%;
+                                filter: grayscale(100%);
+                                opacity: 0.7;
 							}
+                            &.active{
+                                img{ 
+                                    filter: grayscale(0%);
+                                    opacity: 1;
+                                }
+                            }
 						}
 					}
 				}
@@ -9398,7 +9371,6 @@ nav.tab-nav{
 		}
 	}
 }
-
 .hud-display{
 	position: relative;
 	margin: 0 auto;
@@ -9504,88 +9476,217 @@ nav.tab-nav{
     }
 }
 
-.guilds{
-    width: 100%;
-    max-width: 1320px;
-    padding: 20px;
+.guilds-page-layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 40px;
+    align-items: start;
+    max-width: 1200px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    .my-guild{
-        width: 50%;
-        .hud-title{
+    padding: 40px 20px;
+
+    .my-guild {
+        .hud-title {
             margin-bottom: 20px;
         }
-        .my-guild-card{
-            aspect-ratio: 8/5;
-            padding: 10px;
+        .my-guild-card {
+            background: $new-colors-dark-blue-400;
+            border: 1px solid rgba($new-colors-blue, 0.3);
+            border-radius: 12px;
+            padding: 24px;
             position: relative;
-            .my-guild-card-bg{
+            overflow: hidden;
+            .my-guild-card-bg {
                 position: absolute;
                 top: 0; left: 0;
                 width: 100%; height: 100%;
                 z-index: 1;
-                .my-guild-card-border{
-                    path{
+                opacity: 0.08;
+                pointer-events: none;
+                .my-guild-card-border {
+                    width: 100%; height: 100%;
+                    path {
                         fill: none;
                         stroke-width: 2;
                         stroke: $new-colors-yellow;
                     }
                 }
             }
-            .my-guild-card-content{
-                position: absolute;
-                top: 0; left: 0;
-                width: 100%; height: 100%;
+            .my-guild-card-content {
+                position: relative;
                 z-index: 2;
-                display: grid;
-                gap: 10px;;
-                grid-template-columns: 1fr 1fr;
+                display: flex;
                 align-items: center;
-                .my-guild-card-info{
-                    text-align: center;
-                    h2.guild-name{
-                        font-size: 48px;
+                gap: 16px;
+                .my-guild-card-info {
+                    flex: 1;
+                    min-width: 0;
+                    h2.guild-name {
+                        font-size: 1.8rem;
                         color: $white;
                         font-family: $preospe-font;
+                        text-transform: uppercase;
+                        line-height: 1.1;
+                        margin-bottom: 14px;
                     }
-                    table.my-guild-card-stats{
-                        padding: 0;
-                        border: none;
-                        width: 100%;;
-                        tbody{
-                            tr{
-                                &.teal{ color: $new-colors-green;}
-                                &.white{ color: $white;}
-                                &.blue{ color: $new-colors-blue;}
-                                &.yellow{ color: $new-colors-yellow;}
-                                td{
-                                    padding: 5px;
-                                    text-align: left;
-                                    font-weight: 700;
-                                    font-size: 20px;
-                                    &:first-child{
-                                        font-size: 16px;
-                                        text-align: right;
-                                        font-weight: 300;
-                                    }
-                                }
+                    .guild-members-box {
+                        display: inline-flex;
+                        flex-direction: column;
+                        align-items: center;
+                        border: 2px solid $new-colors-blue;
+                        border-radius: 6px;
+                        padding: 8px 14px;
+                        margin-bottom: 12px;
+                        .guild-members-count {
+                            font-size: 1.8rem;
+                            font-family: $preospe-font;
+                            color: $white;
+                            line-height: 1;
+                        }
+                        .guild-members-label {
+                            font-size: 0.7rem;
+                            color: $new-colors-blue;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                        }
+                    }
+                    .guild-stats-list {
+                        margin-bottom: 14px;
+                        .guild-stat {
+                            display: flex;
+                            gap: 8px;
+                            align-items: baseline;
+                            margin-bottom: 3px;
+                            .guild-stat-label {
+                                color: rgba($white, 0.55);
+                                font-size: 0.8rem;
+                                white-space: nowrap;
+                            }
+                            .guild-stat-value {
+                                font-weight: 700;
+                                font-size: 0.95rem;
+                                &.level { color: $white; }
+                                &.xp { color: $new-colors-blue; }
+                                &.bloo { color: $new-colors-yellow; }
                             }
                         }
                     }
+                    .guild-position-box {
+                        display: inline-flex;
+                        flex-direction: column;
+                        align-items: center;
+                        border: 2px solid $new-colors-yellow;
+                        border-radius: 6px;
+                        padding: 8px 14px;
+                        .guild-position-number {
+                            font-size: 1.8rem;
+                            font-family: $preospe-font;
+                            color: $white;
+                            line-height: 1;
+                        }
+                        .guild-position-label {
+                            font-size: 0.7rem;
+                            color: $new-colors-yellow;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                        }
+                    }
                 }
-                .my-guild-card-badge{
-                    padding: 20px; 
-                    svg.guild-badge{
-                        polygon, path{
+                .my-guild-card-badge {
+                    width: 200px;
+                    flex-shrink: 0;
+                    svg.guild-badge {
+                        width: 100%;
+                        height: auto;
+                        polygon, path {
                             fill: none;
                             stroke: none;
-                            &.hexagon-overlay{ fill: rgba(#082c3c, 0.4); }
-                            &.hexagon-yellow-border{ stroke: $new-colors-yellow; stroke-width: 2; fill: none;}
-                            &.hexagon-yellow-details{ stroke: $new-colors-yellow; stroke-width: 6; stroke-dasharray: 150px 200px; animation: arrow-outline-stroke-animation 8s linear infinite;}
-                            &.hexagon-white-line-overlay{ stroke: $white; stroke-width: 2; mix-blend-mode: overlay;}
-                            &.hexagon-image{ background-repeat: no-repeat; background-position: center center; background-size: cover;}
+                            &.hexagon-overlay { fill: rgba(#082c3c, 0.4); }
+                            &.hexagon-yellow-border { stroke: $new-colors-yellow; stroke-width: 2; fill: none; }
+                            &.hexagon-yellow-details { stroke: $new-colors-yellow; stroke-width: 6; stroke-dasharray: 150px 200px; animation: arrow-outline-stroke-animation 8s linear infinite; }
+                            &.hexagon-white-line-overlay { stroke: $white; stroke-width: 2; mix-blend-mode: overlay; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .guild-leaderboard-section {
+        .hud-title {
+            margin-bottom: 20px;
+        }
+        ul.cards.guilds {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            li.card {
+                display: flex;
+                align-items: center;
+                background: $new-colors-dark-blue-400;
+                border: 1px solid rgba($new-colors-blue, 0.2);
+                border-radius: 10px;
+                padding: 12px 20px;
+                gap: 20px;
+                width: auto;
+                margin: 0;
+                text-align: left;
+                transition: border-color 0.2s ease;
+                &:hover {
+                    border-color: rgba($new-colors-blue, 0.5);
+                }
+                &.is-my-guild {
+                    border-left: 4px solid $new-colors-blue;
+                }
+                .guild-rank {
+                    min-width: 56px;
+                    font-size: 2.8rem;
+                    font-family: $preospe-font;
+                    color: $white;
+                    text-align: center;
+                    line-height: 1;
+                    flex-shrink: 0;
+                }
+                .guild-lb-badge {
+                    flex-shrink: 0;
+                    img.badge {
+                        width: 64px;
+                        height: 64px;
+                        object-fit: cover;
+                        border-radius: 0;
+                        border: none;
+                        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+                    }
+                }
+                .guild-lb-info {
+                    flex: 1;
+                    min-width: 0;
+                    .guild-lb-name {
+                        font-family: $preospe-font;
+                        font-size: 1.1rem;
+                        text-transform: uppercase;
+                        color: $white;
+                        margin-bottom: 4px;
+                    }
+                    .guild-lb-stats {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 4px 16px;
+                        .guild-lb-stat {
+                            font-size: 0.78rem;
+                            .stat-label {
+                                color: rgba($white, 0.5);
+                            }
+                            .stat-value {
+                                font-weight: 700;
+                                color: $white;
+                                &.teal { color: $new-colors-green; }
+                                &.blue { color: $new-colors-blue; }
+                                &.yellow { color: $new-colors-yellow; }
+                            }
                         }
                     }
                 }
@@ -9898,7 +9999,7 @@ nav.tab-nav{
 				overflow: hidden;
 				margin: -50px 0  0 -50px;
 				opacity: 0.25;
-				span.icon-button{
+				span.button-icon{
 					width: 100px; height: 100px;
 					text-align: center; 
 					span.icon{
@@ -10132,7 +10233,7 @@ nav.tab-nav{
 		}
 	}
 	footer.taskbar{
-		button.icon-button, a.icon-button{
+		button.button-icon, a.button-icon{
 			width: 40px; height: 40px;
 			font-size: 24px;
 		}

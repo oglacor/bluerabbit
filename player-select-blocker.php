@@ -9,7 +9,7 @@ WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in'
 
 <div class="highlight padding-10 <?= isset($selected_color) ? $selected_color : 'purple'; ?>-bg-50 padding-0">
 	<span class="icon-group">
-		<span class="icon-button font _24 sq-40  deep-purple-bg-400"><span class="icon icon-players"></span></span>
+		<span class="button-icon font _24 sq-40  deep-purple-bg-400"><span class="icon icon-players"></span></span>
 		<span class="icon-content">
 			<span class="line font _24 grey-800"><?= isset($player_select_title) ? $player_select_title : __("Players","bluerabbit"); ?></span>
 			<?php if(isset($player_select_desc)){ ?>
@@ -55,7 +55,7 @@ WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in'
 					class="<?php if(in_array($p->player_id, $selected_players)){ echo 'active'; } ?> <?= $p->player_hexad_slug; ?> level-<?= $p->player_level; ?>">
 
 					<div class="icon-group">
-						<button class="icon-button player-picture white-bg sq-60" style="background-image: url(<?= $p->player_picture; ?>);">
+						<button class="button-icon player-picture white-bg sq-60" style="background-image: url(<?= $p->player_picture; ?>);">
 
 						</button>
 						<div class="icon-content text-left">

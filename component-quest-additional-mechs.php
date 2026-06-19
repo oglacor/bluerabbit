@@ -1,6 +1,6 @@
 					<div class="highlight padding-10 grey-bg-100">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  grey-bg-400">
+							<span class="button-icon font _24 sq-40  grey-bg-400">
 								<span class="icon icon-config"></span>
 							</span>
 							<span class="icon-content font _24">

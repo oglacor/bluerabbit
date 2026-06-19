@@ -37,7 +37,7 @@
 			<div class="body-ui">
 				<div class="highlight <?php echo $c->achievement_color ? $c->achievement_color : "brown"; ?>-bg-800 padding-10 page-break text-center">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  brown-bg-400 icon-lg">
+						<span class="button-icon font _24 sq-40  brown-bg-400 icon-lg">
 							<span class="icon icon-challenge"></span>
 						</span>
 						<span class="icon-content white-color">
@@ -50,7 +50,7 @@
 				</div>
 				<div class="highlight padding-20 brown-bg-50">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  brown-bg-400"><span class="icon icon-challenge"></span></span>
+						<span class="button-icon font _24 sq-40  brown-bg-400"><span class="icon icon-challenge"></span></span>
 						<span class="icon-content text-left">
 							<span class="line font _24 w900"><?php _e("Results by Question","bluerabbit"); ?></span>
 							<span class="line font _16 w100"><?php _e("The numbers below each answer represent the number of times that answer was chosen over the total of times shown ","bluerabbit"); ?></span>
@@ -64,7 +64,7 @@
 			<div id="simple-table" class="hidden">
 				<div class="highlight blue-grey-bg-800 padding-10 page-break text-center">
 					<div class="icon-group">
-						<span class="icon-button font _24 sq-40  brown-bg-400 icon-lg">
+						<span class="button-icon font _24 sq-40  brown-bg-400 icon-lg">
 							<span class="icon icon-challenge"></span>
 						</span>
 						<span class="icon-content white-color">
@@ -139,7 +139,7 @@
 				<?php foreach($questions as $qKey=>$question){ ?>
 					<div class="highlight orange-bg-50 padding-10">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  brown-bg-300 font w900 _24"> ? </span>
+							<span class="button-icon font _24 sq-40  brown-bg-300 font w900 _24"> ? </span>
 							<span class="icon-content">
 								<span class="line font _14 w100"><?php echo __("Question ID","bluerabbit")."#$qKey"; ?></span>
 								<span class="line font _24 w100"><?php echo $question['title']; ?></span>
@@ -159,11 +159,11 @@
 										$a_count = $wpdb->get_row("SELECT COUNT(*) as total_answers FROM {$wpdb->prefix}br_challenge_attempt_answers WHERE answer_id={$option['answer_id']}");
 									?>
 									<?php if($option['answer_correct'] > 0){ ?>
-										<span class="icon-button font _24 sq-40  green-bg-400">
+										<span class="button-icon font _24 sq-40  green-bg-400">
 											<span class="icon-check icon"></span>
 										</span>
 									<?php }else{ ?>
-										<span class="icon-button font _24 sq-40  red-bg-400">
+										<span class="button-icon font _24 sq-40  red-bg-400">
 											<span class="icon-cancel icon"></span>
 										</span>
 									<?php } ?>
@@ -184,7 +184,7 @@
 				<?php $attempts = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_challenge_attempts WHERE quest_id=$c->quest_id ORDER BY player_id, attempt_date"); ?>
 				<div class="highlight padding-20 brown-bg-50 text-center">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  brown-bg-400"><span class="icon icon-challenge"></span></span>
+						<span class="button-icon font _24 sq-40  brown-bg-400"><span class="icon icon-challenge"></span></span>
 						<span class="icon-content  text-left">
 							<span class="line font _24 w900"><?php _e("Results by Attempt","bluerabbit"); ?></span>
 							<span class="line font _14 w100 "><?php echo __("Total Attempts","bluerabbit").": ".count($attempts);?></span>
@@ -249,12 +249,12 @@
 									<td>
 										<?php if($att->attempt_status=='success'){ ?>
 											<?php $success++; ?>
-											<span class="icon-button font _24 sq-40  icon-sm green-bg-400">
+											<span class="button-icon font _24 sq-40  icon-sm green-bg-400">
 												<span class="icon icon-check"></span>
 											</span>
 										<?php }else{ ?>
 											<?php $failure++; ?>
-											<span class="icon-button font _24 sq-40  icon-sm red-bg-400">
+											<span class="button-icon font _24 sq-40  icon-sm red-bg-400">
 												<span class="icon icon-cancel"></span>
 											</span>
 										<?php } ?>
@@ -266,21 +266,21 @@
 				</div>
 				<div class="highlight padding-20 deep-purple-bg-50 text-center">
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  deep-purple-bg-400"><span class="icon icon-skill"></span></span>
+						<span class="button-icon font _24 sq-40  deep-purple-bg-400"><span class="icon icon-skill"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 w900"><?php echo count($attempts); ?></span>
 							<span class="line font _14 w100 condensed"><?php _e("Total Attempts","bluerabbit"); ?></span>
 						</span>
 					</span>
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  light-green-bg-400"><span class="icon icon-check"></span></span>
+						<span class="button-icon font _24 sq-40  light-green-bg-400"><span class="icon icon-check"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 w900"><?php echo $success; ?></span>
 							<span class="line font _14 w100 condensed"><?php _e("Successful Attempts","bluerabbit"); ?></span>
 						</span>
 					</span>
 					<span class="icon-group">
-						<span class="icon-button font _24 sq-40  red-bg-400"><span class="icon icon-cancel"></span></span>
+						<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-cancel"></span></span>
 						<span class="icon-content">
 							<span class="line font _24 w900"><?php echo $failure; ?></span>
 							<span class="line font _14 w100 condensed"><?php _e("Failed Attempts","bluerabbit"); ?></span>

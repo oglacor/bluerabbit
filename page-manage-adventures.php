@@ -55,7 +55,7 @@
 	<div class="body-ui">
 		<div class="highlight padding-10 grey-bg-800">
 			<span class="icon-group">
-				<span class="icon-button font _24 sq-40  orange-bg-400"><span class="icon icon-tools"></span></span>
+				<span class="button-icon font _24 sq-40  orange-bg-400"><span class="icon icon-tools"></span></span>
 				<span class="icon-content">
 					<span class="line font _24 orange-400"><?php _e('Manage Adventures','bluerabbit'); ?></span>
 					<span class="line font _14 orange-100"><?php echo __('Edit, delete & restore your adventures','bluerabbit'); ?> </span>
@@ -100,7 +100,7 @@
 							<td class="text-center font _16 light-blue-bg-200 blue-800 w500"><?php echo $a->adventure_id; ?></td>
 							<td>
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40 " style="background-image: url(<?php echo $a->adventure_badge; ?>)"></span>
+									<span class="button-icon font _24 sq-40 " style="background-image: url(<?php echo $a->adventure_badge; ?>)"></span>
 									<span class="icon-content">
 										<span class="line font _24">
 											<?php if($a->adventure_status=='publish'){ ?>
@@ -146,10 +146,10 @@
 							</td>
 							<td class="text-center">
 								<?php if($a->adventure_status !='delete' && ($isAdmin || $a->player_adventure_role=='gm')){ ?>
-									<a class="icon-button font _16 sq-30  icon-sm green-bg-400" href="<?php echo get_bloginfo('url')."/new-adventure/?adventure_id=$a->adventure_id"; ?>"><span class="icon icon-edit"></span></a>
+									<a class="button-icon font _16 sq-30  icon-sm green-bg-400" href="<?php echo get_bloginfo('url')."/new-adventure/?adventure_id=$a->adventure_id"; ?>"><span class="icon icon-edit"></span></a>
 								<?php } ?>
 								<?php if($a->adventure_status =='publish'){ ?>
-								<button class="icon-button font _16 sq-30  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $a->adventure_id; ?>');">
+								<button class="button-icon font _16 sq-30  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $a->adventure_id; ?>');">
 									<span class="icon icon-trash"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
@@ -158,7 +158,7 @@
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?php echo $a->adventure_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->adventure_id; ?>,'adventure','trash');">
 										<span class="icon-group">
-											<span class="icon-button font _16 sq-30  icon-sm red-bg-A400 icon-sm">
+											<span class="button-icon font _16 sq-30  icon-sm red-bg-A400 icon-sm">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -166,13 +166,13 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 								<?php } ?>
 								<?php if($a->adventure_status =='trash'){ ?>
-								<button class="icon-button font _16 sq-30  icon-sm blue-bg-400 white-color trash-button" onClick="showOverlay('#confirm-restore-<?php echo $a->adventure_id; ?>');">
+								<button class="button-icon font _16 sq-30  icon-sm blue-bg-400 white-color trash-button" onClick="showOverlay('#confirm-restore-<?php echo $a->adventure_id; ?>');">
 									<span class="icon icon-restore"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Restore","bluerabbit"); ?></span>
@@ -181,7 +181,7 @@
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-restore-<?php echo $a->adventure_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->adventure_id; ?>,'adventure','publish');">
 										<span class="icon-group">
-											<span class="icon-button font _16 sq-30  icon-sm blue-bg-A400 icon-sm">
+											<span class="button-icon font _16 sq-30  icon-sm blue-bg-A400 icon-sm">
 												<span class="icon icon-restore white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -189,11 +189,11 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
-								<button class="icon-button font _16 sq-30  icon-sm red-bg-800 white-color delete-button" onClick="showOverlay('#confirm-delete-<?php echo $a->adventure_id; ?>');">
+								<button class="button-icon font _16 sq-30  icon-sm red-bg-800 white-color delete-button" onClick="showOverlay('#confirm-delete-<?php echo $a->adventure_id; ?>');">
 									<span class="icon icon-delete"></span>
 									<span class="tool-tip bottom">
 										<span class="tool-tip-text font _12"><?php _e("Delete Forever","bluerabbit"); ?></span>
@@ -202,7 +202,7 @@
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-delete-<?php echo $a->adventure_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->adventure_id; ?>,'adventure','delete');">
 										<span class="icon-group">
-											<span class="icon-button font _16 sq-30  icon-sm red-bg-A400 icon-sm">
+											<span class="button-icon font _16 sq-30  icon-sm red-bg-A400 icon-sm">
 												<span class="icon icon-delete white-color"></span>
 											</span>
 											<span class="icon-content">
@@ -211,7 +211,7 @@
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm icon-button font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="close-confirm button-icon font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>

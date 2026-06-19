@@ -45,7 +45,7 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 				<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?php echo $adv->adventure_id; ?>">
 					<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $adv->adventure_id; ?>,'adventure','trash');">
 						<span class="icon-group">
-							<span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+							<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
 								<span class="icon icon-trash white-color"></span>
 							</span>
 							<span class="icon-content">
@@ -53,7 +53,7 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 							</span>
 						</span>
 					</button>
-					<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+					<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 						<span class="icon icon-cancel white-color"></span>
 					</button>
 				</div>

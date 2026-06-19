@@ -1,6 +1,6 @@
 <li id="player-to-org-<?= $p->player_id; ?>" class="margin-5" onClick="addPlayerToOrg(<?= $p->player_id; ?>);">
 	<div class="icon-group">
-		<button class="icon-button player-picture white-bg sq-60" style="background-image: url(<?= $p->player_picture; ?>);">
+		<button class="button-icon player-picture white-bg sq-60" style="background-image: url(<?= $p->player_picture; ?>);">
 
 		</button>
 		<div class="icon-content text-left">

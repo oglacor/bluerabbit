@@ -17,7 +17,7 @@ if ( ! isset( $adventure_id ) || ! $adventure_id ) :
 ?>
 <div class="w-full padding-10 grey-bg-800">
 	<span class="icon-group">
-		<span class="icon-button font _24 sq-40 blue-bg-400"><span class="icon icon-mail"></span></span>
+		<span class="button-icon font _24 sq-40 blue-bg-400"><span class="icon icon-mail"></span></span>
 		<span class="icon-content">
 			<span class="line font _24 blue-400"><?php _e( 'Email Notifications', 'bluerabbit' ); ?></span>
 			<span class="line font _14 grey-400"><?php _e( 'No adventure selected. Add ?adventure_id=X to the URL.', 'bluerabbit' ); ?></span>
@@ -29,7 +29,7 @@ if ( ! isset( $adventure_id ) || ! $adventure_id ) :
 
 <div class="w-full padding-10 red-bg-800">
 	<span class="icon-group">
-		<span class="icon-button font _24 sq-40 red-bg-400"><span class="icon icon-cancel"></span></span>
+		<span class="button-icon font _24 sq-40 red-bg-400"><span class="icon icon-cancel"></span></span>
 		<span class="icon-content">
 			<span class="line font _24 red-200"><?php _e( 'Access Denied', 'bluerabbit' ); ?></span>
 			<span class="line font _14 red-100"><?php _e( 'You must be the adventure owner or a Game Master to send notifications.', 'bluerabbit' ); ?></span>
@@ -66,7 +66,7 @@ $recipient_count = $wpdb->get_var( $wpdb->prepare(
 <!-- ── Page header ─────────────────────────────────────────────────── -->
 <div class="w-full padding-10 grey-bg-800">
 	<span class="icon-group">
-		<span class="icon-button font _24 sq-40 blue-bg-400"><span class="icon icon-mail"></span></span>
+		<span class="button-icon font _24 sq-40 blue-bg-400"><span class="icon icon-mail"></span></span>
 		<span class="icon-content">
 			<span class="line font _24 blue-400"><?php _e( 'Email Notification', 'bluerabbit' ); ?></span>
 			<span class="line font _14 grey-300">

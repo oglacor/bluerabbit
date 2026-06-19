@@ -15,11 +15,11 @@
         </div>
         <div class="cell cell-badge">
             <input type="hidden" value="<?= $a->tabi_background; ?>" id="the_tabi_badge-<?= $a->tabi_id; ?>">
-            <button class="icon-button font _24 sq-40 " onClick="showWPUpload('the_tabi_badge-<?= $a->tabi_id; ?>','a','tabi',<?= $a->tabi_id; ?>);" id="the_tabi_badge-<?= $a->tabi_id; ?>_thumb" style="background-image: url(<?= $a->tabi_background; ?>);">
+            <button class="button-icon font _24 sq-40 " onClick="showWPUpload('the_tabi_badge-<?= $a->tabi_id; ?>','a','tabi',<?= $a->tabi_id; ?>);" id="the_tabi_badge-<?= $a->tabi_id; ?>_thumb" style="background-image: url(<?= $a->tabi_background; ?>);">
             </button>
         </div>
         <div class="cell cell-color relative layer base">
-            <button class="icon-button font _24 sq-40 <?=$a->tabi_color;?>-bg-400" id="color-trigger-tabi-<?= $a->tabi_id; ?>" onClick="activate('#color-select-<?=$a->tabi_id;?>');">
+            <button class="button-icon font _24 sq-40 <?=$a->tabi_color;?>-bg-400" id="color-trigger-tabi-<?= $a->tabi_id; ?>" onClick="activate('#color-select-<?=$a->tabi_id;?>');">
             </button> 
             <input type="hidden" value="<?= $a->tabi_color; ?>" id="the_tabi_color-<?= $a->tabi_id; ?>">
         </div>
@@ -105,7 +105,7 @@
             <div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?= $a->tabi_id; ?>">
                 <button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?= $a->tabi_id; ?>,'tabi','trash');">
                     <span class="icon-group">
-                        <span class="icon-button font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+                        <span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
                             <span class="icon icon-trash white-color"></span>
                         </span>
                         <span class="icon-content">
@@ -113,7 +113,7 @@
                         </span>
                     </span>
                 </button>
-                <button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+                <button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
                     <span class="icon icon-cancel white-color"></span>
                 </button>
             </div>

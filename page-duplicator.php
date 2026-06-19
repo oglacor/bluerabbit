@@ -36,7 +36,7 @@ if($adventure){
 	<div class="boxed max-w-1200">
 			<div class="text-center padding-20">
 				<span class="icon-group inline-table">
-					<span class="icon-button font _24 sq-40  icon-lg purple-bg-400"><span class="icon icon-duplicate"></span></span>
+					<span class="button-icon font _24 sq-40  icon-lg purple-bg-400"><span class="icon icon-duplicate"></span></span>
 					<span class="icon-content">
 						<span class="line font _48 white-color">
 							<?php _e("Duplicator","bluerabbit"); ?>
@@ -47,7 +47,7 @@ if($adventure){
 			<div class="body-ui w-full white-bg">
 				<div class="highlight padding-20 blue-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></div>
+						<div class="button-icon font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Quests","bluerabbit");?></div>
 						</div>
@@ -103,7 +103,7 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 purple-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></div>
+						<div class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Achievements","bluerabbit");?></div>
 						</div>
@@ -153,7 +153,7 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 purple-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  green-bg-400"><span class="icon icon-carrot"></span></div>
+						<div class="button-icon font _24 sq-40  green-bg-400"><span class="icon icon-carrot"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Tabis","bluerabbit");?></div>
 						</div>
@@ -194,7 +194,7 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 pink-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  pink-bg-400"><span class="icon icon-basket"></span></div>
+						<div class="button-icon font _24 sq-40  pink-bg-400"><span class="icon icon-basket"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Items","bluerabbit");?></div>
 						</div>
@@ -255,7 +255,7 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 cyan-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  cyan-bg-A400 blue-grey-900"><span class="icon icon-activity"></span></div>
+						<div class="button-icon font _24 sq-40  cyan-bg-A400 blue-grey-900"><span class="icon icon-activity"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Encounters","bluerabbit");?></div>
 						</div>
@@ -307,7 +307,7 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 orange-bg-100">
 					<div class="icon-group">
-						<div class="icon-button font _24 sq-40  orange-bg-A400 blue-grey-900"><span class="icon icon-socialiser"></span></div>
+						<div class="button-icon font _24 sq-40  orange-bg-A400 blue-grey-900"><span class="icon icon-socialiser"></span></div>
 						<div class="icon-content">
 							<div class="line font _24"><?= __("Speakers","bluerabbit");?></div>
 						</div>

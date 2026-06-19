@@ -15,15 +15,15 @@
 		<div class="background <?=$color; ?>-bg-400 border rounded-max"></div>
 		<div class="highlight text-center padding-5 margin-0">
 			<div class="icon-group">
-				<span class="icon-button font _24 sq-40  transparent-bg icon-sm"><span class="icon icon-<?=$icon; ?>"></span></span>
+				<span class="button-icon font _24 sq-40  transparent-bg icon-sm"><span class="icon icon-<?=$icon; ?>"></span></span>
 				<span class="icon-content text-center white-color">
 					<span class="line font _14 w600 kerning-3 uppercase"><?= __("Item","bluerabbit"); ?></span>
 				</span>
 				<?php if($isGM || $isNPC || $isAdmin){ ?>
-					<a class="icon-button font _24 sq-40  icon-sm green-bg-400" href="<?php echo get_bloginfo("url")."/new-item/?item_id=$item->item_id&adventure_id=$item->adventure_id"; ?>">
+					<a class="button-icon font _24 sq-40  icon-sm green-bg-400" href="<?php echo get_bloginfo("url")."/new-item/?item_id=$item->item_id&adventure_id=$item->adventure_id"; ?>">
 						<span class="icon icon-edit"></span>
 					</a>
-					<a class="icon-button font _24 sq-40  icon-sm blue-grey-bg-700 foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$item->item_id"; ?>">
+					<a class="button-icon font _24 sq-40  icon-sm blue-grey-bg-700 foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$item->item_id"; ?>">
 						<span class="icon icon-transactions"></span>
 					</a>
 				<?php } ?>
@@ -36,7 +36,7 @@
 			</div>
 		</div>
 		<div class="body-ui w-full foreground">
-			<button class="absolute top right icon-button font _24 sq-40  transparent-bg icon-xs" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
+			<button class="absolute top right button-icon font _24 sq-40  transparent-bg icon-xs" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
 			<div class="highlight text-center padding-20 white-color">
 				<h1 class="font _36 w300 kerning-1"><?= $item->item_name; ?></h1>
 				<h3 class="text-center font _14 opacity-70">
@@ -48,7 +48,7 @@
 					<img src="<?= $item->item_badge; ?>" style="visibility:hidden;">
 					<div class="background">
 						<div class="table padding-10"><div class="table-cell text-center bottom">
-							<button class="icon-button font _24 sq-40  transparent-bg icon-lg opacity-70" onClick="changeSide();">
+							<button class="button-icon font _24 sq-40  transparent-bg icon-lg opacity-70" onClick="changeSide();">
 								<span class="background grey-gradient-800"></span>
 								<span class="foreground icon icon-rotate"></span>
 							</button>
@@ -67,7 +67,7 @@
 							<div class="book-face right <?= $color; ?>-bg-400">
 								<div class="background <?= $color; ?>-gradient-900"></div>
 								<div class="foreground padding-20">
-									<span class="icon-button font _24 sq-40  white-bg">
+									<span class="button-icon font _24 sq-40  white-bg">
 										<span class="icon icon-<?=$icon; ?> <?= $color; ?>-400"></span>
 									</span>
 								</div>

@@ -10,7 +10,7 @@
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 purple-bg-50">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40 purple-bg-400"><span class="icon icon-story"></span></span>
+			<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-story"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 grey-800">
 					<?= (isset($adventure) && isset($quest)) ? __("Edit Post","bluerabbit") : __("New Post","bluerabbit"); ?>
@@ -50,8 +50,8 @@
 						<div class="gallery-item setting">
 							<div class="background" style="background-image: url(<?= isset($quest->mech_badge) ? $quest->mech_badge : ""; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
 							<div class="gallery-item-options relative">
-								<button class="icon-button font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-								<button class="icon-button font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
+								<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
+								<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
 								<input type="hidden" id="the_quest_badge" value="<?= isset($quest->mech_badge) ? $quest->mech_badge : ""; ?>"/>
 							</div>
 						</div>

@@ -12,7 +12,7 @@
 		<div class="wall-nav">
 			<button type="button" onClick="loadChat('public');" class="form-ui active orange-bg-800  w-full wall-nav-btn" id="message-type-public">
 				<span class="icon-group w-full">
-					<span class="icon-button orange-bg-400 sq-40 font _24"><span class="icon icon-socialiser"></span></span>
+					<span class="button-icon orange-bg-400 sq-40 font _24"><span class="icon icon-socialiser"></span></span>
 					<span class="icon-content">
 						<span class="line font _20">
 							<?= __("Public Wall","bluerabbit"); ?>
@@ -24,7 +24,7 @@
 			
 				<button type="button" onClick="loadChat('guild',<?= $guild->guild_id; ?>);" class="form-ui <?= $guild->guild_color; ?>-bg-800  w-full wall-nav-btn" id="message-type-guild<?= $guild->guild_id; ?>">
 					<span class="icon-group w-full">
-						<span class="icon-button orange-bg-400 sq-40 font _24" style="background-image: url(<?= $guild->guild_logo; ?>); "></span>
+						<span class="button-icon orange-bg-400 sq-40 font _24" style="background-image: url(<?= $guild->guild_logo; ?>); "></span>
 						<span class="icon-content">
 							<span class="line font _20">
 								<?= $guild->guild_name; ?>
@@ -36,7 +36,7 @@
 			<?php if($isGM || $isAdmin){ ?>
 				<button type="button" onClick="loadChat('system');" class="form-ui blue-bg-700  w-full wall-nav-btn" id="message-type-system">
 					<span class="icon-group w-full">
-						<span class="icon-button white-bg blue-700 sq-40 font _24"><span class="icon icon-socialiser"></span></span>
+						<span class="button-icon white-bg blue-700 sq-40 font _24"><span class="icon icon-socialiser"></span></span>
 						<span class="icon-content">
 							<span class="line font _20">
 								<?= __("System","bluerabbit"); ?>

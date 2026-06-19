@@ -166,7 +166,7 @@ header.super-header .nav-content {
 header.super-header.profile {
   order: 4;
 }
-header.super-header button.icon-button, header.super-header a.icon-button {
+header.super-header button.button-icon, header.super-header a.button-icon {
   width: 32px;
   height: 32px;
   border-radius: 0;
@@ -243,27 +243,29 @@ footer.taskbar .show-on-start {
   transition: all 0.5s ease-out;
   position: absolute;
   bottom: 55px;
-  left: 0;
-  text-align: center;
-  width: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 footer.taskbar.start-active .show-on-start {
   visibility: visible;
   opacity: 1;
 }
-footer.taskbar button.icon-button, footer.taskbar a.icon-button {
+footer.taskbar button.button-icon, footer.taskbar a.button-icon {
   width: 64px;
   height: 64px;
   border-radius: 4px;
   margin: 0;
-  display: inline-block;
   font-size: 34px;
   position: relative;
 }
 footer.taskbar button.start-button {
   font-size: 14px;
   transition: all 0.3s ease-out;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   display: inline-block;
   width: 135px;
   height: 32px;
@@ -460,7 +462,7 @@ button.form-ui[disabled] span.disabled-text, a.form-ui[disabled] span.disabled-t
 button.form-ui span.disabled-text, a.form-ui span.disabled-text, span.button-form-ui span.disabled-text, input[type=submit] span.disabled-text {
   display: none;
 }
-button.form-ui .icon-button.badge-icon, a.form-ui .icon-button.badge-icon, span.button-form-ui .icon-button.badge-icon, input[type=submit] .icon-button.badge-icon {
+button.form-ui .button-icon.badge-icon, a.form-ui .button-icon.badge-icon, span.button-form-ui .button-icon.badge-icon, input[type=submit] .button-icon.badge-icon {
   position: absolute;
   top: 50%;
   right: 100%;
@@ -482,7 +484,7 @@ button.form-ui.buy-item, a.form-ui.buy-item, span.button-form-ui.buy-item, input
   border: solid 2px #1cc2eb;
   background-color: #04161e;
   color: #1cc2eb;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   padding: 5px 10px;
   border-radius: 0;
   transition: all 0.3s ease-out;
@@ -494,7 +496,7 @@ button.form-ui.buy-item:hover, a.form-ui.buy-item:hover, span.button-form-ui.buy
 }
 
 button.action-button, a.action-button {
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   display: inline-block;
@@ -537,33 +539,36 @@ button.action-button.warning, a.action-button.warning {
   color: #04161e;
 }
 
-button.icon-button, a.icon-button, span.icon-button, .icon-button {
+button.button-icon, a.button-icon, span.button-icon, .button-icon {
   position: relative;
   border: none;
   border-width: 0;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
   margin: 0;
-  text-align: center;
   color: #FFF;
-  vertical-align: bottom;
   border-radius: 100em;
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
   min-width: 10px;
   min-height: 10px;
-  -o-object-fit: cover;
-     object-fit: cover;
 }
-button.icon-button .icon, a.icon-button .icon, span.icon-button .icon, .icon-button .icon {
+button.button-icon .icon, a.button-icon .icon, span.button-icon .icon, .button-icon .icon {
   z-index: 1;
-  width: 100%;
+  width: 90%;
 }
-button.icon-button .icon.perfect-center, a.icon-button .icon.perfect-center, span.icon-button .icon.perfect-center, .icon-button .icon.perfect-center {
+button.button-icon .icon.perfect-center, a.button-icon .icon.perfect-center, span.button-icon .icon.perfect-center, .button-icon .icon.perfect-center {
   position: absolute;
 }
-button.icon-button.square, a.icon-button.square, span.icon-button.square, .icon-button.square {
+button.button-icon img, a.button-icon img, span.button-icon img, .button-icon img {
+  display: block;
+  max-width: 90%;
+  height: 60%;
+}
+button.button-icon.square, a.button-icon.square, span.button-icon.square, .button-icon.square {
   border-radius: 0 !important;
 }
 
@@ -833,14 +838,14 @@ ul.form-ui li {
 .icon-group .icon-content.top {
   vertical-align: top;
 }
-.icon-group .icon-button {
+.icon-group .button-icon {
   display: table-cell;
   vertical-align: middle;
   position: relative;
   line-height: 1;
   z-index: 3;
 }
-.icon-group .icon-button.top {
+.icon-group .button-icon.top {
   vertical-align: top;
 }
 .icon-group.labeled .icon-content span.line {
@@ -1323,7 +1328,7 @@ span.divider {
   width: 100%;
   z-index: 10;
   display: flex;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-weight: 400;
   font-size: 16px;
 }
@@ -1651,7 +1656,7 @@ span.divider {
   background-position: center center;
   background-size: contain;
   background-repeat: no-repeat;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   display: inline-block;
   padding: 0.5em;
   border-radius: 0px;
@@ -2664,6 +2669,9 @@ span.divider {
   opacity: 0;
   visibility: hidden;
   z-index: 50;
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
 }
 .start.active {
   visibility: visible;
@@ -2674,7 +2682,6 @@ span.divider {
   position: absolute;
   bottom: 130px;
   z-index: 20;
-  width: 100%;
   text-align: center;
   align-items: stretch;
   justify-content: center;
@@ -2782,7 +2789,7 @@ span.divider {
   cursor: default;
   font-size: 24px;
   font-weight: 900;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   color: #ffd67b;
 }
 .start .nav-group nav ul li.nav-header:hover {
@@ -2792,7 +2799,7 @@ span.divider {
   background-color: rgba(75, 138, 249, 0.5);
   cursor: default;
   font-size: 24px;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
 }
 .start .nav-group nav ul li.highlighted:hover {
   background-color: rgba(75, 138, 249, 0.75);
@@ -3070,17 +3077,17 @@ span.divider {
   padding: 40px 0 0 0;
   perspective: 3000px;
 }
-.carousel-scene .next.icon-button, .carousel-scene .prev.icon-button {
+.carousel-scene .next.button-icon, .carousel-scene .prev.button-icon {
   z-index: 10;
 }
-.carousel-scene .next.icon-button .icon, .carousel-scene .prev.icon-button .icon {
+.carousel-scene .next.button-icon .icon, .carousel-scene .prev.button-icon .icon {
   transition: all 0.3s ease-out;
 }
-.carousel-scene .next.icon-button, .carousel-scene .prev.icon-button {
+.carousel-scene .next.button-icon, .carousel-scene .prev.button-icon {
   transition: all 0.3s ease-out;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0);
 }
-.carousel-scene .next.icon-button:hover, .carousel-scene .next.icon-button:active, .carousel-scene .prev.icon-button:hover, .carousel-scene .prev.icon-button:active {
+.carousel-scene .next.button-icon:hover, .carousel-scene .next.button-icon:active, .carousel-scene .prev.button-icon:hover, .carousel-scene .prev.button-icon:active {
   box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.3);
 }
 .carousel-scene .prev {
@@ -3160,7 +3167,7 @@ span.divider {
   z-index: 28;
 }
 .journey-builder-controls button.action-button, .journey-builder-controls a.action-button {
-  font: 500 16px "Rajdhani", sans-serif;
+  font: 500 16px "proxima-nova-extra-condensed", sans-serif;
 }
 
 .journey-builder-container {
@@ -3305,7 +3312,7 @@ span.divider {
   opacity: 0;
   visibility: hidden;
   text-align: center;
-  font: 400 16px "Rajdhani", sans-serif;
+  font: 400 16px "proxima-nova-extra-condensed", sans-serif;
   transition: all 0.3 ease-out;
 }
 .journey-builder-container .builder .milestone.builder-tabi {
@@ -3601,11 +3608,11 @@ span.divider {
   display: none;
 }
 .journey.journey-board .milestone .milestone-cta .milestone-preview-title h1 {
-  font: 500 24px "Rajdhani", sans-serif;
+  font: 500 24px "proxima-nova-extra-condensed", sans-serif;
 }
 .journey.journey-board .milestone .milestone-cta .milestone-preview-title h2 {
   text-align: center;
-  font: 600 16px "Rajdhani", sans-serif;
+  font: 600 16px "proxima-nova-extra-condensed", sans-serif;
   padding: 5px;
 }
 .journey.journey-board .milestone .milestone-cta .milestone-preview-title h2.finished-legend {
@@ -3627,7 +3634,7 @@ span.divider {
 }
 .journey.journey-board .milestone .milestone-level h2 {
   text-align: center;
-  font: 900 16px "Rajdhani", sans-serif;
+  font: 900 16px "proxima-nova-extra-condensed", sans-serif;
 }
 .journey.journey-board .milestone .milestone-level h2::before {
   content: "Level: ";
@@ -4035,7 +4042,7 @@ span.divider {
   font-weight: 600;
 }
 .milestone-preview .milestone-preview-content .milestone-preview-title h2 {
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-size: 16px;
   opacity: 0.7;
   font-weight: 900;
@@ -4076,7 +4083,7 @@ span.divider {
   opacity: 0.8;
 }
 .tabi-node .tabi-node-name {
-  font: 500 20px "Rajdhani", sans-serif;
+  font: 500 20px "proxima-nova-extra-condensed", sans-serif;
   color: #fff;
   margin-bottom: 4px;
   white-space: nowrap;
@@ -4306,7 +4313,7 @@ span.divider {
 .tabi-modal .tabi-modal-header .tabi-modal-title {
   flex: 1;
   margin: 0;
-  font: 700 20px "Rajdhani", sans-serif;
+  font: 700 20px "proxima-nova-extra-condensed", sans-serif;
   color: #fff;
 }
 .tabi-modal .tabi-modal-header .tabi-modal-close {
@@ -4466,28 +4473,28 @@ span.divider {
   display: block;
   text-align: center;
   grid-area: milestone_level;
-  font: 300 16px "Rajdhani", sans-serif;
+  font: 300 16px "proxima-nova-extra-condensed", sans-serif;
   border-right: solid 1px rgba(28, 194, 235, 0.2);
   padding: 10px;
 }
 .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-xp {
   grid-area: xp;
   text-align: center;
-  font: 300 16px "Rajdhani", sans-serif;
+  font: 300 16px "proxima-nova-extra-condensed", sans-serif;
   border-right: solid 1px rgba(28, 194, 235, 0.2);
   padding: 10px;
 }
 .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-bloo {
   grid-area: bloo;
   text-align: center;
-  font: 300 16px "Rajdhani", sans-serif;
+  font: 300 16px "proxima-nova-extra-condensed", sans-serif;
   border-right: solid 1px rgba(28, 194, 235, 0.2);
   padding: 10px;
 }
 .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-modal-content .milestone-ep {
   grid-area: ep;
   text-align: center;
-  font: 300 16px "Rajdhani", sans-serif;
+  font: 300 16px "proxima-nova-extra-condensed", sans-serif;
   padding: 10px;
 }
 .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-bg-color, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-bg-badge, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-cta, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-level, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-resources, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-action-button, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-description, .tabi-modal .tabi-modal-board .milestone-container .milestone .milestone-lock-type {
@@ -4534,7 +4541,7 @@ span.divider {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 10px 16px;
-  font: 600 15px "Rajdhani", sans-serif;
+  font: 600 15px "proxima-nova-extra-condensed", sans-serif;
   color: #fff;
 }
 .tabi-modal-locked .tabi-prereq-list li::before {
@@ -5283,7 +5290,7 @@ ul.items li.card .item-name {
   top: 0;
   right: 0;
   width: 100%;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-size: clamp(14px, 5cqw, 40px);
   color: #FFFFFF;
   text-align: right;
@@ -5345,7 +5352,7 @@ ul.items li.card .item-name {
 .speakers .speakers-grid .speaker-content .speaker-name {
   width: 100%;
   aspect-ratio: 245/48;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-weight: 400;
   font-size: 30px;
   color: #FFFFFF;
@@ -5368,7 +5375,7 @@ ul.items li.card .item-name {
   display: inline-block;
   width: 166px;
   height: 48px;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-weight: 500;
   font-size: 24px;
   color: #FFFFFF;
@@ -5452,7 +5459,7 @@ ul.opened-backpack li img {
   width: 100%;
   padding: 10px 0;
   display: inline-block;
-  font: "Rajdhani", sans-serif;
+  font: "proxima-nova-extra-condensed", sans-serif;
   font-size: 40px;
   color: #FFF;
 }
@@ -6165,59 +6172,6 @@ svg.icon-image.active line.yellow, svg.icon-image.active polyline.yellow, svg.ic
   border: dashed 2px #CCC;
   overflow: hidden;
 }
-.card.encounter {
-  position: relative;
-}
-.card.encounter .energy-tank {
-  position: absolute;
-  width: 341px;
-  height: 49px;
-  top: -7px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.card.encounter .energy-tank img {
-  position: relative;
-  top: 0;
-  left: 0;
-  z-index: 2;
-}
-.card.encounter .energy-tank .energy-bar {
-  border-radius: 100em;
-  width: 256px;
-  height: 36px;
-  position: absolute;
-  top: 6px;
-  left: 42px;
-  z-index: 1;
-}
-.card.encounter .energy-tank .energy-bar .energy-glow {
-  border-radius: 100em;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  background-image: url("images/gradient-energy.png");
-  background-repeat: repeat;
-  animation-duration: 3s;
-  animation-direction: normal;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-in-out;
-  animation-name: energy-bar-animation;
-  animation-iteration-count: infinite;
-}
-.card.encounter .energy-tank .energy-bar .energy-color {
-  border-radius: 100em;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 9;
-  background-image: linear-gradient(90deg, rgb(103, 58, 183), rgb(156, 39, 176), rgb(239, 83, 80), rgb(255, 235, 59));
-}
 .card.card-scene {
   width: 340px;
   height: 560px;
@@ -6346,7 +6300,7 @@ svg.icon-image.active line.yellow, svg.icon-image.active polyline.yellow, svg.ic
   display: inline-block;
   margin: 0 5px;
 }
-.card ul.reqs li .icon-button .background {
+.card ul.reqs li .button-icon .background {
   border-radius: 1000em;
 }
 .card ul.reqs li.disabled {
@@ -6379,7 +6333,7 @@ svg.icon-image.active line.yellow, svg.icon-image.active polyline.yellow, svg.ic
 .nav-corner.right {
   right: 5px;
 }
-.nav-corner .icon-button {
+.nav-corner .button-icon {
   margin: 0 0 10px 0 !important;
 }
 
@@ -6533,7 +6487,7 @@ svg.icon-image.active line.yellow, svg.icon-image.active polyline.yellow, svg.ic
   height: 290px;
   margin: 0 auto;
 }
-.mission-status-chart .icon-button {
+.mission-status-chart .button-icon {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -6679,7 +6633,7 @@ ul.pills li {
   width: 100%;
   padding: 5px;
   font-weight: 300;
-  font: "Rajdhani", sans-serif;
+  font: "proxima-nova-extra-condensed", sans-serif;
   color: #FFF;
 }
 .adventure-summary h1 img {
@@ -7235,7 +7189,7 @@ ul.color-select li.active .icon-check {
   flex-wrap: wrap;
   justify-content: center;
 }
-.challenge-quest .challenge-sidebar .challenge-nav-mobile button.icon-button {
+.challenge-quest .challenge-sidebar .challenge-nav-mobile button.button-icon {
   width: 28px;
   height: 28px;
   border-radius: 5px;
@@ -7247,16 +7201,16 @@ ul.color-select li.active .icon-check {
   cursor: pointer;
   transition: all 0.15s;
 }
-.challenge-quest .challenge-sidebar .challenge-nav-mobile button.icon-button:hover {
+.challenge-quest .challenge-sidebar .challenge-nav-mobile button.button-icon:hover {
   background: rgba(28, 194, 235, 0.15);
   border-color: rgba(28, 194, 235, 0.4);
 }
-.challenge-quest .challenge-sidebar .challenge-nav-mobile button.icon-button.answered {
+.challenge-quest .challenge-sidebar .challenge-nav-mobile button.button-icon.answered {
   background: rgba(36, 218, 152, 0.12);
   border-color: rgba(36, 218, 152, 0.3);
   color: #24da98;
 }
-.challenge-quest .challenge-sidebar .challenge-nav-mobile button.icon-button.current {
+.challenge-quest .challenge-sidebar .challenge-nav-mobile button.button-icon.current {
   background: #1cc2eb;
   border-color: #1cc2eb;
   color: #04161e;
@@ -8344,16 +8298,16 @@ ul.question-options li.option .option-actions .confirm-action .confirm-buttons-c
   position: relative;
   float: left;
 }
-.conversation ul li.message .message-profile-picture .icon-button {
+.conversation ul li.message .message-profile-picture .button-icon {
   margin: 0 5px;
   float: left;
 }
-.conversation ul li.message .message-profile-picture .icon-button.player-picture {
+.conversation ul li.message .message-profile-picture .button-icon.player-picture {
   background-position: center center;
   background-size: cover;
   border: solid 2px #444;
 }
-.conversation ul li.message .message-profile-picture .icon-button.player-picture.mine {
+.conversation ul li.message .message-profile-picture .button-icon.player-picture.mine {
   float: right;
 }
 .conversation ul li.message .message-content {
@@ -8388,7 +8342,7 @@ ul.question-options li.option .option-actions .confirm-action .confirm-buttons-c
   top: 0;
   right: 0;
 }
-.conversation ul li.message .message-settings .icon-button {
+.conversation ul li.message .message-settings .button-icon {
   font-size: 12px;
   width: 20px;
   height: 20px;
@@ -8406,7 +8360,7 @@ ul.question-options li.option .option-actions .confirm-action .confirm-buttons-c
   background-attachment: fixed;
   background-image: linear-gradient(to bottom, rgb(142, 36, 170), rgb(236, 64, 122), rgb(136, 14, 79)) !important;
 }
-.conversation ul li.message.public .message-meta .icon-button.pink, .conversation ul li.message.teacher .message-meta .icon-button.pink, .conversation ul li.message.guild .message-meta .icon-button.pink {
+.conversation ul li.message.public .message-meta .button-icon.pink, .conversation ul li.message.teacher .message-meta .button-icon.pink, .conversation ul li.message.guild .message-meta .button-icon.pink {
   display: none;
 }
 .conversation ul li.message.system {
@@ -8762,7 +8716,7 @@ ul.pagination li {
 .players-table .table-row .cell.player-hexad {
   width: 100px;
 }
-.players-table .table-row .cell.player-hexad .icon-button {
+.players-table .table-row .cell.player-hexad .button-icon {
   padding: 6px;
   font-size: 18px;
   width: 30px;
@@ -8963,17 +8917,17 @@ ul.blog li.blog-post.unavailable .blog-post-headline, ul.blog li.blog-post.unava
   -webkit-appearance: none;
   margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 }
-.spinner button.icon-button {
+.spinner button.button-icon {
   position: absolute;
   z-index: 12;
   top: 50%;
   margin: -20px 0 0;
 }
-.spinner button.icon-button.spin-up {
+.spinner button.button-icon.spin-up {
   left: auto;
   right: -20px;
 }
-.spinner button.icon-button.spin-down {
+.spinner button.button-icon.spin-down {
   left: -20px;
 }
 
@@ -9302,7 +9256,7 @@ ul.selectable-list li span.li-cell.cell-image {
   font-size: 24px;
   font-weight: 300;
   text-transform: uppercase;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   color: #FFC107;
 }
 .objective-success-message .objective-success-message-content {
@@ -9313,7 +9267,7 @@ ul.selectable-list li span.li-cell.cell-image {
 .objective-success-message .objective-success-message-footer {
   font-size: 16px;
   font-weight: 500;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   color: #FFC107;
   opacity: 0.5;
 }
@@ -9353,7 +9307,7 @@ img.achievement-unlocked {
 }
 
 h1.page-title {
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   color: #1cc2eb;
   font-weight: 700;
   text-transform: uppercase;
@@ -9499,7 +9453,7 @@ nav.tab-nav ul li.active {
   align-items: center;
   text-align: center;
   color: #FFFFFF;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
 }
 .item .item-content-container .item-content .item-image-container {
   width: 50px;
@@ -9558,7 +9512,7 @@ nav.tab-nav ul li.active {
   top: 0;
   left: 0;
   z-index: 2;
-  font: 600 14px "Rajdhani", sans-serif;
+  font: 600 14px "proxima-nova-extra-condensed", sans-serif;
   width: 25px;
   height: 25px;
   text-align: center;
@@ -9608,7 +9562,7 @@ nav.tab-nav ul li.active {
 }
 .item-shop .items .item-group h2 {
   color: #f7cb15;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   font-size: 18px;
   font-weight: 600;
   margin: 0;
@@ -9673,7 +9627,7 @@ nav.tab-nav ul li.active {
 }
 .item-shop .item-preview .item-preview-name {
   text-align: center;
-  font: 600 24px "Rajdhani", sans-serif;
+  font: 600 24px "proxima-nova-extra-condensed", sans-serif;
   color: #04161e;
   margin: 0 0 10px 0;
   padding: 38px 0 0;
@@ -9691,7 +9645,7 @@ nav.tab-nav ul li.active {
   border-radius: 10px;
 }
 .item-shop .item-preview .item-preview-description {
-  font: 500 16px "Rajdhani", sans-serif;
+  font: 500 16px "proxima-nova-extra-condensed", sans-serif;
   color: #04161e;
   margin: 0;
   padding: 0 20px;
@@ -9743,7 +9697,7 @@ nav.tab-nav ul li.active {
   color: #FFFFFF;
 }
 .tabi-editor-container .tabi-editor .tabi-editor-header h1 {
-  font: 600 22px "Rajdhani", sans-serif;
+  font: 600 22px "proxima-nova-extra-condensed", sans-serif;
   color: #f7cb15;
 }
 .tabi-editor-container .tabi-editor .tabi-builder {
@@ -9836,7 +9790,7 @@ nav.tab-nav ul li.active {
   top: 5px;
   width: 100%;
   text-align: center;
-  font: 400 14px "Rajdhani", sans-serif;
+  font: 400 14px "proxima-nova-extra-condensed", sans-serif;
   transition: all 0.3s ease-out;
   opacity: 0;
   visibility: hidden;
@@ -9853,7 +9807,7 @@ nav.tab-nav ul li.active {
 .tabi-editor-container .tabi-editor .tabi-builder .tabi-pieces .tabi-piece .tabi-piece-content .tabi-piece-content-meta .tabi-meta {
   width: 100px;
   color: #FFFFFF;
-  font: 600 12px "Rajdhani", sans-serif;
+  font: 600 12px "proxima-nova-extra-condensed", sans-serif;
   background-color: #24da98;
   padding: 5px;
   margin: 3px 0;
@@ -9931,7 +9885,7 @@ nav.tab-nav ul li.active {
   color: #f7cb15;
 }
 .tabi-editor-container .tabi-editor .tabi-editor-pieces-list .tabi-editor-pieces-list-header h3 {
-  font: 600 18px "Rajdhani", sans-serif;
+  font: 600 18px "proxima-nova-extra-condensed", sans-serif;
   padding: 10px 0;
   text-align: center;
 }
@@ -9949,7 +9903,7 @@ nav.tab-nav ul li.active {
   margin: 0 0 10px;
   border: solid 3px #1cc2eb;
   background-color: #04161e;
-  font: 400 16px "Rajdhani", sans-serif;
+  font: 400 16px "proxima-nova-extra-condensed", sans-serif;
   transition: all 0.3s ease-out;
 }
 .tabi-editor-container .tabi-editor .tabi-editor-pieces-list .tabi-editor-pieces-list-content ul li.tabi-piece-list-item.ui-sortable-handle {
@@ -9987,7 +9941,7 @@ nav.tab-nav ul li.active {
   transition: all 0.3s ease-out;
 }
 .tabi-editor-container .tabi-editor .tabi-editor-pieces-list .tabi-editor-pieces-list-content ul li.tabi-piece-list-item .tabi-piece-name-container button {
-  font: 500 16px "Rajdhani", sans-serif;
+  font: 500 16px "proxima-nova-extra-condensed", sans-serif;
   border: none;
   background-color: #1cc2eb;
   color: #FFFFFF;
@@ -10022,7 +9976,7 @@ nav.tab-nav ul li.active {
 }
 .tabi-editor-container .tabi-editor .tabi-editor-pieces-list .tabi-editor-pieces-list-content ul li.tabi-piece-list-item .tabi-piece-data-container .data-table .data-row.data-header {
   background-color: rgba(36, 218, 152, 0.5);
-  font: 600 14px "Rajdhani", sans-serif;
+  font: 600 14px "proxima-nova-extra-condensed", sans-serif;
 }
 .tabi-editor-container .tabi-editor .tabi-editor-pieces-list .tabi-editor-pieces-list-content ul li.tabi-piece-list-item .tabi-piece-data-container .data-table .data-row .data-cell {
   padding: 5px;
@@ -10105,6 +10059,12 @@ nav.tab-nav ul li.active {
 .tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece .tabi-piece-image img {
   max-width: 100%;
   max-height: 100%;
+  filter: grayscale(100%);
+  opacity: 0.7;
+}
+.tabi .hud-display .hud-screen-container .hud-screen-content .tabi-pieces .tabi-piece .tabi-piece-image.active img {
+  filter: grayscale(0%);
+  opacity: 1;
 }
 
 .hud-display {
@@ -10209,7 +10169,7 @@ nav.tab-nav ul li.active {
 .hud-title h1, .hud-title h2, .hud-title h3, .hud-title h4, .hud-title h5, .hud-title h6 {
   transform: skewX(-30deg);
   color: #FFFFFF;
-  font-family: "Rajdhani", sans-serif;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
   background-color: rgba(28, 194, 235, 0.2);
   padding: 10px 20px;
   width: -moz-fit-content;
@@ -10220,117 +10180,248 @@ nav.tab-nav ul li.active {
   transform: skewX(30deg);
 }
 
-.guilds {
-  width: 100%;
-  max-width: 1320px;
-  padding: 20px;
+.guilds-page-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 40px;
+  align-items: start;
+  max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
+  padding: 40px 20px;
 }
-.guilds .my-guild {
-  width: 50%;
-}
-.guilds .my-guild .hud-title {
+.guilds-page-layout .my-guild .hud-title {
   margin-bottom: 20px;
 }
-.guilds .my-guild .my-guild-card {
-  aspect-ratio: 8/5;
-  padding: 10px;
+.guilds-page-layout .my-guild .my-guild-card {
+  background: #0b3d4f;
+  border: 1px solid rgba(28, 194, 235, 0.3);
+  border-radius: 12px;
+  padding: 24px;
   position: relative;
+  overflow: hidden;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-bg {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 1;
+  opacity: 0.08;
+  pointer-events: none;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-bg .my-guild-card-border path {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-bg .my-guild-card-border {
+  width: 100%;
+  height: 100%;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-bg .my-guild-card-border path {
   fill: none;
   stroke-width: 2;
   stroke: #f7cb15;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content {
+  position: relative;
   z-index: 2;
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   align-items: center;
+  gap: 16px;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info {
-  text-align: center;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info {
+  flex: 1;
+  min-width: 0;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info h2.guild-name {
-  font-size: 48px;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info h2.guild-name {
+  font-size: 1.8rem;
   color: #FFFFFF;
   font-family: "Preospe", sans-serif;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 14px;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats {
-  padding: 0;
-  border: none;
-  width: 100%;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-members-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid #1cc2eb;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr.teal {
-  color: #24da98;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-members-box .guild-members-count {
+  font-size: 1.8rem;
+  font-family: "Preospe", sans-serif;
+  color: #FFFFFF;
+  line-height: 1;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr.white {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-members-box .guild-members-label {
+  font-size: 0.7rem;
+  color: #1cc2eb;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list {
+  margin-bottom: 14px;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list .guild-stat {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 3px;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list .guild-stat .guild-stat-label {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list .guild-stat .guild-stat-value {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list .guild-stat .guild-stat-value.level {
   color: #FFFFFF;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr.blue {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list .guild-stat .guild-stat-value.xp {
   color: #1cc2eb;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr.yellow {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-stats-list .guild-stat .guild-stat-value.bloo {
   color: #f7cb15;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr td {
-  padding: 5px;
-  text-align: left;
-  font-weight: 700;
-  font-size: 20px;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-position-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid #f7cb15;
+  border-radius: 6px;
+  padding: 8px 14px;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info table.my-guild-card-stats tbody tr td:first-child {
-  font-size: 16px;
-  text-align: right;
-  font-weight: 300;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-position-box .guild-position-number {
+  font-size: 1.8rem;
+  font-family: "Preospe", sans-serif;
+  color: #FFFFFF;
+  line-height: 1;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge {
-  padding: 20px;
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-info .guild-position-box .guild-position-label {
+  font-size: 0.7rem;
+  color: #f7cb15;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge {
+  width: 200px;
+  flex-shrink: 0;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge {
+  width: 100%;
+  height: auto;
+}
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon, .guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path {
   fill: none;
   stroke: none;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-overlay, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-overlay {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-overlay, .guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-overlay {
   fill: rgba(8, 44, 60, 0.4);
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-yellow-border, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-yellow-border {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-yellow-border, .guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-yellow-border {
   stroke: #f7cb15;
   stroke-width: 2;
   fill: none;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-yellow-details, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-yellow-details {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-yellow-details, .guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-yellow-details {
   stroke: #f7cb15;
   stroke-width: 6;
   stroke-dasharray: 150px 200px;
   animation: arrow-outline-stroke-animation 8s linear infinite;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-white-line-overlay, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-white-line-overlay {
+.guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-white-line-overlay, .guilds-page-layout .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-white-line-overlay {
   stroke: #FFFFFF;
   stroke-width: 2;
   mix-blend-mode: overlay;
 }
-.guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge polygon.hexagon-image, .guilds .my-guild .my-guild-card .my-guild-card-content .my-guild-card-badge svg.guild-badge path.hexagon-image {
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
+.guilds-page-layout .guild-leaderboard-section .hud-title {
+  margin-bottom: 20px;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card {
+  display: flex;
+  align-items: center;
+  background: #0b3d4f;
+  border: 1px solid rgba(28, 194, 235, 0.2);
+  border-radius: 10px;
+  padding: 12px 20px;
+  gap: 20px;
+  width: auto;
+  margin: 0;
+  text-align: left;
+  transition: border-color 0.2s ease;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card:hover {
+  border-color: rgba(28, 194, 235, 0.5);
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card.is-my-guild {
+  border-left: 4px solid #1cc2eb;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-rank {
+  min-width: 56px;
+  font-size: 2.8rem;
+  font-family: "Preospe", sans-serif;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-badge {
+  flex-shrink: 0;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-badge img.badge {
+  width: 64px;
+  height: 64px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: 0;
+  border: none;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info {
+  flex: 1;
+  min-width: 0;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-name {
+  font-family: "Preospe", sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats .guild-lb-stat {
+  font-size: 0.78rem;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats .guild-lb-stat .stat-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats .guild-lb-stat .stat-value {
+  font-weight: 700;
+  color: #FFFFFF;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats .guild-lb-stat .stat-value.teal {
+  color: #24da98;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats .guild-lb-stat .stat-value.blue {
+  color: #1cc2eb;
+}
+.guilds-page-layout .guild-leaderboard-section ul.cards.guilds li.card .guild-lb-info .guild-lb-stats .guild-lb-stat .stat-value.yellow {
+  color: #f7cb15;
 }
 
 .certificate-options {
@@ -10675,12 +10766,12 @@ nav.tab-nav ul li.active {
   margin: -50px 0 0 -50px;
   opacity: 0.25;
 }
-.report .report-quest-charts .report-quest-chart .bg-icon span.icon-button {
+.report .report-quest-charts .report-quest-chart .bg-icon span.button-icon {
   width: 100px;
   height: 100px;
   text-align: center;
 }
-.report .report-quest-charts .report-quest-chart .bg-icon span.icon-button span.icon {
+.report .report-quest-charts .report-quest-chart .bg-icon span.button-icon span.icon {
   font-size: 50px;
 }
 .report table tbody tr td {
@@ -10924,7 +11015,7 @@ nav.tab-nav ul li.active {
     justify-content: center;
     width: 100vw;
   }
-  footer.taskbar button.icon-button, footer.taskbar a.icon-button {
+  footer.taskbar button.button-icon, footer.taskbar a.button-icon {
     width: 40px;
     height: 40px;
     font-size: 24px;

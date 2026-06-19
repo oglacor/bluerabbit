@@ -24,7 +24,7 @@ $objective_success_editor_id = "objective_success_message_".$c->objective_id;
 			<span class="icon icon-objectives"></span>
 			<?= __("Edit Keyword Search","bluerabbit"); ?>
 		</h3>
-		<button class="icon-button red-bg-500 absolute top-5 right-5 sq-36 font _18" onClick="tinymce.remove('#<?= $objective_success_editor_id;?>');hideAllOverlay();"><span class="icon icon-cancel"></span></button>
+		<button class="button-icon red-bg-500 absolute top-5 right-5 sq-36 font _18" onClick="tinymce.remove('#<?= $objective_success_editor_id;?>');hideAllOverlay();"><span class="icon icon-cancel"></span></button>
 	</div>
 	<table class="table w-full" cellpadding="0">
 		<thead>

@@ -16,7 +16,7 @@
 		");
 	}else{
 		$allguilds = getGuilds($adv_child_id);
-		$guilds = allguilds['publish'];
+		$guilds = $allguilds['publish'];
 	}
 	if($use_leaderboard){
 		$limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
@@ -32,12 +32,13 @@
 			LEFT JOIN {$wpdb->prefix}br_player_adventure player_adventure
 				ON guild_players.player_id = player_adventure.player_id
 				AND player_adventure.adventure_id = guilds.adventure_id
-			WHERE guilds.adventure_id = $adventure->adventure_id AND guilds.assign_on_login=1 
+			WHERE guilds.adventure_id = $adventure->adventure_id
 			AND guilds.guild_status = 'publish'
 			GROUP BY guilds.guild_id
 			ORDER BY total_player_xp DESC
 		");
         $leaderboard_guilds_array = array();
+		$leaderboard_bloo_array = array();
 		$guild_xp_update = "INSERT INTO {$wpdb->prefix}br_guilds (guild_id, guild_xp) VALUES ";
 		$guild_xp_update_values = array();
 		$guild_xp_update_placeholders = array();
@@ -45,58 +46,52 @@
 			array_push($guild_xp_update_values, $lg->guild_id, $lg->total_player_xp);
 			$guild_xp_update_placeholders[] = "(%d,%d)";
             $leaderboard_guilds_array[$lg->guild_id] = $lg->total_player_xp;
+            $leaderboard_bloo_array[$lg->guild_id] = $lg->total_player_bloo;
 		}
 		$guild_xp_update .= implode(', ', $guild_xp_update_placeholders);
-		$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp) ORDER BY guild_xp DESC";
+		$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp)";
 		$guild_xp_update_query = $wpdb->query( $wpdb->prepare("$guild_xp_update ", $guild_xp_update_values));
+		$user_guild_id = !empty($guilds) ? $guilds[0]->guild_id : 0;
+		$guild_rank_map = [];
+		foreach($leaderboard_guilds as $rank_index => $rank_guild) {
+			$guild_rank_map[$rank_guild->guild_id] = $rank_index + 1;
+		}
+		$guild_rank = $guild_rank_map[$user_guild_id] ?? 0;
 	}
 ?>
 
-    <div class="guilds">
-        <div class="my-guild">
-            <div class="hud-title">
-                <h2>
-                    <span class="hud-title-label"><?= __("My Guilds","bluerabbit"); ?></span>
-                </h2>
-            </div>
-            <?php foreach($guilds as $g){ ?>
-                <?php include (TEMPLATEPATH . '/guild.php'); ?>
-            <?php } ?>
+
+<div class="guilds-page-layout">
+    <div class="my-guild">
+        <div class="hud-title">
+            <h2>
+                <span class="hud-title-label"><?= __("My Guild","bluerabbit"); ?></span>
+            </h2>
         </div>
+        <?php foreach($guilds as $g){ ?>
+            <?php include (TEMPLATEPATH . '/guild.php'); ?>
+        <?php } ?>
     </div>
 
-
-
-	<?php if($use_leaderboard) { ?>
-		<div class="container boxed max-w-1200 wrap">
-			<div class="highlight text-center">
-				<span class="button-form-ui border rounded-max yellow-bg-500 blue-grey-800 font _24">
-					<span class="icon icon-progression"></span>
-					<?php _e("Leaderboard","bluerabbit"); ?>
-				</span>
-			</div>
-			<div class="body-ui w-full">
-				<div class="content">
-					<?php if($leaderboard_guilds){ ?>
-						<ul class="cards guilds text-center">
-							<?php foreach($leaderboard_guilds as $lg){ ?>
-								<?php include (TEMPLATEPATH . '/guild-leaderboard.php'); ?>
-							<?php } ?>
-						</ul>
-					<?php }else{ ?>
-						<h4><?php _e("You are not part of any guild yet","bluerabbit"); ?></h4>
-						<a class=" form-ui indigo" href="<?= get_bloginfo("url")."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
-							<span class="icon icon-home"></span> <strong><?php _e("Back to home","bluerabbit"); ?></strong>
-						</a>
-					<?php } ?>
-				</div>
-			</div>
-		</div>
-	<?php } ?>
+    <?php if($use_leaderboard && !empty($leaderboard_guilds)) { ?>
+    <div class="guild-leaderboard-section">
+        <div class="hud-title">
+            <h2>
+                <span class="hud-title-label"><?= __("Leaderboard","bluerabbit"); ?></span>
+            </h2>
+        </div>
+        <ul class="cards guilds">
+            <?php foreach($leaderboard_guilds as $loop_index => $lg){ ?>
+                <?php include (TEMPLATEPATH . '/guild-leaderboard.php'); ?>
+            <?php } ?>
+        </ul>
+    </div>
+    <?php } ?>
+</div>
 	<div class="container boxed max-w-1200 wrap">
 		<div class="highlight">
 			<div class="icon-group">
-				<span class="icon-button font _24 sq-40  light-green-bg-400">
+				<span class="button-icon font _24 sq-40  light-green-bg-400">
 					<span class="icon icon-guild white-color"></span>
 				</span>
 				<span class="icon-content">
@@ -109,20 +104,6 @@
 			</div>
 		</div>
 		<div class="body-ui w-full">
-			<div class="content">
-				<?php if($guilds){ ?>
-					<ul class="cards guilds">
-						<?php foreach($guilds as $g){ ?>
-							<?php include (TEMPLATEPATH . '/guild.php'); ?>
-						<?php } ?>
-					</ul>
-				<?php }else{ ?>
-					<h4><?php _e("You are not part of any guild yet","bluerabbit"); ?></h4>
-					<a class=" form-ui indigo" href="<?= get_bloginfo("url")."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
-						<span class="icon icon-home"></span> <strong><?php _e("Back to home","bluerabbit"); ?></strong>
-					</a>
-				<?php } ?>
-			</div>
 			<?php if(($isGM || $isAdmin || $isNPC) && $guilds){ ?>
 				<div class="content white-color">
 					<table class="table transparent-bg">

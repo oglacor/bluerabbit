@@ -22,7 +22,7 @@ $results = $wpdb->get_results("SELECT *
 ?>
 <div class="highlight padding-10 indigo-bg-50">
 	<span class="icon-group">
-		<span class="icon-button font _24 sq-40  indigo-bg-300"><span class="icon icon-document"></span></span>
+		<span class="button-icon font _24 sq-40  indigo-bg-300"><span class="icon icon-document"></span></span>
 		<span class="icon-content">
 			<span class="line font _24 grey-800"><?php _e('Blog Entries','bluerabbit'); ?></span>
 		</span>
@@ -71,7 +71,7 @@ $results = $wpdb->get_results("SELECT *
 				<tr id="blog-post-<?= $b->quest_id;?>" class="blog-post">
 					<td class="badge">
 						<input type="hidden" value="<?= $b->mech_badge; ?>" id="the_quest_badge-<?= $b->quest_id; ?>">
-						<button class="icon-button font _24 sq-40  icon-lg" onClick="showWPUpload('the_quest_badge-<?= $b->quest_id; ?>','a','quest',<?= $b->quest_id; ?>);" id="the_quest_badge-<?= $q->quest_id; ?>_thumb" style="background-image: url(<?= $b->mech_badge; ?>);">
+						<button class="button-icon font _24 sq-40  icon-lg" onClick="showWPUpload('the_quest_badge-<?= $b->quest_id; ?>','a','quest',<?= $b->quest_id; ?>);" id="the_quest_badge-<?= $q->quest_id; ?>_thumb" style="background-image: url(<?= $b->mech_badge; ?>);">
 						</button>
 					</td>
 					<td class="">
@@ -114,10 +114,10 @@ $results = $wpdb->get_results("SELECT *
 					</td>
 
 					<td>
-						<a href="<?= get_bloginfo('url')."/new-blog-post/?adventure_id=$adventure->adventure_id&questID=$b->quest_id";?>" class="icon-button font _24 sq-40  icon-sm light-green-bg-400"><span class="icon icon-edit"></span></a>
+						<a href="<?= get_bloginfo('url')."/new-blog-post/?adventure_id=$adventure->adventure_id&questID=$b->quest_id";?>" class="button-icon font _24 sq-40  icon-sm light-green-bg-400"><span class="icon icon-edit"></span></a>
 					</td>
 					<td>
-						<button class="icon-button font _24 sq-40  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $b->quest_id; ?>');">
+						<button class="button-icon font _24 sq-40  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $b->quest_id; ?>');">
 							<span class="icon icon-trash"></span>
 							<span class="tool-tip bottom">
 								<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
@@ -126,7 +126,7 @@ $results = $wpdb->get_results("SELECT *
 						<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?= $b->quest_id; ?>">
 							<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?= $b->quest_id; ?>,'blog-post','trash');">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+									<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 										<span class="icon icon-trash white-color"></span>
 									</span>
 									<span class="icon-content">
@@ -134,7 +134,7 @@ $results = $wpdb->get_results("SELECT *
 									</span>
 								</span>
 							</button>
-							<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+							<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 								<span class="icon icon-cancel white-color"></span>
 							</button>
 						</div>
@@ -165,7 +165,7 @@ $results = $wpdb->get_results("SELECT *
 <?php if(isset($blogposts['trash'])){ ?>
 	<div class="highlight padding-10 red-bg-50">
 		<span class="icon-group">
-			<span class="icon-button font _24 sq-40  red-bg-300"><span class="icon icon-trash"></span></span>
+			<span class="button-icon font _24 sq-40  red-bg-300"><span class="icon icon-trash"></span></span>
 			<span class="icon-content">
 				<span class="line font _24 grey-800"><?php _e('Trashed Blog Entries','bluerabbit'); ?></span>
 			</span>
@@ -209,10 +209,10 @@ $results = $wpdb->get_results("SELECT *
 				<tr id="blog_post-<?= $b->quest_id;?>" class="blog-post">
 					<td class=""><?= $b->quest_title; ?></td>
 					<td>
-						<a href="<?= get_bloginfo('url')."/new-blog-post/?adventure_id=$adventure->adventure_id&questID=$b->quest_id";?>" class="icon-button font _24 sq-40  icon-sm light-green-bg-400"><span class="icon icon-edit"></span></a>
+						<a href="<?= get_bloginfo('url')."/new-blog-post/?adventure_id=$adventure->adventure_id&questID=$b->quest_id";?>" class="button-icon font _24 sq-40  icon-sm light-green-bg-400"><span class="icon icon-edit"></span></a>
 					</td>
 					<td>
-						<button class="icon-button font _24 sq-40  icon-sm  blue-bg-200 white-color restore-button" onClick="showOverlay('#confirm-restore-<?= $b->quest_id; ?>');">
+						<button class="button-icon font _24 sq-40  icon-sm  blue-bg-200 white-color restore-button" onClick="showOverlay('#confirm-restore-<?= $b->quest_id; ?>');">
 							<span class="icon icon-restore"></span>
 							<span class="tool-tip bottom">
 								<span class="tool-tip-text font _12"><?php _e("Restore","bluerabbit"); ?></span>
@@ -221,7 +221,7 @@ $results = $wpdb->get_results("SELECT *
 						<div class="confirm-action overlay-layer restore-confirm" id="confirm-restore-<?= $b->quest_id; ?>">
 							<button class="form-ui white-bg restore-confirm-button" onClick="confirmStatus(<?= $b->quest_id; ?>,'blog-post','publish');">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  blue-bg-A400 icon-sm">
+									<span class="button-icon font _24 sq-40  blue-bg-A400 icon-sm">
 										<span class="icon icon-restore white-color"></span>
 									</span>
 									<span class="icon-content">
@@ -229,13 +229,13 @@ $results = $wpdb->get_results("SELECT *
 									</span>
 								</span>
 							</button>
-							<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+							<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 								<span class="icon icon-cancel white-color"></span>
 							</button>
 						</div>
 					</td>
 					<td>
-						<button class="icon-button font _24 sq-40  icon-sm  red-bg-200 white-color delete-button" onClick="showOverlay('#confirm-delete-<?= $b->quest_id; ?>');">
+						<button class="button-icon font _24 sq-40  icon-sm  red-bg-200 white-color delete-button" onClick="showOverlay('#confirm-delete-<?= $b->quest_id; ?>');">
 							<span class="icon icon-delete"></span>
 							<span class="tool-tip bottom">
 								<span class="tool-tip-text font _12"><?php _e("Delete","bluerabbit"); ?></span>
@@ -244,7 +244,7 @@ $results = $wpdb->get_results("SELECT *
 						<div class="confirm-action overlay-layer delete-confirm" id="confirm-delete-<?= $b->quest_id; ?>">
 							<button class="form-ui white-bg delete-confirm-button" onClick="confirmStatus(<?= $b->quest_id; ?>,'blog-post','delete');">
 								<span class="icon-group">
-									<span class="icon-button font _24 sq-40  red-bg-A400 icon-sm">
+									<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
 										<span class="icon icon-trash white-color"></span>
 									</span>
 									<span class="icon-content">
@@ -253,7 +253,7 @@ $results = $wpdb->get_results("SELECT *
 									</span>
 								</span>
 							</button>
-							<button class="close-confirm icon-button font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+							<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
 								<span class="icon icon-cancel white-color"></span>
 							</button>
 						</div>

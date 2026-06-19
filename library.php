@@ -12,7 +12,7 @@
 <div class="boxed w-full max-w-900 padding-10 grey-bg-100">
 	<div class="w-full padding-10 relative">
 		<div class="icon-group">
-			<div class="icon-button font _24 sq-40 orange-bg-400"><span class="icon icon-narrative"></span></div >
+			<div class="button-icon font _24 sq-40 orange-bg-400"><span class="icon icon-narrative"></span></div >
 			<div class="icon-content">
 				<div class="line font _24 w300 grey-800">
 					<?= __("Library","bluerabbit"); ?>
@@ -31,7 +31,7 @@
 					<div class="template-content">
 						<div class="template-name">
 							<span class="icon-group">
-								<span class="icon-button sq-60 grey-bg-100" style="background-image: url(<?= isset($t->adventure_badge) ? $t->adventure_badge : "";?>)"></span>
+								<span class="button-icon sq-60 grey-bg-100" style="background-image: url(<?= isset($t->adventure_badge) ? $t->adventure_badge : "";?>)"></span>
 								<span class="icon-content">
 									<span class="line grey-900 font _20 w600"><?= $t->adventure_title;?></span>
 									<span class="line grey-500 font _18 w300">

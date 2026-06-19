@@ -17,7 +17,7 @@ class Notification{
 		if($m){
 			$content = "<li class='border {$this->color}-bg-400 {$this->color}-border-800 white-color'>
 				<span class='icon-group'>
-					<span class='icon-button font _24 sq-40  icon-sm white-bg'>
+					<span class='button-icon font _24 sq-40  icon-sm white-bg'>
 						<span class='icon icon-{$this->icon} {$this->color}-400'></span>
 					</span>
 					<span class='icon-content'>
@@ -28,7 +28,7 @@ class Notification{
 		}else{
 			$content = "<li class='border white-bg red-border-A700 red-bg-A400 white-color'>
 				<span class='icon-group'>
-					<span class='icon-button font _24 sq-40  icon-sm white-bg'>
+					<span class='button-icon font _24 sq-40  icon-sm white-bg'>
 						<span class='icon icon-cancel red-A400'></span>
 					</span>
 					<span class='icon-content'>
@@ -56,7 +56,7 @@ class Notification{
 
         $content = "<li class='border {$this->color}-bg-400 {$this->color}-border-800 white-color'>
             <span class='icon-group'>
-                <span class='icon-button font _24 sq-40  icon-sm white-bg'>
+                <span class='button-icon font _24 sq-40  icon-sm white-bg'>
                     <span class='icon icon-{$this->icon} {$this->color}-400'></span>
                 </span>
                 <span class='icon-content'>

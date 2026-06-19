@@ -232,9 +232,6 @@
 		<link rel="stylesheet" type="text/css" href="<?php bloginfo('template_directory');?>/css/jquery-ui.min.css" >
 		<link rel="stylesheet" type="text/css" href="<?php bloginfo('template_directory');?>/css/jquery.datetimepicker.min.css" >
 
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&display=swap">
 		<link rel="stylesheet" href="https://use.typekit.net/zfu4fjz.css">
 		<link rel="stylesheet" href="https://bluerabbit.io/fonts/font.css">
 		<link rel="stylesheet" type="text/css" href="<?php bloginfo('stylesheet_url'); ?>">
@@ -254,8 +251,17 @@
 		</script>
 		
 		
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/shepherd.js@5.0.1/dist/js/shepherd.js"></script>
+		<script type="text/javascript" src="<?= get_bloginfo('template_directory'); ?>/js/jquery-4.0.0.min.js"></script>
+        <script type="text/javascript" src="<?= get_bloginfo('template_directory'); ?>/js/shepherd.js"></script>
+		<script>
+			var BR_TUTORIAL_I18N = {
+				next: "<?= esc_js(__("Next","bluerabbit")); ?>",
+				back: "<?= esc_js(__("Back","bluerabbit")); ?>",
+				skip: "<?= esc_js(__("Skip","bluerabbit")); ?>",
+				done: "<?= esc_js(__("Close","bluerabbit")); ?>"
+			};
+		</script>
+		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/tutorial-engine.js"></script>
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/jquery-ui.min.js"></script>
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/jquery.datetimepicker.full.min.js"></script>
 		<script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/Chart.js"></script>
@@ -263,17 +269,6 @@
             <script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/hud-audio.js"></script>
         <?php } ?>
         <script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/script.js"></script>
-		<?php $gads_id = $config['google_property_id']['value'] ? $config['google_property_id']['value'] : 'G-F1QPQC2JZL' ;	?>
-		
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=<?= $gads_id ; ?>"></script>
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
-
-		  gtag('config', '<?= $gads_id ; ?>');
-		</script>		
 		
 		<?php wp_head(); ?>
 	</head>
@@ -335,25 +330,31 @@
 				}
 				?>
 				<?php if($show_torch){ ?>
-					<a class="current-quest-torch icon-button <?= $current_player->player_current_quest_id == 0 ? "hidden" : ""; ?>" id="current-quest-torch" style="background-image: url(<?= get_bloginfo('template_directory'); ?>/images/icons/icon-torch.png); " href="<?= $cq_link; ?>">
+					<a class="current-quest-torch button-icon <?= $current_player->player_current_quest_id == 0 ? "hidden" : ""; ?>" id="current-quest-torch" style="background-image: url(<?= get_bloginfo('template_directory'); ?>/images/icons/icon-torch.png); " href="<?= $cq_link; ?>">
 					</a>
 				<?php } ?>
-				<button class="icon-button white-bg border rounded-max" id="profile-box-btn" <?php if(isset($current_player->player_picture)){ ?>style="background-image: url(<?= $current_player->player_picture; ?>); "<?php } ?> onClick="activate('#profile-box');">
+				<button class="button-icon white-bg border rounded-max" id="profile-box-btn" <?php if(isset($current_player->player_picture)){ ?>style="background-image: url(<?= $current_player->player_picture; ?>); "<?php } ?> onClick="activate('#profile-box');">
 				</button>
 				<?php if($current_player->player_guild){ ?>
 					<?php $myGuild = getMyGuild($adventure_id, $current_player->player_guild); ?>
 					<?php $myGuildExists = true; ?>
-					<a class="icon-button white-bg border rounded-max" id="guild-btn" <?php if(isset($myGuild->guild_logo)){ ?>style="background-image: url(<?= $myGuild->guild_logo; ?>); "<?php } ?> href="<?= get_bloginfo('url')."/guilds/?adventure_id=$adv_child_id"; ?>">
+					<a class="button-icon white-bg border rounded-max" id="guild-btn" <?php if(isset($myGuild->guild_logo)){ ?>style="background-image: url(<?= $myGuild->guild_logo; ?>); "<?php } ?> href="<?= get_bloginfo('url')."/guilds/?adventure_id=$adv_child_id"; ?>">
 					</a>
 				<?php } ?>
-				<?php if(is_page('adventure')){ ?>
-					<button class="icon-button transparent-bg font _18 relative" id="tutorial-button-start" onClick="tour.start();" title="<?= __("Start Tutorial","bluerabbit"); ?>" alt="<?= __("Start Tutorial","bluerabbit"); ?>">
+				<?php
+				$br_tutorial_pages = array(
+					'adventure','adventures','quest','challenge','mission',
+					'new-quest','new-challenge','new-adventure','new-mission','new-achievement','new-speaker','new-session','new-survey',
+					'new-guild','new-blocker','new-lore','new-blog-post','new-item',
+				);
+				if(is_page($br_tutorial_pages)){ ?>
+					<button class="button-icon transparent-bg font _18 relative" id="tutorial-button-start" onClick="tour.start();" title="<?= __("Start Tutorial","bluerabbit"); ?>" alt="<?= __("Start Tutorial","bluerabbit"); ?>">
 						<span class="background layer black-bg opacity-20 border rounded-max absolute"></span>
 						<span class="icon icon-question grey-400"></span>
 					</button>
                     
 				<?php } ?>
-				<a class="icon-button relative transparent-bg font _18  border rounded-max" target="_blank" href="mailto:<?= $support_email; ?>" title="<?= __("Email Support","bluerabbit"); ?>" alt="<?= __("Email Support","bluerabbit"); ?>">
+				<a class="button-icon relative transparent-bg font _18  border rounded-max" target="_blank" href="mailto:<?= $support_email; ?>" title="<?= __("Email Support","bluerabbit"); ?>" alt="<?= __("Email Support","bluerabbit"); ?>">
 					<span class="background layer amber-bg-800 opacity-20 border rounded-max absolute"></span>
 					<span class="icon icon-warning"></span>
 				</a>

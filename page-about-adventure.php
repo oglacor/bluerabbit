@@ -1,7 +1,7 @@
 <?php include (TEMPLATEPATH . '/header.php'); ?>
 <div class="boxed max-w-900 layer base relative white-color padding-20">
 	<div class="text-center padding-10">
-		<span class="icon-button sq-300 white-bg border border-1 border-all white-border" style="background-image: url(<?= $adventure->adventure_badge; ?>); "></span>
+		<span class="button-icon sq-300 white-bg border border-1 border-all white-border" style="background-image: url(<?= $adventure->adventure_badge; ?>); "></span>
 		<h2 class="font _48 white-color"><?= $adventure->adventure_title; ?></h2>
 	</div>
 	<div class="content">
