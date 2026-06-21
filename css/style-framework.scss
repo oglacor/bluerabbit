@@ -1,7 +1,6 @@
 $main-font: "proxima-nova", sans-serif;  
 $base-font: "proxima-nova", sans-serif;  
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
-$special-font: "proxima-nova-extra-condensed",sans-serif;
 $preospe-font: "Preospe", sans-serif;
 
 
@@ -18,7 +17,7 @@ $preospe-font: "Preospe", sans-serif;
 	animation-iteration-count: $count;
 }
 
-
+ 
 
 // UTILITIES
 
@@ -252,7 +251,7 @@ $preospe-font: "Preospe", sans-serif;
 .font{
 	&.main{ font-family: $main-font !important; }
 	&.condensed{ font-family: $condensed-font !important; }
-	&.special{ font-family: $special-font !important; }
+	&.special{ font-family: $condensed-font !important; }
 	&.preospe{ font-family: $preospe-font !important; } 
 	&._6{ font-size: 6px; }
 	&._8{ font-size: 8px; }
@@ -579,9 +578,9 @@ div.table-cell, span.table-cell{
 			text-align: center;
 			color: #fff;
 			.cell{
-				font: 600 24px $special-font;
+				font: 600 24px $condensed-font;
 				&.cell-level{
-					font: 900 30px $special-font;
+					font: 900 30px $condensed-font;
 				}
 			}
 		}

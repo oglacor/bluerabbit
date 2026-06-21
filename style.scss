@@ -19,10 +19,9 @@ Version: 12.2.1
 $main-font: "proxima-nova", sans-serif;  
 $base-font: "proxima-nova", sans-serif;  
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
-$special-font: "proxima-nova-extra-condensed",sans-serif;
 $preospe-font: "Preospe", sans-serif;
 
-$white: #FFFFFF;
+$white: #FFFFFF; 
 $black: #141d23;
 $text: #284354;
 $highlight: #42708c;
@@ -403,7 +402,7 @@ footer.taskbar{
 	button.start-button{
 		font-size: 14px;
 		transition: all 0.3s ease-out;
-		font-family: $special-font;
+		font-family: $condensed-font;
 		display: inline-block;
 		width: 135px;
 		height: 32px;
@@ -579,7 +578,7 @@ button.form-ui, a.form-ui, span.button-form-ui, input[type="submit"]{
 		border: solid 2px $new-colors-blue;
 		background-color: $new-colors-dark-blue;
 		color: $new-colors-blue;
-		font-family: $special-font;
+		font-family: $condensed-font;
 		padding: 5px 10px;
 		border-radius: 0;
 		transition: all 0.3s ease-out	;
@@ -592,7 +591,7 @@ button.form-ui, a.form-ui, span.button-form-ui, input[type="submit"]{
 
 }
 button.action-button, a.action-button{
-	font-family:$special-font;
+	font-family:$condensed-font;
 	font-weight: 600;
 	text-transform: uppercase;
 	display: inline-block;
@@ -1380,7 +1379,7 @@ span.divider{
 	width: 100%;
 	z-index: 10;
 	display: flex;
-	font-family: $special-font;
+	font-family: $condensed-font;
 	font-weight: 400;
 	font-size: 16px;;
 	select.form-ui{
@@ -1704,7 +1703,7 @@ span.divider{
 				background-position: center center;
 				background-size: contain;
 				background-repeat: no-repeat;
-				font-family:$special-font;
+				font-family:$condensed-font;
 				display: inline-block;
 				padding: 0.5em;
 				border-radius: 0px;
@@ -2828,7 +2827,7 @@ span.divider{
 						cursor: default;
 						font-size: 24px;
 						font-weight: 900;
-						font-family: $special-font;
+						font-family: $condensed-font;
 						color: $yellow;
 						&:hover{
 							background-color: rgba(19,109,160,1);
@@ -2838,7 +2837,7 @@ span.divider{
 						background-color: rgba($blue,0.5);
 						cursor: default;
 						font-size: 24px;
-						font-family: $special-font;
+						font-family: $condensed-font;
 						&:hover{
 							background-color: rgba($blue,0.75);
 						}
@@ -3177,7 +3176,7 @@ span.divider{
 	left: 5px;
 	z-index: 28;
 	button.action-button, a.action-button{
-		font: 500 16px $special-font;
+		font: 500 16px $condensed-font;
 	}
 }
 .journey-builder-container{
@@ -3266,7 +3265,7 @@ span.divider{
 				background-color: rgba($white,0.5);
 				opacity: 0; visibility: hidden;
 				text-align: center;
-				font: 400 16px $special-font;
+				font: 400 16px $condensed-font;
 				transition: all 0.3 ease-out;
 			}
 			// Tabi nodes inside the builder are draggable units
@@ -3462,11 +3461,11 @@ span.divider{
 				}
 				.milestone-preview-title{
 					h1{
-						font: 500 24px $special-font;
+						font: 500 24px $condensed-font;
 					}
 					h2{
 						text-align: center;
-						font: 600 16px $special-font;
+						font: 600 16px $condensed-font;
 						padding: 5px;;
 						&.finished-legend{
 							padding: 10px;
@@ -3490,7 +3489,7 @@ span.divider{
 
 				h2{
 					text-align: center;
-					font: 900 16px $special-font;
+					font: 900 16px $condensed-font;
 					&::before{
 						content: "Level: ";
 					}
@@ -3859,7 +3858,7 @@ span.divider{
 				font-weight: 600;
 			}
 			h2{
-				font-family: $special-font;
+				font-family: $condensed-font;
 				font-size: 16px;
 				opacity: 0.7;
 				font-weight: 900;
@@ -3906,7 +3905,7 @@ span.divider{
 		opacity: 0.8;
 	}
 	.tabi-node-name {
-		font: 500 20px $special-font;
+		font: 500 20px $condensed-font;
 		color: #fff;
 		margin-bottom: 4px;
 		white-space: nowrap;
@@ -4052,7 +4051,7 @@ span.divider{
 		.tabi-modal-title {
 			flex: 1;
 			margin: 0;
-			font: 700 20px $special-font;
+			font: 700 20px $condensed-font;
 			color: #fff;
 		}
 
@@ -4219,28 +4218,28 @@ span.divider{
                             display: block;
                             text-align: center;
                             grid-area: milestone_level;
-                            font: 300 16px $special-font;
+                            font: 300 16px $condensed-font;
                             border-right: solid 1px rgba($new-colors-blue,0.2);
                             padding: 10px;
                         }
                         .milestone-xp{
                             grid-area: xp;
                             text-align: center;
-                            font: 300 16px $special-font;
+                            font: 300 16px $condensed-font;
                             border-right: solid 1px rgba($new-colors-blue,0.2);
                             padding: 10px;
                         }
                         .milestone-bloo{
                             grid-area: bloo;
                             text-align: center;
-                            font: 300 16px $special-font;
+                            font: 300 16px $condensed-font;
                             border-right: solid 1px rgba($new-colors-blue,0.2);
                             padding: 10px;
                        }
                         .milestone-ep{
                             grid-area: ep;
                             text-align: center;
-                            font: 300 16px $special-font;
+                            font: 300 16px $condensed-font;
                             padding: 10px;
                         }
 
@@ -4298,7 +4297,7 @@ span.divider{
 			border: 1px solid rgba(255,255,255,0.12);
 			border-radius: 8px;
 			padding: 10px 16px;
-			font: 600 15px $special-font;
+			font: 600 15px $condensed-font;
 			color: #fff;
 
 			&::before {
@@ -4975,7 +4974,7 @@ ul{
                     position: absolute;
                     top: 0; right:0; 
                     width: 100%;
-                    font-family: $special-font;
+                    font-family: $condensed-font;
                     font-size: clamp(14px, 5cqw, 40px);
                     color: $white;
                     text-align: right;
@@ -5050,7 +5049,7 @@ ul{
             .speaker-name{
                 width: 100%;;
                 aspect-ratio: 245 / 48;
-                font-family: $special-font;
+                font-family: $condensed-font;
                 font-weight: 400;
                 font-size: 30px;
                 color: $white;
@@ -5072,7 +5071,7 @@ ul{
                 text-align: center;
                 display: inline-block;
                 width: 166px; height: 48px;
-                font-family: $special-font;
+                font-family: $condensed-font;
                 font-weight: 500;
                 font-size: 24px;
                 color: $white;
@@ -5157,7 +5156,7 @@ ul.opened-backpack{
 	width: 100%;
 	padding: 10px 0;
 	display: inline-block;
-	font: $special-font;
+	font: $condensed-font;
 	font-size: 40px;
 	color: #FFF;
 	img{
@@ -6182,7 +6181,7 @@ ul.pills{
 		width: 100%;
 		padding: 5px;
 		font-weight: 300;
-		font: $special-font;
+		font: $condensed-font;
 		color: #FFF;
 		img{
 			vertical-align: text-bottom;
@@ -8622,7 +8621,7 @@ ul.selectable-list{
 		font-size: 24px;
 		font-weight: 300;
 		text-transform: uppercase;
-		font-family: $special-font;
+		font-family: $condensed-font;
 		color: #FFC107;
 	}
 	.objective-success-message-content{
@@ -8633,7 +8632,7 @@ ul.selectable-list{
 	.objective-success-message-footer{
 		font-size: 16px;
 		font-weight: 500;
-		font-family: $special-font;
+		font-family: $condensed-font;
 		color: #FFC107;
 		opacity: 0.5;
 	}
@@ -8672,7 +8671,7 @@ img.achievement-unlocked{
 }
 
 h1.page-title{
-	font-family: $special-font;
+	font-family: $condensed-font;
 	color: $new-colors-blue;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -8795,7 +8794,7 @@ nav.tab-nav{
 			align-items: center;
 			text-align: center;
 			color: $white;
-			font-family: $special-font;
+			font-family: $condensed-font;
 			.item-image-container{
 				width: 50px;
 				height: 50px;
@@ -8849,7 +8848,7 @@ nav.tab-nav{
 					position: absolute;
 					top: 0; left: 0;
 					z-index: 2;
-					font: 600 14px $special-font;
+					font: 600 14px $condensed-font;
 					width: 25px; height: 25px;
 					text-align: center;
 					padding: 5px 0 0 0;
@@ -8900,7 +8899,7 @@ nav.tab-nav{
 			  margin: 5px 0 -10px; padding: 10px 0 0;
 			h2{
 				color: $new-colors-yellow;
-				font-family: $special-font;
+				font-family: $condensed-font;
 				font-size: 18px;
 				font-weight: 600;
 				margin: 0; padding: 0;
@@ -8962,7 +8961,7 @@ nav.tab-nav{
 		}
 		.item-preview-name{
 			text-align: center;
-			font: 600 24px $special-font;
+			font: 600 24px $condensed-font;
 			color: $new-colors-dark-blue;
 			margin: 0 0 10px 0;
 			padding: 38px 0 0;
@@ -8980,7 +8979,7 @@ nav.tab-nav{
 			}
 		}
 		.item-preview-description{
-			font: 500 16px $special-font;
+			font: 500 16px $condensed-font;
 			color: $new-colors-dark-blue;
 			margin: 0;
 			padding: 0 20px;
@@ -9029,7 +9028,7 @@ nav.tab-nav{
 				color: $white;
 			}
 			h1{
-				font: 600 22px $special-font;
+				font: 600 22px $condensed-font;
 				color: $new-colors-yellow;
 			}
 		}
@@ -9116,7 +9115,7 @@ nav.tab-nav{
 							z-index: 2;
 							position: absolute;
 							top: 5px;width: 100%; text-align: center;
-							font: 400 14px $special-font;
+							font: 400 14px $condensed-font;
 							transition: all 0.3s ease-out;
 							opacity: 0;
 							visibility: hidden;
@@ -9132,7 +9131,7 @@ nav.tab-nav{
 							.tabi-meta{
 								width: 100px;
 								color: $white;
-								font: 600 12px $special-font;
+								font: 600 12px $condensed-font;
 								background-color: $new-colors-green;
 								padding: 5px;
 								margin: 3px 0;
@@ -9183,7 +9182,7 @@ nav.tab-nav{
 			.tabi-editor-pieces-list-header{
 				color: $new-colors-yellow;
 				h3{
-					font: 600 18px $special-font;
+					font: 600 18px $condensed-font;
 					padding: 10px 0;
 					text-align: center;
 				}
@@ -9198,7 +9197,7 @@ nav.tab-nav{
 						margin: 0 0 10px;
 						border: solid 3px $new-colors-blue;
 						background-color: $new-colors-dark-blue;
-						font: 400 16px $special-font;
+						font: 400 16px $condensed-font;
 						transition: all 0.3s ease-out;
 						&.ui-sortable-handle{
 							transition: none;
@@ -9239,7 +9238,7 @@ nav.tab-nav{
 								transition: all 0.3s ease-out;
 							}
 							button{
-								font: 500 16px $special-font;
+								font: 500 16px $condensed-font;
 								border: none;
 								background-color: rgba($new-colors-blue,1);
 								color: $white;
@@ -9274,7 +9273,7 @@ nav.tab-nav{
 									place-items: center;
 									&.data-header{
 										background-color: rgba($new-colors-green,0.5);
-										font: 600 14px $special-font;
+										font: 600 14px $condensed-font;
 									}
 									.data-cell{
 										padding: 5px;
@@ -9465,7 +9464,7 @@ nav.tab-nav{
     h1, h2, h3, h4, h5, h6{
         transform: skewX(-30deg);
         color: $white;
-        font-family: $special-font;
+        font-family: $condensed-font;
         background-color: rgba($new-colors-blue,0.2);
         padding: 10px 20px;
         width: fit-content;
