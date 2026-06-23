@@ -4,9 +4,9 @@
 <div class="layer base w-full relative schedule">
 <?php 
 	if($adventure->adventure_hide_schedule == 'hide'){
-		$sessions = getSessions($adventure->adventure_id, 'hide'); 
+		$sessions = BR_Session::instance()->getSessions($adventure->adventure_id, 'hide');
 	}else{
-		$sessions = getSessions($adventure->adventure_id, 'publish'); 
+		$sessions = BR_Session::instance()->getSessions($adventure->adventure_id, 'publish');
 	}
 
 $speakers = $wpdb->get_results("

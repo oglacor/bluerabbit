@@ -1,3 +1,4 @@
+	<?php $left_side = $left_side ?? ''; ?>
 	<div class="milestone <?= "$mi->quest_type $hideByDay $left_side locked";  ?>"  id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
 		<input type="hidden" class="milestone-data-id" value="<?= $elementID; ?>">
 		<input type="hidden" class="milestone-data-title" value="<?= $mi->quest_title; ?>">

@@ -7,7 +7,7 @@
 	if(isset($adventure_code)){
 		if(wp_verify_nonce($nonce, 'blue_rabbit_enrollment_nonce')){
 			$adventure = $wpdb->get_row( "SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_code='$adventure_code'");
-			$adventure_max = getSetting('max_players', $adventure->adventure_id);
+			$adventure_max = BR_Config::instance()->getSetting('max_players', $adventure->adventure_id);
 			$enrolled_players = $wpdb->get_results("SELECT * fROM {$wpdb->prefix}br_player_adventure WHERE adventure_id=$adventure->adventure_id AND player_adventure_status='in' AND player_id!=$adventure->adventure_owner");
 			if(isset($adventure)){
 				if($adventure->adventure_type == 'normal' || $current_user->roles[0]=='administrator' ){

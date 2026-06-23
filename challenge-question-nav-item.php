@@ -3,7 +3,7 @@
 		<?= ($i+1); ?>
 	</td>
 	<td class="question-title">
-		<?php $q_title = substrwords($qs[$i]->question_title, 65); ?>
+		<?php $q_title = BR_Utils::instance()->substrwords($qs[$i]->question_title, 65); ?>
 		<span class="question-title-text"><?=  $q_title; ?></span>
 	</td>
 </tr>

@@ -13,10 +13,10 @@
 	}else{
 		$enc = $wpdb->get_row("SELECT enc.* FROM {$wpdb->prefix}br_encounters enc WHERE enc.adventure_id=$adventure->adventure_id AND enc.enc_id != $current_player->player_last_random_encounter_id AND enc.enc_level <=$current_player->player_level $achs_str ORDER BY RAND() LIMIT 1");
 	}
-	logActivity($adventure->adventure_id,'attempt','encounter','',$enc->enc_id);	
 ?>
 
 <?php if($enc){ ?>
+<?php BR_Activity::instance()->logActivity($adventure->adventure_id,'attempt','encounter','',$enc->enc_id); ?>
 	<?php 
 		$update = "UPDATE {$wpdb->prefix}br_player_adventure SET player_last_random_encounter_id=%d WHERE player_id=$current_user->ID AND adventure_id=$adventure->adventure_id";
 		$update_player_rand_enc = $wpdb->query($wpdb->prepare($update,$enc->enc_id)); 

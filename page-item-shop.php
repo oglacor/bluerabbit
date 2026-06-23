@@ -20,7 +20,7 @@
 		<?php 
 		
 		$player_achievements = array();
-		$myAchievements = getMyAchievements($adventure->adventure_id);
+		$myAchievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
 		$a_ids=(implode(",",$myAchievements)); 
 		$condition = count($myAchievements) > 0 ? "items.achievement_id IN ($a_ids) OR " : ""; 
 		
@@ -156,7 +156,7 @@
 									</div>
 									<h2 class="item-name"><?= $i->item_name; ?> </h2>
 									<h3 class="item-cost">
-										<?= toMoney($i->item_cost,"$");?>
+										<?= BR_Utils::instance()->toMoney($i->item_cost,"$");?>
 									</h3>
 									<h4 class="item-stock">
 										<?php if($i->item_type == 'key' || ($i->item_type == 'tabi-piece' && $i->item_stock <= 0) || ($i->item_stock >= 99999)){ ?>
@@ -192,7 +192,7 @@
 							<div class="item-actions">
 								<?php if($available==true){ ?>
 									<button class="form-ui buy-item" onClick="buyItem(<?php echo $i->item_id; ?>);">
-										<?= $buy_button_label; ?> <?= toMoney($i->item_cost,"$");?>
+										<?= $buy_button_label; ?> <?= BR_Utils::instance()->toMoney($i->item_cost,"$");?>
 									</button>
 								<?php }else{ ?>
 									<button class="form-ui buy-item disabled" disabled>

@@ -1,7 +1,7 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
 <?php if($adventure){ ?>
-	<?php $survey_data = getSurvey($_GET['questID']); ?>
+	<?php $survey_data = BR_Survey::instance()->getSurvey($_GET['questID']); ?>
 	<?php if($survey_data){ ?>
 		<?php 
 		$survey_id = $_GET['questID'];
@@ -46,10 +46,10 @@
 			<div class="body-ui white-bg">
 				<?php if(count($requirements) > 0){ ?>
 					<?php 
-						$my_quests = getMyQuests($adventure->adventure_id);
-						$my_items = getMyItems($adventure->adventure_id); 
+						$my_quests = BR_Quest::instance()->getMyQuests($adventure->adventure_id);
+						$my_items = BR_Item::instance()->getMyItems($adventure->adventure_id);
 						$myKeyItems = $my_items['ids']['key'];
-						$my_achievements = getMyAchievements($adventure->adventure_id); 
+						$my_achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id); 
 						$allQuestsSet = array_intersect($player_work,$reqs_ids['quest']);
 						$allItemsSet = array_intersect($myKeyItems,$reqs_ids['item']);
 						$allAchievementsSet = array_intersect($my_achievements, $reqs_ids['achievement']);

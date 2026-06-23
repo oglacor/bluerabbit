@@ -1,3 +1,4 @@
+	<?php $left_side = $left_side ?? ''; ?>
 	<div class="milestone finished <?php echo "$mi->quest_type $hideByDay $left_side level{$mi->mech_level}";  ?>"  id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
 		<input type="hidden" class="milestone-data-id" value="<?= $elementID; ?>">
 		<input type="hidden" class="milestone-data-title" value="<?= $mi->quest_title; ?>">
@@ -6,7 +7,7 @@
 		<input type="hidden" class="milestone-data-ep" value="<?= $mi->mech_ep; ?>">
 		<input type="hidden" class="milestone-data-level" value="<?= $mi->mech_level; ?>">
 		<input type="hidden" class="milestone-data-bg" value="<?= $mi->mech_badge; ?>">
-		<input type="hidden" class="milestone-data-color" value="<?= $mi->mech_color; ?>">
+		<input type="hidden" class="milestone-data-color" value="<?= $mi->mech_color ?? ''; ?>">
 		<input type="hidden" class="milestone-data-type" value="finished">
         <div class="milestone-modal-content">
             <div class="milestone-image" style="background-image: url(<?= $mi->mech_badge; ?>);">

@@ -85,7 +85,7 @@
 
 						<?php if(!empty($requirements)){ $requirements_rendered = true; ?>
 							<?php
-								$my_quests = getMyQuests($adventure->adventure_id);
+								$my_quests = BR_Quest::instance()->getMyQuests($adventure->adventure_id);
 								$myKeyItems = $my_items['key'];
 							?>
 							<div class="highlight padding-10 layer base relative">
@@ -131,7 +131,7 @@
 									<div class="overlay-layer confirm-action" id="confirm-purchase-quest-<?= $q->quest_id; ?>">
 										<h2 class="font _24 w700"><?= __("Are you sure?","bluerabbit"); ?></h2>
 										<button class="form-ui teal-bg-400" onClick="payment(<?=$q->quest_id;?>,'unlock');">
-											<span class="icon icon-bloo"></span> <?= __("Pay","bluerabbit")." ".toMoney($q->mech_unlock_cost,""); ?>
+											<span class="icon icon-bloo"></span> <?= __("Pay","bluerabbit")." ".BR_Utils::instance()->toMoney($q->mech_unlock_cost,""); ?>
 										</button>
 									</div>
 								</div>
@@ -168,7 +168,7 @@
 											</button>
 											<div class="overlay-layer confirm-action" id="confirm-deadline-quest-<?= $q->quest_id; ?>">
 												<button class="form-ui blue-bg-400" onClick="payment(<?=$q->quest_id;?>,'deadline');">
-													<span class="icon icon-bloo"></span> <?= __("Confirm purchase","bluerabbit")." ".toMoney($q->mech_deadline_cost,""); ?>
+													<span class="icon icon-bloo"></span> <?= __("Confirm purchase","bluerabbit")." ".BR_Utils::instance()->toMoney($q->mech_deadline_cost,""); ?>
 												</button>
 											</div>
 										</div>

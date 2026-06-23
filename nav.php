@@ -405,12 +405,12 @@
 					<?php } ?>
 					<?php if($use_encounters){ ?>
 						<li class="nav-button">
-							<button onClick="loadContent('new-encounter');">
+							<a href="<?= get_bloginfo('url'); ?>/new-encounter/?adventure_id=<?= $adventure->adventure_id; ?>">
 								<span class="content">
 									<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-encounter.png" alt=""/></span>
 									<span class="label"><?= __("New Encounter","bluerabbit"); ?></span>
 								</span>
-							</button>
+							</a>
 						</li>
 					<?php } ?>
 					<?php if($use_guilds){ ?>

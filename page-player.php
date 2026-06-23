@@ -2,7 +2,7 @@
 <?php
 
 if($_GET['player_id']){
-	$player = getPlayerData($_GET['player_id']); 
+	$player = BR_Player::instance()->getPlayerData($_GET['player_id']);
 }else{
 ?>
 	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>

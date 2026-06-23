@@ -69,7 +69,7 @@
 		}
 	}
 	$req_ep = 0;
-	$objectives = getObjectives($adv_child_id, $m->quest_id);
+	$objectives = BR_Objective::instance()->getObjectives($adv_child_id, $m->quest_id);
 		
 	foreach ($objectives as $key=>$c){ 
 		$req_ep+= $c->ep_cost;
@@ -127,7 +127,7 @@
 								<span class="icon icon-star "></span>
 							</span>
 							<span class="icon-content white-color">
-								<span class="line font _24 w100 condensed"><?= toMoney($m->mech_xp,""); ?></span>
+								<span class="line font _24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_xp,""); ?></span>
 								<span class="line font _14 w300"><?= $xp_label; ?></span>
 							</span>
 						</span>
@@ -137,7 +137,7 @@
 								<span class="icon icon-bloo "></span>
 							</span>
 							<span class="icon-content white-color">
-								<span class="line font _24 w100 condensed"><?= toMoney($m->mech_bloo,""); ?></span>
+								<span class="line font _24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_bloo,""); ?></span>
 								<span class="line font _14 w300"><?= $bloo_label; ?></span>
 							</span>
 						</span>
@@ -148,7 +148,7 @@
 									<span class="icon icon-activity "></span>
 								</span>
 								<span class="icon-content white-color">
-									<span class="line font _24 w100 condensed"><?= toMoney($m->mech_ep,""); ?></span>
+									<span class="line font _24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_ep,""); ?></span>
 									<span class="line font _14 w300"><?= $ep_label; ?></span>
 								</span>
 							</span>
@@ -234,7 +234,7 @@
 						<div class="card-deck">
 						<?php 
 							if($m_reqs){ 
-								$my_achievements = getMyAchievements($adventure->adventure_id); 
+								$my_achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
 								foreach($m_reqs as $r){
 									$isFinished= $isEarned = false;
 									if($r->req_type=="quest"){  

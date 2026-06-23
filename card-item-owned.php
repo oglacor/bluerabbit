@@ -40,7 +40,7 @@
 			<div class="highlight text-center padding-20 white-color">
 				<h1 class="font _36 w300 kerning-1"><?= $item->item_name; ?></h1>
 				<h3 class="text-center font _14 opacity-70">
-					<?= __("bought","bluerabbit")." ".get_time_ago(strtotime($item->trnx_date), $adventure->adventure_id); ?>
+					<?= __("bought","bluerabbit")." ".BR_Utils::instance()->get_time_ago(strtotime($item->trnx_date), $adventure->adventure_id); ?>
 				</h3>
 			</div>
 			<div class="highlight text-center padding-0 white-color font _18">

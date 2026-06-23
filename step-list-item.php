@@ -1,45 +1,30 @@
 <?php
-	if($step->step_type == 'dialogue'){
-		$step_color = 'blue-bg-50';
-	}else if($step->step_type == 'jump'){
-		$step_color = 'indigo-bg-50';
-	}else if($step->step_type == 'system'){
-		$step_color = 'orange-bg-50';
-	}else if($step->step_type == 'win'){
-		$step_color = 'light-green-bg-100';
-	}else if($step->step_type == 'fail'){
-		$step_color = 'red-bg-100';
-	}else if($step->step_type == 'item-req' || $step->step_type == 'item-grab'){
-		$step_color = 'pink-bg-50';
-	}else if($step->step_type == 'path-choice'){
-		$step_color = 'purple-bg-50';
-	}else if($step->step_type == 'choose-avatar' || $step->step_type == 'choose-nickname'){
-		$step_color = 'indigo-bg-50';
-	}else{
-		$step_color = 'white-bg';
-	}
+$step_colors = [
+	'dialogue' => '#1cc2eb', 'open' => '#42a5f5', 'jump' => '#7c4dff',
+	'system' => '#ff9800', 'win' => '#24da98', 'fail' => '#f44336',
+	'item-req' => '#e040fb', 'item-grab' => '#e040fb', 'path-choice' => '#9f40e2',
+	'choose-avatar' => '#7c4dff', 'choose-nickname' => '#7c4dff',
+	'video' => '#f7cb15', 'scorm' => '#00bcd4',
+];
+$sc = $step_colors[$step->step_type] ?? '#1cc2eb';
 ?>
-<tr class="step <?= $step_color; ?>" id="step-<?= $step->step_id; ?>">
-	<td class="text-center">
-		<button class="sq-40 form-ui text-center white-color teal-bg-400 font w900 normal"><?= $step->step_order; ?></button>
-		<input type="hidden" class="the_step_id_val" value="<?= $step->step_id; ?>" >
-	</td>
-	<td class="text-center font w900 uppercase step-type padding-5">
-		<?= $step->step_type; ?>
-	</td>
-	<td class="step-title padding-5">
-		<?= $step->step_title; ?><?= $step->step_type == 'path-choice' ? "  [Group: $step->step_achievement_group]" : ""; ?>
-	</td>
-	<td class="text-center padding-5">
-		<button class="button-icon amber-bg-400 sq-30 font _18 white-color" onClick="addStep(<?= $step->step_id;?>);">
-			<span class="icon icon-duplicate"></span>
-		</button>
-		<button class="button-icon green-bg-400 sq-30 font _18 white-color" onClick="editStep(<?= $step->step_id;?>);">
-			<span class="icon icon-edit"></span>
-		</button>
-		<button class="button-icon red-bg-400 sq-30 font _18 white-color" onClick="removeStep(<?= $step->step_id;?>);">
-			<span class="icon icon-trash"></span>
-		</button>
-	
-	</td>
-</tr>
+<div class="br-step-item" id="step-<?= $step->step_id; ?>" style="--step-color:<?= $sc; ?>">
+	<input type="hidden" class="the_step_id_val" value="<?= $step->step_id; ?>">
+	<div class="br-step-row">
+		<div class="br-step-order"><?= $step->step_order; ?></div>
+		<span class="br-step-type step-type"><?= $step->step_type; ?></span>
+		<div class="br-step-title step-title"><?= esc_html($step->step_title); ?><?= $step->step_type == 'path-choice' ? " <span style='opacity:0.5'>[Group: $step->step_achievement_group]</span>" : ""; ?></div>
+		<div class="br-step-actions">
+			<button class="br-step-btn br-step-btn-amber" onClick="addStep(<?= $step->step_id; ?>);" title="<?= __('Duplicate', 'bluerabbit'); ?>">
+				<span class="icon icon-duplicate"></span>
+			</button>
+			<button class="br-step-btn br-step-btn-green br-step-edit-btn" onClick="editStep(<?= $step->step_id; ?>);" title="<?= __('Edit', 'bluerabbit'); ?>">
+				<span class="icon icon-edit"></span>
+			</button>
+			<button class="br-step-btn br-step-btn-red" onClick="removeStep(<?= $step->step_id; ?>);" title="<?= __('Delete', 'bluerabbit'); ?>">
+				<span class="icon icon-trash"></span>
+			</button>
+		</div>
+	</div>
+	<div class="br-step-accordion" id="step-accordion-<?= $step->step_id; ?>"></div>
+</div>

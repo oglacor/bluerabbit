@@ -114,7 +114,7 @@
 											</td>
 
 											<td>
-												<?php if(user_has_role($play->player_id,'br_player')){ ?>
+												<?php if(BR_Utils::instance()->user_has_role($play->player_id,'br_player')){ ?>
 													<button class="form-ui icon-sm red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?= $play->player_id; ?>');">
 														<?= __("Remove Player","bluerabbit"); ?>
 													</button>

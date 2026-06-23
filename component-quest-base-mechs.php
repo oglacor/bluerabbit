@@ -1,125 +1,79 @@
-				<div class="highlight padding-10 grey-bg-200">
-					<span class="icon-group">
-						<span class="button-icon font _24 sq-40 blue-grey-bg-400"><span class="icon icon-config"></span></span>
-						<span class="icon-content">
-							<span class="line font _24 grey-800"><?php _e("Mechanics","bluerabbit"); ?></span>
-						</span>
-					</span>
+				<h3 class="br-panel-title"><span class="icon icon-config"></span> <?= __("Mechanics", "bluerabbit"); ?></h3>
+				<?php $tabis = BR_Tabi::instance()->getTabis($adv_parent_id); ?>
+
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Tabi", "bluerabbit"); ?></label>
+					<select class="br-input" id="the_tabi_id">
+						<option value=""><?= __("None", "bluerabbit"); ?></option>
+						<?php if ($tabis) { foreach ($tabis as $tabi) { ?>
+						<option value="<?= $tabi->tabi_id; ?>" <?= (isset($quest->tabi_id) && $quest->tabi_id == $tabi->tabi_id) ? 'selected' : ''; ?>><?= esc_html($tabi->tabi_name); ?></option>
+						<?php } } ?>
+					</select>
 				</div>
-				<table class="table w-full" cellpadding="0">
-					<thead>
-						<tr class="font _12 grey-600">
-							<td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td>
-							<td><?php _e('Value','bluerabbit'); ?></td>
-						</tr>
-					</thead>
-					<tbody class="font _16">
-                        <?php $tabis = getTabis($adv_parent_id); ?>
-						<tr>
-							<td class="text-right w-150"><?php _e('Tabi','bluerabbit'); ?></td>
-							<td>
-                                <div class="input-group w-full">
-                                    <label class="light-blue-bg-800 font w900"><span class="icon icon-tabi"></span></label>
-                                    <select class="form-ui w-full" id="the_tabi_id">
-                                        <option value=""><?= __("None","bluerabbit"); ?></option>
-                                        <?php if($tabis){ ?>
-                                            <?php foreach($tabis as $tabi){ ?>
-                                                <option value="<?= $tabi->tabi_id; ?>" <?= (isset($quest->tabi_id) && $quest->tabi_id == $tabi->tabi_id) ? 'selected' : ''; ?>><?= $tabi->tabi_name; ?></option>
-                                            <?php } ?>
-                                        <?php } ?>
-                                    </select>
-                                </div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-right w-150"><?php _e('Level','bluerabbit'); ?></td>
-							<td>
-								<div class="input-group w-full">
-									<label class="light-blue-bg-800 font w900"><span class="icon icon-level"></span></label>
-	<input class="number form-ui" type="number" max="99" min="1" id="the_quest_level" value="<?= isset($quest->mech_level) ? $quest->mech_level : 1 ; ?>" onBlur="checkLevel('#the_quest_level');" onChange="checkLevel('#the_quest_level');">
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-right w-150"><?= $xp_long_label; ?></td>
-							<td>
-								<div class="input-group w-full">
-									<label class="light-blue-bg-800 font w900"><span class="icon icon-star"></span></label>
-									<input class="number form-ui" type="number" min="0" id="the_quest_xp" value="<?= isset($quest->mech_xp) ? $quest->mech_xp : 1 ; ?>">
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-right w-150"><?= $bloo_long_label; ?></td>
-							<td>
-								<div class="input-group w-full">
-									<label class="light-blue-bg-800 font w900"><span class="icon icon-bloo"></span></label>
-									<input class="number form-ui" type="number" min="0" id="the_quest_bloo" value="<?= isset($quest->mech_bloo) ? $quest->mech_bloo : 1 ; ?>">
-								</div>
-							</td>
-						</tr>
-						<?php if(isset($use_encounters)){ ?>
-							<tr>
-								<td class="text-right w-150"><?= $ep_long_label; ?></td>
-								<td>
-									<div class="input-group w-full">
-										<label class="light-blue-bg-800 font w900"><span class="icon icon-activity"></span></label>
-										<input class="number form-ui" type="number" min="0" id="the_quest_ep" value="<?= isset($quest->mech_ep) ? $quest->mech_ep : 1 ; ?>">
-									</div>
-								</td>
-							</tr>
-						<?php } ?>
-						<tr>
-							<td class="text-right w-150"><?php _e('Start Date','bluerabbit'); ?></td>
-							<td>
-								<div class="input-group w-full">
-									<?php
-									if(isset($quest) && $quest->mech_start_date != "0000-00-00 00:00:00" && $quest->mech_deadline != NULL){ 
-										$pretty_start_date = date('Y/m/d H:i', strtotime($quest->mech_start_date));
-									}else{
-										$pretty_start_date = '';
-									}
-									?>
-									<label class="cyan-bg-400 font w900"><span class="icon icon-calendar"></span></label>
-									<input class="form-ui text-center font w600 the_start_date"  autocomplete="off" id="the_quest_start_date" value="<?= $pretty_start_date; ?>">
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-right w-150"><?php _e('Deadline','bluerabbit'); ?></td>
-							<td>
-								<div class="input-group w-full">
-									<?php
-									if(isset($quest) && $quest->mech_deadline != "0000-00-00 00:00:00" && $quest->mech_deadline != NULL){ 
-										$pretty_deadline = date('Y/m/d H:i', strtotime($quest->mech_deadline));
-									}else{
-										$pretty_deadline = '';
-									}
-									?>
-									<label class="red-bg-800 font w900"><span class="icon icon-calendar"></span></label>
-									<input class="form-ui text-center font w600 the_deadline"  autocomplete="off" id="the_quest_deadline" value="<?= $pretty_deadline; ?>">
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-right w-150"><?php _e('Optional','bluerabbit'); ?></td>
-							<td>
-								<div class="input-group w-full">
-									<label class="amber-bg-600 font w900"><span class="icon icon-star"></span></label>
-									<input type="checkbox" class="form-ui" id="the_quest_optional" <?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'checked' : ''; ?>>
-									<label class="form-ui grey-800"><?php _e("Optional (doesn't count toward Tabi unlock)","bluerabbit"); ?></label>
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-right w-150"><?php _e('Validate','bluerabbit'); ?></td>
-							<td>
-								<div class="input-group w-full">
-									<label class="green-bg-600 font w900"><span class="icon icon-check"></span></label>
-									<input type="checkbox" class="form-ui" id="the_quest_validate" <?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'checked' : ''; ?>>
-									<label class="form-ui grey-800"><?php _e("Require validation before awarding resources","bluerabbit"); ?></label>
-								</div>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+
+				<div class="br-form-grid">
+					<div class="br-form-group">
+						<label class="br-form-label"><?= __("Level", "bluerabbit"); ?></label>
+						<input class="br-input" type="number" max="99" min="1" id="the_quest_level"
+							   value="<?= isset($quest->mech_level) ? $quest->mech_level : 1; ?>"
+							   onBlur="checkLevel('#the_quest_level');" onChange="checkLevel('#the_quest_level');">
+					</div>
+					<div class="br-form-group">
+						<label class="br-form-label"><?= $xp_long_label; ?></label>
+						<input class="br-input" type="number" min="0" id="the_quest_xp"
+							   value="<?= isset($quest->mech_xp) ? $quest->mech_xp : 1; ?>">
+					</div>
+				</div>
+
+				<div class="br-form-grid">
+					<div class="br-form-group">
+						<label class="br-form-label"><?= $bloo_long_label; ?></label>
+						<input class="br-input" type="number" min="0" id="the_quest_bloo"
+							   value="<?= isset($quest->mech_bloo) ? $quest->mech_bloo : 1; ?>">
+					</div>
+					<?php if (isset($use_encounters)) { ?>
+					<div class="br-form-group">
+						<label class="br-form-label"><?= $ep_long_label; ?></label>
+						<input class="br-input" type="number" min="0" id="the_quest_ep"
+							   value="<?= isset($quest->mech_ep) ? $quest->mech_ep : 1; ?>">
+					</div>
+					<?php } ?>
+				</div>
+
+				<div class="br-form-grid">
+					<div class="br-form-group">
+						<label class="br-form-label"><?= __("Start Date", "bluerabbit"); ?></label>
+						<?php
+						$pretty_start_date = (isset($quest) && $quest->mech_start_date != "0000-00-00 00:00:00" && $quest->mech_start_date != null)
+							? date('Y/m/d H:i', strtotime($quest->mech_start_date)) : '';
+						?>
+						<input class="br-input the_start_date datetimepicker" autocomplete="off" id="the_quest_start_date"
+							   value="<?= $pretty_start_date; ?>" placeholder="<?= __('No start date', 'bluerabbit'); ?>">
+					</div>
+					<div class="br-form-group">
+						<label class="br-form-label"><?= __("Deadline", "bluerabbit"); ?></label>
+						<?php
+						$pretty_deadline = (isset($quest) && $quest->mech_deadline != "0000-00-00 00:00:00" && $quest->mech_deadline != null)
+							? date('Y/m/d H:i', strtotime($quest->mech_deadline)) : '';
+						?>
+						<input class="br-input the_deadline datetimepicker" autocomplete="off" id="the_quest_deadline"
+							   value="<?= $pretty_deadline; ?>" placeholder="<?= __('No deadline', 'bluerabbit'); ?>">
+					</div>
+				</div>
+
+				<div class="br-form-grid">
+					<div class="br-form-group">
+						<label class="br-form-label"><?= __("Optional", "bluerabbit"); ?></label>
+						<label class="br-btn" style="cursor:pointer;<?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'background:rgba(28,194,235,0.18);border-color:rgba(28,194,235,0.4)' : ''; ?>">
+							<input type="checkbox" id="the_quest_optional" <?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'checked' : ''; ?> style="display:none">
+							<?= __("Doesn't count toward Tabi unlock", "bluerabbit"); ?>
+						</label>
+					</div>
+					<div class="br-form-group">
+						<label class="br-form-label"><?= __("Validate", "bluerabbit"); ?></label>
+						<label class="br-btn" style="cursor:pointer;<?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'background:rgba(36,218,152,0.18);border-color:rgba(36,218,152,0.4)' : ''; ?>">
+							<input type="checkbox" id="the_quest_validate" <?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'checked' : ''; ?> style="display:none">
+							<?= __("Require validation before awarding", "bluerabbit"); ?>
+						</label>
+					</div>
+				</div>

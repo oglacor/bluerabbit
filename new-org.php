@@ -41,7 +41,7 @@
 				<td class="text-right w-150"><?= __('Logo','bluerabbit'); ?></td>
 				<td>
 					<div class="gallery">
-						<?php insertGalleryItem('the-org-logo', $org->org_logo); ?>
+						<?php BR_Utils::instance()->insertGalleryItem('the-org-logo', $org->org_logo); ?>
 					</div>
 				</td>
 			</tr>

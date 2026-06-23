@@ -1,12 +1,12 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 
-	if($_GET['blog_page']){
+	if(isset($_GET['blog_page']) && $_GET['blog_page']){
 		$offset = "OFFSET ".($_GET['blog_page'] - 1 )*20;
 	}else{
 		$offset = "";
 	}
-	$myAchievements = getMyAchievements($adventure->adventure_id);
+	$myAchievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
 	$a_ids=(implode(",",$myAchievements)); 
 
 	$hide_quests = $adventure->adventure_hide_quests ? $adventure->adventure_hide_quests : "";

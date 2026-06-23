@@ -15,7 +15,7 @@
 			</div>
 		</div>
 		<div class="w-full white-color font _14 w300 layer base fixed bottom padding-10  black-bg">
-			<?php $globalsponsors = getSponsors(); ?>
+			<?php $globalsponsors = BR_Session::instance()->getSponsors(); ?>
 			<?php if(isset($globalsponsors)){ ?>
 				<div class="text-center">
 				<?php foreach($globalsponsors as $k=>$gs){ ?>

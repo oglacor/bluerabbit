@@ -19,7 +19,7 @@
             <?php } ?>
             <div class="milestone-action">
                 <button class="action-button unlock-cost" onClick='payment(<?=$mi->quest_id;?>,"unlock");'>
-                    <?= __("Puchase quest for:","bluerabbit");?> <span class='icon icon-bloo'></span><?= toMoney($mi->mech_unlock_cost,""); ?>
+                    <?= __("Puchase quest for:","bluerabbit");?> <span class='icon icon-bloo'></span><?= BR_Utils::instance()->toMoney($mi->mech_unlock_cost,""); ?>
                 </button>
             </div>
             <div class="milestone-modal-divider"></div>
@@ -41,7 +41,7 @@
 					<strong><?= __("Quest must be purchased","bluerabbit"); ?></strong>
 				</p>
 				<button class="button layer foreground relative form-ui locked-mark teal-bg-500" onClick='payment(<?=$mi->quest_id;?>,"unlock");'> 
-					<?= __("Puchase quest for:","bluerabbit");?> <span class='icon icon-bloo'></span><?= toMoney($mi->mech_unlock_cost,""); ?><br>
+					<?= __("Puchase quest for:","bluerabbit");?> <span class='icon icon-bloo'></span><?= BR_Utils::instance()->toMoney($mi->mech_unlock_cost,""); ?><br>
 				</button>
 			</div>
 		</div>

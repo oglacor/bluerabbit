@@ -42,7 +42,7 @@
 							<?php if($a->achievement_applied){ ?>
 								<h3 class="text-center font _14 opacity-70">
 									<span class="icon icon-time"></span>
-									<?= __("earned","bluerabbit")." ".get_time_ago(strtotime($a->achievement_applied), $adv_child_id); ?>
+									<?= __("earned","bluerabbit")." ".BR_Utils::instance()->get_time_ago(strtotime($a->achievement_applied), $adv_child_id); ?>
 								</h3>
 							<?php } ?>
 						</div>

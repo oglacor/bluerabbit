@@ -17,7 +17,7 @@
 				<tr>
 					<td><?= __("Media","bluerabbit"); ?> </td>
 					<td>
-						<?php insertMultimediaItem('question-'.$qKey.'-img', $question['image'], $qKey); ?>
+						<?php BR_Utils::instance()->insertMultimediaItem('question-'.$qKey.'-img', $question['image'], $qKey); ?>
 					</td>
 				</tr>
 				<tr>

@@ -10,7 +10,7 @@
     </div>
     <div class="journey-builder-container">
         <?php
-        $builder_tabis = getTabis($adv_parent_id);
+        $builder_tabis = BR_Tabi::instance()->getTabis($adv_parent_id);
 
         // Count quests per tabi so the node can show the number
         $builder_tabi_quest_count = [];
@@ -81,7 +81,7 @@
 
                 <?php // Journey graphic assets — draggable image elements ?>
                 <?php
-                $journey_assets = getJourneyAssets($adv_parent_id);
+                $journey_assets = BR_Tabi::instance()->getJourneyAssets($adv_parent_id);
                 $journey_asset_nonce = wp_create_nonce('journey_asset_nonce');
                 if($journey_assets) { foreach($journey_assets as $a) {
                     include(get_stylesheet_directory() . '/journey-asset-builder.php');

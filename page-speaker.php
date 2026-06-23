@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php $speaker = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_speakers WHERE speaker_id={$_GET['speaker_id']}"); ?>
-<?php $sessions = getSpeakerSessions($adventure->adventure_id,$_GET['speaker_id']); ?>
+<?php $sessions = BR_Session::instance()->getSpeakerSessions($adventure->adventure_id,$_GET['speaker_id']); ?>
 	<div class="container boxed max-w-1200">
 		<div class="w-full relative layer base overflow-hidden">
 			<div class="background fixed-bg blur7" style="background-image: url(<?= $speaker->speaker_picture; ?>);"></div>

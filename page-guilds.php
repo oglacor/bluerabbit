@@ -15,7 +15,7 @@
 		GROUP BY guilds.guild_id ORDER BY guilds.guild_id ASC
 		");
 	}else{
-		$allguilds = getGuilds($adv_child_id);
+		$allguilds = BR_Guild::instance()->getGuilds($adv_child_id);
 		$guilds = $allguilds['publish'];
 	}
 	if($use_leaderboard){
@@ -48,9 +48,11 @@
             $leaderboard_guilds_array[$lg->guild_id] = $lg->total_player_xp;
             $leaderboard_bloo_array[$lg->guild_id] = $lg->total_player_bloo;
 		}
-		$guild_xp_update .= implode(', ', $guild_xp_update_placeholders);
-		$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp)";
-		$guild_xp_update_query = $wpdb->query( $wpdb->prepare("$guild_xp_update ", $guild_xp_update_values));
+		if(!empty($guild_xp_update_placeholders)){
+			$guild_xp_update .= implode(', ', $guild_xp_update_placeholders);
+			$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp)";
+			$guild_xp_update_query = $wpdb->query( $wpdb->prepare("$guild_xp_update ", $guild_xp_update_values));
+		}
 		$user_guild_id = !empty($guilds) ? $guilds[0]->guild_id : 0;
 		$guild_rank_map = [];
 		foreach($leaderboard_guilds as $rank_index => $rank_guild) {

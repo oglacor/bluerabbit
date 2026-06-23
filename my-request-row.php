@@ -1,47 +1,40 @@
 <?php
-$status_colors = array(
-	'pending' => 'orange',
-	'read' => 'cyan',
-	'resolved' => 'green',
-	'dismissed' => 'grey'
-);
-$status_labels = array(
-	'pending' => __("Pending","bluerabbit"),
-	'read' => __("Read","bluerabbit"),
-	'resolved' => __("Resolved","bluerabbit"),
-	'dismissed' => __("Dismissed","bluerabbit")
-);
-$color = isset($status_colors[$req->request_status]) ? $status_colors[$req->request_status] : 'grey';
-$label = isset($status_labels[$req->request_status]) ? $status_labels[$req->request_status] : $req->request_status;
+$status_map = [
+	'pending'   => ['badge' => 'br-badge-amber',  'label' => __("Pending","bluerabbit"),   'icon' => 'icon-time'],
+	'read'      => ['badge' => 'br-badge-blue',   'label' => __("Read","bluerabbit"),      'icon' => 'icon-view'],
+	'resolved'  => ['badge' => 'br-badge-green',  'label' => __("Resolved","bluerabbit"),  'icon' => 'icon-check'],
+	'dismissed' => ['badge' => 'br-badge-red',    'label' => __("Dismissed","bluerabbit"), 'icon' => 'icon-cancel'],
+];
+$s = isset($status_map[$req->request_status]) ? $status_map[$req->request_status] : $status_map['pending'];
 $time_ago = human_time_diff(strtotime($req->request_date), current_time('timestamp'));
 ?>
-<div class="request-card border padding-10 margin-bottom-10 white-bg rounded">
-	<div class="flex-row">
-		<div class="flex-grow">
-			<div class="flex-row">
-				<div class="flex-grow">
-					<span class="font _16 w700 grey-800"><?= esc_html($req->request_subject); ?></span>
-				</div>
-				<div class="flex-shrink text-right">
-					<span class="font _12 <?= $color; ?>-bg-400 white-color padding-3 rounded uppercase w700"><?= $label; ?></span>
-					<span class="font _12 grey-400 margin-left-5"><?= $time_ago . ' ' . __("ago","bluerabbit"); ?></span>
-				</div>
-			</div>
-			<div class="font _14 grey-700 padding-10 grey-bg-100 rounded margin-top-10" style="white-space: pre-wrap;"><?= esc_html($req->request_content); ?></div>
+<div class="br-panel request-card" data-status="<?= $req->request_status; ?>" style="padding:16px;margin-bottom:4px;border-radius:0;">
 
-			<?php if($req->request_admin_note){ ?>
-				<div class="font _14 padding-10 blue-bg-50 rounded margin-top-10">
-					<span class="icon icon-document blue-400"></span>
-					<strong class="blue-grey-800"><?= __("Admin response:","bluerabbit"); ?></strong>
-					<div class="margin-top-5 grey-800" style="white-space: pre-wrap;"><?= esc_html($req->request_admin_note); ?></div>
-				</div>
-			<?php } ?>
-
-			<?php if($req->request_resolved_date && ($req->request_status == 'resolved' || $req->request_status == 'dismissed')){ ?>
-				<div class="font _12 grey-400 margin-top-5">
-					<?= __("Updated","bluerabbit"); ?>: <?= human_time_diff(strtotime($req->request_resolved_date), current_time('timestamp')) . ' ' . __("ago","bluerabbit"); ?>
-				</div>
-			<?php } ?>
+	<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+		<div style="flex:1;min-width:0;">
+			<span style="font-size:16px;font-weight:700;color:#fff;"><?= esc_html($req->request_subject); ?></span>
+		</div>
+		<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+			<span class="br-badge <?= $s['badge']; ?>"><span class="icon <?= $s['icon']; ?>"></span> <?= $s['label']; ?></span>
+			<span style="font-size:11px;color:rgba(255,255,255,0.35);"><?= $time_ago . ' ' . __("ago","bluerabbit"); ?></span>
 		</div>
 	</div>
+
+	<div class="br-form-component" style="margin-top:10px;white-space:pre-wrap;font-size:14px;color:rgba(255,255,255,0.75);"><?= esc_html($req->request_content); ?></div>
+
+	<?php if($req->request_admin_note){ ?>
+		<div style="margin-top:10px;padding:12px;background:rgba(28,194,235,0.08);border:1px solid rgba(28,194,235,0.15);border-radius:8px;">
+			<span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1cc2eb;">
+				<span class="icon icon-document"></span> <?= __("Admin response","bluerabbit"); ?>
+			</span>
+			<div style="margin-top:6px;font-size:14px;color:rgba(255,255,255,0.85);white-space:pre-wrap;"><?= esc_html($req->request_admin_note); ?></div>
+		</div>
+	<?php } ?>
+
+	<?php if($req->request_resolved_date && ($req->request_status == 'resolved' || $req->request_status == 'dismissed')){ ?>
+		<div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,0.3);">
+			<?= __("Updated","bluerabbit"); ?>: <?= human_time_diff(strtotime($req->request_resolved_date), current_time('timestamp')) . ' ' . __("ago","bluerabbit"); ?>
+		</div>
+	<?php } ?>
+
 </div>

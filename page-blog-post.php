@@ -5,7 +5,7 @@
 	LEFT JOIN {$wpdb->prefix}br_achievements b ON a.achievement_id=b.achievement_id
 	WHERE a.adventure_id=$adventure->adventure_id AND a.quest_id = $questID");
 
-	$achievements = getMyAchievements($adventure->adventure_id);
+	$achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
 
 if($b->achievement_id && !in_array($b->achievement_id, $achievements) ){
 	unset($b);

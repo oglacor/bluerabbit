@@ -21,7 +21,7 @@ if (!$quest) { ?>
 <?php die(); } ?>
 
 <?php
-$adventure   = getAdventure($quest->adventure_id);
+$adventure   = BR_Adventure::instance()->getAdventure($quest->adventure_id);
 $adv_child_id  = $adventure->adventure_id;
 $adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
 
@@ -47,7 +47,7 @@ $already_done = $wpdb->get_row($wpdb->prepare(
 	$quest->quest_id, $player_id, $adv_child_id
 ));
 
-$adv_settings = getSettings($adv_parent_id);
+$adv_settings = BR_Config::instance()->getSettings($adv_parent_id);
 $xp_label   = $adventure->adventure_xp_label   ? $adventure->adventure_xp_label   : "XP";
 $bloo_label  = $adventure->adventure_bloo_label  ? $adventure->adventure_bloo_label  : "BLOO";
 $ep_label    = $adventure->adventure_ep_label    ? $adventure->adventure_ep_label    : "EP";
@@ -90,8 +90,8 @@ if (!$already_done) {
 		}
 	}
 
-	logActivity($adv_child_id, 'complete', 'quest-qr', $quest->quest_id, $player_id);
-	$playerState = resetPlayer($adv_child_id, $player_id);
+	BR_Activity::instance()->logActivity($adv_child_id, 'complete', 'quest-qr', $quest->quest_id, $player_id);
+	$playerState = BR_Player::instance()->resetPlayer($adv_child_id, $player_id);
 }
 ?>
 
@@ -185,7 +185,7 @@ if (!$already_done) {
 		</a>
 		<?php
 		if(!$already_done && isset($playerState)){
-			$nextMilestone = getNextAvailableMilestone($adv_parent_id, $adv_child_id, $quest->quest_id, $adventure, $playerState);
+			$nextMilestone = BR_Progression::instance()->getNextAvailableMilestone($adv_parent_id, $adv_child_id, $quest->quest_id, $adventure, $playerState);
 			if ($nextMilestone): ?>
 			<a href="<?= get_bloginfo('url')."/$nextMilestone->quest_type/?questID=$nextMilestone->quest_id&adventure_id=$adv_child_id"; ?>" class="form-ui orange-bg-400 white-color padding-5 margin-5 font _18 w900 uppercase">
 				<?= esc_html($nextMilestone->quest_title); ?> <span class="icon icon-arrow-right"></span>

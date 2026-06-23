@@ -14,7 +14,7 @@ if($code){
 		<script> document.location.href="<?php bloginfo('url');?>/404"; </script>
 	<?php die();
 	}
-	$adventure = getAdventure($adv_id);
+	$adventure = BR_Adventure::instance()->getAdventure($adv_id);
 	$code=strtolower($code);
 	$c = $wpdb->get_row("SELECT 
 	ach.*, 

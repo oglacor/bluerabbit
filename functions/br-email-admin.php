@@ -8,8 +8,35 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// ── DB table ──────────────────────────────────────────────────────────────────
+// ── DB migration ─────────────────────────────────────────────────────────────
 
+add_action( 'init', 'br_email_maybe_migrate', 5 );
+function br_email_maybe_migrate(): void {
+	global $wpdb;
+	$log_table      = "{$wpdb->prefix}br_email_log";
+	$campaign_table = "{$wpdb->prefix}br_email_campaigns";
+	$charset        = $wpdb->get_charset_collate();
+
+	$row = $wpdb->get_row( "SHOW COLUMNS FROM {$log_table} LIKE 'sender_id'" );
+	if ( ! $row ) {
+		$wpdb->query( "ALTER TABLE {$log_table} ADD COLUMN sender_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0 AFTER log_id" );
+	}
+
+	$wpdb->query( "CREATE TABLE IF NOT EXISTS {$campaign_table} (
+		campaign_id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+		adventure_id INT(11) NOT NULL,
+		sender_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+		subject VARCHAR(255) NOT NULL,
+		body LONGTEXT NOT NULL,
+		recipient_count INT(11) NOT NULL DEFAULT 0,
+		created_at DATETIME NOT NULL
+	) {$charset}" );
+
+	$row = $wpdb->get_row( "SHOW COLUMNS FROM {$log_table} LIKE 'campaign_id'" );
+	if ( ! $row ) {
+		$wpdb->query( "ALTER TABLE {$log_table} ADD COLUMN campaign_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0 AFTER sender_id" );
+	}
+}
 
 // ── Admin menu ────────────────────────────────────────────────────────────────
 
@@ -147,22 +174,38 @@ function br_email_ajax_user_count(): void {
 add_action( 'wp_ajax_br_email_preview', 'br_email_ajax_preview' );
 function br_email_ajax_preview(): void {
 	check_ajax_referer( 'br_email_ajax', 'nonce' );
-	if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( null, 403 );
+
+	$current_user = wp_get_current_user();
+	$adventure_id = (int) ( $_POST['adventure_id'] ?? 0 );
+
+	$allowed = current_user_can( 'manage_options' )
+		|| ( $adventure_id && br_email_user_can_send( $current_user->ID, $adventure_id ) );
+	if ( ! $allowed ) wp_send_json_error( null, 403 );
 
 	$settings = get_option( 'br_email_settings', [] );
-	$settings['_adventure_name'] = 'Sample Adventure';
+
+	if ( $adventure_id ) {
+		global $wpdb;
+		$adv = $wpdb->get_row( $wpdb->prepare(
+			"SELECT adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
+			$adventure_id
+		) );
+		$settings['_adventure_name'] = $adv ? $adv->adventure_title : 'Sample Adventure';
+	} else {
+		$settings['_adventure_name'] = 'Sample Adventure';
+	}
 
 	$mailer  = new BR_Mailer();
 	$subject = sanitize_text_field( $_POST['subject'] ?? 'Preview Subject' );
 	$body    = wp_kses_post( $_POST['body'] ?? '<p>Hello {{name}},</p><p>This is a preview.</p>' );
 
-	$dummy_user = [
-		'player_id'    => 0,
-		'user_email'   => 'preview@example.com',
-		'display_name' => 'Preview User',
+	$preview_user = [
+		'player_id'    => $current_user->ID,
+		'user_email'   => $current_user->user_email,
+		'display_name' => $current_user->display_name,
 	];
 
-	$html = $mailer->render_template( $settings, $subject, $body, $dummy_user );
+	$html = $mailer->render_template( $settings, $subject, $body, $preview_user );
 	wp_send_json_success( [ 'html' => $html ] );
 }
 
@@ -507,66 +550,213 @@ function br_email_log_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) return;
 
 	global $wpdb;
+	$log_table      = "{$wpdb->prefix}br_email_log";
+	$campaign_table = "{$wpdb->prefix}br_email_campaigns";
 
-	$per_page = 50;
-	$page_num = max( 1, (int) ( $_GET['paged'] ?? 1 ) );
-	$offset   = ( $page_num - 1 ) * $per_page;
+	// ── Params ──
+	$per_page   = 50;
+	$page_num   = max( 1, (int) ( $_GET['paged'] ?? 1 ) );
+	$offset     = ( $page_num - 1 ) * $per_page;
+	$status     = sanitize_text_field( $_GET['status'] ?? 'all' );
+	$orderby    = sanitize_key( $_GET['orderby'] ?? 'sent_at' );
+	$order      = strtoupper( sanitize_key( $_GET['order'] ?? 'DESC' ) ) === 'ASC' ? 'ASC' : 'DESC';
+	$allowed_ob = [ 'sent_at', 'subject', 'status', 'display_name', 'adventure_title', 'sender_name' ];
+	if ( ! in_array( $orderby, $allowed_ob, true ) ) $orderby = 'sent_at';
 
-	$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}br_email_log" );
-	$logs  = $wpdb->get_results( $wpdb->prepare(
+	$retry_msg = '';
+	if ( isset( $_GET['br_retried'] ) ) {
+		$retry_msg = '<div class="notice notice-success is-dismissible"><p>'
+			. sprintf( esc_html__( 'Retry complete — %d sent, %d failed.', 'bluerabbit' ), (int) $_GET['br_retried'], (int) ( $_GET['br_retry_failed'] ?? 0 ) )
+			. '</p></div>';
+	}
+
+	// ── Status counts ──
+	$count_all    = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$log_table}" );
+	$count_sent   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$log_table} WHERE status = 'sent'" );
+	$count_failed = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$log_table} WHERE status = 'failed'" );
+
+	$where = '';
+	if ( $status === 'sent' )   $where = "WHERE l.status = 'sent'";
+	if ( $status === 'failed' ) $where = "WHERE l.status = 'failed'";
+
+	$total_filtered = $status === 'all' ? $count_all : ( $status === 'sent' ? $count_sent : $count_failed );
+	$pages = ceil( $total_filtered / $per_page );
+
+	$ob_col = $orderby;
+	if ( in_array( $orderby, [ 'display_name', 'adventure_title', 'sender_name' ], true ) ) {
+		$ob_col = $orderby;
+	} else {
+		$ob_col = "l.{$orderby}";
+	}
+
+	$logs = $wpdb->get_results( $wpdb->prepare(
 		"SELECT l.log_id, l.user_id, l.adventure_id, l.subject, l.status,
 		        IFNULL(l.detail,'') AS detail, l.sent_at,
-		        u.display_name, a.adventure_title
-		   FROM {$wpdb->prefix}br_email_log l
+		        IFNULL(l.sender_id, 0) AS sender_id,
+		        IFNULL(l.campaign_id, 0) AS campaign_id,
+		        u.display_name, u.user_email, a.adventure_title,
+		        sender.display_name AS sender_name
+		   FROM {$log_table} l
 		   LEFT JOIN {$wpdb->users} u ON u.ID = l.user_id
 		   LEFT JOIN {$wpdb->prefix}br_adventures a ON a.adventure_id = l.adventure_id
-		  ORDER BY l.sent_at DESC
+		   LEFT JOIN {$wpdb->users} sender ON sender.ID = l.sender_id
+		  {$where}
+		  ORDER BY {$ob_col} {$order}
 		  LIMIT %d OFFSET %d",
 		$per_page,
 		$offset
 	) );
 
-	$pages = ceil( $total / $per_page );
+	// ── Campaigns summary ──
+	$campaigns = $wpdb->get_results(
+		"SELECT c.campaign_id, c.adventure_id, c.sender_id, c.subject, c.recipient_count, c.created_at,
+		        a.adventure_title, sender.display_name AS sender_name,
+		        SUM(CASE WHEN l.status = 'sent' THEN 1 ELSE 0 END) AS sent_count,
+		        SUM(CASE WHEN l.status = 'failed' THEN 1 ELSE 0 END) AS failed_count
+		   FROM {$campaign_table} c
+		   LEFT JOIN {$log_table} l ON l.campaign_id = c.campaign_id
+		   LEFT JOIN {$wpdb->prefix}br_adventures a ON a.adventure_id = c.adventure_id
+		   LEFT JOIN {$wpdb->users} sender ON sender.ID = c.sender_id
+		  GROUP BY c.campaign_id
+		  ORDER BY c.created_at DESC
+		  LIMIT 20"
+	);
+
+	$base_url = admin_url( 'admin.php?page=br_email_log' );
+	$sort_url = function ( $col ) use ( $base_url, $orderby, $order, $status ) {
+		$new_order = ( $orderby === $col && $order === 'ASC' ) ? 'DESC' : 'ASC';
+		return add_query_arg( [ 'orderby' => $col, 'order' => $new_order, 'status' => $status ], $base_url );
+	};
+	$sort_icon = function ( $col ) use ( $orderby, $order ) {
+		if ( $orderby !== $col ) return '';
+		return $order === 'ASC' ? ' &#9650;' : ' &#9660;';
+	};
 
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'BR Email — Send Log', 'bluerabbit' ); ?></h1>
+		<?php echo $retry_msg; ?>
 
-		<p><?php printf(
-			esc_html__( 'Showing %d–%d of %d entries', 'bluerabbit' ),
-			$offset + 1,
-			min( $offset + $per_page, $total ),
-			$total
-		); ?></p>
-
-		<table class="widefat striped">
+		<?php if ( ! empty( $campaigns ) ) : ?>
+		<h2><?php esc_html_e( 'Campaigns', 'bluerabbit' ); ?></h2>
+		<table class="widefat striped" style="margin-bottom:24px">
 			<thead>
 				<tr>
+					<th style="width:40px">#</th>
 					<th><?php esc_html_e( 'Date', 'bluerabbit' ); ?></th>
-					<th><?php esc_html_e( 'User', 'bluerabbit' ); ?></th>
+					<th><?php esc_html_e( 'Sent by', 'bluerabbit' ); ?></th>
 					<th><?php esc_html_e( 'Adventure', 'bluerabbit' ); ?></th>
 					<th><?php esc_html_e( 'Subject', 'bluerabbit' ); ?></th>
-					<th><?php esc_html_e( 'Status', 'bluerabbit' ); ?></th>
-					<th><?php esc_html_e( 'API Response', 'bluerabbit' ); ?></th>
+					<th style="width:60px"><?php esc_html_e( 'Sent', 'bluerabbit' ); ?></th>
+					<th style="width:60px"><?php esc_html_e( 'Failed', 'bluerabbit' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'bluerabbit' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $campaigns as $c ) :
+					$has_failed = (int) $c->failed_count > 0;
+				?>
+				<tr>
+					<td><?php echo (int) $c->campaign_id; ?></td>
+					<td><?php echo esc_html( $c->created_at ); ?></td>
+					<td><?php echo esc_html( $c->sender_name ?: '—' ); ?></td>
+					<td><?php echo esc_html( $c->adventure_title ?: "ID {$c->adventure_id}" ); ?></td>
+					<td><?php echo esc_html( $c->subject ); ?></td>
+					<td style="color:#46b450;font-weight:bold;"><?php echo (int) $c->sent_count; ?></td>
+					<td style="color:<?php echo $has_failed ? '#dc3232' : '#999'; ?>;font-weight:bold;"><?php echo (int) $c->failed_count; ?></td>
+					<td>
+						<?php if ( $has_failed ) : ?>
+							<a href="<?php echo esc_url( wp_nonce_url(
+								add_query_arg( [ 'page' => 'br_email_log', 'br_retry_campaign' => $c->campaign_id ], admin_url( 'admin.php' ) ),
+								'br_retry_' . $c->campaign_id
+							) ); ?>" class="button button-small"
+							   onclick="return confirm('<?php esc_attr_e( 'Retry all failed emails in this campaign?', 'bluerabbit' ); ?>');">
+								<?php esc_html_e( 'Retry Failed', 'bluerabbit' ); ?>
+							</a>
+							<a href="<?php echo esc_url( wp_nonce_url(
+								add_query_arg( [ 'br_email_csv_campaign' => $c->campaign_id ], admin_url( 'admin.php' ) ),
+								'br_csv_' . $c->campaign_id
+							) ); ?>" class="button button-small">
+								<?php esc_html_e( 'CSV Failed', 'bluerabbit' ); ?>
+							</a>
+						<?php endif; ?>
+						<a href="#" class="button button-small br-view-body-btn" data-campaign="<?php echo (int) $c->campaign_id; ?>">
+							<?php esc_html_e( 'View Body', 'bluerabbit' ); ?>
+						</a>
+					</td>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php endif; ?>
+
+		<h2><?php esc_html_e( 'Detailed Log', 'bluerabbit' ); ?></h2>
+
+		<ul class="subsubsub">
+			<li><a href="<?php echo esc_url( add_query_arg( 'status', 'all', $base_url ) ); ?>"
+				   <?php echo $status === 'all' ? 'class="current"' : ''; ?>>
+				<?php esc_html_e( 'All', 'bluerabbit' ); ?> <span class="count">(<?php echo $count_all; ?>)</span></a> |</li>
+			<li><a href="<?php echo esc_url( add_query_arg( 'status', 'sent', $base_url ) ); ?>"
+				   <?php echo $status === 'sent' ? 'class="current"' : ''; ?>>
+				<?php esc_html_e( 'Sent', 'bluerabbit' ); ?> <span class="count">(<?php echo $count_sent; ?>)</span></a> |</li>
+			<li><a href="<?php echo esc_url( add_query_arg( 'status', 'failed', $base_url ) ); ?>"
+				   <?php echo $status === 'failed' ? 'class="current"' : ''; ?>>
+				<?php esc_html_e( 'Failed', 'bluerabbit' ); ?> <span class="count">(<?php echo $count_failed; ?>)</span></a></li>
+		</ul>
+
+		<?php if ( $status === 'failed' && $count_failed > 0 ) : ?>
+		<div style="float:right;margin-top:4px">
+			<a href="<?php echo esc_url( wp_nonce_url(
+				add_query_arg( 'br_email_csv_all_failed', '1', admin_url( 'admin.php' ) ),
+				'br_csv_all_failed'
+			) ); ?>" class="button">
+				&#128196; <?php esc_html_e( 'Download All Failed CSV', 'bluerabbit' ); ?>
+			</a>
+		</div>
+		<?php endif; ?>
+
+		<table class="widefat striped" style="margin-top:6px">
+			<thead>
+				<tr>
+					<th><a href="<?php echo esc_url( $sort_url( 'sent_at' ) ); ?>"><?php esc_html_e( 'Date', 'bluerabbit' ); ?><?php echo $sort_icon( 'sent_at' ); ?></a></th>
+					<th><a href="<?php echo esc_url( $sort_url( 'sender_name' ) ); ?>"><?php esc_html_e( 'Sent by', 'bluerabbit' ); ?><?php echo $sort_icon( 'sender_name' ); ?></a></th>
+					<th><a href="<?php echo esc_url( $sort_url( 'display_name' ) ); ?>"><?php esc_html_e( 'Recipient', 'bluerabbit' ); ?><?php echo $sort_icon( 'display_name' ); ?></a></th>
+					<th><a href="<?php echo esc_url( $sort_url( 'adventure_title' ) ); ?>"><?php esc_html_e( 'Adventure', 'bluerabbit' ); ?><?php echo $sort_icon( 'adventure_title' ); ?></a></th>
+					<th><a href="<?php echo esc_url( $sort_url( 'subject' ) ); ?>"><?php esc_html_e( 'Subject', 'bluerabbit' ); ?><?php echo $sort_icon( 'subject' ); ?></a></th>
+					<th><a href="<?php echo esc_url( $sort_url( 'status' ) ); ?>"><?php esc_html_e( 'Status', 'bluerabbit' ); ?><?php echo $sort_icon( 'status' ); ?></a></th>
+					<th><?php esc_html_e( 'Detail', 'bluerabbit' ); ?></th>
+					<th style="width:70px"><?php esc_html_e( 'Actions', 'bluerabbit' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php if ( empty( $logs ) ) : ?>
-					<tr><td colspan="6"><?php esc_html_e( 'No entries yet.', 'bluerabbit' ); ?></td></tr>
+					<tr><td colspan="8"><?php esc_html_e( 'No entries.', 'bluerabbit' ); ?></td></tr>
 				<?php else : ?>
 					<?php foreach ( $logs as $row ) :
-						$status_colour = $row->status === 'sent' ? '#46b450' : '#dc3232';
+						$is_failed = $row->status === 'failed';
+						$sc = $is_failed ? '#dc3232' : '#46b450';
 					?>
 					<tr>
-						<td><?php echo esc_html( $row->sent_at ); ?></td>
-						<td><?php echo esc_html( $row->display_name ?: "ID {$row->user_id}" ); ?></td>
+						<td style="white-space:nowrap"><?php echo esc_html( $row->sent_at ); ?></td>
+						<td><?php echo esc_html( $row->sender_name ?: ( $row->sender_id ? "ID {$row->sender_id}" : '—' ) ); ?></td>
+						<td title="<?php echo esc_attr( $row->user_email ?? '' ); ?>">
+							<?php echo esc_html( $row->display_name ?: "ID {$row->user_id}" ); ?>
+						</td>
 						<td><?php echo esc_html( $row->adventure_title ?: "ID {$row->adventure_id}" ); ?></td>
 						<td><?php echo esc_html( $row->subject ); ?></td>
-						<td style="color:<?php echo esc_attr( $status_colour ); ?>;font-weight:bold;">
-							<?php echo esc_html( ucfirst( $row->status ) ); ?>
-						</td>
-						<td style="font-size:12px;color:#555;max-width:300px;word-break:break-all;">
-							<?php echo esc_html( $row->detail ?? '' ); ?>
+						<td style="color:<?php echo $sc; ?>;font-weight:bold;"><?php echo esc_html( ucfirst( $row->status ) ); ?></td>
+						<td style="font-size:11px;color:#888;max-width:250px;word-break:break-all;"><?php echo esc_html( mb_substr( $row->detail, 0, 200 ) ); ?></td>
+						<td>
+							<?php if ( $is_failed && $row->campaign_id ) : ?>
+								<a href="<?php echo esc_url( wp_nonce_url(
+									add_query_arg( [ 'page' => 'br_email_log', 'br_retry_single' => $row->log_id ], admin_url( 'admin.php' ) ),
+									'br_retry_single_' . $row->log_id
+								) ); ?>" class="button button-small"
+								   onclick="return confirm('<?php esc_attr_e( 'Retry this email?', 'bluerabbit' ); ?>');"
+								   title="<?php esc_attr_e( 'Retry', 'bluerabbit' ); ?>">
+									&#8635;
+								</a>
+							<?php endif; ?>
 						</td>
 					</tr>
 					<?php endforeach; ?>
@@ -589,6 +779,30 @@ function br_email_log_page(): void {
 			</div>
 		<?php endif; ?>
 	</div>
+
+	<div id="br-body-modal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.7)">
+		<div style="max-width:700px;margin:40px auto;background:#fff;border-radius:8px;max-height:80vh;overflow:auto;position:relative">
+			<button onclick="document.getElementById('br-body-modal').style.display='none'"
+				style="position:absolute;top:8px;right:12px;font-size:18px;background:none;border:none;cursor:pointer;color:#999">&times;</button>
+			<div id="br-body-modal-content" style="padding:24px"></div>
+		</div>
+	</div>
+	<script>
+	jQuery(function($){
+		$('.br-view-body-btn').on('click', function(e){
+			e.preventDefault();
+			var cid = $(this).data('campaign');
+			$.post(ajaxurl, { action: 'br_email_get_campaign_body', campaign_id: cid, nonce: brEmail.nonce }, function(r){
+				if (r.success) {
+					$('#br-body-modal-content').html(
+						'<h3>' + r.data.subject + '</h3><hr>' + r.data.body
+					);
+					$('#br-body-modal').show();
+				}
+			});
+		});
+	});
+	</script>
 	<?php
 }
 
@@ -621,6 +835,114 @@ function br_email_handle_unsubscribe(): void {
 		esc_html__( 'Unsubscribed', 'bluerabbit' ),
 		[ 'response' => 200 ]
 	);
+}
+
+// ── Admin: retry campaign handler (GET) ──────────────────────────────────────
+
+add_action( 'admin_init', 'br_email_handle_retry' );
+function br_email_handle_retry(): void {
+	if ( ! empty( $_GET['br_retry_campaign'] ) ) {
+		$cid = (int) $_GET['br_retry_campaign'];
+		check_admin_referer( 'br_retry_' . $cid );
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
+
+		$mailer = new BR_Mailer();
+		$result = $mailer->retry_campaign( $cid );
+
+		wp_redirect( add_query_arg( [
+			'page'            => 'br_email_log',
+			'br_retried'      => $result['sent'],
+			'br_retry_failed' => $result['failed'],
+		], admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	if ( ! empty( $_GET['br_retry_single'] ) ) {
+		$lid = (int) $_GET['br_retry_single'];
+		check_admin_referer( 'br_retry_single_' . $lid );
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
+
+		$mailer  = new BR_Mailer();
+		$success = $mailer->retry_single( $lid );
+
+		wp_redirect( add_query_arg( [
+			'page'            => 'br_email_log',
+			'br_retried'      => $success ? 1 : 0,
+			'br_retry_failed' => $success ? 0 : 1,
+		], admin_url( 'admin.php' ) ) );
+		exit;
+	}
+}
+
+// ── Admin: CSV download handler ──────────────────────────────────────────────
+
+add_action( 'admin_init', 'br_email_handle_csv_download' );
+function br_email_handle_csv_download(): void {
+	global $wpdb;
+
+	if ( ! empty( $_GET['br_email_csv_campaign'] ) ) {
+		$cid = (int) $_GET['br_email_csv_campaign'];
+		check_admin_referer( 'br_csv_' . $cid );
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
+
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT u.user_email, u.display_name, l.detail, l.sent_at
+			   FROM {$wpdb->prefix}br_email_log l
+			   JOIN {$wpdb->users} u ON u.ID = l.user_id
+			  WHERE l.campaign_id = %d AND l.status = 'failed'
+			  ORDER BY l.sent_at DESC",
+			$cid
+		) );
+
+		br_email_output_csv( "failed-campaign-{$cid}.csv", $rows );
+	}
+
+	if ( ! empty( $_GET['br_email_csv_all_failed'] ) ) {
+		check_admin_referer( 'br_csv_all_failed' );
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
+
+		$rows = $wpdb->get_results(
+			"SELECT u.user_email, u.display_name, l.subject, l.detail, l.sent_at, a.adventure_title
+			   FROM {$wpdb->prefix}br_email_log l
+			   JOIN {$wpdb->users} u ON u.ID = l.user_id
+			   LEFT JOIN {$wpdb->prefix}br_adventures a ON a.adventure_id = l.adventure_id
+			  WHERE l.status = 'failed'
+			  ORDER BY l.sent_at DESC"
+		);
+
+		br_email_output_csv( 'all-failed-emails.csv', $rows );
+	}
+}
+
+function br_email_output_csv( string $filename, array $rows ): void {
+	header( 'Content-Type: text/csv; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+	$fp = fopen( 'php://output', 'w' );
+	if ( ! empty( $rows ) ) {
+		fputcsv( $fp, array_keys( (array) $rows[0] ) );
+		foreach ( $rows as $row ) {
+			fputcsv( $fp, (array) $row );
+		}
+	}
+	fclose( $fp );
+	exit;
+}
+
+// ── Admin: AJAX get campaign body ────────────────────────────────────────────
+
+add_action( 'wp_ajax_br_email_get_campaign_body', 'br_email_ajax_get_campaign_body' );
+function br_email_ajax_get_campaign_body(): void {
+	check_ajax_referer( 'br_email_ajax', 'nonce' );
+	if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( null, 403 );
+
+	$campaign_id = (int) ( $_POST['campaign_id'] ?? 0 );
+	$campaign    = BR_Mailer::get_campaign( $campaign_id );
+	if ( ! $campaign ) wp_send_json_error( [ 'message' => 'Campaign not found.' ] );
+
+	wp_send_json_success( [
+		'subject' => esc_html( $campaign->subject ),
+		'body'    => wp_kses_post( $campaign->body ),
+	] );
 }
 
 // ── Frontend: enqueue TinyMCE + pass nonce for email-notifications page ───────
@@ -674,8 +996,9 @@ function br_email_handle_notification_send(): void {
 		wp_send_json_error( [ 'message' => __( 'You do not have permission to send emails for this adventure.', 'bluerabbit' ) ] );
 	}
 
-	$subject = sanitize_text_field( wp_unslash( $_POST['subject'] ?? '' ) );
-	$body    = wp_kses_post( wp_unslash( $_POST['body'] ?? '' ) );
+	$subject    = sanitize_text_field( wp_unslash( $_POST['subject'] ?? '' ) );
+	$body       = wp_kses_post( wp_unslash( $_POST['body'] ?? '' ) );
+	$recipients = sanitize_text_field( $_POST['recipients'] ?? 'all' );
 
 	if ( ! $subject || ! $body ) {
 		wp_send_json_error( [ 'message' => __( 'Subject and body are required.', 'bluerabbit' ) ] );
@@ -691,26 +1014,61 @@ function br_email_handle_notification_send(): void {
 		wp_send_json_error( [ 'message' => __( 'Adventure not found.', 'bluerabbit' ) ] );
 	}
 
-	// Build the sender context from the adventure owner
-	$owner     = get_userdata( (int) $adventure->adventure_owner );
-	$from_name = $owner
-		? $owner->display_name . ' · ' . $adventure->adventure_title
-		: $adventure->adventure_title;
-	$reply_to_email = $owner ? $owner->user_email : '';
-	$reply_to_name  = $owner ? $owner->display_name : '';
+	// Sender can be overridden via dropdown (owner or current GM)
+	$sender_name  = sanitize_text_field( wp_unslash( $_POST['sender_name']  ?? '' ) );
+	$sender_email = sanitize_email( wp_unslash( $_POST['sender_email'] ?? '' ) );
+	if ( ! $sender_name || ! $sender_email ) {
+		$sender_name  = $current_user->display_name;
+		$sender_email = $current_user->user_email;
+	}
+
+	$from_name      = $sender_name . ' · ' . $adventure->adventure_title;
+	$reply_to_email = $sender_email;
+	$reply_to_name  = $sender_name;
 
 	$mailer = new BR_Mailer();
 	$mailer->set_sender_override( $from_name, $reply_to_email, $reply_to_name );
+	$mailer->set_sender_id( $current_user->ID );
 
-	$result = $mailer->send_to_adventure( $adventure_id, $subject, $body );
+	// Resolve recipients
+	$all_users = $mailer->get_adventure_users( $adventure_id );
+
+	if ( $recipients !== 'all' ) {
+		$player_ids = array_map( 'intval', explode( ',', $recipients ) );
+		$player_ids = array_filter( $player_ids );
+		if ( empty( $player_ids ) ) {
+			wp_send_json_error( [ 'message' => __( 'No recipients selected.', 'bluerabbit' ) ] );
+		}
+		$id_set = array_flip( $player_ids );
+		$users  = array_values( array_filter( $all_users, function ( $u ) use ( $id_set ) {
+			return isset( $id_set[ (int) $u['player_id'] ] );
+		} ) );
+	} else {
+		$users = $all_users;
+	}
+
+	if ( empty( $users ) ) {
+		wp_send_json_error( [ 'message' => __( 'No eligible recipients found.', 'bluerabbit' ) ] );
+	}
+
+	$result = $mailer->send_to_users( $users, $adventure_id, $subject, $body );
+
+	$parts = [];
+	$parts[] = sprintf(
+		_n( '%d email sent', '%d emails sent', $result['sent'], 'bluerabbit' ),
+		$result['sent']
+	);
+	if ( $result['failed'] ) {
+		$parts[] = sprintf( '%d failed', $result['failed'] );
+	}
+	if ( $result['queued'] ) {
+		$parts[] = sprintf( '%d queued', $result['queued'] );
+	}
 
 	wp_send_json_success( [
 		'sent'    => $result['sent'],
 		'failed'  => $result['failed'],
 		'queued'  => $result['queued'],
-		'message' => sprintf(
-			_n( '%d email sent', '%d emails sent', $result['sent'], 'bluerabbit' ),
-			$result['sent']
-		) . ( $result['queued'] ? sprintf( ' · %d queued', $result['queued'] ) : '' ),
+		'message' => implode( ' · ', $parts ),
 	] );
 }

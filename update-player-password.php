@@ -1,5 +1,5 @@
 <?php
-	$player_to_update =getPlayerData($id);
+	$player_to_update =BR_Player::instance()->getPlayerData($id);
 	$player_name = $player_to_update->player_display_name ? $player_to_update->player_display_name : $player_to_update->player_email;
 ?>
 <div class="magic-code-form overlay-layer layer top-overlay fixed sq-full top left active" id="reset-demo-form">

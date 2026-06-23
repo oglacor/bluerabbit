@@ -8,8 +8,8 @@ if($adventure && ($isGM || $isAdmin)){
 		$trnx = $wpdb->get_results( "SELECT * FROM ".$wpdb->prefix."br_transactions WHERE object_id=$item_id AND adventure_id=$adventure->adventure_id AND trnx_type='consumable' AND trnx_status='publish'");
 		$items_sold = count($trnx);
 	}
-	$achievements = getAchievements($adventure->adventure_id, 'path|rank');
-	$tabis = getTabis($adventure->adventure_id);
+	$achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id, 'path|rank');
+	$tabis = BR_Tabi::instance()->getTabis($adventure->adventure_id);
 ?>
 		<div class="dashboard">
 			<div class="dashboard-content white-bg">

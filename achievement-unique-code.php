@@ -1,26 +1,24 @@
-<tr class="<?= $c->player_id ? 'purple-bg-400 white-color' : 'white-bg'; ?> padding-10" id="achievement-unique-code-<?=$c->code_id; ?>">
-	<td>
-		<input id="<?= "ach-code-$c->code_id"; ?>" type="hidden" class="form-ui w-full" value="<?php echo get_bloginfo('url')."/magic-link/?c=$c->code_value&adv=$a->adventure_id"; ?>">
-		<button class="button-icon font _24 sq-40  white-bg purple-400" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');">
-			<span class="icon icon-qr font _28"></span>
+<tr id="achievement-unique-code-<?= $c->code_id; ?>">
+	<td style="width:50px">
+		<input id="<?= "ach-code-$c->code_id"; ?>" type="hidden" value="<?= get_bloginfo('url') . "/magic-link/?c=$c->code_value&adv=$a->adventure_id"; ?>">
+		<button class="br-step-btn br-step-btn-green" style="width:36px;height:36px" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');" title="<?= __('Copy', 'bluerabbit'); ?>">
+			<span class="icon icon-qr" style="font-size:18px"></span>
 		</button>
 	</td>
-	<td class="relative">
-		<div class="icon-group">
-			<div class="icon-content">
-				<span class="line font _24 grey-800"><?= $c->code_value; ?></span>
-			</div>
-		</div>
-		<span class="legend border rounded-max black-bg white-color" id="legend-<?= $c->code_id; ?>">
-			<span class="font _12  padding-10 "><?php _e("Link Copied","bluerabbit"); ?></span>
+	<td style="position:relative">
+		<span style="font-size:15px;font-weight:600;letter-spacing:0.5px;color:rgba(255,255,255,0.85)"><?= $c->code_value; ?></span>
+		<span class="legend border rounded-max" id="legend-<?= $c->code_id; ?>" style="background:#24da98;color:#fff;position:absolute;top:-6px;right:10px;padding:3px 10px;border-radius:12px;font-size:11px;opacity:0;transition:opacity 0.3s">
+			<?= __("Link Copied", "bluerabbit"); ?>
 		</span>
 	</td>
-	<td>
-		<button class="form-ui purple-bg-400 white-color font main w300 _16" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');">
-			<span class="line font _14"> <?= __("Copy link","bluerabbit"); ?></span>
-		</button>
-		<button class="button-icon font _24 sq-40  red-bg-400 white-color" onClick="deleteAchievementCode(<?= $c->code_id; ?>);">
-			<span class="icon icon-trash"></span>
-		</button>
+	<td style="width:120px">
+		<div style="display:flex;gap:4px;justify-content:flex-end">
+			<button class="br-btn" style="padding:4px 10px;font-size:12px" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');">
+				<span class="icon icon-duplicate"></span> <?= __("Copy", "bluerabbit"); ?>
+			</button>
+			<button class="br-step-btn br-step-btn-red" style="width:30px;height:30px" onClick="deleteAchievementCode(<?= $c->code_id; ?>);" title="<?= __('Delete', 'bluerabbit'); ?>">
+				<span class="icon icon-trash"></span>
+			</button>
+		</div>
 	</td>
 </tr>

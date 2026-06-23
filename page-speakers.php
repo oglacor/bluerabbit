@@ -5,7 +5,7 @@
 	WHERE speakers.adventure_id=$adventure->adventure_id
 	ORDER BY speakers.speaker_first_name, speakers.speaker_last_name
 "); 
-$sessions = getSessions($adventure->adventure_id,'publish');
+$sessions = BR_Session::instance()->getSessions($adventure->adventure_id,'publish');
 ?>
 <?php
 $taglines = [

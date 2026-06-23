@@ -22,7 +22,7 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 		
 		<?php if($adv->player_last_login){ ?>
 			<span class="font _14 w100 opacity-70 white-color block">
-				<?php echo __("Last login","bluerabbit").": ".get_time_ago(strtotime($adv->player_last_login), $adv->adventure_id); ?>
+				<?php echo __("Last login","bluerabbit").": ".BR_Utils::instance()->get_time_ago(strtotime($adv->player_last_login), $adv->adventure_id); ?>
 			</span>
 		<?php }else{ ?>
 			<span class="font _14 w100 opacity-70 white-color block">

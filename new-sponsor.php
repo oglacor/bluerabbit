@@ -49,7 +49,7 @@
 				<td class="text-right w-150"><?= __('Logo','bluerabbit'); ?></td>
 				<td>
 					<div class="gallery">
-						<?php insertGalleryItem('the-sponsor-logo', $sponsor->sponsor_logo); ?>
+						<?php BR_Utils::instance()->insertGalleryItem('the-sponsor-logo', $sponsor->sponsor_logo); ?>
 					</div>
 				</td>
 			</tr>
@@ -86,7 +86,7 @@
 				<td class="text-right w-150"><?= __('Image','bluerabbit'); ?></td>
 				<td>
 					<div class="gallery">
-						<?php insertGalleryItem('the-sponsor-image', $sponsor->sponsor_image); ?>
+						<?php BR_Utils::instance()->insertGalleryItem('the-sponsor-image', $sponsor->sponsor_image); ?>
 					</div>
 				</td>
 			</tr>

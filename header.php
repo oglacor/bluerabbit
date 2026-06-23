@@ -1,6 +1,6 @@
 <?php
 	$current_user = wp_get_current_user();
-	$config = getSysConfig();
+	$config = BR_Config::instance()->getSysConfig();
 	if(isset($config['support_email']['value'])){
 		$support_email = $config['support_email']['value'];
 	}else{
@@ -10,39 +10,32 @@
 		$_SESSION['player'] = wp_get_current_user();
 	}
 	$roles = $current_user->roles;
-	if($current_user->roles[0] == 'administrator'){
-		$features = getFeatures('admin');
-		$f_role = 'admin';
-	}elseif($current_user->roles[0] == 'br_game_master' || $roles[0] == 'br_npc'){
-		$features = getFeatures('pro');
-		$f_role = 'pro';
-	}else{
-		$features = getFeatures('free');
-		$f_role = 'free';
-	}
+	$user_plan = BR_Config::instance()->getUserPlan($current_user->ID);
+	$f_role = $user_plan ? $user_plan['plan_key'] : 'basic';
+	$features = BR_Config::instance()->getFeatures($f_role);
 
  	if($config['default_adventure']['value']>0){
 		$adventure_id = $config['default_adventure']['value'];
-		defaultEnrollment($adventure_id, $current_user->ID);
+		BR_Player::instance()->defaultEnrollment($adventure_id, $current_user->ID);
 	}elseif(isset($_GET['adventure_id'])){
 		$adventure_id = $_GET['adventure_id'];
 	}
 	if(isset($adventure_id)){
-		$adventure = getAdventure($adventure_id);
+		$adventure = BR_Adventure::instance()->getAdventure($adventure_id);
         $adv_child_id = $adventure->adventure_id;
         $adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
-		$adv_settings = getSettings($adv_parent_id);
+		$adv_settings = BR_Config::instance()->getSettings($adv_parent_id);
 
 		
 		if($adventure){
-			if(isset($adventure->adventure_gmt)){
+			if(!empty($adventure->adventure_gmt) && in_array($adventure->adventure_gmt, timezone_identifiers_list())){
 				date_default_timezone_set($adventure->adventure_gmt);
 			}else{
 				date_default_timezone_set('America/Mexico_City');
 			}
 			$_SESSION['adventure'] = $adventure;
-			$lastLogin = registerAdventureLogin($adv_child_id);
-			$current_player = getPlayerAdventureData($adv_child_id, $current_user->ID);
+			$lastLogin = BR_Adventure::instance()->registerAdventureLogin($adv_child_id);
+			$current_player = BR_Player::instance()->getPlayerAdventureData($adv_child_id, $current_user->ID);
 			if($current_player->achievement_id){
 				$myRank = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=$current_player->achievement_id AND achievement_status='publish'");
 			}
@@ -57,7 +50,7 @@
 			}
 			
 			/* PLAYER RESET STARTS*/
-			$playerReset = getPlayerProgress($adv_child_id, $current_user->ID);
+			$playerReset = BR_Progression::instance()->getPlayerProgress($adv_child_id, $current_user->ID);
 			//$playerReset = getMyAdvPlayerData($adv_child_id, $current_user->ID);
 			
 			$quests=isset($playerReset['quests']) ? $playerReset['quests'] : [];
@@ -107,7 +100,7 @@
 			if(isset($adv_settings['support_email']['value']) && $adv_settings['support_email']['value'] != ""){
 				$support_email = $adv_settings['support_email']['value'];
 			} 
-			$isDemo = getSetting('demo_adventure', $adv_child_id);
+			$isDemo = BR_Config::instance()->getSetting('demo_adventure', $adv_child_id);
 
 			$xp_long_label = $adventure->adventure_xp_long_label ? $adventure->adventure_xp_long_label : "Experience Points";
 			$bloo_long_label = $adventure->adventure_bloo_long_label ? $adventure->adventure_bloo_long_label : "Bloo coins";
@@ -131,7 +124,7 @@
 			unset($_SESSION['adventure']);
 		}
 	}else{
-		$current_player = getPlayerData($current_user->ID);
+		$current_player = BR_Player::instance()->getPlayerData($current_user->ID);
 		$myAdventures = $wpdb->get_col("SELECT adventure_id FROM {$wpdb->prefix}br_adventures WHERE adventure_owner=$current_user->ID");
 		
 		$add_adventure = false;
@@ -173,10 +166,9 @@
 			}
 		}
 		if($add_adventure == true){
-			if(count($myAdventures) >= $features['max_adventures'][$f_role]){
+			$max_adv_limit = isset($features['max_adventures'][$f_role]) ? intval($features['max_adventures'][$f_role]) : 0;
+			if($max_adv_limit > 0 && count($myAdventures) >= $max_adv_limit){
 				$add_adventure = false;
-			}else{
-				$add_adventure = true;
 			}
 		}
 		
@@ -322,21 +314,21 @@
 			<div class="tools">
 				<?php 
 				if(isset($current_player->player_current_quest_id) && ($current_player->player_current_quest_id) > 0){ 
-					$cq = getQuest($current_player->player_current_quest_id); 
+					$cq = BR_Quest::instance()->getQuest($current_player->player_current_quest_id);
 					$cq_link = get_bloginfo('url')."/{$cq->quest_type}/?questID={$cq->quest_id}&adventure_id={$cq->adventure_id}#step-{$current_player->player_current_quest_step}";
 				}else{ 
 					$current_player->player_current_quest_id = 0;
 					$cq_link = ""; 
 				}
 				?>
-				<?php if($show_torch){ ?>
+				<?php if(!empty($show_torch)){ ?>
 					<a class="current-quest-torch button-icon <?= $current_player->player_current_quest_id == 0 ? "hidden" : ""; ?>" id="current-quest-torch" style="background-image: url(<?= get_bloginfo('template_directory'); ?>/images/icons/icon-torch.png); " href="<?= $cq_link; ?>">
 					</a>
 				<?php } ?>
 				<button class="button-icon white-bg border rounded-max" id="profile-box-btn" <?php if(isset($current_player->player_picture)){ ?>style="background-image: url(<?= $current_player->player_picture; ?>); "<?php } ?> onClick="activate('#profile-box');">
 				</button>
-				<?php if($current_player->player_guild){ ?>
-					<?php $myGuild = getMyGuild($adventure_id, $current_player->player_guild); ?>
+				<?php if(isset($current_player->player_guild) && $current_player->player_guild){ ?>
+					<?php $myGuild = BR_Guild::instance()->getMyGuild($adventure_id, $current_player->player_guild); ?>
 					<?php $myGuildExists = true; ?>
 					<a class="button-icon white-bg border rounded-max" id="guild-btn" <?php if(isset($myGuild->guild_logo)){ ?>style="background-image: url(<?= $myGuild->guild_logo; ?>); "<?php } ?> href="<?= get_bloginfo('url')."/guilds/?adventure_id=$adv_child_id"; ?>">
 					</a>

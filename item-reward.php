@@ -24,7 +24,7 @@
 					</div>
 					<div class="highlight">
 						<button class="form-ui green-bg-400 white-color">
-							<span class="icon icon-bloo"></span> <?php echo toMoney($i->item_cost,""); ?>
+							<span class="icon icon-bloo"></span> <?php echo BR_Utils::instance()->toMoney($i->item_cost,""); ?>
 						</button>
 					</div>
 				</div>
@@ -72,7 +72,7 @@
 												<span class="icon icon-bloo white-color"></span>
 											</span>
 											<span class="icon-content">
-												<span class="line white-color font _24 w900"><?php echo toMoney($i->item_cost,""); ?></span>
+												<span class="line white-color font _24 w900"><?php echo BR_Utils::instance()->toMoney($i->item_cost,""); ?></span>
 											</span>
 										</span>
 									</button>
@@ -125,7 +125,7 @@
 
 						</span>
 					</div>
-					<span class="font _14 w300 condensed lime-400"><span class="icon icon-bloo"></span><?php echo __("Cost","bluerabbit")." ".toMoney($i->item_cost,""); ?>
+					<span class="font _14 w300 condensed lime-400"><span class="icon icon-bloo"></span><?php echo __("Cost","bluerabbit")." ".BR_Utils::instance()->toMoney($i->item_cost,""); ?>
 					</span>
 				</div>
 			</div>

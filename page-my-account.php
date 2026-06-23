@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
-<?php $player_account = getPlayerData($current_user->ID); ?>
+<?php $player_account = BR_Player::instance()->getPlayerData($current_user->ID); ?>
 <?php $uMeta = get_user_meta($current_user->ID); ?>
 
 <?php $picture = $player_account->player_picture ? $player_account->player_picture : $randprof;  ?>

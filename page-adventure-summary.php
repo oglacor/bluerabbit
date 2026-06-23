@@ -2,7 +2,7 @@
 
 <?php 
 	$order='quest_order, mech_level, mech_start_date, quest_title';
-	$questsSummary = getQuests($adventure->adventure_id,'',"blog-post' AND quest_type!='lore");
+	$questsSummary = BR_Quest::instance()->getQuests($adventure->adventure_id,'',"blog-post' AND quest_type!='lore");
 
 	$questsSummary = $wpdb->get_results("SELECT quests.*, achs.achievement_name, achs.achievement_color, achs.achievement_display
 	FROM {$wpdb->prefix}br_quests quests
@@ -114,7 +114,7 @@
 						</ul>
 					<?php } ?>
 					<?php if($q->quest_type == 'survey'){ ?>
-						<?php $sData = getSurvey($q->quest_id);
+						<?php $sData = BR_Survey::instance()->getSurvey($q->quest_id);
 							$survey_qs = $sData['questions'];
 						?>
 						<ul>
@@ -144,7 +144,7 @@
 				<?php } ?>
 				<div class="summary-item-quest-content">
 					<?php if($q->quest_type == 'quest'){ ?>
-						<?php if($steps[$q->quest_id]){ ?>
+						<?php if(!empty($steps[$q->quest_id])){ ?>
 							<h4><?= __("Quest steps","bluerabbit"); ?>:</h4>
 							<ul>
 							<?php foreach($steps[$q->quest_id] as $sKey=>$ss){?>

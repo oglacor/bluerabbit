@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 .<?php if($adventure){ ?>
-	<?php $survey_data = getSurveyResults($_GET['questID']); ?>
+	<?php $survey_data = BR_Survey::instance()->getSurveyResults($_GET['questID']); ?>
 	<?php if($survey_data){ ?>
 		<?php 
 		$survey_id = $_GET['questID'];

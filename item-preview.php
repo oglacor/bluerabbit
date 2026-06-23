@@ -66,7 +66,7 @@
 						<h3 class="font w900 uppercase kerning-3 yellow-400"><?php _e("Confirm Purchase","bluerabbit"); ?></h3>
 						<h1 class="font padding-10 w300 kerning-3 white-color"><?= $item->item_name; ?></h1>
 						<button class="form-ui font _24 w300 amber-bg-400 grey-800 uppercase kerning-2" onClick="buyItem(<?php echo $item->item_id; ?>);">
-							<span class="icon icon-bloo"><?= toMoney($item->item_cost,""); ?></span>
+							<span class="icon icon-bloo"><?= BR_Utils::instance()->toMoney($item->item_cost,""); ?></span>
 						</button>
 						<hr class="w-half margin-10 opacity-0">
 						<button class="form-ui font _12 w900 red-bg-400 white-color uppercase kerning-2" onClick="activate('#confirm-buy-item-<?php echo $item->item_id; ?>');">

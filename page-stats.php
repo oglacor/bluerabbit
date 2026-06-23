@@ -225,7 +225,7 @@ window.brStats = {
                     <td class="text-center"><?= number_format($ap['player_bloo']); ?></td>
                     <td class="text-center"><?= $ap['completion_pct']; ?>%</td>
                     <td class="text-center">
-                        <?= ($ap['player_last_login'] && strtotime($ap['player_last_login']) > 0) ? get_time_ago(strtotime($ap['player_last_login']), $adv_child_id) : '&mdash;'; ?>
+                        <?= ($ap['player_last_login'] && strtotime($ap['player_last_login']) > 0) ? BR_Utils::instance()->get_time_ago(strtotime($ap['player_last_login']), $adv_child_id) : '&mdash;'; ?>
                     </td>
                 </tr>
                 <?php } ?>

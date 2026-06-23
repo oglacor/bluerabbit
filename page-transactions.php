@@ -1,157 +1,211 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php if($adventure && ($isGM || $isNPC)){ ?>
-		<?php 
-			$transactions = $wpdb->get_results( "SELECT a.player_id, a.player_display_name, a.player_email, b.trnx_id,  b.trnx_use, b.trnx_date, b.trnx_amount, b.trnx_type, c.item_name, c.item_type, c.item_id
-			FROM {$wpdb->prefix}br_players a
-			JOIN {$wpdb->prefix}br_transactions b
-			ON a.player_id = b.player_id
-			JOIN {$wpdb->prefix}br_items c
-			ON b.object_id = c.item_id
-			WHERE b.adventure_id=$adventure->adventure_id  AND b.trnx_status='publish' AND b.trnx_type IN ('consumable','key','reward','tabi-piece')
-			ORDER BY b.trnx_use ASC, b.trnx_id ASC LIMIT 1000
-			");
-		?>	 
-		<div class="container boxed max-w-1200 wrap">
-			<div class="body-ui w-full white-bg">
-				<div class="highlight padding-10 orange-bg-200">
-					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  indigo-bg-400"><span class="icon icon-transactions"></span></span>
-						<span class="icon-content font _24 w300 indigo-800">
-							<span><?= __('Transactions','bluerabbit'); ?></span>
-						</span>
-					</div>
-					<div class="highlight-cell pull-right padding-10">
-						<button class="button-icon font _24 sq-40  icon-sm black-bg" onClick="$('#table-trnxs tbody tr').show();"><span class="icon icon-infinite"></span></button>
-						<button class="button-icon font _24 sq-40  icon-sm green-bg-400" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.new').show();"><span class="icon icon-check"></span></button>
-						<button class="button-icon font _24 sq-40  icon-sm blue-bg-400" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.used').show();"><span class="icon icon-restore"></span></button>
-					</div>
-					<div class="highlight-cell pull-right">
-						<div class="input-group">
-							<label class="indigo-bg-400"><span class="icon icon-search"></span></label>
-							<input type="text" class="form-ui" id="search-trnxs" placeholder="<?= __("Search transactions","bluerabbit"); ?>">
-							<script>
-								$('#search-trnxs').keyup(function(){
-									var valThis = $(this).val().toLowerCase();
-									if(valThis == ""){
-										$('table#table-trnxs tbody > tr').show();           
-									}else{
-										$('table#table-trnxs tbody > tr').each(function(){
-											var text = $(this).text().toLowerCase();
-											(text.indexOf(valThis) >= 0) ? $(this).show() : $(this).hide();
-										});
-									};
-								});
-							</script>				
-						</div>
-					</div>
+<?php
+$transactions = $wpdb->get_results("SELECT
+	a.player_id, a.player_display_name, a.player_email,
+	b.trnx_id, b.trnx_use, b.trnx_date, b.trnx_amount, b.trnx_type,
+	c.item_name, c.item_type, c.item_id
+	FROM {$wpdb->prefix}br_players a
+	JOIN {$wpdb->prefix}br_transactions b ON a.player_id = b.player_id
+	JOIN {$wpdb->prefix}br_items c ON b.object_id = c.item_id
+	WHERE b.adventure_id=$adventure->adventure_id AND b.trnx_status='publish'
+		AND b.trnx_type IN ('consumable','key','reward','tabi-piece')
+	ORDER BY b.trnx_use ASC, b.trnx_id ASC LIMIT 1000
+");
 
+$type_badges = [
+	'key'        => 'br-badge-purple',
+	'consumable' => 'br-badge-red',
+	'reward'     => 'br-badge-teal',
+	'tabi-piece' => 'br-badge-amber',
+];
+?>
+
+<div class="br-page">
+
+	<!-- Header -->
+	<div class="br-panel">
+		<div class="br-trnx-header">
+			<h3 class="br-panel-title" style="margin:0">
+				<span class="icon icon-transactions"></span>
+				<?= __("Transactions", "bluerabbit"); ?>
+			</h3>
+
+			<div class="br-trnx-controls">
+				<!-- Filters -->
+				<div class="br-actions">
+					<button class="br-btn" onClick="$('#table-trnxs tbody tr').show();" title="<?= __('Show all', 'bluerabbit'); ?>">
+						<span class="icon icon-infinite"></span> <?= __("All", "bluerabbit"); ?>
+					</button>
+					<button class="br-btn br-btn-green" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.new').show();" title="<?= __('New only', 'bluerabbit'); ?>">
+						<span class="icon icon-check"></span> <?= __("New", "bluerabbit"); ?>
+					</button>
+					<button class="br-btn" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.used').show();" title="<?= __('Used only', 'bluerabbit'); ?>">
+						<span class="icon icon-restore"></span> <?= __("Used", "bluerabbit"); ?>
+					</button>
 				</div>
 
-				<div class="content">
-
-					<table class="text-center w-full table" id="table-trnxs">
-						<thead>
-							<tr>
-								<td class=""><?= __("ID","bluerabbit"); ?></td>
-								<td class=""><?= __("Player","bluerabbit"); ?></td>
-								<td class=""><?= __("Email","bluerabbit"); ?></td>
-								<td class=""><?= __("Date","bluerabbit"); ?></td>
-								<td class=""><?= __("Item","bluerabbit"); ?></td>
-								<td class=""><?= __("Use","bluerabbit"); ?></td>
-								<td class=""><?= __("Return","bluerabbit"); ?></td>
-								<td class=""><?= __("Delete","bluerabbit"); ?></td>
-							</tr>
-						</thead>
-						<tbody>
-							<?php $color = array(
-								'key'=>'indigo-bg-300',
-								'consumable'=>'pink-bg-300',
-								'reward'=>'teal-bg-300'
-							);
-							
-							$spentBLOO =0;
-							?>
-							<?php foreach($transactions as $key=>$iT) { ?>
-								<?php
-								$spentBLOO += $iT->trnx_amount;
-									if(!$iT->trnx_use){
-										$status_class = 'green-bg-50 new';
-									}else{
-										$status_class = 'light-blue-bg-900 white-color used';
-									}
-								?>
-								<tr class="<?= $status_class; ?>">
-									<td class="">
-										<span class="line font _14 w300">#<?php echo $iT->trnx_id; ?></span>
-									</td>
-									<td>
-										<span class="icon-group inline-table">
-											<span class="icon-content">
-												<span class="line font _24 w700">
-													<?php if($isAdmin || $isGM){ ?>
-														<a href="<?= bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id&player_id=$iT->player_id"; ?>">
-															<?= $iT->player_display_name; ?>
-														</a>
-													<?php }else{ ?>
-														<?= $iT->player_display_name; ?>
-													<?php } ?>
-												</span>
-											</span>
-										</span>
-									</td>
-									<td>
-										<span class="icon-group inline-table">
-											<span class="line font _16 w300"><?= $iT->player_email; ?></span>
-										</span>
-									</td>
-									<td>
-										<span class="icon-group inline-table">
-											<span class="line font _12 w300 grey-500"><?php echo $iT->trnx_date; ?></span>
-										</span>
-									</td>
-									<td>
-										<a class="form-ui <?php echo $color[$iT->trnx_type]; ?>" href="<?= bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$iT->item_id"; ?>">
-											<strong><?php echo $iT->item_name; ?></strong>
-										</a>
-									</td>
-									<td>
-										<?php if(!$iT->trnx_use && $iT->item_type == 'consumable'){ ?>
-											<button class="button-icon font _24 sq-40  icon-sm green-bg-400" onClick="useItem(<?php echo "$iT->trnx_id , $iT->player_id, 1"; ?>);">
-												<span class="icon icon-check"></span>
-											</button>
-										<?php } ?>
-									</td>
-									<td>
-										<?php if($iT->trnx_use){ ?>
-											<button class="button-icon font _24 sq-40  icon-sm blue-bg-300" onClick="useItem(<?php echo "$iT->trnx_id, $iT->player_id, 0"; ?>);">
-												<span class="icon icon-restore"></span>
-											</button>
-										<?php } ?>
-									</td>
-									<td>
-										<?php if($isGM || $isAdmin){ ?>
-											<button class="button-icon font _24 sq-40  icon-sm red-bg-400 white-color" onClick="br_confirm_trd('delete',<?php echo $iT->trnx_id; ?>,'trnx');">
-												<span class="icon icon-cancel"></span>
-											</button>
-										<?php } ?>
-									</td>
-								</tr>
-							<?php } ?>
-						</tbody>
-					</table>
-					<h1><?= $spentBLOO; ?></h1>
+				<!-- Search -->
+				<div class="br-trnx-search">
+					<span class="icon icon-search" style="color:rgba(255,255,255,0.3);position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px"></span>
+					<input type="text" class="br-input" id="search-trnxs" placeholder="<?= __('Search transactions', 'bluerabbit'); ?>" style="padding-left:34px">
 				</div>
-				<input type="hidden" id="use-item-nonce" value="<?php echo wp_create_nonce('br_use_item_nonce'); ?>"/>
-				<input type="hidden" id="trash-nonce" value="<?php echo wp_create_nonce('trash_nonce'); ?>"/>
-				<?php if($isGM){ ?>
-					<input type="hidden" id="delete-nonce" value="<?php echo wp_create_nonce('delete_nonce'); ?>"/>
-				<?php } ?>
-				<input type="hidden" id="reload" value="true"/>
+				<script>
+				$('#search-trnxs').keyup(function(){
+					var valThis = $(this).val().toLowerCase();
+					if(valThis == ""){
+						$('table#table-trnxs tbody > tr').show();
+					}else{
+						$('table#table-trnxs tbody > tr').each(function(){
+							var text = $(this).text().toLowerCase();
+							(text.indexOf(valThis) >= 0) ? $(this).show() : $(this).hide();
+						});
+					}
+				});
+				</script>
 			</div>
 		</div>
-		<input type="hidden" id="nonce" value="<?php echo wp_create_nonce('br_item_nonce'); ?>"/>
-	<?php }else{ ?>
-		<h1><?= __("Adventure doesn't exist"); ?></h1>
-		<script>document.location.href="<?php bloginfo('url');?>"; </script>
-	<?php } ?>
+	</div>
+
+	<!-- Table -->
+	<div class="br-panel">
+		<table class="br-table" id="table-trnxs">
+			<thead>
+				<tr>
+					<th style="width:60px"><?= __("ID", "bluerabbit"); ?></th>
+					<th><?= __("Player", "bluerabbit"); ?></th>
+					<th><?= __("Email", "bluerabbit"); ?></th>
+					<th><?= __("Date", "bluerabbit"); ?></th>
+					<th><?= __("Item", "bluerabbit"); ?></th>
+					<th class="text-center" style="width:60px"><?= __("Use", "bluerabbit"); ?></th>
+					<th class="text-center" style="width:60px"><?= __("Return", "bluerabbit"); ?></th>
+					<?php if($isGM || $isAdmin){ ?>
+					<th class="text-center" style="width:60px"><?= __("Delete", "bluerabbit"); ?></th>
+					<?php } ?>
+				</tr>
+			</thead>
+			<tbody>
+				<?php
+				$spentBLOO = 0;
+				foreach ($transactions as $iT) {
+					$spentBLOO += $iT->trnx_amount;
+					$row_class = $iT->trnx_use ? 'used' : 'new';
+				?>
+				<tr class="<?= $row_class; ?>">
+					<td>
+						<span style="color:rgba(255,255,255,0.35);font-size:12px">#<?= $iT->trnx_id; ?></span>
+					</td>
+					<td>
+						<?php if($isAdmin || $isGM){ ?>
+						<a href="<?= get_bloginfo('url') . "/backpack/?adventure_id=$adventure->adventure_id&player_id=$iT->player_id"; ?>">
+							<?= esc_html($iT->player_display_name); ?>
+						</a>
+						<?php } else { ?>
+						<?= esc_html($iT->player_display_name); ?>
+						<?php } ?>
+					</td>
+					<td style="color:rgba(255,255,255,0.45);font-size:13px"><?= esc_html($iT->player_email); ?></td>
+					<td>
+						<?php
+						$trnx_date = date('M j, Y', strtotime($iT->trnx_date));
+						$trnx_time = date('g:i A', strtotime($iT->trnx_date));
+						?>
+						<span style="font-size:13px"><?= $trnx_date; ?></span>
+						<span style="font-size:11px;color:rgba(255,255,255,0.3);display:block"><?= $trnx_time; ?></span>
+					</td>
+					<td>
+						<span class="br-badge <?= $type_badges[$iT->trnx_type] ?? 'br-badge-blue'; ?>">
+							<?= esc_html($iT->item_name); ?>
+						</span>
+					</td>
+					<td class="text-center">
+						<?php if(!$iT->trnx_use && $iT->item_type == 'consumable'){ ?>
+						<button class="br-btn br-btn-green" style="padding:4px 8px" onClick="useItem(<?= "$iT->trnx_id, $iT->player_id, 1"; ?>);" title="<?= __('Mark as used', 'bluerabbit'); ?>">
+							<span class="icon icon-check"></span>
+						</button>
+						<?php } elseif(!$iT->trnx_use) { ?>
+						<span class="br-badge br-badge-green" style="font-size:9px"><?= __("New", "bluerabbit"); ?></span>
+						<?php } ?>
+					</td>
+					<td class="text-center">
+						<?php if($iT->trnx_use){ ?>
+						<button class="br-btn" style="padding:4px 8px" onClick="useItem(<?= "$iT->trnx_id, $iT->player_id, 0"; ?>);" title="<?= __('Return item', 'bluerabbit'); ?>">
+							<span class="icon icon-restore"></span>
+						</button>
+						<?php } ?>
+					</td>
+					<?php if($isGM || $isAdmin){ ?>
+					<td class="text-center">
+						<button class="br-btn br-btn-red" style="padding:4px 8px" onClick="br_confirm_trd('delete',<?= $iT->trnx_id; ?>,'trnx');">
+							<span class="icon icon-cancel"></span>
+						</button>
+					</td>
+					<?php } ?>
+				</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+
+		<?php if($spentBLOO > 0){ ?>
+		<div style="text-align:right;margin-top:16px;padding-top:12px;border-top:1px solid rgba(28,194,235,0.1)">
+			<span style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px"><?= __("Total Spent", "bluerabbit"); ?></span>
+			<span style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:28px;font-weight:900;color:#f7cb15;margin-left:10px"><?= number_format($spentBLOO); ?></span>
+			<span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:4px"><?= $bloo_label; ?></span>
+		</div>
+		<?php } ?>
+	</div>
+
+</div>
+
+<style>
+.br-trnx-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+.br-trnx-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+.br-trnx-search {
+	position: relative;
+}
+.br-input {
+	background: rgba(255,255,255,0.06);
+	border: 1px solid rgba(28,194,235,0.15);
+	border-radius: 6px;
+	padding: 8px 14px;
+	color: #ffffff;
+	font-size: 13px;
+	outline: none;
+	transition: border-color 0.15s;
+	width: 220px;
+}
+.br-input:focus {
+	border-color: rgba(28,194,235,0.4);
+	background: rgba(255,255,255,0.08);
+}
+.br-input::placeholder {
+	color: rgba(255,255,255,0.25);
+}
+@media (max-width: 768px) {
+	.br-trnx-header { flex-direction: column; align-items: flex-start; }
+	.br-input { width: 100%; }
+}
+</style>
+
+<input type="hidden" id="use-item-nonce" value="<?= wp_create_nonce('br_use_item_nonce'); ?>">
+<input type="hidden" id="trash-nonce" value="<?= wp_create_nonce('trash_nonce'); ?>">
+<?php if($isGM){ ?>
+<input type="hidden" id="delete-nonce" value="<?= wp_create_nonce('delete_nonce'); ?>">
+<?php } ?>
+<input type="hidden" id="reload" value="true">
+<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_item_nonce'); ?>">
+<?php } else { ?>
+	<script>document.location.href="<?php bloginfo('url');?>/404";</script>
+<?php } ?>
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

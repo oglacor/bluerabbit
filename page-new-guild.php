@@ -1,208 +1,366 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-
-if(isset($adventure) && $isGM){
-	$guild_id = isset($_GET['guild_id']) ? $_GET['guild_id'] : NULL ;
-	$selected_players = array();
-	if($guild_id !== NULL){
-		$g = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."br_guilds WHERE guild_id=$guild_id");
+if (isset($adventure) && $isGM) {
+	$guild_id = isset($_GET['guild_id']) ? (int) $_GET['guild_id'] : null;
+	if ($guild_id) {
+		$g = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_guilds WHERE guild_id = %d", $guild_id
+		));
 	}
-	?>
+	$is_edit = (isset($g) && $g);
 
-<div class="boxed w-full max-w-900 padding-10 white-bg">
-	<div class="w-full padding-10 purple-bg-50">
-		<span class="icon-group">
-			<span class="button-icon font _24 sq-40 green-bg-400"><span class="icon icon-guild"></span></span>
-			<span class="icon-content">
-				<span class="line font _24 grey-800">
-					<?= ($adventure && isset($g)) ? __("Edit Guild","bluerabbit") : __("New Guild","bluerabbit"); ?>
-				</span>
-				<input type="hidden" id="the_guild_id" value="<?= isset($g) ? $g->guild_id : NULL; ?>">
-			</span>
-		</span>
-	</div>
-	<table class="table w-full" cellpadding="0">
-		<thead>
-			<tr class="font _12 grey-600">
-				<td class="text-right w-150"><?= __('Setting','bluerabbit'); ?></td>
-				<td><?= __('Value','bluerabbit'); ?></td>
-			</tr>
-		</thead>
-		<tbody class="font _16">
-			<tr>
-				<td class="text-right w-150"><?= __('Guild Name','bluerabbit'); ?></td>
-				<td>
-					<div class="input-group w-full">
-						<label class="green-bg-800 font w900"><span class="icon icon-guild"></span></label>
-						<input class="form-ui font _30 w-full" placeholder="<?php _e("Guild Name","bluerabbit"); ?>" maxlength="255" type="text" value="<?= isset($g) ? $g->guild_name : NULL; ?>" id="the_guild_name">
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="text-right v-top">
-					<span class="font _16 block"><?= __("Guild Logo","bluerabbit");?></span>
-					<span class="font _12 block red-500">
-						<?= __("Required","bluerabbit"); ?>
-					</span>
-				</td>
-				<td>
-					<div class="gallery">
-						<div class="gallery-item setting">
-							<div class="background" style="background-image: url(<?= isset($g) ?  $g->guild_logo : NULL ; ?>);" onClick="showWPUpload('the_guild_logo');" id="the_guild_logo_thumb"></div>
-							<div class="gallery-item-options relative">
-								<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_guild_logo');"><span class="icon icon-image"></span></button>
-								<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_guild_logo');"> <span class="icon icon-trash"></span> </button>
-								<input type="hidden" id="the_guild_logo" value="<?= isset($g) ?  $g->guild_logo : NULL ; ?>"/>
-							</div>
-						</div>
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="text-right w-150"><?= __('Color','bluerabbit'); ?></td>
-				<td>
-					<div class="highlight padding-10 grey-bg-200" id="tutorial-color-select">
-						<?php $selected_color = isset($g) ? $g->guild_color : NULL; ?>
-						<input id="the_guild_color" class="color-selected" type="hidden" value="<?= $selected_color; ?>">
-					<?php 
-					$color_select_id = "#the_guild_color";
-					include (TEMPLATEPATH . '/color-select.php');
-					?>
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="text-right w-150"><?= __('Assign to players as they login','bluerabbit'); ?></td>
-				<td>
-						<select id="the_guild_assign_on_login" class="form-ui w-full">
-							<option value="0" <?php if(!isset($g) || !$g->assign_on_login){ echo 'selected'; }?>><?php _e('No','bluerabbit'); ?></option>
-							<option value="1" <?php if(isset($g) && $g->assign_on_login){ echo 'selected'; }?>><?php _e('Yes','bluerabbit'); ?></option>
-						</select>
-				</td>
-			</tr>
-			<tr>
-				<td class="text-right w-150"><?= __('Group','bluerabbit'); ?></td>
-				<td>
-					<input class="form-ui  w-full" placeholder="<?php _e("Guild Group","bluerabbit"); ?>" maxlength="50" type="text" value="<?= isset($g) ? $g->guild_group : NULL; ?>" id="the_guild_group">
-				</td>
-			</tr>
-			<tr>
-				<td class="text-right w-150"><?= __('Capacity','bluerabbit'); ?></td>
-				<td>
-					<input class="form-ui w-full" placeholder="<?php _e("Zero for no limit","bluerabbit"); ?>" type="number" value="<?= isset($g) ? $g->guild_capacity : NULL; ?>" id="the_guild_capacity">
-				</td>
-			</tr>
-			<?php if(isset($g)){ ?>
-			<tr>
-				<td class="text-right w-150"><?= __('Enrollment Link','bluerabbit'); ?></td>
-				<td>
-					<input type="text" readonly class="form-ui w-full" value="<?php echo get_bloginfo('url')."/guild-enroll/?adventure_id=$adventure->adventure_id&t=$g->guild_code"; ?>">
-				</td>
-			</tr>
-			<tr>
-                <td class="text-right w-150">
-                    <?= __('Bulk assign players','bluerabbit'); ?>
-                </td>
-                <td class="w-100">
-                    <input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" size="20" />
-                    <button type="button" onClick="assignBulkUsersToGuild();" name="upload_csv" class="form-ui button"><?= __("Upload file","bluerabbit"); ?></button>
-                </td>
-			</tr>
-			<?php } ?>
+	$guild_members = [];
+	$guild_member_ids = [];
+	$all_players = [];
+	if ($is_edit) {
+		$guild_members = $wpdb->get_results($wpdb->prepare(
+			"SELECT pg.player_id, b.player_display_name, b.player_email, b.player_picture, b.player_first, b.player_last
+			FROM {$wpdb->prefix}br_player_guild pg
+			LEFT JOIN {$wpdb->prefix}br_players b ON pg.player_id = b.player_id
+			WHERE pg.guild_id = %d AND pg.adventure_id = %d
+			ORDER BY b.player_display_name ASC",
+			$g->guild_id, $adventure->adventure_id
+		));
+		foreach ($guild_members as $gm) $guild_member_ids[] = $gm->player_id;
 
-<?php 
-
-$players = $wpdb->get_results("
-SELECT a.*,b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_picture, p_guild.guild_id FROM {$wpdb->prefix}br_player_adventure a
-LEFT JOIN {$wpdb->prefix}br_players b
-ON a.player_id = b.player_id
-LEFT JOIN {$wpdb->prefix}br_player_guild p_guild
-ON b.player_id = p_guild.player_id AND p_guild.guild_id = $g->guild_id
-WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' ORDER BY b.player_display_name ASC LIMIT 1000 
-"); 
+		$all_players = $wpdb->get_results($wpdb->prepare(
+			"SELECT a.player_id, b.player_display_name, b.player_email, b.player_picture, b.player_first, b.player_last
+			FROM {$wpdb->prefix}br_player_adventure a
+			LEFT JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
+			WHERE a.adventure_id = %d AND a.player_adventure_status = 'in'
+			ORDER BY b.player_display_name ASC",
+			$adventure->adventure_id
+		));
+	}
 ?>
-			<tr>
-				<td class="text-right w-150"><?= __('Player in guild','bluerabbit'); ?></td>
-				<td>
-					<?php if(isset($g)){ ?>
-                        <div class="input-group sticky">
-                            <label>
-                                <span class="icon icon-search"></span>
-                            </label>
-                            <input type="text" class="form-ui" id="search-players" placeholder="<?php _e("Search players","bluerabbit"); ?>">
-                            <script>
-                                $('#search-players').keyup(function(){
-                                    var valThis = $(this).val().toLowerCase();
-                                    if(valThis == ""){
-                                        $('table#player-guild-list tbody > tr').show();           
-                                    }else{
-                                        $('table#player-guild-list tbody > tr').each(function(){
-                                            var text = $(this).text().toLowerCase();
-                                            (text.indexOf(valThis) >= 0) ? $(this).show() : $(this).hide();
-                                        });
-                                    };
-                                });
-                            </script>
-                        </div>
-						<table class="table compact" id="player-guild-list">
-							<thead>
-								<tr>
-									<td><?php _e("ID","bluerabbit"); ?></td>
-									<td><?php _e("Name","bluerabbit"); ?></td>
-									<td><?php _e("Email","bluerabbit"); ?></td>
-									<td><?php _e("Actions","bluerabbit"); ?></td>
-								</tr>
-							</thead>
-							<tbody>
-								<?php foreach($players as $play){ ?>
-									<tr>
-										<td><?= $play->player_id; ?></td>
-										<td><?= $play->player_first." ".$play->player_last; ?></td>
-										<td><?= $play->player_email; ?></td>
-										<td id="player-guild-list-<?=$play->player_id;?>" <?php if($play->guild_id == $g->guild_id){ ?>class="active"<?php } ?>>
-											
-												<button class="active-content form-ui red-bg-400 white-color" onClick="triggerGuild(<?php echo "$g->guild_id, $play->player_id"; ?>);">
-													<?= __("Remove","bluerabbit"); ?>
-												</button>
-												<button class="inactive-content form-ui blue-bg-400 white-color" onClick="triggerGuild(<?php echo "$g->guild_id, $play->player_id"; ?>);">
-													<?= __("Assign","bluerabbit"); ?>
-												</button>
-											
-										</td>
-									</tr>
-								<?php } ?>
-							</tbody>
-						</table>
-					<?php } else{ ?>
-						<h3>-<?= __("Save the Guild first","bluerabbit"); ?>-</h3>
-					<?php } ?>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-	<div class="w-full text-right padding-10 margin-5 grey-bg-200">
-		<input type="hidden" id="nonce" value="<?php echo wp_create_nonce('br_update_guild_nonce'); ?>"/>
-		
-		<a class="form-ui red-bg-400 pull-left" href="<?php echo get_bloginfo('url')."/adventure/?adventure_id=".$adventure_id; ?>">
-			<span class="icon icon-xs icon-cancel"></span><?php _e('Cancel','bluerabbit'); ?><br>
-		</a>
-		<div class="input-group inline-table">
-			<label class="orange-bg-400"><?= __('Status','bluerabbit'); ?></label>
-			<select id="the_guild_status" class="form-ui">
-				<option value="publish" <?php if(!isset($g) || $g->guild_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
-				<option value="draft" <?php if(isset($g) && $g->guild_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
-				<option value="trash" <?php if(isset($g) && $g->guild_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
-			</select>
+
+<div class="br-page" style="max-width:1000px">
+
+	<!-- Header -->
+	<div class="br-panel br-page-header">
+		<div class="br-page-header-avatar" style="background:rgba(36,218,152,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(36,218,152,0.4)">
+			<span class="icon icon-guild" style="font-size:28px;color:#24da98"></span>
 		</div>
-		<button id="submit-button" type="button" class="form-ui green-bg-400 " onClick="updateGuild();">
-			<span class="icon icon-guild"></span>
-			<?= ($adventure && isset($g)) ? __("Edit Guild","bluerabbit") : __("New Guild","bluerabbit"); ?>
+		<div>
+			<h1 class="br-page-title"><?= $is_edit ? __("Edit Guild", "bluerabbit") : __("New Guild", "bluerabbit"); ?></h1>
+			<span class="br-page-subtitle"><?= esc_html($adventure->adventure_title); ?></span>
+		</div>
+		<input type="hidden" id="the_guild_id" value="<?= $is_edit ? $g->guild_id : ''; ?>">
+	</div>
+
+	<?php if ($is_edit) { ?>
+	<!-- Sticky Nav -->
+	<div class="br-tabs br-tabs-sticky">
+		<button class="br-tab-btn active" onClick="brScrollTo('guild-settings', this)">
+			<span class="icon icon-tools"></span> <?= __("Settings", "bluerabbit"); ?>
+		</button>
+		<button class="br-tab-btn" onClick="brScrollTo('guild-members-section', this)">
+			<span class="icon icon-guild"></span> <?= __("Members", "bluerabbit"); ?>
+			<span class="br-badge br-badge-green" style="margin-left:4px;font-size:10px"><?= count($guild_members); ?></span>
+		</button>
+		<button class="br-tab-btn" onClick="brScrollTo('guild-assign-section', this)">
+			<span class="icon icon-players"></span> <?= __("Assign Players", "bluerabbit"); ?>
 		</button>
 	</div>
+	<?php } ?>
+
+	<!-- ═══ GUILD SETTINGS ═══ -->
+	<div class="br-scroll-section" id="guild-settings">
+	<div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-tools"></span> <?= __("Guild Settings", "bluerabbit"); ?></h3>
+
+		<!-- Name -->
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Guild Name", "bluerabbit"); ?></label>
+			<input class="br-input br-input-lg" type="text" id="the_guild_name" maxlength="255"
+				   value="<?= $is_edit ? esc_attr($g->guild_name) : ''; ?>"
+				   placeholder="<?= __('Enter guild name', 'bluerabbit'); ?>">
+		</div>
+
+		<!-- Logo -->
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Guild Logo", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+			<div class="br-form-component">
+				<div class="gallery">
+					<div class="gallery-item setting">
+						<div class="background" style="background-image: url(<?= $is_edit ? $g->guild_logo : ''; ?>);" onClick="showWPUpload('the_guild_logo');" id="the_guild_logo_thumb"></div>
+						<div class="gallery-item-options relative">
+							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_guild_logo');"><span class="icon icon-image"></span></button>
+							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_guild_logo');"><span class="icon icon-trash"></span></button>
+							<input type="hidden" id="the_guild_logo" value="<?= $is_edit ? $g->guild_logo : ''; ?>">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Color -->
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Color", "bluerabbit"); ?></label>
+			<div class="br-form-component">
+				<?php $selected_color = $is_edit ? $g->guild_color : ''; ?>
+				<input id="the_guild_color" class="color-selected" type="hidden" value="<?= $selected_color; ?>">
+				<?php $color_select_id = '#the_guild_color'; include(TEMPLATEPATH . '/color-select.php'); ?>
+			</div>
+		</div>
+
+		<!-- Auto-assign + Group + Capacity -->
+		<div class="br-form-grid" style="grid-template-columns:1fr 1fr 1fr">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Auto-assign on login", "bluerabbit"); ?></label>
+				<select id="the_guild_assign_on_login" class="br-input">
+					<option value="0" <?= (!$is_edit || !$g->assign_on_login) ? 'selected' : ''; ?>><?= __("No", "bluerabbit"); ?></option>
+					<option value="1" <?= ($is_edit && $g->assign_on_login) ? 'selected' : ''; ?>><?= __("Yes", "bluerabbit"); ?></option>
+				</select>
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Group", "bluerabbit"); ?></label>
+				<input class="br-input" type="text" id="the_guild_group" maxlength="50"
+					   value="<?= $is_edit ? esc_attr($g->guild_group) : ''; ?>"
+					   placeholder="<?= __('Optional', 'bluerabbit'); ?>">
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Capacity", "bluerabbit"); ?></label>
+				<input class="br-input" type="number" id="the_guild_capacity"
+					   value="<?= $is_edit ? $g->guild_capacity : ''; ?>"
+					   placeholder="<?= __('0 = no limit', 'bluerabbit'); ?>">
+			</div>
+		</div>
+
+		<?php if ($is_edit) { ?>
+		<!-- Enrollment Link -->
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Enrollment Link", "bluerabbit"); ?></label>
+			<input type="text" readonly class="br-input" style="color:rgba(255,255,255,0.5);cursor:text"
+				   value="<?= get_bloginfo('url') . "/guild-enroll/?adventure_id=$adventure->adventure_id&t=$g->guild_code"; ?>"
+				   onClick="this.select();">
+		</div>
+
+		<!-- Bulk Upload -->
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Bulk Assign Players (CSV)", "bluerabbit"); ?></label>
+			<div class="br-input-row">
+				<input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" class="br-input" style="padding:7px 14px">
+				<button type="button" class="br-btn br-btn-green" onClick="assignBulkUsersToGuild();">
+					<span class="icon icon-check"></span> <?= __("Upload", "bluerabbit"); ?>
+				</button>
+			</div>
+		</div>
+		<?php } ?>
+
+		<!-- Footer -->
+		<div class="br-form-footer">
+			<a class="br-btn br-btn-red" href="<?= get_bloginfo('url') . '/adventure/?adventure_id=' . $adventure_id; ?>">
+				<span class="icon icon-cancel"></span> <?= __("Cancel", "bluerabbit"); ?>
+			</a>
+			<div class="br-actions">
+				<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_guild_nonce'); ?>">
+				<select id="the_guild_status" class="br-input" style="width:auto">
+					<option value="publish" <?= (!$is_edit || $g->guild_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish", "bluerabbit"); ?></option>
+					<option value="draft" <?= ($is_edit && $g->guild_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft", "bluerabbit"); ?></option>
+					<option value="trash" <?= ($is_edit && $g->guild_status == 'trash') ? 'selected' : ''; ?>><?= __("Trash", "bluerabbit"); ?></option>
+				</select>
+				<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateGuild();">
+					<span class="icon icon-check"></span>
+					<?= $is_edit ? __("Update Guild", "bluerabbit") : __("Create Guild", "bluerabbit"); ?>
+				</button>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<?php if ($is_edit) { ?>
+
+	<!-- ═══ GUILD MEMBERS ═══ -->
+	<div class="br-scroll-section" id="guild-members-section">
+	<div class="br-panel">
+		<h3 class="br-panel-title">
+			<span class="icon icon-guild"></span> <?= __("Guild Members", "bluerabbit"); ?>
+			<span class="br-badge br-badge-green" style="margin-left:8px"><?= count($guild_members); ?></span>
+		</h3>
+
+		<?php if (!empty($guild_members)) { ?>
+		<table class="br-table" id="guild-members-table">
+			<thead>
+				<tr>
+					<th style="width:50px"></th>
+					<th><?= __("Name", "bluerabbit"); ?></th>
+					<th><?= __("Email", "bluerabbit"); ?></th>
+					<th style="width:100px"><?= __("Actions", "bluerabbit"); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($guild_members as $gm) { ?>
+				<tr id="member-row-<?= $gm->player_id; ?>">
+					<td>
+						<div style="width:32px;height:32px;border-radius:50%;background-size:cover;background-position:center;background-image:url(<?= esc_url($gm->player_picture); ?>);border:1px solid rgba(28,194,235,0.2)"></div>
+					</td>
+					<td><?= esc_html($gm->player_display_name ?: ($gm->player_first . ' ' . $gm->player_last)); ?></td>
+					<td style="color:rgba(255,255,255,0.45);font-size:13px"><?= esc_html($gm->player_email); ?></td>
+					<td>
+						<button class="br-btn br-btn-red" style="padding:4px 10px" onClick="triggerGuild(<?= "$g->guild_id, $gm->player_id"; ?>); document.getElementById('member-row-<?= $gm->player_id; ?>').style.opacity='0.3';">
+							<span class="icon icon-cancel"></span> <?= __("Remove", "bluerabbit"); ?>
+						</button>
+					</td>
+				</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+		<?php } else { ?>
+		<div class="br-empty" style="padding:24px">
+			<span class="icon icon-guild"></span>
+			<h3><?= __("No members yet", "bluerabbit"); ?></h3>
+			<p><?= __("Assign players from the list below.", "bluerabbit"); ?></p>
+		</div>
+		<?php } ?>
+	</div>
+	</div>
+
+	<!-- ═══ ASSIGN PLAYERS ═══ -->
+	<div class="br-scroll-section" id="guild-assign-section">
+	<div class="br-panel">
+		<h3 class="br-panel-title">
+			<span class="icon icon-players"></span> <?= __("Assign Players", "bluerabbit"); ?>
+			<span style="font-size:12px;color:rgba(255,255,255,0.35);font-family:inherit;text-transform:none;letter-spacing:0;margin-left:8px">
+				<?= count($all_players); ?> <?= __("enrolled", "bluerabbit"); ?>
+			</span>
+		</h3>
+
+		<!-- Search -->
+		<div class="br-form-group" style="margin-bottom:14px">
+			<div style="position:relative">
+				<span class="icon icon-search" style="color:rgba(255,255,255,0.3);position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px"></span>
+				<input type="text" class="br-input" id="guild-player-search" style="padding-left:34px"
+					   placeholder="<?= __('Search by name or email...', 'bluerabbit'); ?>">
+			</div>
+		</div>
+
+		<table class="br-table" id="guild-all-players">
+			<thead>
+				<tr>
+					<th style="width:50px"></th>
+					<th><?= __("Name", "bluerabbit"); ?></th>
+					<th><?= __("Email", "bluerabbit"); ?></th>
+					<th class="text-center" style="width:60px"><?= __("Status", "bluerabbit"); ?></th>
+					<th style="width:100px"><?= __("Actions", "bluerabbit"); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($all_players as $idx => $play) {
+					$in_guild = in_array($play->player_id, $guild_member_ids);
+				?>
+				<tr class="guild-player-row" data-in-guild="<?= $in_guild ? '1' : '0'; ?>" id="player-guild-list-<?= $play->player_id; ?>" <?= $in_guild ? 'class="guild-player-row active"' : ''; ?>>
+					<td>
+						<div style="width:32px;height:32px;border-radius:50%;background-size:cover;background-position:center;background-image:url(<?= esc_url($play->player_picture); ?>);border:1px solid rgba(28,194,235,0.2)"></div>
+					</td>
+					<td><?= esc_html($play->player_display_name ?: ($play->player_first . ' ' . $play->player_last)); ?></td>
+					<td style="color:rgba(255,255,255,0.45);font-size:13px"><?= esc_html($play->player_email); ?></td>
+					<td class="text-center">
+						<span class="active-content br-badge br-badge-green" style="font-size:9px"><?= __("In Guild", "bluerabbit"); ?></span>
+					</td>
+					<td>
+						<button class="active-content br-btn br-btn-red" style="padding:4px 10px" onClick="triggerGuild(<?= "$g->guild_id, $play->player_id"; ?>);">
+							<span class="icon icon-cancel"></span>
+						</button>
+						<button class="inactive-content br-btn" style="padding:4px 10px" onClick="triggerGuild(<?= "$g->guild_id, $play->player_id"; ?>);">
+							<span class="icon icon-check"></span> <?= __("Assign", "bluerabbit"); ?>
+						</button>
+					</td>
+				</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+
+		<!-- Pagination -->
+		<div class="br-stats-pagination" id="guild-pagination" style="margin-top:16px"></div>
+	</div>
+	</div>
+
+	<script>
+	(function($){
+		var perPage = 50;
+		var currentPage = 1;
+		var $rows = $('#guild-all-players tbody .guild-player-row');
+		var $search = $('#guild-player-search');
+		var $pagination = $('#guild-pagination');
+
+		function getVisibleRows() {
+			return $rows.filter(function() { return $(this).css('display') !== 'none' || !$(this).data('filtered'); });
+		}
+
+		function applyFilter() {
+			var term = $search.val().toLowerCase();
+			$rows.each(function() {
+				var text = $(this).text().toLowerCase();
+				var match = !term || text.indexOf(term) >= 0;
+				$(this).data('filtered', !match);
+				if (!match) $(this).hide();
+			});
+			currentPage = 1;
+			paginate();
+		}
+
+		function paginate() {
+			var visible = [];
+			$rows.each(function() {
+				if (!$(this).data('filtered')) visible.push($(this));
+				$(this).hide();
+			});
+			var totalPages = Math.ceil(visible.length / perPage);
+			var start = (currentPage - 1) * perPage;
+			var end = start + perPage;
+			for (var i = start; i < end && i < visible.length; i++) {
+				visible[i].show();
+			}
+
+			var html = '';
+			if (totalPages > 1) {
+				for (var p = 1; p <= totalPages; p++) {
+					html += '<a href="#" class="br-stats-page-link' + (p === currentPage ? ' active' : '') + '" data-page="' + p + '">' + p + '</a>';
+				}
+			}
+			$pagination.html(html);
+		}
+
+		$search.on('keyup', function() { applyFilter(); });
+
+		$pagination.on('click', '.br-stats-page-link', function(e) {
+			e.preventDefault();
+			currentPage = parseInt($(this).data('page'));
+			paginate();
+		});
+
+		paginate();
+
+		// Scroll nav
+		var sections = document.querySelectorAll('.br-scroll-section');
+		var buttons  = document.querySelectorAll('.br-tabs-sticky .br-tab-btn');
+		if (sections.length && buttons.length) {
+			var observer = new IntersectionObserver(function(entries) {
+				entries.forEach(function(entry) {
+					if (!entry.isIntersecting) return;
+					buttons.forEach(function(b, i) {
+						b.classList.toggle('active', sections[i] && sections[i].id === entry.target.id);
+					});
+				});
+			}, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+			sections.forEach(function(s) { observer.observe(s); });
+		}
+	})(jQuery);
+
+	function brScrollTo(id, btn) {
+		document.querySelectorAll('.br-tabs-sticky .br-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+		btn.classList.add('active');
+		document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+	</script>
+
+	<?php } ?>
+
 </div>
-<?php //wp_enqueue_media();?>
-<?php }else{ ?>
-	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
+
+<?php } else { ?>
+	<script>document.location.href="<?php bloginfo('url'); ?>/404";</script>
 <?php } ?>
 
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

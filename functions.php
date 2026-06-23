@@ -90,7 +90,6 @@ $sql = "
 		`achievement_order` INT NULL,
 		`achievement_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
 		`achievement_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
 	PRIMARY KEY (`achievement_id`))$charset_collate;
   
 	CREATE TABLE {$wpdb->prefix}br_achievement_codes (
@@ -184,7 +183,6 @@ $sql = "
 		`tabi_as_category` TINYINT NULL DEFAULT 0,
 		`tabi_top` INT NULL DEFAULT 350,
 		`tabi_left` INT NULL DEFAULT 350,
-
 	PRIMARY KEY (`tabi_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_journey_assets (
@@ -305,6 +303,25 @@ $sql = "
 		`feature_access_god` INT NULL,
 	PRIMARY KEY (`feature_id`) )$charset_collate;
 
+	CREATE TABLE {$wpdb->prefix}br_plans (
+		`plan_id` BIGINT NOT NULL AUTO_INCREMENT,
+		`plan_key` VARCHAR(50) NOT NULL,
+		`plan_label` TEXT NOT NULL,
+		`plan_type` VARCHAR(20) NOT NULL DEFAULT 'standard',
+		`plan_status` VARCHAR(20) NOT NULL DEFAULT 'active',
+		`plan_notes` TEXT NULL,
+		`plan_created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`plan_id`),
+	UNIQUE KEY `plan_key` (`plan_key`) )$charset_collate;
+
+	CREATE TABLE {$wpdb->prefix}br_plan_features (
+		`id` BIGINT NOT NULL AUTO_INCREMENT,
+		`plan_id` BIGINT NOT NULL,
+		`feature_id` BIGINT NOT NULL,
+		`feature_value` TEXT NULL,
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `plan_feature` (`plan_id`, `feature_id`) )$charset_collate;
+
 	CREATE TABLE {$wpdb->prefix}br_guilds (
 		`guild_id` BIGINT NOT NULL AUTO_INCREMENT,
 		`adventure_id` BIGINT NOT NULL,
@@ -360,7 +377,6 @@ $sql = "
 		`item_z` INT NULL DEFAULT 0,
 		`item_scale` DECIMAL(8,3) NULL DEFAULT 10,
 		`item_rotation` INT NULL DEFAULT 0,
-
 	PRIMARY KEY (`item_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_notifications (
@@ -417,30 +433,6 @@ $sql = "
         KEY `idx_user`      (`user_id`)
     ) {$charset_collate};
 
-	CREATE TABLE {$wpdb->prefix}br_paypal_transactions (
-		`paypal_transaction_id` bigint(20) NOT NULL,
-		`tnx_id` varchar(255)  NOT NULL,
-		`txn_type` varchar(255)  NOT NULL,
-		`verify_sign` text  DEFAULT NULL,
-		`subscr_date` datetime NOT NULL DEFAULT current_timestamp(),
-		`receipt_id` text  NOT NULL,
-		`first_name` varchar(64)  NOT NULL,
-		`last_name` varchar(64)  NOT NULL,
-		`payer_business_name` varchar(127)  NOT NULL,
-		`payer_email` varchar(127)  NOT NULL,
-		`payer_id` varchar(13)  NOT NULL,
-		`payer_status` varchar(13)  NOT NULL,
-		`mc_currency` varchar(50)  NOT NULL,
-		`mc_fee` varchar(50)  NOT NULL,
-		`mc_gross` varchar(50)  NOT NULL,
-		`payment_date` datetime NOT NULL,
-		`payment_status` varchar(64)  NOT NULL,
-		`amount` varchar(64)  NOT NULL,
-		`product_name` varchar(127)  NOT NULL,
-		`product_type` varchar(127)  NOT NULL,
-		`player_id` bigint(20) NOT NULL,
-	PRIMARY KEY (`paypal_transaction_id`) )$charset_collate;
-
 	CREATE TABLE {$wpdb->prefix}br_players (
 		`player_id` BIGINT NOT NULL AUTO_INCREMENT,
 		`player_email` VARCHAR(255) NOT NULL,
@@ -464,12 +456,11 @@ $sql = "
 		`player_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 		`player_system_last_login` DATETIME DEFAULT CURRENT_TIMESTAMP,
 		`player_secret_code` VARCHAR(255) NULL,
-
 		`player_bio` LONGTEXT NULL,
 		`player_company` TEXT NULL,
 		`player_website` TEXT NULL,
 		`player_linkedin` TEXT NULL,
-        
+		`user_plan_id` BIGINT NULL,
 	PRIMARY KEY (`player_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_player_meta (
@@ -486,11 +477,7 @@ $sql = "
 		work_location VARCHAR(150) NULL,
 	PRIMARY KEY (`player_meta_id`) )$charset_collate;
 
-
-
-
-
-	CREATE TABLE {$wpdb->prefix}br_player_achievement (
+    CREATE TABLE {$wpdb->prefix}br_player_achievement (
 		`achievement_id` BIGINT NOT NULL,
 		`player_id` BIGINT NOT NULL,
 		`adventure_id` BIGINT NOT NULL,
@@ -651,75 +638,6 @@ $sql = "
 		`setting_value` TEXT NULL DEFAULT 0,
 		`adventure_id` INT NOT NULL,
 	PRIMARY KEY (`setting_id`) )$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_projects` (
-		project_id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id BIGINT UNSIGNED NOT NULL,
-		name VARCHAR(255) NOT NULL,
-		description TEXT,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_ai_files` (
-		file_id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id BIGINT UNSIGNED NOT NULL,
-		file_name VARCHAR(255) NOT NULL,
-		file_path TEXT NOT NULL,
-		uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_project_files` (
-		project_file_id INT AUTO_INCREMENT PRIMARY KEY,
-		project_id INT NOT NULL,
-		file_id INT NOT NULL,
-		linked_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_ai_chunks` (
-		chunk_id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id BIGINT UNSIGNED NOT NULL,
-		file_id INT NOT NULL,
-		project_id INT NOT NULL,
-		chunk_index INT NOT NULL,
-		chunk_text LONGTEXT,
-		chars INT NULL DEFAULT 0,
-		est_tokens INT NULL DEFAULT 0,
-		status VARCHAR(20) NOT NULL DEFAULT 'ready',
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_ai_processed_chunks` (
-		processed_chunk_id INT AUTO_INCREMENT PRIMARY KEY,
-		chunk_id INT NOT NULL,
-		project_id INT NOT NULL,
-		user_id BIGINT UNSIGNED NOT NULL,
-		processing_style TEXT NULL,
-		gpt_model VARCHAR(50) NOT NULL,
-		depth VARCHAR(50),
-		prompt_settings TEXT,
-		ai_response LONGTEXT,
-		token_usage INT,
-		cost_estimate DECIMAL(10, 4),
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_ai_temp_results` (
-		temp_result_id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id BIGINT UNSIGNED NOT NULL,
-		data LONGTEXT,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)$charset_collate;
-
-	CREATE TABLE `{$wpdb->prefix}br_ai_project_context` (
-		context_id INT AUTO_INCREMENT PRIMARY KEY,
-		project_id INT NOT NULL,
-		context_text LONGTEXT,
-		tokens INT,
-		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		label VARCHAR(100) DEFAULT 'default'
-	)$charset_collate;
-
-
 
 	CREATE TABLE {$wpdb->prefix}br_speakers (
 		`speaker_id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -986,6 +904,56 @@ $sql = "
 			$npid = wp_insert_post($nparray);
 		}
 	}
+
+	// Seed standard plans
+	$standard_plans = array(
+		array('key'=>'god',        'label'=>'God Mode',      'type'=>'system'),
+		array('key'=>'basic',      'label'=>'Basic',         'type'=>'standard'),
+		array('key'=>'pro',        'label'=>'Pro',           'type'=>'standard'),
+		array('key'=>'enterprise', 'label'=>'Enterprise',    'type'=>'standard'),
+	);
+	$has_plans = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}br_plans'");
+	if($has_plans){
+		foreach($standard_plans as $sp){
+			$exists = $wpdb->get_var($wpdb->prepare(
+				"SELECT plan_id FROM {$wpdb->prefix}br_plans WHERE plan_key = %s", $sp['key']
+			));
+			if(!$exists){
+				$wpdb->insert("{$wpdb->prefix}br_plans", array(
+					'plan_key'=>$sp['key'], 'plan_label'=>$sp['label'], 'plan_type'=>$sp['type']
+				), array('%s','%s','%s'));
+			}
+		}
+		// Assign God Mode to player_id=1
+		$god_plan_id = $wpdb->get_var("SELECT plan_id FROM {$wpdb->prefix}br_plans WHERE plan_key='god'");
+		if($god_plan_id){
+			$wpdb->update("{$wpdb->prefix}br_players",
+				array('user_plan_id'=>$god_plan_id),
+				array('player_id'=>1),
+				array('%d'), array('%d')
+			);
+		}
+	}
+
+	// Seed role default plan mappings in br_config
+	$role_defaults = array(
+		'role_default_plan_administrator' => array('label'=>'Default plan for Administrators',    'value'=>'enterprise'),
+		'role_default_plan_br_game_master'=> array('label'=>'Default plan for Game Masters',      'value'=>'pro'),
+		'role_default_plan_br_npc'        => array('label'=>'Default plan for NPCs',              'value'=>'pro'),
+		'role_default_plan_br_player'     => array('label'=>'Default plan for Players',           'value'=>'basic'),
+		'role_default_plan_default'       => array('label'=>'Default plan (fallback)',             'value'=>'basic'),
+	);
+	foreach($role_defaults as $rd_name=>$rd){
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT config_id FROM {$wpdb->prefix}br_config WHERE config_name = %s", $rd_name
+		));
+		if(!$exists){
+			$wpdb->insert("{$wpdb->prefix}br_config", array(
+				'config_name'=>$rd_name, 'config_label'=>$rd['label'],
+				'config_type'=>'text', 'config_value'=>$rd['value']
+			), array('%s','%s','%s','%s'));
+		}
+	}
 }
 // remove wp version param from any enqueued scripts
 function vc_remove_wp_ver_css_js( $src ) {
@@ -1008,7 +976,7 @@ function br_theme_localized($locale){
 		$locale = $data ?  $data->player_lang : '';
 	}
 	if(!$locale){
-		$config = getSysConfig();
+		$config = BR_Config::instance()->getSysConfig();
         $locale = $config['default_language']['value'] ? $config['default_language']['value'] : 'en_US';
 	}
 	return $locale;
@@ -1021,100 +989,6 @@ function delete_roles () {
 	remove_role( 'br_game_master' ); 
 	remove_role( 'br_npc' ); 
 }
-function create_slug($string){
-   $slug=preg_replace('/[^A-Za-z0-9-]+/', '-', $string);
-   return $slug;
-}
-function user_has_role($user_id, $role_name)
-{
-    $user_meta = get_userdata($user_id);
-    $user_roles = $user_meta->roles;
-    return in_array($role_name, $user_roles);
-}
-//////////////////////////   get Setting //////////////////////////////
-function getSetting($name,$adv_id){
-	global $wpdb;
-	$data = array();
-	$setting = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_settings WHERE setting_name='$name' AND adventure_id=$adv_id");
-	if($setting){
-		return $setting->setting_value;
-	}else{
-		return false;
-	}
-}
-//////////////////////////   get Settings //////////////////////////////
-function getSettings($adv_id){
-	global $wpdb;
-	$settings = array();
-	$settings_query = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_settings WHERE adventure_id=$adv_id");
-	foreach($settings_query as $key=>$sq){
-		$settings[$sq->setting_name]['id'] = $sq->setting_id;
-		$settings[$sq->setting_name]['label'] = $sq->setting_label;
-		$settings[$sq->setting_name]['value'] = $sq->setting_value;
-	}
-	return $settings;
-}
-//////////////////////////   FEATURES  //////////////////////////////
-function getFeatures($role=NULL){
-	global $wpdb; 
-	$features = array();
-	if($role){
-		$the_role = 'feature_access_'.$role;
-		$features_query = $wpdb->get_results("SELECT feature_id, feature_name, feature_label, feature_desc, feature_type, $the_role  FROM {$wpdb->prefix}br_features WHERE $the_role != '' ");
-		foreach($features_query as $key=>$f){
-			$features[$f->feature_name]['id'] = $f->feature_id;
-			$features[$f->feature_name]['label'] = $f->feature_label;
-			$features[$f->feature_name]['desc'] = $f->feature_desc;
-			$features[$f->feature_name]['type'] = $f->feature_type;
-			$features[$f->feature_name][$role] = $f->$the_role;
-		}
-	}else{
-		$features_query = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_features");	
-		foreach($features_query as $key=>$f){
-			$features[$f->feature_name]['id'] = $f->feature_id;
-			$features[$f->feature_name]['label'] = $f->feature_label;
-			$features[$f->feature_name]['desc'] = $f->feature_desc;
-			$features[$f->feature_name]['type'] = $f->feature_type;
-			$features[$f->feature_name]['free'] = $f->feature_access_free;
-			$features[$f->feature_name]['pro'] = $f->feature_access_pro;
-			$features[$f->feature_name]['admin'] = $f->feature_access_admin;
-			$features[$f->feature_name]['god'] = $f->feature_access_god;
-		}
-	}
-	
-	if(!empty($features)){
-		return $features;
-	}else{
-		return false;
-	}
-}
-
-//////////////////////////   System Configuration  //////////////////////////////
-function getSysConfig($config_name=NULL){
-	global $wpdb; 
-	$config = array();
-	if($config_name){
-		$sq = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_config WHERE config_name='$config_name'");
-		if($sq){
-			$config['id'] = $sq->config_id;
-			$config['label'] = $sq->config_label;
-			$config['desc'] = $sq->config_desc;
-			$config['type'] = $sq->config_type;
-			$config['value'] = $sq->config_value;
-		}
-	}else{
-		$config_query = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_config");
-		foreach($config_query as $key=>$sq){
-			$config[$sq->config_name]['id'] = $sq->config_id;
-			$config[$sq->config_name]['label'] = $sq->config_label;
-			$config[$sq->config_name]['desc'] = $sq->config_desc;
-			$config[$sq->config_name]['type'] = $sq->config_type;
-			$config[$sq->config_name]['value'] = $sq->config_value;
-		}
-	}
-	return $config;
-}
-
 function embed_responsive_videos( $html ) {
     return '<div class="responsive-video-container">' . $html . '</div>';
 }
@@ -1127,104 +1001,8 @@ function add_upload_mime_types( $mimes ) {
     return $mimes;
 } 
 
-function shuffle_assoc($list) { 
-  if (!is_array($list)) return $list; 
-
-  $keys = array_keys($list); 
-  shuffle($keys); 
-  $random = array(); 
-  foreach ($keys as $key) { 
-    $random[$key] = $list[$key]; 
-  }
-  return $random; 
-} 
-function identical_values( $arrayA , $arrayB ) { 
-    sort( $arrayA ); 
-    sort( $arrayB ); 
-    return $arrayA == $arrayB; 
-} 
-function substrwords($text, $maxchar, $end='...') {
-	if (strlen($text) > $maxchar || $text == '') {
-		$words = preg_split('/\s/', $text);      
-		$output = '';
-		$i      = 0;
-		while (1) {
-			$length = strlen($output)+strlen($words[$i]);
-			if ($length > $maxchar) {
-				break;
-			} 
-			else {
-				$output .= " " . $words[$i];
-				++$i;
-			}
-		}
-		$output .= $end;
-	} 
-	else {
-		$output = $text;
-	}
-	return $output;
-}
-function get_time_ago( $time, $adventure_id=0 ){
-	global $wpdb;
-	$adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-	if ($adventure->adventure_gmt){ date_default_timezone_set($adventure->adventure_gmt); }
-    $time_difference = time() - $time;
-    if( $time_difference < 1 ) { return __('less than 1 second ago',"bluerabbit"); }
-    $condition = array( 12 * 30 * 24 * 60 * 60 =>  'year',
-                30 * 24 * 60 * 60       =>  __('month',"bluerabbit"),
-                24 * 60 * 60            =>  __('day',"bluerabbit"),
-                60 * 60                 =>  __('hour',"bluerabbit"),
-                60                      =>  __('minute',"bluerabbit"),
-                1                       =>  __('second',"bluerabbit")
-    );
-    foreach( $condition as $secs => $str )
-    {
-        $d = $time_difference / $secs;
-
-        if( $d >= 1 )
-        {
-            $t = round( $d );
-            return $t . ' ' . $str . ( $t > 1 ? 's' : '' );
-        }
-    }
-}
-
-function br_est_tokens($text) { return max(1, (int)ceil(mb_strlen($text,'UTF-8')/4)); }
-function br_est_cost($model, $in_toks, $out_cap = 800) {
-  $prices = [
-    'gpt-4o-mini'   => ['in'=>0.000150/1000,'out'=>0.000600/1000],
-    'gpt-3.5-turbo' => ['in'=>0.000500/1000,'out'=>0.001500/1000],
-    'gpt-4o'        => ['in'=>0.000500/1000,'out'=>0.001500/1000],
-  ];
-  $p = $prices[$model] ?? $prices['gpt-4o-mini'];
-  return round($in_toks*$p['in'] + $out_cap*$p['out'], 4);
-}
 
 
-function registerAdventureLogin($adventure_id) { 
-	global $wpdb; $current_user = wp_get_current_user();
-	$adventure = $wpdb->get_row("
-		SELECT adv.*, player.player_last_login FROM {$wpdb->prefix}br_adventures adv LEFT JOIN 
-		{$wpdb->prefix}br_player_adventure player ON adv.adventure_id=player.adventure_id AND player.player_id=$current_user->ID
-		WHERE adv.adventure_id=$adventure_id
-	");
-	$debug = print_r($wpdb->last_query,true);
-	
-	if ($adventure->adventure_gmt){ date_default_timezone_set($adventure->adventure_gmt); }
-	$today = date('Y-m-d H:i:s');
-	$today_compare = date('Ymd');
-	$last_login = $adventure->player_last_login ? date('Ymd', strtotime($adventure->player_last_login)) : 0;
-	logActivity($adventure_id,'login','adventure');
-	if($today_compare > $last_login){
-		$sql="UPDATE {$wpdb->prefix}br_player_adventure SET player_last_login=%s WHERE adventure_id=$adventure_id AND player_id=$current_user->ID";
-		$registerLogin = $wpdb->query($wpdb->prepare($sql, $today, $adventure_id, $current_user->ID));
-		return(true);
-	}else{
-		return(false);
-	}
-	die();
-} 
 function my_login_logo() { ?>
     <style type="text/css">
         #login h1 a, .login h1 a {
@@ -1240,89 +1018,7 @@ function my_login_logo() { ?>
 <?php }
 add_action( 'login_enqueue_scripts', 'my_login_logo' );
 
-function createHexad(){
-	$testHexad= array(
-		array('player_style'=>"ph","question"=>__("It makes me happy if I am able to help others","bluerabbit")),
-		array('player_style'=>"ph","question"=>__("I like helping others to orient themselves in new situations","bluerabbit")),
-		array('player_style'=>"ph","question"=>__("I like sharing my knowledge with others","bluerabbit")),
-		array('player_style'=>"ph","question"=>__("The well being of others is important to me","bluerabbit")),
-		array('player_style'=>"s","question"=>__("Interacting with others is important to me","bluerabbit")),
-		array('player_style'=>"s","question"=>__("I like being part of a team","bluerabbit")),
-		array('player_style'=>"s","question"=>__("It is important for me to feel like I am part of a community","bluerabbit")),
-		array('player_style'=>"s","question"=>__("I enjoy group activities","bluerabbit")),
-		array('player_style'=>"f","question"=>__("It is important to me to follow my own path","bluerabbit")),
-		array('player_style'=>"f","question"=>__("I often let my curiosity guide me","bluerabbit")),
-		array('player_style'=>"f","question"=>__("I like to try new things","bluerabbit")),
-		array('player_style'=>"f","question"=>__("Being independent is important to me","bluerabbit")),
-		array('player_style'=>"a","question"=>__("I like overcoming obstacles","bluerabbit")),
-		array('player_style'=>"a","question"=>__("It is important to me to always carry out my tasks completely","bluerabbit")),
-		array('player_style'=>"a","question"=>__("It is difficult for me to let go of a problem before I have found a solution","bluerabbit")),
-		array('player_style'=>"a","question"=>__("I like mastering difficult tasks","bluerabbit")),
-		array('player_style'=>"d","question"=>__("I like to provoke","bluerabbit")),
-		array('player_style'=>"d","question"=>__("I like to question the status quo","bluerabbit")),
-		array('player_style'=>"d","question"=>__("I see myself as a rebel","bluerabbit")),
-		array('player_style'=>"d","question"=>__("I dislike following rules","bluerabbit")),
-		array('player_style'=>"p","question"=>__("I like competitions where a prize can be won","bluerabbit")),
-		array('player_style'=>"p","question"=>__("Rewards are a great way to motivate me","bluerabbit")),
-		array('player_style'=>"p","question"=>__("Return of investment is important to me","bluerabbit")),
-		array('player_style'=>"p","question"=>__("If the reward is enough I will put in the effort","bluerabbit")),
-	);
-	
-	return $testHexad;
-}
 
-
-// ////////////////// TIMEZONES /////////////////////////
-
-function generate_timezone_list(){
-	static $regions = array(
-		DateTimeZone::AFRICA,
-		DateTimeZone::AMERICA,
-		DateTimeZone::ANTARCTICA,
-		DateTimeZone::ASIA,
-		DateTimeZone::ATLANTIC,
-		DateTimeZone::AUSTRALIA,
-		DateTimeZone::EUROPE,
-		DateTimeZone::INDIAN,
-		DateTimeZone::PACIFIC,
-	);
-
-	$timezones = array();
-	foreach( $regions as $region )
-	{
-		$timezones = array_merge( $timezones, DateTimeZone::listIdentifiers( $region ) );
-	}
-
-	$timezone_offsets = array();
-	foreach( $timezones as $timezone )
-	{
-		$tz = new DateTimeZone($timezone);
-		$timezone_offsets[$timezone] = $tz->getOffset(new DateTime);
-	}
-
-	// sort timezone by timezone name
-	ksort($timezone_offsets);
-
-	$timezone_list = array();
-	foreach( $timezone_offsets as $timezone => $offset ) {
-
-		$t = new DateTimeZone($timezone);
-		$c = new DateTime(null, $t);
-		$current_time = $c->format('g:i A');
-		$timezone_list[$timezone] = "$timezone - $current_time";
-		//$timezone_list[$offset] = "$offset";
-	}
-
-	return $timezone_list;
-}
-function random_str($length, $keyspace = '!@#$&0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'){
-    $str = '';
-    $max = mb_strlen($keyspace, '8bit') - 1;
-    for ($i = 0; $i < $length; ++$i) {
-        $str .= $keyspace[random_int(0, $max)];
-    }
-    return $str;
-}
 function all_admin_init_functions() {
 	if (!current_user_can( 'update_core' ) && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
 		wp_redirect( get_bloginfo('url')); 
@@ -1331,37 +1027,6 @@ function all_admin_init_functions() {
 }
 
 
-function notFound($p_message,$p_color){
-	$message = $p_message ? $p_message : __("Empty","bluerabbit");
-	$color = $p_color ? $p_color : "blue-grey";
-	$notFound = '
-		<div class="highlight padding-10 '.$color.'-bg-50 text-center">
-			<span class="icon-group">
-				<span class="icon-content">
-					<span class="icon icon-cancel"></span>'.$message.'
-				</span>
-			</span>
-		</div>
-	';
-	return $notFound;
-}
-function addNewButton($p_message,$p_color,$type=NULL, $adventure_id=NULL){
-	if($type && $adventure_id){
-		$message = $p_message ? $p_message : __("Add new","bluerabbit");
-		$color = $p_color ? $p_color : "blue-grey";
-		$button = '
-			<div class="highlight padding-10 white-bg-50 text-center">
-				<a href="'.get_bloginfo('url').'/new-'.$type.'/?adventure_id='.$adventure_id.'" class="form-ui '.$color.'-bg-400">
-					<span class="icon icon-add"></span>'.$message.'
-				</a>
-			</div>
-		';
-		return $button;
-	}else{
-		return false;
-	}
-	
-}
 function my_default_image_size () {
     return 'medium'; 
 }
@@ -1394,7 +1059,7 @@ function player_data_shortcode($atts=array()) {
         array( 'field' => 'player_nickname'), $atts)
     );
     $current_user = wp_get_current_user();
-    $player_data = getPlayerData($current_user->ID, 'ARRAY_A');
+    $player_data = BR_Player::instance()->getPlayerData($current_user->ID, 'ARRAY_A');
     $content = "<strong class='font capitalize player-nickname'>{$player_data[$field]}</strong>";
     return $content;
 } 
@@ -1426,10 +1091,6 @@ CLASSES
 
 */
 
-
-function stepTag($the_text="", $id=NULL, $classes=NULL){
-	include (TEMPLATEPATH.'/step-tag.php');
-}
 
 add_filter( 'wp_video_shortcode', 'remove_video_dimensions_from_shortcode' );
 function remove_video_dimensions_from_shortcode( $output ) {
@@ -1484,19 +1145,35 @@ function ajaxFunctions() {
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 }
 
-require_once ("$dirName/functions/ajax.php");
-require_once ("$dirName/functions/player.php");
-require_once ("$dirName/functions/adventure-management.php");
-require_once ("$dirName/functions/progression.php");
 require_once ("$dirName/classes/Notification.php");
-require_once ("$dirName/classes/Project.php");
+require_once ("$dirName/classes/BR-Utils.php");
+require_once ("$dirName/classes/BR-Config.php");
+require_once ("$dirName/classes/BR-Activity.php");
+require_once ("$dirName/classes/BR-Player.php");
+require_once ("$dirName/classes/BR-Adventure.php");
+require_once ("$dirName/classes/BR-Quest.php");
+require_once ("$dirName/classes/BR-Step.php");
+require_once ("$dirName/classes/BR-Objective.php");
+require_once ("$dirName/classes/BR-Achievement.php");
+require_once ("$dirName/classes/BR-Item.php");
+require_once ("$dirName/classes/BR-Guild.php");
+require_once ("$dirName/classes/BR-Challenge.php");
+require_once ("$dirName/classes/BR-Survey.php");
+require_once ("$dirName/classes/BR-Encounter.php");
+require_once ("$dirName/classes/BR-Tabi.php");
+require_once ("$dirName/classes/BR-Session.php");
+require_once ("$dirName/classes/BR-Organization.php");
+require_once ("$dirName/classes/BR-Blocker.php");
+require_once ("$dirName/classes/BR-Transaction.php");
+require_once ("$dirName/classes/BR-Announcement.php");
+require_once ("$dirName/classes/BR-Request.php");
+require_once ("$dirName/classes/BR-Content.php");
+require_once ("$dirName/classes/BR-Progression.php");
+require_once ("$dirName/classes/BR-Trash.php");
 require_once ("$dirName/classes/BR-Scorm.php");
 require_once ("$dirName/classes/BR-mailer.php");
 require_once ("$dirName/classes/BR-Stats.php");
 require_once ("$dirName/functions/br-email-admin.php");
-
-$br_project = new Project();
-$n = new Notification();
 
 // ── Stats Dashboard ─────────────────────────────────────────────────────────
 function br_enqueue_analytics() {
@@ -1506,7 +1183,7 @@ function br_enqueue_analytics() {
     // Skip GA entirely for China
     if ( $country === 'CN' ) return;
     
-    $google_property = getSysConfig('google_property_id');
+    $google_property = BR_Config::instance()->getSysConfig('google_property_id');
     $gads_id = $google_property['value'] ? $google_property['value'] : 'G-F1QPQC2JZL';
     // Everyone else gets GA as normal
     wp_enqueue_script(
@@ -1534,7 +1211,7 @@ add_action( 'wp_enqueue_scripts', 'br_stats_enqueue_assets' );
 
 function br_stats_is_manager( $adventure_id ) {
 	if ( current_user_can( 'manage_options' ) ) return true;
-	$pa = getPlayerAdventureData( $adventure_id, get_current_user_id() );
+	$pa = BR_Player::instance()->getPlayerAdventureData( $adventure_id, get_current_user_id() );
 	return $pa && isset( $pa->player_adventure_role )
 		&& in_array( $pa->player_adventure_role, [ 'gm', 'npc' ] );
 }
@@ -1582,7 +1259,7 @@ function br_stats_player_panel() {
 	$aid = (int) $_POST['adventure_id'];
 	if ( $uid !== get_current_user_id() && ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
 	$stats     = new BR_Stats();
-	$adventure = getAdventure( $aid );
+	$adventure = BR_Adventure::instance()->getAdventure( $aid );
 	wp_send_json_success( [
 		'summary'         => array_merge(
 			$stats->get_player_summary( $uid, $aid ),
@@ -1685,200 +1362,192 @@ add_action('switch_theme', 'delete_roles');
 add_filter('show_admin_bar', '__return_false');
 add_action('template_redirect', 'ajaxFunctions');
 
-add_action('wp_login', 'absolute_level_calc');
+add_action('wp_login', [BR_Player::instance(), 'absolute_level_calc']);
 
 
-///////// FUNCTION PERMISSIONS //////////////
+///////// AJAX REGISTRATIONS (class-based callbacks) //////////////
 
-add_action("wp_ajax_br_notify", "notify");
-add_action("wp_ajax_switchRank", "switchRank");
-add_action("wp_ajax_closeIntro", "closeIntro");
-add_action("wp_ajax_resetIntro", "resetIntro");
-add_action("wp_ajax_br_dismiss_tutorial", "br_dismiss_tutorial");
-add_action("wp_ajax_resetPrevLevel", "resetPrevLevel");
-add_action("wp_ajax_resetGuilds", "resetGuilds");
-add_action("wp_ajax_resetPlayerAdventure", "resetPlayerAdventure");
-add_action("wp_ajax_updatePlayer", "updatePlayer");
-add_action("wp_ajax_setGrade", "setGrade");
-add_action("wp_ajax_validatePlayerPost", "validatePlayerPost");
-add_action("wp_ajax_updateProfile", "updateProfile");
-add_action("wp_ajax_nopriv_bluerabbit_add_new_player", "bluerabbit_add_new_player");
-add_action("wp_ajax_bluerabbit_add_new_player", "bluerabbit_add_new_player");
-add_action("wp_ajax_checkUserDataExists", "checkUserDataExists");
-add_action("wp_ajax_enrollUser", "enrollUser");
-add_action("wp_ajax_uploadBulkUsers", "uploadBulkUsers");
-add_action("wp_ajax_bulkEnrollUsers", "bulkEnrollUsers");
-add_action("wp_ajax_uploadBulkSpeakers", "uploadBulkSpeakers");
-add_action("wp_ajax_uploadBulkSessions", "uploadBulkSessions");
-add_action("wp_ajax_uploadBulkQuests", "uploadBulkQuests");
-add_action("wp_ajax_uploadBulkQuestions", "uploadBulkQuestions");
-add_action("wp_ajax_uploadBulkAchievements", "uploadBulkAchievements");
-add_action("wp_ajax_uploadBulkItems", "uploadBulkItems");
-add_action("wp_ajax_newHexad", "newHexad");
-add_action("wp_ajax_reorder", "reorder");
-add_action("wp_ajax_reorderItems", "reorderItems");
-add_action("wp_ajax_reorderAchievements", "reorderAchievements");
-add_action("wp_ajax_reorderQuestions", "reorderQuestions");
-add_action("wp_ajax_loadJourney", "loadJourney");
-add_action("wp_ajax_loadQuestCard", "loadQuestCard");
-add_action("wp_ajax_loadItemCard", "loadItemCard");
-add_action("wp_ajax_loadBackpackItem", "loadBackpackItem");
-add_action("wp_ajax_loadAchievementCard", "loadAchievementCard");
-add_action("wp_ajax_displayAchievementCard", "displayAchievementCard");
-add_action("wp_ajax_loadGuildCard", "loadGuildCard");
-add_action("wp_ajax_loadSpeakerCard", "loadSpeakerCard");
-add_action("wp_ajax_loadSessionCard", "loadSessionCard");
-add_action("wp_ajax_loadBlogCard", "loadBlogCard");
-add_action("wp_ajax_loadLore", "loadLore");
-add_action("wp_ajax_searchLore", "searchLore");
-add_action("wp_ajax_updateAdventure", "updateAdventure");
-add_action("wp_ajax_resetHideIntro", "resetHideIntro");
-add_action("wp_ajax_addTabi", "addTabi");
-add_action("wp_ajax_insertTabiRow", "insertTabiRow");
-add_action("wp_ajax_saveTabiPiecePosition", "saveTabiPiecePosition");
-add_action("wp_ajax_updateMilestonePosition", "updateMilestonePosition");
-add_action("wp_ajax_updateQuest", "updateQuest");
-add_action("wp_ajax_updateEncounter", "updateEncounter");
-add_action("wp_ajax_randomEncounter", "randomEncounter");
-add_action("wp_ajax_answerEncounter", "answerEncounter");
-add_action("wp_ajax_updateAchievement", "updateAchievement");
-add_action("wp_ajax_setAchievement", "setAchievement");
-add_action("wp_ajax_setQuestTabi", "setQuestTabi");
-add_action("wp_ajax_setGuild", "setGuild");
-add_action("wp_ajax_setSpeaker", "setSpeaker");
-add_action("wp_ajax_setSpeakerData", "setSpeakerData");
-add_action("wp_ajax_updateOrg", "updateOrg");
-add_action("wp_ajax_updateSponsor", "updateSponsor");
-add_action("wp_ajax_findPlayersToOrg", "findPlayersToOrg");
-add_action("wp_ajax_addPlayerToOrg", "addPlayerToOrg");
-add_action("wp_ajax_setPlayerOrgCapabilities", "setPlayerOrgCapabilities");
-add_action("wp_ajax_previewTemplate", "previewTemplate");
-add_action("wp_ajax_createChildAdventure", "createChildAdventure");
-add_action("wp_ajax_updateGuild", "updateGuild");
-add_action("wp_ajax_updateBlocker", "updateBlocker");
-add_action("wp_ajax_payBlocker", "payBlocker");
-add_action("wp_ajax_payment", "payment");
-add_action("wp_ajax_submitPlayerWork", "submitPlayerWork");
-add_action("wp_ajax_validatePlayerWork", "validatePlayerWork");
-add_action("wp_ajax_postToWall", "postToWall");
-add_action("wp_ajax_loadChat", "loadChat");
-add_action("wp_ajax_updateItem", "updateItem");
-add_action("wp_ajax_buyItem", "buyItem");
-add_action("wp_ajax_pickupItem", "pickupItem");
-add_action("wp_ajax_checkItem", "checkItem");
-add_action("wp_ajax_useItem", "useItem");
-add_action("wp_ajax_getUnlocks", "getUnlocks");
-add_action("wp_ajax_registerAttempt", "registerAttempt");
-add_action("wp_ajax_startAttempt", "startAttempt");
-add_action("wp_ajax_submitAnswer", "submitAnswer");
-add_action("wp_ajax_gradeChallenge", "gradeChallenge");
-add_action("wp_ajax_setCurrentQuest", "setCurrentQuest");
-add_action("wp_ajax_submitSurveyAnswer", "submitSurveyAnswer");
-add_action("wp_ajax_br_trash", "br_trash");
-add_action("wp_ajax_br_empty_trash", "br_empty_trash");
-add_action("wp_ajax_magicCode", "magicCode");
-add_action("wp_ajax_choosePath", "choosePath");
-add_action("wp_ajax_triggerAchievement", "triggerAchievement");
-add_action("wp_ajax_triggerAchievements", "triggerAchievements");
-add_action("wp_ajax_triggerGuild", "triggerGuild");
-add_action("wp_ajax_bulkAssignGuild", "bulkAssignGuild");
-add_action("wp_ajax_bulkAssignAchievement", "bulkAssignAchievement");
-add_action("wp_ajax_resetTransactions", "resetTransactions");
-add_action("wp_ajax_resetDemoAdventure", "resetDemoAdventure");
-add_action("wp_ajax_resetDemoAdventurePlayer", "resetDemoAdventurePlayer");
-add_action("wp_ajax_resetPlayerPassword", "resetPlayerPassword");
-add_action("wp_ajax_setPlayerAdventureRole", "setPlayerAdventureRole");
-add_action("wp_ajax_updatePlayerAdventureStatus", "updatePlayerAdventureStatus");
-add_action("wp_ajax_updateAdventureTitle", "updateAdventureTitle");
-add_action("wp_ajax_setTitle", "setTitle");
-add_action("wp_ajax_setBadge", "setBadge");
-add_action("wp_ajax_setColor", "setColor");
-add_action("wp_ajax_setLevel", "setLevel");
-add_action("wp_ajax_setXP", "setXP");
-add_action("wp_ajax_setEP", "setEP");
-add_action("wp_ajax_setBLOO", "setBLOO");
-add_action("wp_ajax_setMaxPlayers", "setMaxPlayers");
-add_action("wp_ajax_setHashtags", "setHashtags");
-add_action("wp_ajax_setHandle", "setHandle");
-add_action("wp_ajax_setTweets", "setTweets");
-add_action("wp_ajax_setStartDate", "setStartDate");
-add_action("wp_ajax_setDeadline", "setDeadline");
-add_action("wp_ajax_setMagicCode", "setMagicCode");
-add_action("wp_ajax_setCategory", "setCategory");
-add_action("wp_ajax_setItemStock", "setItemStock");
-add_action("wp_ajax_setGuildGroup", "setGuildGroup");
-add_action("wp_ajax_setGuildCapacity", "setGuildCapacity");
-add_action("wp_ajax_setDisplayStyle", "setDisplayStyle");
-add_action("wp_ajax_setDimensions", "setDimensions");
-add_action("wp_ajax_setTabiOnJourney", "setTabiOnJourney");
-add_action("wp_ajax_setTabiAsCategory", "setTabiAsCategory");
-add_action("wp_ajax_saveTabiSize", "saveTabiSize");
-add_action("wp_ajax_saveTabiPosition", "saveTabiPosition");
-add_action("wp_ajax_saveTabiPrerequisites", "saveTabiPrerequisites");
-add_action("wp_ajax_addJourneyAsset", "addJourneyAsset");
-add_action("wp_ajax_trashJourneyAsset", "trashJourneyAsset");
-add_action("wp_ajax_duplicateJourneyAsset", "duplicateJourneyAsset");
-add_action("wp_ajax_saveJourneyAssetPosition", "saveJourneyAssetPosition");
-add_action("wp_ajax_saveJourneyAssetProperties", "saveJourneyAssetProperties");
-add_action("wp_ajax_setJourneyAssetImage", "setJourneyAssetImage");
-add_action("wp_ajax_saveJourneyAssetMeta", "saveJourneyAssetMeta");
-add_action("wp_ajax_saveJourneyAssetTabi", "saveJourneyAssetTabi");
-add_action("wp_ajax_setNickname", "setNickname");
-add_action("wp_ajax_setProfilePicture", "setProfilePicture");
-add_action("wp_ajax_exportPlayersWork", "exportPlayersWork");
-add_action("wp_ajax_newUniqueAchievementCode", "newUniqueAchievementCode");
-add_action("wp_ajax_deleteAchievementCode", "deleteAchievementCode");
-add_action("wp_ajax_duplicateQuests", "duplicateQuests");
-add_action("wp_ajax_duplicateQuest", "duplicateQuest");
-add_action("wp_ajax_duplicateRow", "duplicateRow");
-add_action("wp_ajax_breakParent", "breakParent");
-add_action("wp_ajax_updatePrevLevel", "updatePrevLevel");
-add_action("wp_ajax_rateQuest", "rateQuest");
-add_action("wp_ajax_failQuest", "failQuest");
-add_action("wp_ajax_saveSettings", "saveSettings");
-add_action("wp_ajax_saveSetting", "saveSetting");
-add_action("wp_ajax_saveSysConfig", "saveSysConfig");
-add_action("wp_ajax_anonimizeAdventure", "anonimizeAdventure");
-add_action("wp_ajax_spendEP", "spendEP");
-add_action("wp_ajax_addObjective", "addObjective");
-add_action("wp_ajax_editObjective", "editObjective");
-add_action("wp_ajax_updateObjective", "updateObjective");
-add_action("wp_ajax_resetQuestObjectives", "resetQuestObjectives");
-add_action("wp_ajax_removeObjective", "removeObjective");
-add_action("wp_ajax_getObjectives", "getObjectives");
-add_action("wp_ajax_factCheck", "factCheck");
-add_action("wp_ajax_insertSolvedObjective", "insertSolvedObjective");
-add_action("wp_ajax_addStep", "addStep");
-add_action("wp_ajax_editStep", "editStep");
-add_action("wp_ajax_removeStep", "removeStep");
-add_action("wp_ajax_updateStep", "updateStep");
-add_action("wp_ajax_newStepListItem", "newStepListItem");
-add_action("wp_ajax_reorderSteps", "reorderSteps");
-add_action("wp_ajax_loadStepButtonForm", "loadStepButtonForm");
-add_action("wp_ajax_addStepButton", "addStepButton");
-add_action("wp_ajax_removeStepButton", "removeStepButton");
-add_action("wp_ajax_updateStepButton", "updateStepButton");
-add_action("wp_ajax_addQuestion", "addQuestion");
-add_action("wp_ajax_duplicateQuestion", "duplicateQuestion");
-add_action("wp_ajax_updateQuestion", "updateQuestion");
-add_action("wp_ajax_removeQuestion", "removeQuestion");
-add_action("wp_ajax_addOption", "addOption");
-add_action("wp_ajax_updateOption", "updateOption");
-add_action("wp_ajax_removeOption", "removeOption");
-add_action("wp_ajax_updateSchedule", "updateSchedule");
-add_action("wp_ajax_updateSpeaker", "updateSpeaker");
-add_action("wp_ajax_updateSession", "updateSession");
-add_action("wp_ajax_downloadAllImages", "downloadAllImages");
-add_action("wp_ajax_checkPlayerSecretCode", "checkPlayerSecretCode");
-add_action("wp_ajax_loadContent", "loadContent");
-add_action("wp_ajax_loadStory", "loadStory");
-add_action("wp_ajax_br_logout", "br_logout");
-add_action("wp_ajax_br_scorm_upload",    array('BR_SCORM', 'ajax_upload'));
+add_action("wp_ajax_br_notify", [new Notification(), 'notify']);
+add_action("wp_ajax_switchRank", [BR_Achievement::instance(), 'switchRank']);
+add_action("wp_ajax_closeIntro", [BR_Player::instance(), 'closeIntro']);
+add_action("wp_ajax_resetIntro", [BR_Player::instance(), 'resetIntro']);
+add_action("wp_ajax_br_dismiss_tutorial", [BR_Player::instance(), 'br_dismiss_tutorial']);
+add_action("wp_ajax_resetPrevLevel", [BR_Player::instance(), 'resetPrevLevel']);
+add_action("wp_ajax_resetGuilds", [BR_Player::instance(), 'resetGuilds']);
+add_action("wp_ajax_resetPlayerAdventure", [BR_Player::instance(), 'resetPlayerAdventure']);
+add_action("wp_ajax_updatePlayer", [BR_Player::instance(), 'updatePlayer']);
+add_action("wp_ajax_setGrade", [BR_Quest::instance(), 'setGrade']);
+add_action("wp_ajax_validatePlayerPost", [BR_Quest::instance(), 'validatePlayerPost']);
+add_action("wp_ajax_updateProfile", [BR_Player::instance(), 'updateProfile']);
+add_action("wp_ajax_nopriv_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
+add_action("wp_ajax_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
+add_action("wp_ajax_checkUserDataExists", [BR_Player::instance(), 'checkUserDataExists']);
+add_action("wp_ajax_enrollUser", [BR_Player::instance(), 'enrollUser']);
+add_action("wp_ajax_uploadBulkUsers", [BR_Player::instance(), 'uploadBulkUsers']);
+add_action("wp_ajax_bulkEnrollUsers", [BR_Player::instance(), 'bulkEnrollUsers']);
+add_action("wp_ajax_uploadBulkSpeakers", [BR_Session::instance(), 'uploadBulkSpeakers']);
+add_action("wp_ajax_uploadBulkSessions", [BR_Session::instance(), 'uploadBulkSessions']);
+add_action("wp_ajax_uploadBulkQuests", [BR_Quest::instance(), 'uploadBulkQuests']);
+add_action("wp_ajax_uploadBulkQuestions", [BR_Challenge::instance(), 'uploadBulkQuestions']);
+add_action("wp_ajax_uploadBulkAchievements", [BR_Achievement::instance(), 'uploadBulkAchievements']);
+add_action("wp_ajax_uploadBulkItems", [BR_Item::instance(), 'uploadBulkItems']);
+add_action("wp_ajax_newHexad", [BR_Player::instance(), 'newHexad']);
+add_action("wp_ajax_reorder", [BR_Quest::instance(), 'reorder']);
+add_action("wp_ajax_reorderItems", [BR_Item::instance(), 'reorderItems']);
+add_action("wp_ajax_reorderAchievements", [BR_Achievement::instance(), 'reorderAchievements']);
+add_action("wp_ajax_reorderQuestions", [BR_Challenge::instance(), 'reorderQuestions']);
+add_action("wp_ajax_loadQuestCard", [BR_Content::instance(), 'loadQuestCard']);
+add_action("wp_ajax_loadItemCard", [BR_Item::instance(), 'loadItemCard']);
+add_action("wp_ajax_loadBackpackItem", [BR_Item::instance(), 'loadBackpackItem']);
+add_action("wp_ajax_loadAchievementCard", [BR_Achievement::instance(), 'loadAchievementCard']);
+add_action("wp_ajax_displayAchievementCard", [BR_Achievement::instance(), 'displayAchievementCard']);
+add_action("wp_ajax_loadGuildCard", [BR_Guild::instance(), 'loadGuildCard']);
+add_action("wp_ajax_loadLore", [BR_Content::instance(), 'loadLore']);
+add_action("wp_ajax_searchLore", [BR_Content::instance(), 'searchLore']);
+add_action("wp_ajax_updateAdventure", [BR_Adventure::instance(), 'updateAdventure']);
+add_action("wp_ajax_addTabi", [BR_Tabi::instance(), 'addTabi']);
+add_action("wp_ajax_insertTabiRow", [BR_Tabi::instance(), 'insertTabiRow']);
+add_action("wp_ajax_saveTabiPiecePosition", [BR_Tabi::instance(), 'saveTabiPiecePosition']);
+add_action("wp_ajax_updateMilestonePosition", [BR_Tabi::instance(), 'updateMilestonePosition']);
+add_action("wp_ajax_updateQuest", [BR_Quest::instance(), 'updateQuest']);
+add_action("wp_ajax_updateEncounter", [BR_Encounter::instance(), 'updateEncounter']);
+add_action("wp_ajax_randomEncounter", [BR_Encounter::instance(), 'randomEncounter']);
+add_action("wp_ajax_answerEncounter", [BR_Encounter::instance(), 'answerEncounter']);
+add_action("wp_ajax_updateAchievement", [BR_Achievement::instance(), 'updateAchievement']);
+add_action("wp_ajax_setAchievement", [BR_Achievement::instance(), 'setAchievement']);
+add_action("wp_ajax_setQuestTabi", [BR_Quest::instance(), 'setQuestTabi']);
+add_action("wp_ajax_setGuild", [BR_Guild::instance(), 'setGuild']);
+add_action("wp_ajax_setSpeaker", [BR_Session::instance(), 'setSpeaker']);
+add_action("wp_ajax_setSpeakerData", [BR_Session::instance(), 'setSpeakerData']);
+add_action("wp_ajax_updateOrg", [BR_Organization::instance(), 'updateOrg']);
+add_action("wp_ajax_updateSponsor", [BR_Session::instance(), 'updateSponsor']);
+add_action("wp_ajax_findPlayersToOrg", [BR_Organization::instance(), 'findPlayersToOrg']);
+add_action("wp_ajax_addPlayerToOrg", [BR_Organization::instance(), 'addPlayerToOrg']);
+add_action("wp_ajax_setPlayerOrgCapabilities", [BR_Organization::instance(), 'setPlayerOrgCapabilities']);
+add_action("wp_ajax_previewTemplate", [BR_Adventure::instance(), 'previewTemplate']);
+add_action("wp_ajax_createChildAdventure", [BR_Adventure::instance(), 'createChildAdventure']);
+add_action("wp_ajax_updateGuild", [BR_Guild::instance(), 'updateGuild']);
+add_action("wp_ajax_updateBlocker", [BR_Blocker::instance(), 'updateBlocker']);
+add_action("wp_ajax_payBlocker", [BR_Blocker::instance(), 'payBlocker']);
+add_action("wp_ajax_payment", [BR_Transaction::instance(), 'payment']);
+add_action("wp_ajax_submitPlayerWork", [BR_Quest::instance(), 'submitPlayerWork']);
+add_action("wp_ajax_validatePlayerWork", [BR_Quest::instance(), 'validatePlayerWork']);
+add_action("wp_ajax_postToWall", [BR_Quest::instance(), 'postToWall']);
+add_action("wp_ajax_loadChat", [BR_Announcement::instance(), 'loadChat']);
+add_action("wp_ajax_updateItem", [BR_Item::instance(), 'updateItem']);
+add_action("wp_ajax_buyItem", [BR_Item::instance(), 'buyItem']);
+add_action("wp_ajax_pickupItem", [BR_Item::instance(), 'pickupItem']);
+add_action("wp_ajax_checkItem", [BR_Item::instance(), 'checkItem']);
+add_action("wp_ajax_useItem", [BR_Item::instance(), 'useItem']);
+add_action("wp_ajax_startAttempt", [BR_Challenge::instance(), 'startAttempt']);
+add_action("wp_ajax_submitAnswer", [BR_Challenge::instance(), 'submitAnswer']);
+add_action("wp_ajax_gradeChallenge", [BR_Challenge::instance(), 'gradeChallenge']);
+add_action("wp_ajax_setCurrentQuest", [BR_Player::instance(), 'setCurrentQuest']);
+add_action("wp_ajax_submitSurveyAnswer", [BR_Survey::instance(), 'submitSurveyAnswer']);
+add_action("wp_ajax_br_trash", [BR_Trash::instance(), 'br_trash']);
+add_action("wp_ajax_br_empty_trash", [BR_Trash::instance(), 'br_empty_trash']);
+add_action("wp_ajax_magicCode", [BR_Achievement::instance(), 'magicCode']);
+add_action("wp_ajax_choosePath", [BR_Achievement::instance(), 'choosePath']);
+add_action("wp_ajax_triggerAchievement", [BR_Achievement::instance(), 'triggerAchievement']);
+add_action("wp_ajax_triggerAchievements", [BR_Achievement::instance(), 'triggerAchievements']);
+add_action("wp_ajax_triggerGuild", [BR_Guild::instance(), 'triggerGuild']);
+add_action("wp_ajax_bulkAssignGuild", [BR_Guild::instance(), 'bulkAssignGuild']);
+add_action("wp_ajax_bulkAssignAchievement", [BR_Achievement::instance(), 'bulkAssignAchievement']);
+add_action("wp_ajax_resetTransactions", [BR_Transaction::instance(), 'resetTransactions']);
+add_action("wp_ajax_resetDemoAdventurePlayer", [BR_Transaction::instance(), 'resetDemoAdventurePlayer']);
+add_action("wp_ajax_resetPlayerPassword", [BR_Player::instance(), 'resetPlayerPassword']);
+add_action("wp_ajax_setPlayerAdventureRole", [BR_Player::instance(), 'setPlayerAdventureRole']);
+add_action("wp_ajax_updatePlayerAdventureStatus", [BR_Player::instance(), 'updatePlayerAdventureStatus']);
+add_action("wp_ajax_updateAdventureTitle", [BR_Adventure::instance(), 'updateAdventureTitle']);
+add_action("wp_ajax_setTitle", [BR_Adventure::instance(), 'setTitle']);
+add_action("wp_ajax_setBadge", [BR_Adventure::instance(), 'setBadge']);
+add_action("wp_ajax_setColor", [BR_Adventure::instance(), 'setColor']);
+add_action("wp_ajax_setLevel", [BR_Adventure::instance(), 'setLevel']);
+add_action("wp_ajax_setXP", [BR_Adventure::instance(), 'setXP']);
+add_action("wp_ajax_setEP", [BR_Adventure::instance(), 'setEP']);
+add_action("wp_ajax_setBLOO", [BR_Adventure::instance(), 'setBLOO']);
+add_action("wp_ajax_setMaxPlayers", [BR_Adventure::instance(), 'setMaxPlayers']);
+add_action("wp_ajax_setStartDate", [BR_Adventure::instance(), 'setStartDate']);
+add_action("wp_ajax_setDeadline", [BR_Adventure::instance(), 'setDeadline']);
+add_action("wp_ajax_setMagicCode", [BR_Adventure::instance(), 'setMagicCode']);
+add_action("wp_ajax_setCategory", [BR_Adventure::instance(), 'setCategory']);
+add_action("wp_ajax_setGuildGroup", [BR_Guild::instance(), 'setGuildGroup']);
+add_action("wp_ajax_setGuildCapacity", [BR_Guild::instance(), 'setGuildCapacity']);
+add_action("wp_ajax_setDisplayStyle", [BR_Adventure::instance(), 'setDisplayStyle']);
+add_action("wp_ajax_setDimensions", [BR_Tabi::instance(), 'setDimensions']);
+add_action("wp_ajax_setTabiOnJourney", [BR_Tabi::instance(), 'setTabiOnJourney']);
+add_action("wp_ajax_setTabiAsCategory", [BR_Tabi::instance(), 'setTabiAsCategory']);
+add_action("wp_ajax_saveTabiSize", [BR_Tabi::instance(), 'saveTabiSize']);
+add_action("wp_ajax_saveTabiPosition", [BR_Tabi::instance(), 'saveTabiPosition']);
+add_action("wp_ajax_saveTabiPrerequisites", [BR_Tabi::instance(), 'saveTabiPrerequisites']);
+add_action("wp_ajax_addJourneyAsset", [BR_Tabi::instance(), 'addJourneyAsset']);
+add_action("wp_ajax_trashJourneyAsset", [BR_Tabi::instance(), 'trashJourneyAsset']);
+add_action("wp_ajax_duplicateJourneyAsset", [BR_Tabi::instance(), 'duplicateJourneyAsset']);
+add_action("wp_ajax_saveJourneyAssetPosition", [BR_Tabi::instance(), 'saveJourneyAssetPosition']);
+add_action("wp_ajax_saveJourneyAssetProperties", [BR_Tabi::instance(), 'saveJourneyAssetProperties']);
+add_action("wp_ajax_setJourneyAssetImage", [BR_Tabi::instance(), 'setJourneyAssetImage']);
+add_action("wp_ajax_saveJourneyAssetMeta", [BR_Tabi::instance(), 'saveJourneyAssetMeta']);
+add_action("wp_ajax_saveJourneyAssetTabi", [BR_Tabi::instance(), 'saveJourneyAssetTabi']);
+add_action("wp_ajax_setNickname", [BR_Player::instance(), 'setNickname']);
+add_action("wp_ajax_setProfilePicture", [BR_Player::instance(), 'setProfilePicture']);
+add_action("wp_ajax_exportPlayersWork", [BR_Player::instance(), 'exportPlayersWork']);
+add_action("wp_ajax_newUniqueAchievementCode", [BR_Achievement::instance(), 'newUniqueAchievementCode']);
+add_action("wp_ajax_deleteAchievementCode", [BR_Achievement::instance(), 'deleteAchievementCode']);
+add_action("wp_ajax_duplicateQuests", [BR_Quest::instance(), 'duplicateQuests']);
+add_action("wp_ajax_duplicateQuest", [BR_Quest::instance(), 'duplicateQuest']);
+add_action("wp_ajax_duplicateRow", [BR_Quest::instance(), 'duplicateRow']);
+add_action("wp_ajax_breakParent", [BR_Adventure::instance(), 'breakParent']);
+add_action("wp_ajax_updatePrevLevel", [BR_Player::instance(), 'updatePrevLevel']);
+add_action("wp_ajax_rateQuest", [BR_Quest::instance(), 'rateQuest']);
+add_action("wp_ajax_failQuest", [BR_Quest::instance(), 'failQuest']);
+add_action("wp_ajax_saveSettings", [BR_Config::instance(), 'saveSettings']);
+add_action("wp_ajax_saveSysConfig", [BR_Config::instance(), 'saveSysConfig']);
+add_action("wp_ajax_savePlan", [BR_Config::instance(), 'savePlan']);
+add_action("wp_ajax_deletePlan", [BR_Config::instance(), 'deletePlan']);
+add_action("wp_ajax_savePlanFeatures", [BR_Config::instance(), 'savePlanFeatures']);
+add_action("wp_ajax_assignUserPlan", [BR_Config::instance(), 'assignUserPlan']);
+add_action("wp_ajax_searchPlayersForPlan", [BR_Config::instance(), 'searchPlayersForPlan']);
+add_action("wp_ajax_saveFeature", [BR_Config::instance(), 'saveFeature']);
+add_action("wp_ajax_deleteFeature", [BR_Config::instance(), 'deleteFeature']);
+add_action("wp_ajax_copyPlanFeatures", [BR_Config::instance(), 'copyPlanFeatures']);
+add_action("wp_ajax_saveRoleDefaults", [BR_Config::instance(), 'saveRoleDefaults']);
+add_action("wp_ajax_anonimizeAdventure", [BR_Player::instance(), 'anonimizeAdventure']);
+add_action("wp_ajax_spendEP", [BR_Objective::instance(), 'spendEP']);
+add_action("wp_ajax_addObjective", [BR_Objective::instance(), 'addObjective']);
+add_action("wp_ajax_editObjective", [BR_Objective::instance(), 'editObjective']);
+add_action("wp_ajax_updateObjective", [BR_Objective::instance(), 'updateObjective']);
+add_action("wp_ajax_resetQuestObjectives", [BR_Objective::instance(), 'resetQuestObjectives']);
+add_action("wp_ajax_removeObjective", [BR_Objective::instance(), 'removeObjective']);
+add_action("wp_ajax_getObjectives", [BR_Objective::instance(), 'getObjectives']);
+add_action("wp_ajax_factCheck", [BR_Objective::instance(), 'factCheck']);
+add_action("wp_ajax_insertSolvedObjective", [BR_Objective::instance(), 'insertSolvedObjective']);
+add_action("wp_ajax_addStep", [BR_Step::instance(), 'addStep']);
+add_action("wp_ajax_editStep", [BR_Step::instance(), 'editStep']);
+add_action("wp_ajax_removeStep", [BR_Step::instance(), 'removeStep']);
+add_action("wp_ajax_updateStep", [BR_Step::instance(), 'updateStep']);
+add_action("wp_ajax_reorderSteps", [BR_Step::instance(), 'reorderSteps']);
+add_action("wp_ajax_loadStepButtonForm", [BR_Step::instance(), 'loadStepButtonForm']);
+add_action("wp_ajax_addStepButton", [BR_Step::instance(), 'addStepButton']);
+add_action("wp_ajax_removeStepButton", [BR_Step::instance(), 'removeStepButton']);
+add_action("wp_ajax_updateStepButton", [BR_Step::instance(), 'updateStepButton']);
+add_action("wp_ajax_addQuestion", [BR_Challenge::instance(), 'addQuestion']);
+add_action("wp_ajax_duplicateQuestion", [BR_Challenge::instance(), 'duplicateQuestion']);
+add_action("wp_ajax_updateQuestion", [BR_Challenge::instance(), 'updateQuestion']);
+add_action("wp_ajax_removeQuestion", [BR_Challenge::instance(), 'removeQuestion']);
+add_action("wp_ajax_addOption", [BR_Challenge::instance(), 'addOption']);
+add_action("wp_ajax_updateOption", [BR_Challenge::instance(), 'updateOption']);
+add_action("wp_ajax_removeOption", [BR_Challenge::instance(), 'removeOption']);
+add_action("wp_ajax_updateSpeaker", [BR_Session::instance(), 'updateSpeaker']);
+add_action("wp_ajax_updateSession", [BR_Session::instance(), 'updateSession']);
+add_action("wp_ajax_downloadAllImages", [BR_Utils::instance(), 'downloadAllImages']);
+add_action("wp_ajax_loadContent", [BR_Content::instance(), 'loadContent']);
+add_action("wp_ajax_loadStory", [BR_Adventure::instance(), 'loadStory']);
+add_action("wp_ajax_br_logout", [BR_Player::instance(), 'br_logout']);
+add_action("wp_ajax_br_scorm_upload", array('BR_SCORM', 'ajax_upload'));
 add_action("wp_ajax_br_scorm_save_data", array('BR_SCORM', 'ajax_save_data'));
-add_action("wp_ajax_br_scorm_reset_all",    array('BR_SCORM', 'ajax_reset_all'));
-add_action("wp_ajax_submitRequest", "submitRequest");
-add_action("wp_ajax_getRequests", "getRequests");
-add_action("wp_ajax_getMyRequests", "getMyRequests");
-add_action("wp_ajax_updateRequestStatus", "updateRequestStatus");
-
+add_action("wp_ajax_br_scorm_reset_all", array('BR_SCORM', 'ajax_reset_all'));
+add_action("wp_ajax_submitRequest", [BR_Request::instance(), 'submitRequest']);
+add_action("wp_ajax_getRequests", [BR_Request::instance(), 'getRequests']);
+add_action("wp_ajax_getMyRequests", [BR_Request::instance(), 'getMyRequests']);
+add_action("wp_ajax_updateRequestStatus", [BR_Request::instance(), 'updateRequestStatus']);
 

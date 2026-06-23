@@ -1,5 +1,5 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<?php  $org = getOrgs($_GET['id']); ?>
+<?php  $org = BR_Organization::instance()->getOrgs($_GET['id']); ?>
 <h1 class="padding-10 font condensed white-color w900 uppercase _20 light-blue-bg-800">
 	<?= __('Manage Organization','bluerabbit'); ?>
 </h1>
@@ -72,7 +72,7 @@
 							<td class="text-right w-150"><?= __('Logo','bluerabbit'); ?></td>
 							<td>
 								<div class="gallery">
-									<?php insertGalleryItem('the-org-logo', $org->org_logo); ?>
+									<?php BR_Utils::instance()->insertGalleryItem('the-org-logo', $org->org_logo); ?>
 								</div>
 							</td>
 						</tr>
@@ -100,7 +100,7 @@
 			</div>
 			<div class="tab max-w-1200 padding-10" id="enrolled-players">
 				<?php 
-				$org_players = getOrgPlayers($org->org_id);
+				$org_players = BR_Organization::instance()->getOrgPlayers($org->org_id);
 				$total_org_players = isset($org_players) ? count($org_players) : 0; 
 				?>
 				<div class="highlight padding-10 grey-bg-200" id="org-players">
@@ -185,7 +185,7 @@
 				</div>
 			</div>
 			<div class="tab max-w-1200 padding-10" id="adventures">
-				<?php $adventures = getOrgAdventures($org->org_id);
+				<?php $adventures = BR_Organization::instance()->getOrgAdventures($org->org_id);
 					$total_org_adventures = isset($adventures) ? count($adventures) : 0;
 				?>
 				<div class="highlight padding-10 grey-bg-200" id="org-adventures">

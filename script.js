@@ -3109,8 +3109,9 @@ function addStep(id_to_duplicate = null) {
                 if (isJson(data_received)) {
                     displayAjaxResponse(data_received);
                 } else {
-                    $('tbody#steps-list').append(data_received);
-                    let new_step_id = $('tbody#steps-list tr:last-child input.the_step_id_val').val();
+                    $('#steps-list').append(data_received);
+                    $('#no-steps-label').hide();
+                    let new_step_id = $('#steps-list .br-step-item:last-child input.the_step_id_val').val();
                     editStep(new_step_id);
                     data_received = '';
                 }
@@ -3130,33 +3131,43 @@ function addStep(id_to_duplicate = null) {
 }
 ////////////////////////////// LOAD STEP ///////////////////////////
 function editStep(step_id) {
-    animateScroll('#body');
-    $("#overlay-content .content").html('');
-    let adventure_id = $("#the_adventure_id").val();
-
-    if (step_id) {
-        showLoader("small");
-        jQuery.ajax({
-            url: runAJAX.ajaxurl,
-            data: ({
-                action: 'editStep',
-                step_id: step_id,
-                adventure_id: adventure_id
-            }),
-            method: "POST",
-            success: function (data_received) {
-                $("#overlay-content .content").html(data_received);
-                $("#overlay-content").addClass('active');
-                $('.loader, .small-loader').removeClass('active');
-            }
-        });
-    } else {
-        $("#notify-message ul.content").append($('#msg-no-id').html());
-        $("#notify-message ul.content li:last-child").delay(1000).fadeOut(300, function () {
-            $(this).remove();
-            hideAllOverlay();
-        });
+    if (!step_id) {
+        notification('#msg-no-id', 1000);
+        return;
     }
+    var $accordion = $('#step-accordion-' + step_id);
+    if ($accordion.hasClass('open')) {
+        closeStepAccordion(step_id);
+        return;
+    }
+    $('.br-step-accordion.open').each(function() {
+        var openId = this.id.replace('step-accordion-', '');
+        closeStepAccordion(openId);
+    });
+    var adventure_id = $("#the_adventure_id").val();
+    showLoader("small");
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({ action: 'editStep', step_id: step_id, adventure_id: adventure_id }),
+        method: "POST",
+        success: function (data_received) {
+            $accordion.html(data_received).addClass('open');
+            $('#step-' + step_id + ' .br-step-edit-btn').addClass('active');
+            $('.loader, .small-loader').removeClass('active');
+            setTimeout(function() {
+                document.getElementById('step-accordion-' + step_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+    });
+}
+
+function closeStepAccordion(step_id) {
+    var editorId = 'step-content-' + step_id;
+    if (typeof tinymce !== 'undefined') {
+        try { tinymce.remove('#' + editorId); } catch(e) {}
+    }
+    $('#step-accordion-' + step_id).removeClass('open').html('');
+    $('#step-' + step_id + ' .br-step-edit-btn').removeClass('active');
 }
 
 ////////////////////////////// UPDATE STEP ///////////////////////////
@@ -3208,32 +3219,29 @@ function updateStep() {
                 success: function (json_text) {
                     displayAjaxResponse(json_text);
                     let content = JSON.parse(json_text);
+                    var sid = content.updated_step.step_id;
+                    var stype = content.updated_step.step_type;
 
-                    if (step_type == 'path-choice') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id + " .step-title").text(content.updated_step.step_title + " [Group: " + content.updated_step.step_achievement_group + "]");
+                    if (stype == 'path-choice') {
+                        $('#step-' + sid + ' .step-title').html(content.updated_step.step_title + " <span style='opacity:0.5'>[Group: " + content.updated_step.step_achievement_group + "]</span>");
                     } else {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id + " .step-title").text(content.updated_step.step_title);
+                        $('#step-' + sid + ' .step-title').text(content.updated_step.step_title);
                     }
-                    $("tbody#steps-list #step-" + content.updated_step.step_id + " .step-type").text(content.updated_step.step_type);
+                    $('#step-' + sid + ' .step-type').text(stype);
 
-                    if (content.updated_step.step_type == 'dialogue') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step blue-bg-50');
-                    } else if (content.updated_step.step_type == 'jump') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step indigo-bg-50');
-                    } else if (content.updated_step.step_type == 'system') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step orange-bg-50');
-                    } else if (content.updated_step.step_type == 'win') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step light-green-bg-100 white-color');
-                    } else if (content.updated_step.step_type == 'fail') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step red-bg-100 white-color');
-                    } else if (content.updated_step.step_type == 'item-req' || content.updated_step.step_type == 'item-grab') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step pink-bg-50');
-                    } else if (content.updated_step.step_type == 'path-choice') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step purple-bg-50');
-                    } else if (content.updated_step.step_type == 'choose-avatar' || content.updated_step.step_type == 'choose-nickname') {
-                        $("tbody#steps-list #step-" + content.updated_step.step_id).removeClass().addClass('step indigo-bg-50');
-                    }
-                    $("#overlay-content .content").html('');
+                    var stepColorMap = {
+                        'dialogue':'#1cc2eb','open':'#42a5f5','jump':'#7c4dff',
+                        'system':'#ff9800','win':'#24da98','fail':'#f44336',
+                        'item-req':'#e040fb','item-grab':'#e040fb','path-choice':'#9f40e2',
+                        'choose-avatar':'#7c4dff','choose-nickname':'#7c4dff',
+                        'video':'#f7cb15','scorm':'#00bcd4'
+                    };
+                    $('#step-' + sid).attr('style', '--step-color:' + (stepColorMap[stype] || '#1cc2eb'));
+
+                    closeStepAccordion(sid);
+                    setTimeout(function() {
+                        document.getElementById('step-' + sid).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
                 }
             });
 
@@ -3250,6 +3258,7 @@ function updateStep() {
 ////////////////////////////// New Step List Item ///////////////////////////
 function removeStep(step_id) {
     if (step_id) {
+        closeStepAccordion(step_id);
         showLoader("small");
         jQuery.ajax({
             url: runAJAX.ajaxurl,
@@ -3276,8 +3285,8 @@ function reorderSteps() {
     let adventure_id = $("#the_adventure_id").val();
     let quest_id = $("#the_quest_id").val();
     let the_order = [];
-    $('tbody#steps-list tr.step').each(function () {
-        the_order.push($('input.the_step_id_val', this).val());
+    $('#steps-list > .br-step-item').each(function () {
+        the_order.push($(this).find('input.the_step_id_val').val());
     });
     showLoader();
     jQuery.ajax({
@@ -4305,42 +4314,32 @@ function saveSysConfig() {
         config_data.push(config_values);
     });
     let features_data = [];
+    var plans = (typeof brPlans !== 'undefined') ? brPlans : [
+        {plan_key:'free'},{plan_key:'pro'},{plan_key:'admin'},{plan_key:'god'}
+    ];
     $('.feature').each(function (index, element) {
-        let free = 0;
-        let pro = 0;
-        let admin = 0;
-        let god = 0;
-        if ($('.feature-free', this).is(':checked')) {
-            free = 1;
-        } else if ($('.feature-free', this).val()) {
-            free = $('.feature-free', this).val();
-        }
-        if ($('.feature-pro', this).is(':checked')) {
-            pro = 1;
-        } else if ($('.feature-pro', this).val()) {
-            pro = $('.feature-pro', this).val();
-        }
-        if ($('.feature-admin', this).is(':checked')) {
-            admin = 1;
-        } else if ($('.feature-admin', this).val()) {
-            admin = $('.feature-admin', this).val();
-        }
-        if ($('.feature-god', this).is(':checked')) {
-            god = 1;
-        } else if ($('.feature-god', this).val()) {
-            god = $('.feature-god', this).val();
-        }
         let feature_values = {
             id: $('.feature-id', this).val(),
             name: $('.feature-name', this).val(),
             label: $('.feature-label', this).val(),
             type: $('.feature-type', this).val(),
             desc: $('.feature-desc', this).val(),
-            free: free,
-            pro: pro,
-            admin: admin,
-            god: god,
         };
+        var self = this;
+        plans.forEach(function(p) {
+            var val = 0;
+            var el = $('.feature-' + p.plan_key, self);
+            if (el.length) {
+                if (el.is(':checked')) {
+                    val = 1;
+                } else if (el.attr('type') === 'number' && el.val()) {
+                    val = el.val();
+                } else if (el.is(':checkbox') && !el.is(':checked')) {
+                    val = 0;
+                }
+            }
+            feature_values[p.plan_key] = val;
+        });
         features_data.push(feature_values);
     });
     jQuery.ajax({
@@ -4367,6 +4366,294 @@ function checkAllFeatures(p_class) {
     }
 }
 
+////////////////////////////////////////// PLAN MANAGEMENT  ////////////////////////////////////////////
+
+function showNewPlanForm() {
+    $('#new-plan-form').show();
+    $('#new-plan-label').val('');
+    $('#new-plan-notes').val('');
+    $('#new-plan-clone').val('0');
+}
+
+function createNewPlan() {
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'savePlan',
+            plan_label: $('#new-plan-label').val(),
+            plan_notes: $('#new-plan-notes').val(),
+            clone_from: $('#new-plan-clone').val()
+        },
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+            var resp = JSON.parse(data_received);
+            if (resp.success) {
+                location.reload();
+            }
+        }
+    });
+}
+
+function deletePlanConfirm(plan_id, plan_label) {
+    if (confirm('Delete plan "' + plan_label + '"? Users assigned to it will lose their plan assignment.')) {
+        showLoader('small');
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: {
+                action: 'deletePlan',
+                plan_id: plan_id
+            },
+            method: "POST",
+            success: function (data_received) {
+                displayAjaxResponse(data_received);
+                var resp = JSON.parse(data_received);
+                if (resp.success) {
+                    location.reload();
+                }
+            }
+        });
+    }
+}
+
+function editPlanFeatures(plan_id, plan_label) {
+    $('#plans-list-view').hide();
+    $('#plan-feature-editor').show();
+    $('#editing-plan-id').val(plan_id);
+    $('#editing-plan-label').text(plan_label);
+
+    if (typeof brSysFeatures === 'undefined') return;
+
+    var plan_key = '';
+    if (typeof brPlans !== 'undefined') {
+        brPlans.forEach(function(p) {
+            if (p.plan_id == plan_id) plan_key = p.plan_key;
+        });
+    }
+
+    var tbody = $('#plan-features-table tbody');
+    tbody.empty();
+    for (var fKey in brSysFeatures) {
+        var f = brSysFeatures[fKey];
+        var val = (plan_key && f[plan_key] !== undefined) ? f[plan_key] : '0';
+        var row = '<tr class="plan-feature-row">';
+        row += '<td class="font _16 w600 text-left">' + (f.label || fKey) + '</td>';
+        row += '<td class="text-center">';
+        row += '<input type="hidden" class="pf-feature-id" value="' + f.id + '">';
+        if (f.type === 'number') {
+            row += '<input type="number" class="form-ui pf-value w-100" value="' + val + '">';
+        } else {
+            row += '<input type="checkbox" class="pf-value" ' + (parseInt(val) ? 'checked' : '') + '>';
+        }
+        row += '</td></tr>';
+        tbody.append(row);
+    }
+}
+
+function backToPlans() {
+    $('#plan-feature-editor').hide();
+    $('#plans-list-view').show();
+}
+
+function savePlanFeaturesAction() {
+    showLoader('small');
+    var plan_id = $('#editing-plan-id').val();
+    var features_data = [];
+    $('.plan-feature-row').each(function () {
+        var feature_id = $('.pf-feature-id', this).val();
+        var el = $('.pf-value', this);
+        var val = 0;
+        if (el.is(':checkbox')) {
+            val = el.is(':checked') ? 1 : 0;
+        } else {
+            val = el.val() || 0;
+        }
+        features_data.push({ feature_id: feature_id, feature_value: val });
+    });
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'savePlanFeatures',
+            plan_id: plan_id,
+            features_data: features_data
+        },
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+var planSearchTimer = null;
+function searchUsersForPlanAssign() {
+    clearTimeout(planSearchTimer);
+    var search = $('#plan-user-search').val();
+    if (search.length < 2) {
+        $('#plan-user-results').html('');
+        return;
+    }
+    planSearchTimer = setTimeout(function () {
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: { action: 'searchPlayersForPlan', search: search },
+            method: "POST",
+            success: function (data_received) {
+                var resp = JSON.parse(data_received);
+                if (!resp.success) return;
+                var html = '<table class="table w-full" cellpadding="5"><thead><tr><td>Name</td><td>Email</td><td>Current Plan</td><td>Assign</td></tr></thead><tbody>';
+                var plans = (typeof brPlans !== 'undefined') ? brPlans : [];
+                resp.players.forEach(function (p) {
+                    html += '<tr>';
+                    html += '<td class="font _14">' + (p.player_display_name || '') + '</td>';
+                    html += '<td class="font _14">' + (p.player_email || '') + '</td>';
+                    html += '<td class="font _14">' + (p.plan_label || '<em>Role default</em>') + '</td>';
+                    html += '<td><select class="form-ui font _14" onChange="assignPlan(' + p.player_id + ', this.value);">';
+                    html += '<option value="0"' + (!p.user_plan_id ? ' selected' : '') + '>Role default</option>';
+                    plans.forEach(function (pl) {
+                        html += '<option value="' + pl.plan_id + '"' + (p.user_plan_id == pl.plan_id ? ' selected' : '') + '>' + pl.plan_label + '</option>';
+                    });
+                    html += '</select></td></tr>';
+                });
+                html += '</tbody></table>';
+                $('#plan-user-results').html(html);
+            }
+        });
+    }, 400);
+}
+
+function assignPlan(player_id, plan_id) {
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'assignUserPlan',
+            player_id: player_id,
+            plan_id: plan_id
+        },
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+////////////////////////////////////////// FEATURE CRUD  ////////////////////////////////////////////
+
+function showAddFeatureForm() {
+    $('#feature-form-title').text('Add Feature');
+    $('#feature-form-id').val('0');
+    $('#feature-form-name').val('').prop('readonly', false);
+    $('#feature-form-label').val('');
+    $('#feature-form-type').val('checkbox');
+    $('#feature-form-desc').val('');
+    $('#feature-form').show();
+}
+
+function editFeature(id, name, label, type, desc) {
+    $('#feature-form-title').text('Edit Feature');
+    $('#feature-form-id').val(id);
+    $('#feature-form-name').val(name).prop('readonly', true);
+    $('#feature-form-label').val(label);
+    $('#feature-form-type').val(type);
+    $('#feature-form-desc').val(desc);
+    $('#feature-form').show();
+}
+
+function saveFeatureAction() {
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveFeature',
+            feature_id: $('#feature-form-id').val(),
+            feature_name: $('#feature-form-name').val(),
+            feature_label: $('#feature-form-label').val(),
+            feature_type: $('#feature-form-type').val(),
+            feature_desc: $('#feature-form-desc').val()
+        },
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+            var resp = JSON.parse(data_received);
+            if (resp.success) {
+                location.reload();
+            }
+        }
+    });
+}
+
+function deleteFeatureConfirm(feature_id, feature_name) {
+    if (confirm('Delete feature "' + feature_name + '"? This will remove it from all plans.')) {
+        showLoader('small');
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: {
+                action: 'deleteFeature',
+                feature_id: feature_id
+            },
+            method: "POST",
+            success: function (data_received) {
+                displayAjaxResponse(data_received);
+                var resp = JSON.parse(data_received);
+                if (resp.success) {
+                    $('#feature-row-' + feature_id).remove();
+                }
+            }
+        });
+    }
+}
+
+////////////////////////////////////////// COPY PLAN FEATURES  ////////////////////////////////////////////
+
+function copyFromPlanAction() {
+    var source_id = $('#copy-from-plan-select').val();
+    var target_id = $('#editing-plan-id').val();
+    if (!source_id) return;
+    if (source_id == target_id) {
+        alert('Cannot copy a plan onto itself.');
+        return;
+    }
+    if (!confirm('This will overwrite all feature values for this plan. Continue?')) return;
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'copyPlanFeatures',
+            target_plan_id: target_id,
+            source_plan_id: source_id
+        },
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+            var resp = JSON.parse(data_received);
+            if (resp.success) {
+                location.reload();
+            }
+        }
+    });
+}
+
+////////////////////////////////////////// ROLE DEFAULTS  ////////////////////////////////////////////
+
+function saveRoleDefaults() {
+    showLoader('small');
+    var defaults = {};
+    $('.role-default-select').each(function () {
+        defaults[$(this).data('role')] = $(this).val();
+    });
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveRoleDefaults',
+            role_defaults: defaults
+        },
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
 
 ////////////////////////////////////////// Toggle Correct ////////////////////////////////////////////
 function toggleCorrect(who) {
@@ -4412,8 +4699,8 @@ function updateQuest() {
     let quest_questions = $('#questions .question').length;
 
     let steps_order = [];
-    $('tbody#steps-list tr.step').each(function () {
-        steps_order.push($('input.the_step_id_val', this).val());
+    $('#steps-list > .br-step-item').each(function () {
+        steps_order.push($(this).find('input.the_step_id_val').val());
     });
 
     let the_deadline = $('#the_quest_deadline').val() ? $('#the_quest_deadline').val() + ":00" : "";

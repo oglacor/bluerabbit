@@ -65,7 +65,7 @@
 			foreach($player_posts as $pp){
 				$player_post_by_id[$pp->quest_id][$pp->player_id]['p_id']= $pp->player_id;
 				$player_post_by_id[$pp->quest_id][$pp->player_id]['grade']= $pp->pp_grade;
-				if($pp->attempt_grade){
+				if(isset($pp->attempt_grade) && $pp->attempt_grade){
 					if($pp->attempt_grade > $player_post_by_id[$pp->quest_id][$pp->player_id]['grade']= $pp->pp_grade){
 						$player_post_by_id[$pp->quest_id][$pp->player_id]['grade']= $pp->attempt_grade;
 					}
@@ -84,7 +84,7 @@
 			WHERE adventure_id=$adv_parent_id AND quest_type IN ('quest','challenge','mission','survey') AND quest_status='publish' ORDER BY quest_order
 			");
 	
-			$achievements = getAchievements($adv_parent_id);
+			$achievements = BR_Achievement::instance()->getAchievements($adv_parent_id);
 			$achievements = isset($achievements['publish']) ? $achievements['publish'] : NULL;
 
 	
@@ -110,7 +110,7 @@
 				</label>
 				<input type="text" class="form-ui w-full" id="search-players" placeholder="<?php _e("Search players","bluerabbit"); ?>">
 				<label class="orange-bg-400">
-					<?php if($_GET['roles']=='all'){ ?>
+					<?php if(isset($_GET['roles']) && $_GET['roles']=='all'){ ?>
 						<a href="<?= get_bloginfo('url')."/players/?adventure_id=$adventure->adventure_id";?>" class="form-ui pull-right font-18 blue-grey-bg-800 white-color"><?= __("Hide GMs and NPCs","bluerabbit"); ?></a>
 					<?php }else{ ?>
 						<a href="<?= get_bloginfo('url')."/players/?adventure_id=$adventure->adventure_id&roles=all";?>" class="form-ui pull-right font-18 blue-grey-bg-800 white-color"><?= __("Show GMs and NPCs","bluerabbit"); ?></a>
@@ -147,9 +147,7 @@
 						</div>
 						<?php if(isset($isAdmin)){ ?>
 							<div class="cell player-refresh cursor-pointer w-80">
-								<button class="button-icon blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, $p->player_id"; ?>);">
-									<span class="icon icon-rotate"></span>
-								</a>
+								<span class="icon icon-rotate" style="opacity:0.3;"></span>
 							</div>
 						<?php } ?>
 						<div class="cell player-name cursor-pointer layer foreground w-250">
@@ -204,7 +202,7 @@
 						</div>
 						<?php if($isAdmin){ ?>
 							<div class="cell player-refresh cursor-pointer w-80 text-center row-<?= $p->player_id; ?>">
-								<button class="button-icon blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, $p->player_id"; ?>);">
+								<button class="button-icon blue-bg-800" onClick="updatePlayer(<?="$adventure->adventure_id, ".(is_object($p) ? $p->player_id : $p); ?>);">
 									<span class="icon icon-rotate"></span>
 								</a>
 							</div>
@@ -291,7 +289,7 @@
 						<?php } ?>
 						<?php foreach ($quests as $qkey=>$q) { ?>
 							<?php $absoluteValues['max_possible']+=1; ?>
-							<?php if($player_post_by_id[$q->quest_id][$p->player_id]['p_id']==$p->player_id){ ?>
+							<?php if(isset($player_post_by_id[$q->quest_id][$p->player_id]) && $player_post_by_id[$q->quest_id][$p->player_id]['p_id']==$p->player_id){ ?>
 								<div class="cell quest-title player-post <?= $q->quest_type; ?> column-<?= $q->quest_id; ?> row-<?= $p->player_id; ?>" id="<?= $q->quest_type."-".$q->quest_id."-".$p->player_id; ?>">
 									<div class="layer absolute sq-full background light-green-bg-400 opacity-30"></div>
 									<?php 
@@ -318,13 +316,13 @@
 												<span class="icon icon-check white-color perfect-center"></span>
 												<?php $absoluteValues['finished']+=1; ?>
 												<?php $absoluteValues['finished_q'][$q->quest_id]['title']=$q->quest_title; ?>
-												<?php $absoluteValues['finished_q'][$q->quest_id]['value']+=1; ?>
+												<?php $absoluteValues['finished_q'][$q->quest_id]['value'] = ($absoluteValues['finished_q'][$q->quest_id]['value'] ?? 0) + 1; ?>
 											</a>
 											<?php if($adventure->adventure_grade_scale == "percentage"){ ?>
-												<input class="form-ui relative layer base text-center" onChange="setGrade(<?= "$q->quest_id,$p->player_id"; ?>);" type="number" min="0" max="100" class="form-ui" id="the_post_grade_<?= $q->quest_id."_".$p->player_id; ?>" value="<?= $the_grade; ?>">
+												<input class="form-ui relative layer base text-center" onChange="setGrade(<?= "$q->quest_id,".(is_object($p) ? $p->player_id : $p); ?>);" type="number" min="0" max="100" class="form-ui" id="the_post_grade_<?= $q->quest_id."_".$p->player_id; ?>" value="<?= $the_grade; ?>">
 												<input type="hidden" class="cell-text-value" value="<?= $the_grade; ?>">
 											<?php }elseif($adventure->adventure_grade_scale == "letters"){   ?>
-												<select <?= $disabled; ?> class="form-ui relative layer base w-full text-center" id="the_post_grade_<?= $q->quest_id."_".$p->player_id; ?>" onChange="setGrade(<?= "$q->quest_id,$p->player_id"; ?>);">
+												<select <?= $disabled; ?> class="form-ui relative layer base w-full text-center" id="the_post_grade_<?= $q->quest_id."_".$p->player_id; ?>" onChange="setGrade(<?= "$q->quest_id,".(is_object($p) ? $p->player_id : $p); ?>);">
 													<option value="100" <?php if($the_grade == 100){ echo 'selected'; } ?>>A</option>
 													<option value="91.75" <?php if($the_grade < 100 && $the_grade >= 91.75){ echo 'selected';  }?>>A-</option>
 													<option value="83.25" <?php if($the_grade < 91.75 && $the_grade >= 83.25){ echo 'selected';  }?>>B+</option>
@@ -362,7 +360,7 @@
 						<?php } ?>
 						<?php foreach ($achievements as $akey=>$a) { ?>
 							<?php $absoluteValues['max_possible']+=1; ?>
-							<?php if($player_achievements_by_id[$a->achievement_id][$p->player_id]==$p->player_id){ ?>
+							<?php if(isset($player_achievements_by_id[$a->achievement_id][$p->player_id]) && $player_achievements_by_id[$a->achievement_id][$p->player_id]==$p->player_id){ ?>
 								<div class="cell quest-title player-post column-a-<?= $a->achievement_id; ?> row-<?= $p->player_id; ?>" id="<?= $q->quest_type."-".$q->quest_id."-".$p->player_id; ?>">
 									<input type="hidden" class="cell-text-value" value="<?= __("EARNED","bluerabbit"); ?>">
 									<span class="background light-green-bg-400 opacity-30"></span>
@@ -370,7 +368,7 @@
 										<span class="icon icon-check light-green-400"></span>
 										<?php $absoluteValues['finished']+=1; ?>
 										<?php $absoluteValues['finished_a'][$a->achievement_id]['title']=$a->achievement_name; ?>
-										<?php $absoluteValues['finished_a'][$a->achievement_id]['value']+=1; ?>
+										<?php $absoluteValues['finished_a'][$a->achievement_id]['value'] = ($absoluteValues['finished_a'][$a->achievement_id]['value'] ?? 0) + 1; ?>
 									</span>
 								</div>
 							<?php }else{ ?>

@@ -63,7 +63,7 @@
 					<td class="id" id="blocker-<?php echo $b->blocker_id; ?>"><strong>#<?php echo $b->blocker_id; ?></strong></td>
 					<td><strong><?php echo date('D, F jS, Y', strtotime($b->blocker_date)); ?></strong></td>
 					<td><?php echo apply_filters('the_content',$b->blocker_description); ?></td>
-					<td><strong><?php echo toMoney($b->blocker_cost); ?></strong></td>
+					<td><strong><?php echo BR_Utils::instance()->toMoney($b->blocker_cost); ?></strong></td>
 					<td>
 						<?php if($debt){ ?>
 							<?php if($paid){ ?>

@@ -182,7 +182,7 @@
 											
 											<td>
 												<span class="form-ui light-green-bg-400 white-color font _16">
-													<?php echo toMoney($iT->trnx_amount); ?>
+													<?php echo BR_Utils::instance()->toMoney($iT->trnx_amount); ?>
 												</span>
 											</td>
 											<td>

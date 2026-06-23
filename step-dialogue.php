@@ -12,7 +12,7 @@
 
 		<div class="dialogue-content-container attach-<?= $step->step_attach ? $step->step_attach : 'none'; ?>">
 			<?php if($step->step_character_name){ ?>
-				<?= stepTag($step->step_character_name); ?>
+				<?= BR_Utils::instance()->stepTag($step->step_character_name); ?>
 			<?php } ?>
 			<div class="dialogue-box" id="step-content-text-<?=$step->step_order;?>">
 				<div class="corner-tl"></div>

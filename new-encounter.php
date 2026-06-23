@@ -2,7 +2,7 @@
 <?php 
 	global $wpdb;
 	$encounter = $wpdb->get_row(" SELECT * FROM {$wpdb->prefix}br_encounters WHERE adventure_id=$adventure->adventure_id AND enc_id=$id");
-	$paths = getAchievements($adventure->adventure_id, 'path|rank');
+	$paths = BR_Achievement::instance()->getAchievements($adventure->adventure_id, 'path|rank');
 ?>
 
 

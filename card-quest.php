@@ -67,7 +67,7 @@
 						<input type="hidden" class="end-value" value="<?= $quest->mech_bloo; ?>">
 					</span>
 					<script>animateNumber('#bloo-number-q-<?=$quest->quest_id; ?>',1500,1500);</script>
-					<?php if(getSetting('use_encounters', $quest->adventure_id) > 0){ ?>
+					<?php if(BR_Config::instance()->getSetting('use_encounters', $quest->adventure_id) > 0){ ?>
 						<span class="inline-block" id="ep-number-q-<?=$quest->quest_id; ?>">
 							<span class="icon icon-activity"></span>
 							<span class="number">0</span>

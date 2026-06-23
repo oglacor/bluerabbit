@@ -1,7 +1,7 @@
 <div class="step <?= $i==0 ? 'active' : ''; ?>" id="step-<?= $step->step_order; ?>">
 	<?php include (TEMPLATEPATH . "/steps-background.php"); ?>
 	<div class="step-content-container item-required">
-		<?= stepTag(__("You need an item to continue","bluerabbit")); ?>
+		<?= BR_Utils::instance()->stepTag(__("You need an item to continue","bluerabbit")); ?>
 		<div class="dialogue-box" id="step-content-text-<?=$step->step_order;?>">
 			<div class="corner-tl"></div>
 			<div class="edge-top"></div>

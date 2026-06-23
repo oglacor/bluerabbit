@@ -641,7 +641,7 @@ const intro_steps = [
             }
         ]
     }, 
-    <?php if($myGuildExists){ ?>
+    <?php if(!empty($myGuildExists)){ ?>
     {
         id: 'step-6',
         title: "<?= __("Guilds","bluerabbit"); ?>",

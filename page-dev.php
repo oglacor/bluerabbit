@@ -10,7 +10,7 @@
 		global $wpdb; $current_user = wp_get_current_user();
 		$players = $wpdb->get_results("SELECT * from {$wpdb->prefix}br_players");
 		foreach( $players as $p){
-			$rand_hash = random_str(30,'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_');
+			$rand_hash = BR_Utils::instance()->random_str(30,'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_');
 			$update = $wpdb->update(
 				$wpdb->prefix.'br_players',
 				array(

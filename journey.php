@@ -6,7 +6,7 @@
 	$row = 1;
 	$counter = 0;
 
-	$tabis = getTabis($adv_parent_id);
+	$tabis = BR_Tabi::instance()->getTabis($adv_parent_id);
 
 	// Group tabi-assigned quests by tabi_id; free quests stay on the map
 	$tabi_quest_map = [];
@@ -17,8 +17,8 @@
 	}
 
 	// Tabi locking — GMs and admins bypass all locks
-	$tabi_prereq_map  = getTabiPrerequisitesMap($adv_parent_id);
-	$completed_tabis  = ($isGM || $isAdmin || $isNPC) ? [] : getCompletedTabiIds($adv_parent_id, $current_player->player_id);
+	$tabi_prereq_map  = BR_Tabi::instance()->getTabiPrerequisitesMap($adv_parent_id);
+	$completed_tabis  = ($isGM || $isAdmin || $isNPC) ? [] : BR_Tabi::instance()->getCompletedTabiIds($adv_parent_id, $current_player->player_id);
 	// Build locked map: tabi_id => bool
 	$tabi_locked = [];
 	if($tabis) {
@@ -101,7 +101,7 @@
 						$first_milestone_for_tutorial = $elementID;
 					}
 					$permalink = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
-					$miTemplate = resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today);
+					$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today);
 					include (TEMPLATEPATH . "/$miTemplate.php");
 				}
 			?>
@@ -111,7 +111,7 @@
 	<?php } //end foreach; ?>
 
 	<?php // Render journey graphic assets (display only — no controls)
-	$journey_assets = getJourneyAssets($adv_parent_id);
+	$journey_assets = BR_Tabi::instance()->getJourneyAssets($adv_parent_id);
 	// Pre-query leaderboard data if any leaderboard widget exists
 	$_lb_players = null;
 	if($journey_assets) {
@@ -169,7 +169,7 @@
                                     <span class="icon icon-star"></span> <?= $xp_label; ?>
                                 </div>
                                 <div class="right-legend w-third text-right pull-right">
-                                    <strong><?= toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= toMoney($nextLevel); ?></span>
+                                    <strong><?= BR_Utils::instance()->toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= BR_Utils::instance()->toMoney($nextLevel); ?></span>
                                 </div>
                             </div>
                             <div class="progress-bar gradient-xp-bar relative w-full">
@@ -182,8 +182,8 @@
                                     <span class="icon icon-bloo"></span> <?= $bloo_label; ?>
                                 </div>
                                 <div class="right-legend w-third text-right pull-right">
-                                    <strong><?= toMoney($player['bloo'],"$"); ?></strong> /
-                                    <strong><?= toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
+                                    <strong><?= BR_Utils::instance()->toMoney($player['bloo'],"$"); ?></strong> /
+                                    <strong><?= BR_Utils::instance()->toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
                                 </div>
                             </div>
                             <div class="progress-bar relative w-full">

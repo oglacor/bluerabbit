@@ -81,7 +81,7 @@
 		</a>
 		<?php
 		$nextMilestone = (isset($playerState) && isset($adv_parent_id))
-			? getNextAvailableMilestone($adv_parent_id, $adv_child_id, $quest->quest_id, $adventure, $playerState)
+			? BR_Progression::instance()->getNextAvailableMilestone($adv_parent_id, $adv_child_id, $quest->quest_id, $adventure, $playerState)
 			: null;
 		if ($nextMilestone): ?>
 		<a href="<?= get_bloginfo('url')."/$nextMilestone->quest_type/?questID=$nextMilestone->quest_id&adventure_id=$adv_child_id"; ?>" class="form-ui orange-bg-400 white-color padding-5 margin-5 font _18 w900 uppercase">

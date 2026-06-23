@@ -114,14 +114,14 @@
 						<span class="icon icon-star white-color "></span>
 					</span>
 					<span class="icon-content">
-						<span class="line font _24 w600 amber-800"><?= toMoney($q->mech_xp,""); ?></span>
+						<span class="line font _24 w600 amber-800"><?= BR_Utils::instance()->toMoney($q->mech_xp,""); ?></span>
 						<span class="line font _14 grey-500"><?= $xp_label; ?></span>
 					</span>
 					<span class="button-icon font _24 sq-40  green-bg-400 font _28">
 						<span class="icon icon-bloo white-color "></span>
 					</span>
 					<span class="icon-content">
-						<span class="line font _24 w600 green-800"><?= toMoney($q->mech_bloo,""); ?></span>
+						<span class="line font _24 w600 green-800"><?= BR_Utils::instance()->toMoney($q->mech_bloo,""); ?></span>
 						<span class="line font _14 grey-500"><?= $bloo_label; ?></span>
 					</span>
 				</span>
@@ -159,13 +159,13 @@
 			
 			<?php if($requirements){ ?>
 				<?php 
-					$my_items = getMyItems($adventure->adventure_id); 
+					$my_items = BR_Item::instance()->getMyItems($adventure->adventure_id); 
 					$myKeyItems = $my_items['ids']['key'];
 				?>
 				<?php if(!empty($reqs)){ ?>
 					<?php 
-						$my_quests = getMyQuests($adventure->adventure_id);
-						$my_achievements = getMyAchievements($adventure->adventure_id); 
+						$my_quests = BR_Quest::instance()->getMyQuests($adventure->adventure_id);
+						$my_achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id); 
 					?>
 					<h4 class="font _24 white-color w900 uppercase padding-20 text-center"><?php _e("Requirements","bluerabbit"); ?>: </h4>
 					<div class="highlight padding-10">

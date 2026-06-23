@@ -15,7 +15,7 @@
 </svg>
 
 
-<?php $tabi_data = getTabi($id); 
+<?php $tabi_data = BR_Tabi::instance()->getTabi($id);
 $t = $tabi_data['tabi'];
 $tabi_pieces = $tabi_data['pieces']
 

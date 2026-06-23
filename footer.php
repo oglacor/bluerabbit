@@ -96,7 +96,7 @@
 						<span class="icon icon-quest"></span>
 						<?php _e("Reset Demo","bluerabbit"); ?>
 					</h1>
-					<?php if(getSetting('req_password_reset_demo', $adventure->adventure_id)){ ?>
+					<?php if(BR_Config::instance()->getSetting('req_password_reset_demo', $adventure->adventure_id)){ ?>
 						<h3 class="white-bg grey-900 padding-5 font _14"><?= __("To reset this demo type your pasword and click reset","bluerabbit"); ?></h3>
 						<br>
 						<div class="input-group w-full">
@@ -424,7 +424,7 @@
 										<span class="icon icon-star"></span> <?= $xp_long_label; ?>
 									</div>
 									<div class="right-legend w-third text-right pull-right">
-										<strong><?= toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= toMoney($nextLevel); ?></span>
+										<strong><?= BR_Utils::instance()->toMoney($current_player->player_xp); ?></strong> <span class="font condensed kerning-1"> / <?= BR_Utils::instance()->toMoney($nextLevel); ?></span>
 									</div>
 								</div>
 								<div class="progress-bar gradient-xp-bar relative w-full">
@@ -438,8 +438,8 @@
 									</div>
 									<div class="right-legend w-third text-right pull-right">
 
-										<strong><?= toMoney($player['bloo'],"$"); ?></strong> <span class="font condensed kerning-1"></span> /
-										<strong><?= toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
+										<strong><?= BR_Utils::instance()->toMoney($player['bloo'],"$"); ?></strong> <span class="font condensed kerning-1"></span> /
+										<strong><?= BR_Utils::instance()->toMoney($player['totalEarned'],"$"); ?></strong> <span class="font condensed kerning-1"><?= __("earned","bluerabbit"); ?></span>
 									</div>
 								</div><br>
 								<div class="progress-bar relative w-full">
@@ -483,7 +483,7 @@
 			include (get_stylesheet_directory() . '/tutorials/tutorial-journey.php');
 		}
         ?>
-        <?php if(!$current_player->player_hide_intro && !$adventure->adventure_instructions && is_page('adventure')){ ?>
+        <?php if(is_page('adventure') && isset($current_player, $adventure) && empty($current_player->player_hide_intro) && empty($adventure->adventure_instructions)){ ?>
             <script>
                tour.start();
             </script>
@@ -492,7 +492,7 @@
 			include (get_stylesheet_directory() . '/tutorials/tutorial-adventures-list.php');
 		}
 		?>
-		<?php if(is_page('adventures') && !br_has_seen_tutorial('adventures-list')){ ?>
+		<?php if(is_page('adventures') && !BR_Player::instance()->br_has_seen_tutorial('adventures-list')){ ?>
 			<script>
 			   tour.start();
 			</script>
@@ -501,7 +501,7 @@
 			include (get_stylesheet_directory() . '/tutorials/tutorial-quest.php');
 		}
 		?>
-		<?php if(isset($q) && $q && is_page('quest') && !br_has_seen_tutorial('quest')){ ?>
+		<?php if(isset($q) && $q && is_page('quest') && !BR_Player::instance()->br_has_seen_tutorial('quest')){ ?>
 			<script>
 			   tour.start();
 			</script>
@@ -510,7 +510,7 @@
 			include (get_stylesheet_directory() . '/tutorials/tutorial-challenge.php');
 		}
 		?>
-		<?php if(isset($challenge_data) && $challenge_data && is_page('challenge') && !br_has_seen_tutorial('challenge')){ ?>
+		<?php if(isset($challenge_data) && $challenge_data && is_page('challenge') && !BR_Player::instance()->br_has_seen_tutorial('challenge')){ ?>
 			<script>
 			   tour.start();
 			</script>
@@ -519,7 +519,7 @@
 			include (get_stylesheet_directory() . '/tutorials/tutorial-mission.php');
 		}
 		?>
-		<?php if(isset($m) && $m && is_page('mission') && !br_has_seen_tutorial('mission')){ ?>
+		<?php if(isset($m) && $m && is_page('mission') && !BR_Player::instance()->br_has_seen_tutorial('mission')){ ?>
 			<script>
 			   tour.start();
 			</script>
@@ -529,7 +529,7 @@
 		foreach($br_builder_pages as $br_builder_slug){
 			if(is_page($br_builder_slug)){
 				include (get_stylesheet_directory() . "/tutorials/tutorial-$br_builder_slug.php");
-				if(!br_has_seen_tutorial($br_builder_slug)){
+				if(!BR_Player::instance()->br_has_seen_tutorial($br_builder_slug)){
 					?><script>tour.start();</script><?php
 				}
 				break;

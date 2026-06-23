@@ -1,590 +1,450 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 if($adventure && ($isGM || $isAdmin || $isNPC)){
-	$achievement_id = isset($_GET['achievement_id']) ? $_GET['achievement_id'] : 0;
-	
+	$achievement_id = isset($_GET['achievement_id']) ? (int) $_GET['achievement_id'] : 0;
 	$paths = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."br_achievements WHERE adventure_id=$adv_parent_id AND achievement_display!='badge' AND achievement_status='publish' AND achievement_id != $achievement_id ");
-	
 	$a = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."br_achievements WHERE achievement_id=$achievement_id AND achievement_status='publish'");
 	if(isset($a)){
 		$selected_players = $wpdb->get_col("SELECT player_id FROM ".$wpdb->prefix."br_player_achievement WHERE achievement_id=$a->achievement_id AND adventure_id=$adv_child_id");
 	}
-	?>
-		<div class="dashboard">
-			<div class="dashboard-sidebar grey-bg-800 sticky padding-10">
-				<div class="tabs-buttons" id="main-tabs-buttons">
-					<ul class="margin-0 padding-0">
-						<?php if($isGM || $isAdmin){ ?>
-							<li class="block">
-								<button class="form-ui w-full relative tab-button overflow-hidden active" id="general-tab-button" onClick="switchTabs('#main-tabs','#general');">
-									<span class="icon icon-settings foreground relative"></span>
-									<span class="foreground relative"><?= __("Settings","bluerabbit");?></span>
-									<span class="active-content background orange-bg-700"></span>
-									<span class="inactive-content background grey-bg-600"></span>
-								</button>
-							</li>
-							<li class="block">
-								<button class="form-ui w-full relative tab-button overflow-hidden" id="achievement-codes-tab-button" onClick="switchTabs('#main-tabs','#achievement-codes');">
-									<span class="icon icon-qr foreground relative"></span>
-									<span class="foreground relative"><?= __("Achievement Codes","bluerabbit");?></span>
-									<span class="active-content background orange-bg-700"></span>
-									<span class="inactive-content background grey-bg-600"></span>
-								</button>
-							</li>
+	$is_edit = (isset($a) && $a);
+?>
+
+<div class="br-page br-has-bottom-bar">
+
+	<!-- Header -->
+	<div class="br-panel br-page-header">
+		<div class="br-page-header-avatar" style="background:rgba(159,64,226,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(159,64,226,0.4)">
+			<span class="icon icon-achievement" style="font-size:28px;color:#9f40e2"></span>
+		</div>
+		<div>
+			<h1 class="br-page-title"><?= $is_edit ? __("Edit Achievement", "bluerabbit") . ' — ' . esc_html($a->achievement_name) : __("New Achievement", "bluerabbit"); ?></h1>
+			<span class="br-page-subtitle"><?= esc_html($adventure->adventure_title); ?></span>
+		</div>
+		<?php if($is_edit){ ?>
+			<input type="hidden" id="the_achievement_id" value="<?= $a->achievement_id; ?>">
+			<input type="hidden" id="the_achievement_ref_id" value="<?= $a->ref_id; ?>">
+		<?php } ?>
+	</div>
+
+	<!-- Sticky Tabs -->
+	<div class="br-tabs br-tabs-sticky" id="main-tabs-buttons">
+		<?php if($isGM || $isAdmin){ ?>
+		<button class="br-tab-btn active" onClick="brScrollTo('general', this);">
+			<span class="icon icon-settings"></span> <?= __("Settings", "bluerabbit"); ?>
+		</button>
+		<button class="br-tab-btn" onClick="brScrollTo('achievement-codes', this);">
+			<span class="icon icon-qr"></span> <?= __("Codes", "bluerabbit"); ?>
+		</button>
+		<?php } ?>
+		<button class="br-tab-btn <?= $isNPC ? 'active' : ''; ?>" onClick="brScrollTo('select-players', this);">
+			<span class="icon icon-players"></span> <?= __("Players", "bluerabbit"); ?>
+		</button>
+		<?php if($is_edit && ($isGM || $isAdmin)){ ?>
+		<span style="margin-left:auto;display:flex;align-items:center">
+			<img src="<?= esc_url($a->achievement_qrcode); ?>" style="height:36px;image-rendering:pixelated;border-radius:4px;opacity:0.6" title="<?= __('QR Code', 'bluerabbit'); ?>">
+		</span>
+		<?php } ?>
+	</div>
+
+	<!-- Tab Content -->
+		<?php if($isGM || $isAdmin){ ?>
+		<!-- ═══ SETTINGS ═══ -->
+		<div class="br-scroll-section" id="general"><div class="br-panel">
+			<h3 class="br-panel-title"><span class="icon icon-achievement"></span> <?= __("Achievement Settings", "bluerabbit"); ?></h3>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Name", "bluerabbit"); ?></label>
+				<input class="br-input br-input-lg" type="text" id="the_achievement_name"
+					   value="<?= isset($a) ? esc_attr($a->achievement_name) : ''; ?>"
+					   placeholder="<?= __('Achievement name', 'bluerabbit'); ?>">
+			</div>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Achievement Badge", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+				<div class="br-form-component">
+					<div class="gallery"><div class="gallery-item setting">
+						<div class="background" style="background-image: url(<?= isset($a) ? $a->achievement_badge : ''; ?>);" onClick="showWPUpload('the_achievement_badge');" id="the_achievement_badge_thumb"></div>
+						<div class="gallery-item-options relative">
+							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
+							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_achievement_badge');"><span class="icon icon-trash"></span></button>
+							<input type="hidden" id="the_achievement_badge" value="<?= isset($a) ? $a->achievement_badge : ''; ?>">
+						</div>
+					</div></div>
+				</div>
+			</div>
+
+			<div class="br-form-grid">
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Color", "bluerabbit"); ?></label>
+					<div class="br-form-component" id="tutorial-color-select">
+						<?php $selected_color = isset($a) ? $a->achievement_color : 'purple'; ?>
+						<input id="the_achievement_color" class="color-selected" type="hidden" value="<?= $selected_color; ?>">
+						<?php $color_select_id = "#the_achievement_color"; include(TEMPLATEPATH . '/color-select.php'); ?>
+					</div>
+				</div>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Type", "bluerabbit"); ?></label>
+					<select class="br-input" id="the_achievement_display" onChange="checkPath();">
+						<option <?= (isset($a) && $a->achievement_display=='badge') ? 'selected' : ''; ?> value="badge"><?= __("Badge", "bluerabbit"); ?></option>
+						<option <?= (isset($a) && $a->achievement_display=='rank') ? 'selected' : ''; ?> value="rank"><?= __("Rank", "bluerabbit"); ?></option>
+						<option <?= (isset($a) && $a->achievement_display=='path') ? 'selected' : ''; ?> value="path"><?= __("Path", "bluerabbit"); ?></option>
+					</select>
+				</div>
+			</div>
+
+			<div class="br-form-grid conditional-display path-display">
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Group", "bluerabbit"); ?></label>
+					<span class="br-form-hint"><?= __("Exclusive between paths — players earn ONE from the group", "bluerabbit"); ?></span>
+					<?php $groups = ['A','B','C','D','E','F','G','H','I','J']; ?>
+					<select class="br-input" id="the_achievement_group">
+						<option value="" <?= (!isset($a) || !$a->achievement_group) ? 'selected' : ''; ?>><?= __("No Group", "bluerabbit"); ?></option>
+						<?php foreach ($groups as $g) { ?>
+						<option value="<?= $g; ?>" <?= (isset($a) && $a->achievement_group == $g) ? 'selected' : ''; ?>>Group <?= $g; ?></option>
 						<?php } ?>
-						<li class="block">
-							<button class="form-ui w-full relative tab-button overflow-hidden <?= $isNPC ? "active" : ""; ?>" id="select-players-tab-button" onClick="switchTabs('#main-tabs','#select-players');">
-								<span class="icon icon-players foreground relative"></span>
-								<span class="foreground relative"><?= __("Players","bluerabbit");?></span>
-								<span class="active-content background orange-bg-700"></span>
-								<span class="inactive-content background grey-bg-600"></span>
+					</select>
+				</div>
+				<div class="br-form-group badge-display">
+					<label class="br-form-label"><?= __("Available for", "bluerabbit"); ?></label>
+					<select class="br-input" id="the_achievement_path">
+						<option <?= (isset($a) && !$a->achievement_path) ? 'selected' : ''; ?> value="0"><?= __("All Paths", "bluerabbit"); ?></option>
+						<?php foreach ($paths as $path) { ?>
+						<option value="<?= $path->achievement_id; ?>" <?= (isset($a) && $a->achievement_path == $path->achievement_id) ? 'selected' : ''; ?>><?= esc_html($path->achievement_name); ?></option>
+						<?php } ?>
+					</select>
+				</div>
+			</div>
+
+			<div class="br-form-group conditional-display badge-display">
+				<label class="br-form-label"><?= __("Max Players", "bluerabbit"); ?></label>
+				<span class="br-form-hint"><?= __("Leave blank for no limit", "bluerabbit"); ?></span>
+				<input class="br-input" type="number" id="the_achievement_max" value="<?= isset($a) ? $a->achievement_max : ''; ?>" placeholder="0">
+			</div>
+
+			<div class="br-form-grid conditional-display badge-display path-display">
+				<div class="br-form-group">
+					<label class="br-form-label"><?= $xp_long_label; ?></label>
+					<input class="br-input" type="number" id="the_achievement_xp" value="<?= isset($a) ? $a->achievement_xp : ''; ?>">
+				</div>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= $bloo_long_label; ?></label>
+					<input class="br-input" type="number" id="the_achievement_bloo" value="<?= isset($a) ? $a->achievement_bloo : ''; ?>">
+				</div>
+				<?php if ($use_encounters) { ?>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= $ep_long_label; ?></label>
+					<input class="br-input" type="number" id="the_achievement_ep" value="<?= isset($a) ? $a->achievement_ep : ''; ?>">
+				</div>
+				<?php } ?>
+			</div>
+
+			<div class="br-form-group conditional-display badge-display">
+				<label class="br-form-label"><?= __("Deadline", "bluerabbit"); ?></label>
+				<?php $deadline = (isset($a) && $a->achievement_deadline != "0000-00-00 00:00:00") ? date('Y/m/d H:i', strtotime($a->achievement_deadline)) : ''; ?>
+				<input class="br-input datetimepicker" autocomplete="off" id="the_achievement_deadline" value="<?= $deadline; ?>" placeholder="<?= __('No deadline', 'bluerabbit'); ?>">
+				<input class="the_start_date" type="hidden" value="<?= date('Y/m/d H:i'); ?>">
+			</div>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Secret Message", "bluerabbit"); ?></label>
+				<span class="br-form-hint"><?= __("This message will be seen once the players earn the achievement.", "bluerabbit"); ?></span>
+				<?php
+				$wp_editor_settings = ($roles[0] == "administrator") ? ['quicktags' => true, 'editor_height' => 350] : ['quicktags' => false, 'editor_height' => 350];
+				wp_editor(isset($a) ? $a->achievement_content : '', 'the_achievement_content', $wp_editor_settings);
+				?>
+			</div>
+		</div></div>
+
+		<!-- ═══ CODES ═══ -->
+		<div class="br-scroll-section" id="achievement-codes"><div class="br-panel">
+			<h3 class="br-panel-title"><span class="icon icon-magic"></span> <?= __("Magic Code", "bluerabbit"); ?></h3>
+			<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("This code can be used by all players. The reward only happens once.", "bluerabbit"); ?></span>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Magic Code", "bluerabbit"); ?></label>
+				<div class="br-input-row">
+					<input class="br-input br-input-lg" type="text" id="the_achievement_code"
+						   value="<?= isset($a) ? $a->achievement_code : ''; ?>" onChange="updateMagicCode();">
+					<button class="br-btn br-btn-green" onClick="createMagicCode();"><span class="icon icon-magic"></span> <?= __("Generate", "bluerabbit"); ?></button>
+					<button class="br-btn br-btn-red" onClick="clearMagicCode();"><span class="icon icon-cancel"></span></button>
+				</div>
+			</div>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Magic Link", "bluerabbit"); ?></label>
+				<?php $magicLink = (isset($a) && $a->achievement_code) ? get_bloginfo('url') . "/magic-link/?c=$a->achievement_code&adv=$a->adventure_id" : ''; ?>
+				<input type="hidden" id="site-url" value="<?= get_bloginfo('url') . '/magic-link/?&c='; ?>">
+				<input class="br-input" id="the_magic_link" readonly type="text" value="<?= $magicLink; ?>" onClick="this.select();" style="color:rgba(255,255,255,0.5)">
+			</div>
+
+			<h3 class="br-panel-title" style="margin-top:24px"><span class="icon icon-qr"></span> <?= __("Unique Codes", "bluerabbit"); ?></h3>
+			<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("These codes can only be used once per player.", "bluerabbit"); ?></span>
+			<?php if(isset($a)){ ?>
+				<div class="tabs" id="unique-code-tabs">
+					<div class="tabs-header" id="unique-code-tabs-buttons">
+						<div class="br-tabs" style="margin-bottom:0;border-bottom:1px solid rgba(28,194,235,0.08);padding-bottom:12px">
+							<button onClick="switchTabs('#unique-code-tabs','#unique-codes-avaliable');" class="br-tab-btn tab-button active" id="unique-codes-avaliable-tab-button">
+								<span class="icon icon-check"></span> <?= __("Available", "bluerabbit"); ?>
 							</button>
-						</li>
-						<?php if($isGM || $isAdmin){ ?>
-							<li class="block">
-								<h4 class="white-color padding-5 text-center font _18 condensed"><?= __("Status","bluerabbit"); ?></h4>
-							</li>
-							<li class="block">
-								<?php if(isset($a)){ ?>
-									<select id="the_achievement_status" class="form-ui">
-										<option value="publish" <?php if(!$a->achievement_status|| $a->achievement_status == 'publish'){ echo 'selected'; }?>><?php _e('Publish','bluerabbit'); ?></option>
-										<option value="draft" <?php if($a->achievement_status == 'draft'){ echo 'selected'; }?>><?php _e('Draft','bluerabbit'); ?></option>
-										<option value="trash" <?php if($a->achievement_status == 'trash'){ echo 'selected'; }?>><?php _e('Trash','bluerabbit'); ?></option>
-									</select>
-								<?php } else{ ?>
-									<select id="the_achievement_status" class="form-ui">
-										<option value="publish" selected><?php _e('Publish','bluerabbit'); ?></option>
-										<option value="draft"><?php _e('Draft','bluerabbit'); ?></option>
-										<option value="trash"><?php _e('Trash','bluerabbit'); ?></option>
-									</select>
-								<?php }?>
-
-							</li>
-							<li class="block text-center">
-								<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_achievement_nonce'); ?>"/>
-								<button id="submit-button" type="button" class="form-ui green-bg-400 w-full" onClick="updateAchievement();">
-									<span class="icon icon-check"></span>
-									<?= ($adventure && $a) ? __("Update Achievement","bluerabbit") : __("Create Achievement","bluerabbit"); ?>
-								</button>
-							</li>
-							<li class="block text-center">
-								<a class="form-ui red-bg-400 font _14" href="<?php echo get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id"; ?>">
-									<span class="icon icon-xs icon-cancel"></span><?php _e('Cancel','bluerabbit'); ?><br>
-								</a>
-							</li>
-                            <?php if($a){ ?>
-							<li class="block text-center padding-10">
-								<h4 class="white-color padding-5 text-center font _18 condensed"><span class="icon icon-qr"></span> <?= __("Magic QR Code","bluerabbit"); ?></h4>
-								<img src="<?= esc_url($a->achievement_qrcode); ?>" style="max-width:160px; display:block; margin:8px auto; image-rendering:pixelated;">
-							</li>
-
-
-						    <?php } ?>
-						<?php } ?>
-					</ul>
-				</div>
-			</div>
-			<div class="dashboard-content white-bg">
-				<div class="w-full padding-10 purple-bg-50">
-					<span class="icon-group">
-						<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-achievement"></span></span>
-						<span class="icon-content">
-							<span class="line font _24 grey-800">
-								<?= (isset($adventure) && isset($a)) ? __("Edit Achievement","bluerabbit")." ".$a->achievement_name : __("New Achievement","bluerabbit"); ?>
-							</span>
-							<?php if(isset($a)){ ?>
-								<input type="hidden" id="the_achievement_id" value="<?= $a->achievement_id; ?>">
-								<input type="hidden" id="the_achievement_ref_id" value="<?= $a->ref_id; ?>">
-							<?php } ?>
-						</span>
-					</span>
-				</div>
-				<div class="tabs" id="main-tabs">
-					<?php if($isGM || $isAdmin){ ?>
-					<div class="tab max-w-900 padding-10 active" id="general">
-						<div class="highlight padding-10 grey-bg-200">
-							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
-								<span class="icon-content">
-									<span class="line font _24 grey-800"><?php _e("Achievement Settings","bluerabbit"); ?></span>
-								</span>
-							</span>
+							<button onClick="switchTabs('#unique-code-tabs','#unique-codes-redeemed');" class="br-tab-btn tab-button" id="unique-codes-redeemed-tab-button">
+								<span class="icon icon-players"></span> <?= __("Redeemed", "bluerabbit"); ?>
+							</button>
+							<button onClick="switchTabs('#unique-code-tabs','#unique-codes-expired');" class="br-tab-btn tab-button" id="unique-codes-expired-tab-button">
+								<span class="icon icon-cancel"></span> <?= __("Expired", "bluerabbit"); ?>
+							</button>
+							<button class="br-btn" style="margin-left:auto" onClick="newUniqueAchievementCode(<?= $a->achievement_id; ?>);switchTabs('#unique-code-tabs','#unique-codes-avaliable');">
+								<span class="icon icon-add"></span> <?= __("Create Code", "bluerabbit"); ?>
+							</button>
 						</div>
-						<table class="table w-full" cellpadding="0">
+					</div>
+
+					<div class="tab active" id="unique-codes-avaliable" style="padding-top:12px">
+						<?php $codes = BR_Achievement::instance()->getUniqueAchievementCodes($a->achievement_id);
+						$available = array_filter($codes, function($c) { return $c->code_status == 'publish'; });
+						?>
+						<?php if (empty($available)) { ?>
+						<div class="br-empty" style="padding:20px"><span class="icon icon-qr"></span><h3><?= __("No available codes", "bluerabbit"); ?></h3></div>
+						<?php } else { ?>
+						<table class="br-table">
+							<thead><tr><th style="width:50px"></th><th><?= __("Code", "bluerabbit"); ?></th><th style="width:120px;text-align:right"><?= __("Actions", "bluerabbit"); ?></th></tr></thead>
+							<tbody id="achievement-codes-table">
+							<?php foreach ($codes as $key => $c) { if ($c->code_status == 'publish') { include(TEMPLATEPATH . '/achievement-unique-code.php'); } } ?>
+							</tbody>
+						</table>
+						<details style="margin-top:12px">
+							<summary style="cursor:pointer;font-size:12px;color:rgba(255,255,255,0.35)"><?= __("Show all links", "bluerabbit"); ?></summary>
+							<div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:10px;margin-top:6px;font-size:11px;color:rgba(255,255,255,0.4);word-break:break-all;max-height:200px;overflow-y:auto">
+								<?php foreach ($codes as $c) { if ($c->code_status == 'publish') { ?>
+								<div style="padding:2px 0"><?= get_bloginfo('url') . "/magic-link/?c=$c->code_value&adv=$a->adventure_id"; ?></div>
+								<?php } } ?>
+							</div>
+						</details>
+						<?php } ?>
+					</div>
+
+					<div class="tab" id="unique-codes-redeemed" style="padding-top:12px">
+						<?php $redeemed = array_filter($codes, function($c) { return $c->code_status == 'redeem'; }); ?>
+						<?php if (empty($redeemed)) { ?>
+						<div class="br-empty" style="padding:20px"><span class="icon icon-players"></span><h3><?= __("No redeemed codes", "bluerabbit"); ?></h3></div>
+						<?php } else { ?>
+						<table class="br-table">
+							<thead><tr><th><?= __("Code", "bluerabbit"); ?></th><th><?= __("Status", "bluerabbit"); ?></th><th><?= __("Redeemed", "bluerabbit"); ?></th><th><?= __("Player", "bluerabbit"); ?></th></tr></thead>
+							<tbody>
+								<?php foreach ($codes as $c) { if ($c->code_status == 'redeem') { ?>
+								<tr>
+									<td><span style="font-weight:600;letter-spacing:0.5px"><?= $c->code_value; ?></span></td>
+									<td><span class="br-badge br-badge-green"><?= __("Redeemed", "bluerabbit"); ?></span></td>
+									<td style="font-size:12px;color:rgba(255,255,255,0.5)"><?= $c->code_redeemed; ?></td>
+									<td><?= esc_html($c->player_display_name); ?></td>
+								</tr>
+								<?php } } ?>
+							</tbody>
+						</table>
+						<?php } ?>
+					</div>
+
+					<div class="tab" id="unique-codes-expired" style="padding-top:12px">
+						<?php $expired = array_filter($codes, function($c) { return $c->code_status == 'expired'; }); ?>
+						<?php if (empty($expired)) { ?>
+						<div class="br-empty" style="padding:20px"><span class="icon icon-cancel"></span><h3><?= __("No expired codes", "bluerabbit"); ?></h3></div>
+						<?php } else { ?>
+						<table class="br-table">
+							<thead><tr><th><?= __("Code", "bluerabbit"); ?></th><th><?= __("Expired", "bluerabbit"); ?></th></tr></thead>
+							<tbody>
+								<?php foreach ($codes as $c) { if ($c->code_status == 'expired') { ?>
+								<tr>
+									<td><span style="font-weight:600;letter-spacing:0.5px;opacity:0.5"><?= $c->code_value; ?></span></td>
+									<td style="font-size:12px;color:rgba(255,255,255,0.4)"><?= $c->code_deadline; ?></td>
+								</tr>
+								<?php } } ?>
+							</tbody>
+						</table>
+						<?php } ?>
+					</div>
+				</div>
+			<?php } else { ?>
+				<div class="br-empty" style="padding:24px">
+					<span class="icon icon-qr"></span>
+					<h3><?= __("Must save the achievement before generating codes", "bluerabbit"); ?></h3>
+				</div>
+			<?php } ?>
+		</div></div>
+		<?php } ?>
+
+		<!-- ═══ PLAYERS ═══ -->
+		<div class="br-scroll-section" id="select-players"><div class="br-panel">
+			<?php if(isset($a)){ ?>
+				<div class="tabs" id="assign-manually">
+					<div class="tabs-header" id="assign-manually-buttons">
+						<div class="br-tabs" style="margin-bottom:0;border-bottom:1px solid rgba(28,194,235,0.08);padding-bottom:12px">
+							<button onClick="switchTabs('#assign-manually','#players-selection');" class="br-tab-btn tab-button active" id="players-selection-tab-button">
+								<span class="icon icon-players"></span> <?= __("Select Players", "bluerabbit"); ?>
+							</button>
+							<button onClick="switchTabs('#assign-manually','#players-awarded');" class="br-tab-btn tab-button" id="players-awarded-tab-button">
+								<span class="icon icon-achievement"></span> <?= __("Awarded", "bluerabbit"); ?>
+								<span style="background:rgba(159,64,226,0.25);color:#9f40e2;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700"><?= count($selected_players); ?></span>
+							</button>
+						</div>
+					</div>
+
+					<div class="tab active" id="players-selection" style="padding-top:4px">
+						<?php include(TEMPLATEPATH . '/player-select-achievement.php'); ?>
+					</div>
+
+					<div class="tab" id="players-awarded" style="padding-top:12px">
+						<?php
+						$awarded_players = [];
+						if (!empty($selected_players)) {
+							$player_ids = implode(",", array_map('intval', $selected_players));
+							$awarded_players = $wpdb->get_results("
+								SELECT a.*, b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email
+								FROM {$wpdb->prefix}br_player_adventure a
+								LEFT JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
+								WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' AND a.player_id IN ($player_ids)
+								ORDER BY b.player_email LIMIT 1000
+							");
+						}
+						?>
+						<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+							<span style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.9)">
+								<?= __("Awarded Players", "bluerabbit"); ?>
+							</span>
+							<span class="br-badge br-badge-purple"><?= count($awarded_players); ?> <?= __("players", "bluerabbit"); ?></span>
+						</div>
+
+						<?php if (empty($awarded_players)) { ?>
+						<div class="br-empty" style="padding:20px">
+							<span class="icon icon-achievement"></span>
+							<h3><?= __("No players awarded yet", "bluerabbit"); ?></h3>
+						</div>
+						<?php } else { ?>
+						<div style="margin-bottom:10px">
+							<input type="text" class="br-input" id="search-awarded-players" placeholder="<?= __('Search awarded players...', 'bluerabbit'); ?>" style="max-width:300px">
+						</div>
+						<table class="br-table" id="awarded-players-table">
 							<thead>
-								<tr class="font _12 grey-600">
-									<td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td>
-									<td><?php _e('Value','bluerabbit'); ?></td>
+								<tr>
+									<th style="width:50px"></th>
+									<th><?= __("Player", "bluerabbit"); ?></th>
+									<th><?= __("Email", "bluerabbit"); ?></th>
+									<th style="width:100px;text-align:right"><?= __("Actions", "bluerabbit"); ?></th>
 								</tr>
 							</thead>
-							<tbody class="font _16">
-								<tr>
-									<td class="text-right w-150"><?php _e('Name','bluerabbit'); ?></td>
+							<tbody>
+								<?php foreach ($awarded_players as $play) { ?>
+								<tr id="awarded-row-<?= $play->player_id; ?>" data-search="<?= esc_attr(strtolower($play->player_first . ' ' . $play->player_last . ' ' . $play->player_email)); ?>">
 									<td>
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-achievement"></span></label>
-											<input class="form-ui font _30 w-full" type="text" value="<?= isset($a) ? $a->achievement_name : ""; ?>" id="the_achievement_name">
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td class="text-right v-top">
-										<span class="font _16 block"><?= __("Achievement Badge","bluerabbit");?></span>
-										<span class="font _12 block red-500">
-											<?php _e("Required","bluerabbit"); ?>
-										</span>
+										<div style="width:36px;height:36px;border-radius:50%;background-size:cover;background-position:center;background-color:rgba(255,255,255,0.1);background-image:url(<?= esc_url($play->player_picture); ?>)"></div>
 									</td>
 									<td>
-										<div class="gallery">
-											<div class="gallery-item setting">
-												<div class="background" style="background-image: url(<?= isset($a) ? $a->achievement_badge : ""; ?>);" onClick="showWPUpload('the_achievement_badge');" id="the_achievement_badge_thumb"></div>
-												<div class="gallery-item-options relative">
-													<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
-													<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_achievement_badge');"> <span class="icon icon-trash"></span> </button>
-													<input type="hidden" id="the_achievement_badge" value="<?= isset($a) ? $a->achievement_badge : ""; ?>"/>
-												</div>
-											</div>
-										</div>
+										<span style="font-weight:600;color:rgba(255,255,255,0.9)"><?= esc_html($play->player_first . ' ' . $play->player_last); ?></span>
+									</td>
+									<td style="font-size:13px;color:rgba(255,255,255,0.5)"><?= esc_html($play->player_email); ?></td>
+									<td id="player-achievement-list-<?= $play->player_id; ?>" class="active" style="text-align:right">
+										<button class="active-content br-btn br-btn-red" style="padding:4px 10px;font-size:12px" onClick="triggerAchievement(<?= "$a->achievement_id, $play->player_id"; ?>);">
+											<span class="icon icon-trash"></span> <?= __("Remove", "bluerabbit"); ?>
+										</button>
+										<button class="inactive-content br-btn br-btn-green" style="padding:4px 10px;font-size:12px" onClick="triggerAchievement(<?= "$a->achievement_id, $play->player_id"; ?>);">
+											<span class="icon icon-check"></span> <?= __("Restore", "bluerabbit"); ?>
+										</button>
 									</td>
 								</tr>
-								<tr>
-									<td class="text-right w-150"><?php _e('Color','bluerabbit'); ?></td>
-									<td>
-										<div class="highlight padding-10 grey-bg-200" id="tutorial-color-select">
-											<?php $selected_color = isset($a) ? $a->achievement_color : 'purple' ; ?>
-											<input id="the_achievement_color" class="color-selected" type="hidden" value="<?= $selected_color; ?>">
-					<?php 
-					$color_select_id = "#the_achievement_color";
-					include (TEMPLATEPATH . '/color-select.php');
-					?>
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td class="text-right w-150 purple-bg-100"><?php _e('Type','bluerabbit'); ?></td>
-									<td class="purple-bg-100">
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-view"></span></label>
-											<select class="form-ui" id="the_achievement_display" onChange="checkPath();">
-												<option <?= (isset($a) && $a->achievement_display=='badge') ? 'selected' : ''; ?> value='badge'><?=__("Badge","bluerabbit"); ?></option>
-												<option <?= (isset($a) && $a->achievement_display=='rank') ? 'selected' : ''; ?> value='rank'><?=__("Rank","bluerabbit"); ?></option>
-												<option <?= (isset($a) && $a->achievement_display=='path') ? 'selected' : ''; ?> value='path'><?=__("Path","bluerabbit"); ?></option>
-											</select>
-										</div>
-									</td>
-								</tr>
-								<tr class="conditional-display path-display">
-									<td class="text-right w-150 purple-bg-100">
-										<span class="font _16 block"><?php _e('Group','bluerabbit'); ?></span>
-										<span class="font _12 block"><?php _e('In case you want this to be exclusive between several paths, players will only earn ONE achievement from the group','bluerabbit'); ?></span>
-									</td>
-									<td class="purple-bg-100">
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-view"></span></label>
-											<?php $groups = array(
-												array("A","red-bg-400 white-color"),
-												array("B","orange-bg-400 white-color"),
-												array("C","amber-bg-400 grey-900"),
-												array("D","green-bg-400 white-color"),
-												array("E","teal-bg-400 white-color"),
-												array("F","cyan-bg-400 white-color"),
-												array("G","blue-bg-400 white-color"),
-												array("H","indigo-bg-400 white-color"),
-												array("I","deep-purple-bg-400 white-color"),
-												array("J","pink-bg-400 white-color"),
-											); 
-											?>
-											<select class="form-ui w-full" id="the_achievement_group">
-												<option class="font w900" value="" <?= (!$a || !$a->achievement_group) ? "selected" : ""; ?>>No Group</option>
-												<?php foreach ($groups as $g){ ?>
-													<option class="<?=$g[1];?>" value="<?=$g[0];?>" <?= (isset($a) && $a->achievement_group==$g[0]) ? "selected" : ""; ?>>Group <?=$g[0];?></option>
-												<?php } ?>
-											</select>
-										</div>
-									</td>
-								</tr>
-								<tr class="conditional-display path-display badge-display">
-									<td class="text-right w-150 red-bg-200"><?php _e('Available for','bluerabbit'); ?></td>
-									<td>
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-tag"></span></label>
-											<select id="the_achievement_path" class="form-ui">
-												<option <?= (isset($a) && !$a->achievement_path) ? 'selected' : ''; ?> value='0'><?= __("All Paths","bluerabbit"); ?></option>
-												<?php foreach($paths as $path){ ?>
-													<option value='<?=$path->achievement_id; ?>' <?= $a->achievement_path == $path->achievement_id ? 'selected' : ''; ?>>
-														<?=$path->achievement_name; ?>
-													</option>
-												<?php } ?>
-											</select>
-										</div>
-									</td>
-								</tr>
-								
-								<tr class="conditional-display badge-display ">
-									<td class="text-right w-150">
-										<?php _e('Max Players','bluerabbit'); ?><br>
-										<span class="grey-400 font _12"><?php _e('Leave blank for no limit','bluerabbit'); ?><br>
-									</td>
-									<td>
-										<div class="input-group w-full">
-											<input class="form-ui" type="number" value="<?= isset($a) ? $a->achievement_max : ""; ?>" id="the_achievement_max">
-										</div>
-									</td>
-								</tr>
-								<tr class="conditional-display badge-display path-display">
-									<td class="text-right w-150"><?= $xp_long_label; ?></td>
-									<td>
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-star"></span></label>
-											<input type="number" class="form-ui w-full" id="the_achievement_xp" value="<?=  isset($a) ? $a->achievement_xp : "";?>">
-										</div>
-									</td>
-								</tr>
-								<tr class="conditional-display badge-display path-display">
-									<td class="text-right w-150"><?= $bloo_long_label; ?></td>
-									<td>
-										<div class="input-group w-full">
-											<label class="purple-bg-800 font w900"><span class="icon icon-bloo"></span></label>
-											<input type="number" class="form-ui w-full" id="the_achievement_bloo" value="<?=  isset($a) ? $a->achievement_bloo : "";?>">
-										</div>
-									</td>
-								</tr>
-								<?php if($use_encounters){ ?>
-									<tr class="conditional-display badge-display path-display">
-										<td class="text-right w-150"><?= $ep_long_label; ?></td>
-										<td>
-											<div class="input-group w-full">
-												<label class="purple-bg-800 font w900"><span class="icon icon-activity"></span></label>
-												<input type="number" class="form-ui w-full" id="the_achievement_ep" value="<?=  isset($a) ? $a->achievement_ep : "";?>">
-											</div>
-										</td>
-									</tr>
 								<?php } ?>
-								<tr class="conditional-display badge-display">
-									<td class="text-right w-150"><?php _e('Deadline','bluerabbit'); ?></td>
-									<td>
-										<?php 
-										if(isset($a) && $a->achievement_deadline != "0000-00-00 00:00:00"){ 
-											$deadline =date('Y/m/d H:i',strtotime($a->achievement_deadline)); 
-										}else{
-											$deadline = '';
-										} ?>
-										<input class="form-ui font w600 datetimepicker grey-900 text-left"  autocomplete="off" id="the_achievement_deadline" type="text" value="<?= $deadline; ?>" >
-										<input class="the_start_date" type="hidden" value="<?= date('Y/m/d H:i');?>" >
-									</td>
-								</tr>
-								<tr class="">
-									<td class="text-right w-150">
-										<?php _e('Secret Message',"bluerabbit"); ?>
-									</td>
-									<td>
-										<span class="icon-group">
-											<span class="button-icon font _24 sq-40  indigo-bg-400">
-												<span class="icon icon-warning white-color"></span>
-											</span>
-											<span class="icon-content">
-												<span class="line font _14 w300 grey-500"><?php _e('This message will be seen once the players earn the achievement.','bluerabbit'); ?></span>
-											</span>
-										</span>
-										<div class="padding-5 w-full">
-											<?php 
-											if($roles[0]=="administrator"){
-												$wp_editor_settings = array( 'quicktags'=> true,'editor_height'=>350);
-											}else{
-												$wp_editor_settings = array( 'quicktags'=> false ,'editor_height'=>350);
-											}
-											if( isset($a) ){
-												wp_editor( $a->achievement_content, 'the_achievement_content',$wp_editor_settings); 	
-											}else{
-												wp_editor('', 'the_achievement_content',$wp_editor_settings); 	
-											}
-											?>
-										</div>
-									</td>
-								</tr>
-								
-								
 							</tbody>
 						</table>
-					</div>
-					<div class="tab max-w-900 padding-10" id="achievement-codes">
-						<div class="highlight padding-10 grey-bg-200">
-							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
-								<span class="icon-content">
-									<span class="line font _24 grey-800"><?php _e("Magic Code","bluerabbit"); ?></span>
-									<span class="line font _14 grey-800">
-										<?= __("This code can be used by all players.","bluerabbit"); ?><br>
-										<?= __("The achievement is assigned only once so it doesn't matter if the player scans or uses the code multiple times.","bluerabbit"); ?><br>
-										<?= __("The reward only happens once.","bluerabbit"); ?>
-									</span>
-								</span>
-							</span>
-						</div>
-						<table class="table w-full" cellpadding="0">
-							<thead>
-								<tr class="font _12 grey-600">
-									<td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td>
-									<td><?php _e('Value','bluerabbit'); ?></td>
-								</tr>
-							</thead>
-							<tbody class="font _16">
-								<tr>
-									<td class="text-right w-150"><?php _e('Magic code','bluerabbit'); ?></td>
-									<td>
-										<div class="input-group w-full font _30">
-											<label class="purple-bg-800 font _30 w900"><span class="icon icon-magic"></span></label>
-											<input class="form-ui" type="text" value="<?= isset($a) ? $a->achievement_code : ""; ?>" id="the_achievement_code" onChange="updateMagicCode();">
-											<label class="cyan-bg-400">
-												<button class="form-ui cyan-bg-600 font _24" onClick="createMagicCode();"><?php _e("Generate","bluerabbit"); ?></button>
-											</label>
-											<label class="red-bg-400">
-												<button class="form-ui transparent-bg font _24" onClick="clearMagicCode();"><span class="icon icon-cancel"></span></button>
-											</label>
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td class="text-right w-150"><?php _e('Magic link','bluerabbit'); ?></td>
-									<td>
-										<?php 
-											if( isset($a) && $a->achievement_code){ 
-												$magicLink = get_bloginfo('url')."/magic-link/?c=$a->achievement_code&adv=$a->adventure_id"; 
-											}else{
-												$magicLink = '';
-											}
-										?>
-										<input type="hidden" id="site-url" value="<?= get_bloginfo('url')."/magic-link/?&c="; ?>">
-										<div class="input-group w-full badge-display path-display conditional-display" id="tutorial-magic-link">
-											<label class="teal-bg-400"><span class="icon icon-qr"></span></label>
-											<input class="form-ui teal w-full" id="the_magic_link" readonly type="text" value="<?= $magicLink; ?>">
-											<span class="tool-tip top">
-												<span class="tool-tip-text"><?php _e("The magic link is generated automatically","bluerabbit"); ?></span>
-											</span>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-						<div class="highlight padding-10 deep-purple-bg-100">
-							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-qr"></span></span>
-								<span class="icon-content">
-									<span class="line font _24 grey-800"><?php _e("Unique Codes","bluerabbit"); ?></span>
-									<span class="line font _14 grey-800">
-										<?= __("This codes can only be used once.","bluerabbit"); ?><br>
-										<?= __("A player can't earn the same achievement twice so only one code per player will work.","bluerabbit"); ?><br>
-										<?= __("Codes are affected by the max number of players that can earn the achievement and the deadline.","bluerabbit"); ?>
-									</span>
-								</span>
-							</span>
-						</div>
-						<?php if(isset($a)){ ?>
-							<div class="tabs" id="unique-code-tabs">
-								<div class="tabs-header" id="unique-code-tabs-buttons">
-									<div class="tabs-buttons">
-										<button onClick="switchTabs('#unique-code-tabs','#unique-codes-avaliable');" class="tab-button active purple-border-400" id="unique-codes-avaliable-tab-button">
-											<?= __("Available","bluerabbit");?>
-										</button>
-										<button onClick="switchTabs('#unique-code-tabs','#unique-codes-redeemed');" class="tab-button purple-border-400" id="unique-codes-redeemed-tab-button">
-											<?= __("Redeemed","bluerabbit"); ?>
-										</button>
-										<button onClick="switchTabs('#unique-code-tabs','#unique-codes-expired');" class="tab-button purple-border-400" id="unique-codes-expired-tab-button">
-											<?= __("Expired","bluerabbit"); ?>
-										</button>
-										<button class="form-ui font _18 pull-right" onClick="newUniqueAchievementCode(<?=$a->achievement_id; ?>);switchTabs('#unique-code-tabs','#unique-codes-avaliable');">
-											<?= __("Create Unique Code","bluerabbit"); ?>
-										</button>
-									</div>
-								</div>
-								<div class="tab active" id="unique-codes-avaliable">
-									<table class="table">
-										<thead>
-											<tr>
-												<td><?=__("ID","bluerabbit");?></td>
-												<td><?=__("Code","bluerabbit");?></td>
-												<td><?=__("Actions","bluerabbit");?></td>
-											</tr>
-										</thead>
-										<tbody id="achievement-codes-table">
-										<?php
-										$codes = getUniqueAchievementCodes($a->achievement_id);
-										foreach($codes as $key=>$c){ 
-											if($c->code_status=='publish'){
-												include (TEMPLATEPATH . '/achievement-unique-code.php'); 
-											}
-										} ?>
-										</tbody>
-									</table>
-									<div class="list-of-links">
-										<ul>
-										<?php
-										foreach($codes as $key=>$c){ 
-											if($c->code_status=='publish'){
-												?>
-											<li><?php echo get_bloginfo('url')."/magic-link/?c=$c->code_value&adv=$a->adventure_id"; ?></li>
-											<?php
-											}
-										} ?>
-											
-										</ul>
-									</div>
-								</div>
-								<div class="tab" id="unique-codes-redeemed">
-									<table class="table">
-										<thead>
-											<tr>
-												<td><?=__("Code","bluerabbit");?></td>
-												<td><?=__("Status","bluerabbit");?></td>
-												<td><?=__("Redeemed","bluerabbit");?></td>
-												<td><?=__("Player","bluerabbit");?></td>
-												<td><?=__("Link","bluerabbit");?></td>
-											</tr>
-										</thead>
-										<tbody id="">
-											<?php foreach($codes as $key=>$c){ ?>
-												<?php if($c->code_status == 'redeem'){ ?>
-													<tr class="padding-10">
-														<td class="relative"><?= $c->code_value; ?> </td>
-														<td> <?=$c->code_status;?> </td>
-														<td> <?=$c->code_redeemed; ?> </td>
-														<td><?= $c->player_display_name; ?></td>
-														<td> <?= get_bloginfo('url')."/magic-link/?c=$c->code_value"; ?> </td>
-													</tr>
-												<?php } ?>
-											<?php } ?>
-										</tbody>
-									</table>
-								</div>
-								<div class="tab" id="unique-codes-expired">
-									<table class="table">
-										<thead>
-											<tr>
-												<td><?=__("Code","bluerabbit");?></td>
-												<td><?=__("Expired","bluerabbit");?></td>
-											</tr>
-										</thead>
-										<tbody id="">
-											<?php foreach($codes as $key=>$c){ ?>
-												<?php if($c->code_status == 'expired'){ ?>
-													<tr class="padding-10">
-														<td class="relative">
-															<?= $c->code_value; ?>
-															<?= $c->code_status;?>
-														</td>
-														<td> <?=$c->code_deadline; ?> </td>
-													</tr>
-												<?php } ?>
-											<?php } ?>
-										</tbody>
-									</table>
-								</div>
-							</div>
-						<?php }else{ ?>
-							<div class="padding-20 amber-bg-200">
-								<div class="icon-group">
-									<div class="button-icon font _24 sq-48 amber-bg-500">
-										<span class="icon icon-warning white-color"></span>
-									</div>
-									<div class="icon-content">
-										<div class="line font w500 _26"><?= __("Must save the achievement before generating UNIQUE codes","bluerabbit");?></div>
-									</div>
-								</div>
-							</div>
-						<?php } ?>
-					</div>
-					<?php } ?>
-					<div class="tab max-w-900 padding-10  <?= $isNPC ? "active" : ""; ?>" id="select-players">
-						<?php if(isset($a)){ ?>
-							<div class="tabs" id="assign-manually">
-								<div class="tabs-header" id="assign-manually-buttons">
-									<div class="tabs-buttons">
-										<button onClick="switchTabs('#assign-manually','#players-selection');" class="tab-button active purple-border-400" id="players-selection-tab-button">
-											<?= __("Select Players","bluerabbit");?>
-										</button>
-										<button onClick="switchTabs('#assign-manually','#players-awarded');" class="tab-button purple-border-400" id="players-awarded-tab-button">
-											<?= __("Awarded","bluerabbit"); ?>
-										</button>
-									</div>
-								</div>
-								<div class="tab active" id="players-selection">
-									
-									<?php include (TEMPLATEPATH . '/player-select-achievement.php'); ?>
-								</div>
-								<div class="tab" id="players-awarded">
-									<?php
-									$player_ids = implode(",",$selected_players);
-									$players = $wpdb->get_results("
-									SELECT a.*, b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_hexad, b.player_hexad_slug FROM {$wpdb->prefix}br_player_adventure a
-									LEFT JOIN {$wpdb->prefix}br_players b 
-									on a.player_id = b.player_id
-									WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' AND a.player_id IN ($player_ids) ORDER BY b.player_email LIMIT 1000
-
-									");
-									?>
-									<div class="highlight padding-10 grey-bg-100" id="tutorial-earned-players">
-										<span class="icon-group">
-											<span class="button-icon font _24 sq-40  indigo-bg-400">
-												<?= count($players); ?>
-											</span>
-											<span class="icon-content">
-												<span class="line font w500 _26"><?php _e('Awarded Players',"bluerabbit"); ?></span>
-												<span class="line font _14 w300 grey-500"><?php _e('A list of the players that earned the achievement.','bluerabbit'); ?></span>
-											</span>
-										</span>
-									</div>
-									<div class="content w-full">
-										<table class="table compact">
-											<thead>
-												<tr>
-													<td><?php _e("ID","bluerabbit"); ?></td>
-													<td><?php _e("Name","bluerabbit"); ?></td>
-													<td><?php _e("Email","bluerabbit"); ?></td>
-													<td><?php _e("Actions","bluerabbit"); ?></td>
-												</tr>
-											</thead>
-											<tbody>
-												<?php foreach($players as $play){ ?>
-													<tr>
-														<td><?= $play->player_id; ?></td>
-														<td><?= $play->player_first." ".$play->player_last; ?></td>
-														<td><?= $play->player_email; ?></td>
-														<td id="player-achievement-list-<?=$play->player_id;?>" class="active">
-															<button class="active-content form-ui red-bg-400 white-color" onClick="triggerAchievement(<?php echo "$a->achievement_id, $play->player_id"; ?>);">
-																<?= __("Remove","bluerabbit"); ?>
-															</button>
-															<button class="inactive-content form-ui blue-bg-400 white-color" onClick="triggerAchievement(<?php echo "$a->achievement_id, $play->player_id"; ?>);">
-																<?= __("Restore","bluerabbit"); ?>
-															</button>
-														
-														
-														</td>
-													</tr>
-												<?php } ?>
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						<?php }else{ ?>
-							<div class="padding-20 amber-bg-200">
-								<div class="icon-group">
-									<div class="button-icon font _24 sq-48 amber-bg-500">
-										<span class="icon icon-warning white-color"></span>
-									</div>
-									<div class="icon-content">
-										<div class="line font w500 _26"><?= __("Must save the achievement before awarding players","bluerabbit");?></div>
-									</div>
-								</div>
-							</div>
+						<div class="br-pagination" id="awarded-pagination"></div>
+						<script>
+						var brAwardedPlayers = {
+							page: 1, perPage: 20,
+							init: function() {
+								var self = this;
+								$('#search-awarded-players').on('keyup', function() { self.page = 1; self.render(); });
+								this.render();
+							},
+							render: function() {
+								var search = $('#search-awarded-players').val().toLowerCase();
+								var $rows = $('#awarded-players-table tbody tr');
+								$rows.each(function() {
+									var match = !search || ($(this).data('search') || '').indexOf(search) >= 0;
+									$(this).data('filtered', match);
+								});
+								var $visible = $rows.filter(function() { return $(this).data('filtered'); });
+								var total = $visible.length, pages = Math.ceil(total / this.perPage);
+								if (this.page > pages) this.page = Math.max(1, pages);
+								var start = (this.page - 1) * this.perPage, end = start + this.perPage;
+								$rows.hide();
+								$visible.slice(start, end).show();
+								this.renderPagination(pages);
+							},
+							renderPagination: function(pages) {
+								if (pages <= 1) { $('#awarded-pagination').html(''); return; }
+								var h = '', p = this.page;
+								if (p > 1) h += '<button class="br-page-btn" onclick="brAwardedPlayers.goTo('+(p-1)+')">&laquo;</button>';
+								for (var i = Math.max(1,p-3); i <= Math.min(pages,p+3); i++) {
+									h += '<button class="br-page-btn'+(i===p?' active':'')+'" onclick="brAwardedPlayers.goTo('+i+')">'+i+'</button>';
+								}
+								if (p < pages) h += '<button class="br-page-btn" onclick="brAwardedPlayers.goTo('+(p+1)+')">&raquo;</button>';
+								$('#awarded-pagination').html(h);
+							},
+							goTo: function(p) { this.page = p; this.render(); }
+						};
+						$(function() { brAwardedPlayers.init(); });
+						</script>
 						<?php } ?>
 					</div>
 				</div>
-			</div>
+			<?php } else { ?>
+				<div class="br-empty" style="padding:24px">
+					<span class="icon icon-players"></span>
+					<h3><?= __("Must save the achievement before awarding players", "bluerabbit"); ?></h3>
+				</div>
+			<?php } ?>
+		</div></div>
+
 </div>
 
-<script> checkPath(); </script>
+<!-- Fixed Bottom Bar -->
+<div class="br-form-bottom-bar">
+	<a class="br-btn br-btn-red" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id"; ?>">
+		<span class="icon icon-cancel"></span> <?= __("Cancel", "bluerabbit"); ?>
+	</a>
+	<div class="br-actions">
+		<?php if($isGM || $isAdmin){ ?>
+		<select id="the_achievement_status" class="br-input" style="width:auto">
+			<option value="publish" <?= (!$is_edit || !$a->achievement_status || $a->achievement_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish", "bluerabbit"); ?></option>
+			<option value="draft" <?= ($is_edit && $a->achievement_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft", "bluerabbit"); ?></option>
+			<option value="trash" <?= ($is_edit && $a->achievement_status == 'trash') ? 'selected' : ''; ?>><?= __("Trash", "bluerabbit"); ?></option>
+		</select>
+		<?php } ?>
+		<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_achievement_nonce'); ?>">
+		<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateAchievement();">
+			<span class="icon icon-check"></span>
+			<?= $is_edit ? __("Update Achievement", "bluerabbit") : __("Create Achievement", "bluerabbit"); ?>
+		</button>
+	</div>
+</div>
 
+<script>
+function brScrollTo(id, btn) {
+	document.querySelectorAll('.br-tabs-sticky .br-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+	btn.classList.add('active');
+	document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+(function() {
+	var sections = document.querySelectorAll('.br-scroll-section');
+	var buttons  = document.querySelectorAll('.br-tabs-sticky .br-tab-btn');
+	if (!sections.length || !buttons.length) return;
+	var observer = new IntersectionObserver(function(entries) {
+		entries.forEach(function(entry) {
+			if (!entry.isIntersecting) return;
+			buttons.forEach(function(b, i) { b.classList.toggle('active', sections[i] && sections[i].id === entry.target.id); });
+		});
+	}, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+	sections.forEach(function(s) { observer.observe(s); });
+})();
+</script>
+<script> checkPath(); </script>
 <?php }else{ ?>
 	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
 <?php } ?>

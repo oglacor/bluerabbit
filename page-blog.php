@@ -7,7 +7,7 @@
 		$offset = 0;
 	}
 
-	$myAchievements = getMyAchievements($adventure->adventure_id);
+	$myAchievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
 	$a_ids=(implode(",",$myAchievements)); 
 
 	$hide_quests = $adventure->adventure_hide_quests ? $adventure->adventure_hide_quests : "";

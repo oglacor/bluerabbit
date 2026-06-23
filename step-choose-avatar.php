@@ -1,7 +1,7 @@
 <div class="step <?= $i==0 ? 'active' : ''; ?>" id="step-<?= $step->step_order; ?>">
 	<?php include (TEMPLATEPATH . "/steps-background.php"); ?>
 	<div class="step-content-container avatar-choice">
-		<?= stepTag(__("Choose your avatar","bluerabbit")); ?>
+		<?= BR_Utils::instance()->stepTag(__("Choose your avatar","bluerabbit")); ?>
 		<div class="step-avatars">
 			<?php if($step_buttons[$step->step_id]){ ?>
 				<?php foreach($step_buttons[$step->step_id] as $key=>$b){ ?>

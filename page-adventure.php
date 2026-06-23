@@ -9,7 +9,7 @@
 
 	<?php
 		if($adventure->adventure_has_guilds && !$current_player->player_guild && !$isGM && !$isAdmin){
-			$guild_assigned = assignGuild($current_user->ID, $adventure->adventure_id);
+			$guild_assigned = BR_Guild::instance()->assignGuild($current_user->ID, $adventure->adventure_id);
 		}
 	?>
 
@@ -66,11 +66,11 @@
 					}
 				}
 			}
-			if($autoload){
+			if(!empty($autoload)){
 				$finishedAutoLoad = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_posts WHERE player_id=$current_player->player_id AND quest_id=$autoload->quest_id AND adventure_id=$adventure->adventure_id");
 			}
 			?>		
-			<?php if($autoload && !$finishedAutoLoad){ 
+			<?php if(!empty($autoload) && !$finishedAutoLoad){ 
 				$url = get_bloginfo('url')."/quest/?questID=$autoload->quest_id&adventure_id=$adventure->adventure_id";
 			?>
 			<script>
@@ -199,7 +199,7 @@
 								?>
 								<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="order:<?= $mi->quest_order; ?>">
 								<?php
-								$miTemplate = resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today_map);
+								$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today_map);
 								include (TEMPLATEPATH . "/$miTemplate.php");
 								?>
 								</div>
@@ -219,7 +219,7 @@
 <?php 
 	$tabi_on_journey = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_tabis WHERE adventure_id=$adv_parent_id AND tabi_on_journey=1 AND tabi_status='publish'"); 
 	if($tabi_on_journey){ 
-		$adv_tabi = getMyTabi($tabi_on_journey->tabi_id);
+		$adv_tabi = BR_Tabi::instance()->getMyTabi($tabi_on_journey->tabi_id);
 		?>
 		<svg width="0" height="0" style="position: absolute;">
 		<defs>

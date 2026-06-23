@@ -4,7 +4,7 @@
 			$i = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id={$_GET['item_id']} AND adventure_id=$adventure->adventure_id AND item_status='publish'");
 
 			if($i){
-				$myAchievements = getMyAchievements($adventure->adventure_id);
+				$myAchievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
 				$a_ids=(implode(",",$myAchievements)); 
 				if($a_ids){ $condition = "items.achievement_id IN ($a_ids) OR "; }
 
@@ -108,7 +108,7 @@
 									<div class="layer base relative text-center">
 										<span class="icon-group inline-table">
 											<span class="icon-content text-center white-color">
-												<span class=" font _30 w600"><?=toMoney($i->item_cost,"$"); ?></span>
+												<span class=" font _30 w600"><?=BR_Utils::instance()->toMoney($i->item_cost,"$"); ?></span>
 											</span>
 										</span>
 									</div>

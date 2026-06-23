@@ -1,5 +1,5 @@
 <!doctype html>
-<?php $config = getSysConfig(); ?>
+<?php $config = BR_Config::instance()->getSysConfig(); ?>
 <html>
 	<head>
 		<meta charset="utf-8">

@@ -20,7 +20,7 @@
             <div class="milestone-action">
                 <button class="action-button deadline-unlock" onClick='payment(<?=$mi->quest_id;?>,"deadline");'>
                     <?= __("Deadline missed","bluerabbit")." ".date('D, M jS, Y | H:i',strtotime($mi->mech_deadline)); ?><br>
-					<?= __("Unlock for","bluerabbit");?><span class='icon icon-bloo'></span><?= toMoney($mi->mech_deadline_cost,""); ?>
+					<?= __("Unlock for","bluerabbit");?><span class='icon icon-bloo'></span><?= BR_Utils::instance()->toMoney($mi->mech_deadline_cost,""); ?>
                 </button>
             </div>
             <div class="milestone-modal-divider"></div>
@@ -42,7 +42,7 @@
 					<?= __("Deadline missed","bluerabbit")." ".date('D, M jS, Y | H:i',strtotime($mi->mech_deadline)); ?>
 				</h2>
 				<button class="button layer foreground relative form-ui locked-mark red-bg-500" onClick='payment(<?=$mi->quest_id;?>,"deadline");'> 
-					<?= __("Unlock for","bluerabbit");?><span class='icon icon-bloo'></span><?= toMoney($mi->mech_deadline_cost,""); ?><br>
+					<?= __("Unlock for","bluerabbit");?><span class='icon icon-bloo'></span><?= BR_Utils::instance()->toMoney($mi->mech_deadline_cost,""); ?><br>
 				</button>
 			</div>
 		</div>

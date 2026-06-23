@@ -118,8 +118,10 @@ $radius-pill:  20px;
 }
 
 // ── Table ────────────────────────────────────────────────
-
-.br-table {
+.br-table-wrap {
+    background-color: rgba(11, 61, 79, 0.6);
+}
+.br-table { 
   width: 100%;
   border-collapse: collapse;
   color: $br-white;
@@ -195,7 +197,7 @@ $radius-pill:  20px;
 
 // ── Buttons ──────────────────────────────────────────────
 
-.br-btn {
+.br-btn, a.br-btn, button.br-btn { 
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -219,11 +221,29 @@ $radius-pill:  20px;
   }
 
   .icon { font-size: 13px; }
+
+    // Outline variants (border + transparent bg)
+    &.br-btn-green { @include color-variant($br-green); }
+    &.br-btn-red   { @include color-variant($br-red); }
+    &.br-btn-amber { @include color-variant($br-amber); }
+    &.br-btn-blue   { @include color-variant($br-primary); }
+    &.br-btn-purple { @include color-variant($br-purple); }
+    &.br-btn-teal   { @include color-variant($br-teal); }
+
+    // Solid variants (filled bg)
+    &.cyan   { background: $br-primary; color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
+    &.green  { background: $br-green;   color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
+    &.amber  { background: $br-accent;  color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
+    &.red    { background: $br-red;     color: $br-white; border-color: transparent; &:hover { opacity: 0.85; } }
+    &.purple { background: $br-purple;  color: $br-white; border-color: transparent; &:hover { opacity: 0.85; } }
+    &.ghost  {
+      background: rgba($br-white, 0.06);
+      border: 1px solid rgba($br-white, 0.12);
+      color: $br-white;
+      &:hover { opacity: 0.85; }
+    }
 }
 
-.br-btn-green { @include color-variant($br-green); }
-.br-btn-red   { @include color-variant($br-red); }
-.br-btn-amber { @include color-variant($br-amber); }
 
 // ── Inline action group ──────────────────────────────────
 
@@ -341,10 +361,10 @@ $radius-pill:  20px;
   overflow-x: auto;
 }
 
-.br-tab-btn {
+.br-tab-btn, a.br-tab-btn, button.br-tab-btn {
   flex: 1;
   padding: 10px 16px;
-  border: none;
+  border: none; 
   border-radius: 8px;
   background: transparent;
   color: rgba($br-white, 0.4);
@@ -373,7 +393,7 @@ $radius-pill:  20px;
 // Sticky variant
 .br-tabs-sticky {
   position: sticky;
-  top: 0;
+  top: 50px;
   z-index: 100;
   background: rgba($br-bg, 0.97);
   backdrop-filter: blur(12px);
@@ -387,7 +407,7 @@ $radius-pill:  20px;
 
 // Scroll sections
 .br-scroll-section {
-  scroll-margin-top: 70px;
+  scroll-margin-top: 120px;
 }
 
 // ── Empty state ──────────────────────────────────────────
@@ -417,6 +437,217 @@ $radius-pill:  20px;
   }
 }
 
+// ── Forms ────────────────────────────────────────────────
+
+.br-form-group {
+  margin-bottom: 20px;
+}
+
+.br-form-label {
+  display: block;
+  @include condensed-heading(13px, 700);
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.5);
+  margin-bottom: 6px;
+}
+
+.br-input {
+  background: rgba($br-white, 0.06);
+  border: 1px solid rgba($br-primary, 0.15);
+  border-radius: $radius-sm;
+  padding: 10px 14px;
+  color: $br-white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  font-family: inherit;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: rgba($br-primary, 0.4);
+    background: rgba($br-white, 0.08);
+  }
+
+  &::placeholder {
+    color: rgba($br-white, 0.25);
+  }
+}
+
+.br-input-lg {
+  font-family: $condensed;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 12px 16px;
+}
+
+select.br-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231cc2eb' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+
+  option {
+    background: #0b3d4f;
+    color: $br-white;
+  }
+}
+
+.br-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .br-input { flex: 1; }
+}
+
+.br-form-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba($br-white, 0.25);
+}
+
+.br-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid rgba($br-primary, 0.1);
+}
+
+.br-form-bottom-bar {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: rgba($br-bg, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba($br-primary, 0.12);
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .br-actions { gap: 10px; }
+}
+
+.br-has-bottom-bar {
+  padding-bottom: 80px;
+}
+
+.br-form-component {
+  background: rgba($br-bg, 0.3);
+  border: 1px solid rgba($br-white, 0.04);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.br-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .br-form-grid { grid-template-columns: 1fr; }
+}
+
+// ── Selectable Grid (dark theme override) ────────────────
+
+.br-form-component ul.selectable-list.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+
+  li {
+    width: 150px;
+    height: 150px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s ease;
+    border: 2px solid rgba($br-white, 0.08);
+    background-color: rgba($br-bg, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      border-color: rgba($br-primary, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .color-overlay {
+      opacity: 0.6;
+      background: linear-gradient(180deg, transparent 30%, rgba($br-bg, 0.85) 100%);
+      transition: opacity 0.25s;
+    }
+
+    .achievement-name {
+      background: none;
+      color: rgba($br-white, 0.85);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      top: auto;
+      text-align: center;
+    }
+
+    .active-content {
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &.active {
+      border-color: $br-green;
+      box-shadow: 0 0 0 1px $br-green, 0 4px 16px rgba($br-green, 0.15);
+
+      .color-overlay {
+        opacity: 0.15;
+        background: linear-gradient(180deg, transparent 50%, rgba($br-green, 0.3) 100%);
+      }
+
+      .achievement-name {
+        color: $br-white;
+        font-weight: 700;
+        background: rgba($br-green, 0.25);
+        border-radius: 0 0 8px 8px;
+      }
+    }
+
+    &.hidden {
+      opacity: 0.2;
+      pointer-events: none;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .br-form-component ul.selectable-list.grid li { width: 120px; height: 120px; }
+}
+@media (max-width: 480px) {
+  .br-form-component ul.selectable-list.grid li { width: 100px; height: 100px; }
+  .br-form-component ul.selectable-list.grid li .achievement-name { font-size: 11px; padding: 4px; }
+}
+
 // ── Confirm-delete overlay ───────────────────────────────
 
 .br-confirm {
@@ -435,6 +666,294 @@ $radius-pill:  20px;
   color: $br-red;
 }
 
+// ── Player Cards & Pagination ────────────────────────────
+
+.br-player-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.br-player-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(11, 61, 79, 0.25);
+  border: 1px solid rgba($br-white, 0.05);
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+
+  &:hover {
+    background: rgba(11, 61, 79, 0.45);
+    border-color: rgba($br-primary, 0.15);
+  }
+
+  &.active {
+    background: rgba($br-green, 0.07);
+    border-color: rgba($br-green, 0.35);
+    box-shadow: inset 0 0 0 1px rgba($br-green, 0.1);
+
+    .br-player-check {
+      opacity: 1;
+      color: $br-green;
+    }
+    .br-player-name {
+      color: $br-green;
+    }
+  }
+}
+
+.br-player-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.08);
+  flex-shrink: 0;
+}
+
+.br-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-player-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba($br-white, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.br-player-meta {
+  display: block;
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.br-player-check {
+  font-size: 20px;
+  opacity: 0.1;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+// Pagination
+.br-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 0;
+}
+
+.br-page-btn {
+  min-width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba($br-white, 0.5);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba($br-primary, 0.1);
+    color: rgba($br-white, 0.8);
+  }
+
+  &.active {
+    background: rgba($br-primary, 0.15);
+    border-color: rgba($br-primary, 0.3);
+    color: $br-primary;
+    font-weight: 700;
+  }
+}
+
+// ── Step List (Quest Builder) ────────────────────────────
+
+.br-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.br-step-item {
+  border-radius: $radius-sm;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 0 0 1px rgba($br-primary, 0.1);
+  }
+}
+
+.br-step-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(11, 61, 79, 0.35);
+  border-left: 3px solid var(--step-color, $br-primary);
+  border-radius: $radius-sm;
+  transition: background 0.2s;
+  cursor: grab;
+
+  &:hover {
+    background: rgba(11, 61, 79, 0.55);
+  }
+}
+
+.br-step-order {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $condensed;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--step-color, $br-primary);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--step-color, $br-primary);
+  flex-shrink: 0;
+}
+
+.br-step-type {
+  font-family: $condensed;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--step-color, $br-primary);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  border: 1px solid var(--step-color, $br-primary);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: center;
+}
+
+.br-step-title {
+  flex: 1;
+  font-size: 14px;
+  color: rgba($br-white, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.br-step-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.br-step-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+  background: transparent;
+
+  &.br-step-btn-amber {
+    color: $br-amber;
+    &:hover { background: rgba($br-amber, 0.15); border-color: rgba($br-amber, 0.4); }
+  }
+  &.br-step-btn-green {
+    color: $br-green;
+    &:hover, &.active { background: rgba($br-green, 0.15); border-color: rgba($br-green, 0.4); }
+  }
+  &.br-step-btn-red {
+    color: $br-red;
+    &:hover { background: rgba($br-red, 0.15); border-color: rgba($br-red, 0.4); }
+  }
+}
+
+// Step Accordion
+.br-step-accordion {
+  display: none;
+  background: rgba(4, 22, 30, 0.9);
+  border: 1px solid rgba($br-primary, 0.15);
+  border-top: none;
+  border-radius: 0 0 $radius $radius;
+  margin-top: -2px;
+  scroll-margin-top: 120px;
+
+  &.open {
+    display: block;
+    animation: br-accordion-open 0.3s ease;
+  }
+}
+
+@keyframes br-accordion-open {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Step Form (inside accordion)
+.br-step-form {
+  color: $br-white;
+}
+
+.br-step-form-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba($br-bg, 0.5);
+  border-radius: 0;
+}
+
+.br-step-form-footer {
+  padding: 14px;
+  text-align: center;
+  border-top: 1px solid rgba($br-primary, 0.12);
+  background: rgba($br-bg, 0.5);
+  border-radius: 0 0 $radius $radius;
+}
+
+.br-step-buttons-container {
+  border-top: 1px solid rgba($br-primary, 0.12);
+}
+
+// Drag state
+.br-step-item.ui-sortable-helper {
+  opacity: 0.85;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.br-step-list .ui-sortable-placeholder {
+  visibility: visible !important;
+  height: 52px;
+  background: rgba($br-primary, 0.06);
+  border: 1px dashed rgba($br-primary, 0.25);
+  border-radius: $radius-sm;
+}
+
 // ── Responsive ───────────────────────────────────────────
 
 @media (max-width: 768px) {
@@ -450,9 +969,931 @@ $radius-pill:  20px;
     display: block;
     overflow-x: auto;
   }
+  .br-step-row {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .br-step-type {
+    display: none;
+  }
+  .br-player-card {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .br-player-avatar {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (max-width: 480px) {
   .br-page-title { font-size: 26px; }
   .br-tab-btn { font-size: 13px; padding: 8px 10px; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Journey Manager
+// ═══════════════════════════════════════════════════════════
+
+.br-journey-manager {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 0 80px;
+  color: $br-white;
+}
+
+.br-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 16px;
+  background: $br-panel-bg;
+  border-bottom: 1px solid rgba($br-primary, 0.15);
+}
+
+.br-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  .br-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba($br-primary, 0.15);
+    border-radius: 10px;
+    font-size: 22px;
+    color: $br-primary;
+  }
+
+  h2 {
+    margin: 0;
+    @include condensed-heading(26px, 900);
+    color: $br-white;
+  }
+}
+
+.br-header-counts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.br-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: $radius-pill;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba($br-white, 0.08);
+  color: rgba($br-white, 0.7);
+
+  .br-cnt { color: $br-white; font-size: 14px; }
+  &.type-quest     { border-left: 3px solid #2196f3; }
+  &.type-mission   { border-left: 3px solid $br-orange; }
+  &.type-challenge { border-left: 3px solid $br-red; }
+  &.type-survey    { border-left: 3px solid #009688; }
+}
+
+.br-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+// ── Bulk Upload ──
+.br-bulk-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input[type="file"] {
+    font-size: 12px;
+    color: rgba($br-white, 0.6);
+    max-width: 180px;
+
+    &::file-selector-button {
+      background: rgba($br-white, 0.08);
+      border: 1px solid rgba($br-white, 0.15);
+      border-radius: $radius-sm;
+      color: $br-white;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+  }
+}
+
+// br-btn solid variants merged into the main .br-btn block above
+
+// ── Sticky Toolbar ──
+.br-toolbar {
+  position: sticky;
+  top: 50px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: rgba($br-bg, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+
+  select {
+    background: rgba($br-white, 0.06);
+    border: 1px solid rgba($br-white, 0.12);
+    border-radius: 8px;
+    color: $br-white;
+    padding: 7px 10px;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    max-width: 170px;
+
+    option { background: #0b3d4f; color: $br-white; }
+  }
+}
+
+.br-search {
+  position: relative;
+  flex: 1 1 200px;
+  max-width: 320px;
+
+  input {
+    width: 100%;
+    background: rgba($br-white, 0.06);
+    border: 1px solid rgba($br-white, 0.12);
+    border-radius: 8px;
+    color: $br-white;
+    padding: 8px 12px 8px 34px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: rgba($br-primary, 0.4); }
+    &::placeholder { color: rgba($br-white, 0.3); }
+  }
+
+  .icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba($br-white, 0.3);
+    font-size: 14px;
+    pointer-events: none;
+  }
+}
+
+.br-type-filters {
+  display: flex;
+  gap: 4px;
+}
+
+.br-type-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  color: $br-white;
+  transition: all 0.15s;
+  background: rgba($br-white, 0.06);
+
+  &:hover { opacity: 0.8; }
+  &.active { border-color: $br-white; box-shadow: 0 0 8px rgba($br-white, 0.15); }
+  &.t-all       { background: rgba($br-white, 0.12); }
+  &.t-quest     { background: rgba(#2196f3, 0.25); color: #2196f3; }
+  &.t-mission   { background: rgba($br-orange, 0.25); color: $br-orange; }
+  &.t-challenge { background: rgba($br-red, 0.25); color: $br-red; }
+  &.t-survey    { background: rgba(#009688, 0.25); color: #009688; }
+}
+
+.br-autofill-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba($br-white, 0.5);
+}
+
+// ── Path filter banner ──
+.br-path-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba($br-red, 0.1);
+  border-bottom: 1px solid rgba($br-red, 0.2);
+
+  .br-path-thumb {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+  }
+  .br-path-name { font-weight: 700; font-size: 15px; }
+  .br-path-sub  { font-size: 12px; color: rgba($br-white, 0.5); }
+}
+
+// ── Milestone Table ──
+.br-table-wrap { padding: 0 8px; }
+
+.br-table-header {
+  display: grid;
+  grid-template-columns: 36px 36px 40px minmax(120px, 1fr) 55px 75px 75px 120px;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 12px;
+  @include condensed-heading(11px, 700);
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.4);
+  border-bottom: 1px solid rgba($br-primary, 0.1);
+
+  &.with-ep {
+    grid-template-columns: 36px 36px 40px minmax(120px, 1fr) 55px 75px 75px 75px 120px;
+  }
+}
+
+.br-row {
+  display: grid;
+  grid-template-columns: 36px 36px 40px minmax(120px, 1fr) 55px 75px 75px 120px;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: none;
+  background: rgba(11, 61, 79, 0.25);
+  transition: background 0.15s;
+  position: relative;
+
+  &:hover { background: rgba(11, 61, 79, 0.5); }
+  &.with-ep {
+    grid-template-columns: 36px 36px 40px minmax(120px, 1fr) 55px 75px 75px 75px 120px;
+  }
+}
+
+.br-status-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+// Action bar (second row under each milestone)
+.br-action-bar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 4px 12px 8px;
+  background: rgba(11, 61, 79, 0.15);
+  border-bottom: 1px solid rgba($br-white, 0.06);
+}
+
+.br-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1px solid rgba($br-white, 0.08);
+  border-radius: $radius-sm;
+  background: transparent;
+  color: rgba($br-white, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  font-family: inherit;
+
+  .icon { font-size: 11px; }
+  &:hover { color: $br-white; background: rgba($br-white, 0.06); border-color: rgba($br-white, 0.15); }
+  &.edit { color: $br-green; border-color: rgba($br-green, 0.15); &:hover { background: rgba($br-green, 0.1); } }
+  &.expand { color: $br-primary; border-color: rgba($br-primary, 0.15); &:hover, &.open { background: rgba($br-primary, 0.1); } }
+  &.lock { color: $br-accent; border-color: rgba($br-accent, 0.15); &:hover { background: rgba($br-accent, 0.1); } }
+  &.unlock { color: $br-green; border-color: rgba($br-green, 0.15); &:hover { background: rgba($br-green, 0.1); } }
+  &.duplicate { color: $br-purple; border-color: rgba($br-purple, 0.15); &:hover { background: rgba($br-purple, 0.1); } }
+  &.trash { color: $br-red; border-color: rgba($br-red, 0.15); &:hover { background: rgba($br-red, 0.1); } }
+}
+
+.br-drag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  opacity: 0.3;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.7; }
+  img { width: 16px; height: 16px; filter: invert(1); }
+  &.hidden-handle { visibility: hidden; }
+}
+
+.br-type-icon {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: $radius-sm;
+  font-size: 14px;
+  color: $br-white;
+  border: none;
+
+  &.quest     { background: rgba(#2196f3, 0.3); color: #2196f3; }
+  &.mission   { background: rgba($br-orange, 0.3); color: $br-orange; }
+  &.challenge { background: rgba($br-red, 0.3); color: $br-red; }
+  &.survey    { background: rgba(#009688, 0.3); color: #009688; }
+}
+
+.br-thumb {
+  width: 36px; height: 36px;
+  border-radius: $radius-sm;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.05);
+  cursor: pointer;
+}
+
+.br-name {
+  min-width: 0;
+
+  input[type="text"] {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    color: $br-white;
+    padding: 5px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: border-color 0.2s, background 0.2s;
+
+    &:hover, &:focus {
+      background: rgba($br-white, 0.06);
+      border-color: rgba($br-white, 0.12);
+      outline: none;
+    }
+  }
+}
+
+.br-num {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .icon { font-size: 12px; opacity: 0.4; }
+
+  input[type="number"] {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    color: $br-white;
+    padding: 5px 6px;
+    font-size: 13px;
+    text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+    transition: border-color 0.2s, background 0.2s;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    &:hover, &:focus {
+      background: rgba($br-white, 0.06);
+      border-color: rgba($br-white, 0.12);
+      outline: none;
+    }
+  }
+}
+
+.br-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+
+  &.st-publish { @include badge-color($br-green); }
+  &.st-locked  { @include badge-color($br-accent); }
+  &.st-draft   { background: rgba($br-white, 0.08); color: rgba($br-white, 0.5); }
+}
+
+// .br-row-actions and .br-act-btn removed — replaced by .br-action-bar and .br-action-link
+
+// ── Quick Edit Panel ──
+.br-quick-edit {
+  display: none;
+  grid-column: 1 / -1;
+  padding: 12px 16px;
+  background: rgba(11, 61, 79, 0.4);
+  border: 1px solid rgba($br-primary, 0.12);
+  border-radius: 0 0 10px 10px;
+  margin: -1px 0 6px;
+
+  &.open { display: block; }
+}
+
+.br-qe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.br-qe-field {
+  label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.4);
+    margin-bottom: 4px;
+  }
+
+  input, select {
+    width: 100%;
+    background: rgba($br-white, 0.06);
+    border: 1px solid rgba($br-white, 0.12);
+    border-radius: 8px;
+    color: $br-white;
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+
+    &:focus { border-color: rgba($br-primary, 0.4); }
+  }
+  select option { background: #0b3d4f; color: $br-white; }
+}
+
+.br-qe-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba($br-white, 0.06);
+
+  .br-btn { font-size: 12px; padding: 5px 12px; }
+}
+
+// ── Summary Bar ──
+.br-summary-bar {
+  position: fixed;
+  bottom: 50px;
+  left: 0; right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 10px 20px;
+  background: rgba(11, 61, 79, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba($br-primary, 0.2);
+}
+
+.br-summary-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+
+  .icon { font-size: 18px; }
+  .br-stat-val {
+    font-family: $condensed;
+    font-weight: 900;
+    font-size: 22px;
+    color: $br-primary;
+  }
+  .br-stat-label {
+    font-size: 11px;
+    color: rgba($br-white, 0.5);
+  }
+}
+
+// ── Draft & Trash Sections ──
+.br-section {
+  margin-top: 24px;
+  padding: 0 8px;
+}
+
+.br-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: $br-panel-bg;
+  border: 1px solid rgba($br-primary, 0.15);
+  border-radius: $radius $radius 0 0;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover { background: rgba(11, 61, 79, 0.8); }
+
+  h3 {
+    margin: 0;
+    @include condensed-heading(18px, 900);
+    color: $br-white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .icon { font-size: 18px; }
+  }
+
+  .br-toggle-icon {
+    font-size: 14px;
+    color: rgba($br-white, 0.4);
+    transition: transform 0.2s;
+  }
+
+  &.collapsed .br-toggle-icon { transform: rotate(-90deg); }
+}
+
+.br-section-body {
+  background: rgba(11, 61, 79, 0.2);
+  border: 1px solid rgba($br-primary, 0.08);
+  border-top: none;
+  border-radius: 0 0 $radius $radius;
+  overflow: hidden;
+
+  &.collapsed { display: none; }
+}
+
+.br-dt-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 80px 80px 130px 160px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba($br-white, 0.04);
+  font-size: 13px;
+
+  &:last-child { border-bottom: none; }
+  .br-dt-title { font-weight: 600; }
+
+  select {
+    background: rgba($br-white, 0.06);
+    border: 1px solid rgba($br-white, 0.12);
+    border-radius: $radius-sm;
+    color: $br-white;
+    padding: 5px 8px;
+    font-size: 12px;
+    outline: none;
+
+    option { background: #0b3d4f; color: $br-white; }
+  }
+}
+
+.br-dt-links { display: flex; gap: 4px; }
+
+// br-empty is defined above in the shared section
+
+.br-scroll-sentinel { height: 1px; width: 100%; }
+
+// ── Sortable UI overrides ──
+.br-sortable {
+  .ui-sortable-helper {
+    background: rgba($br-bg, 0.95) !important;
+    border: 1px solid rgba($br-primary, 0.4) !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+  .br-sortable-placeholder {
+    background: rgba($br-primary, 0.06);
+    border: 2px dashed rgba($br-primary, 0.3);
+    border-radius: 8px;
+    visibility: visible !important;
+    margin: 2px 0;
+  }
+  .row-container {
+    cursor: default;
+  }
+}
+
+// ── Journey Manager Responsive ──
+@media (max-width: 900px) {
+  .br-table-header,
+  .br-row {
+    grid-template-columns: 30px 30px 1fr 50px 60px 60px 90px;
+    font-size: 12px;
+
+    &.with-ep { grid-template-columns: 30px 30px 1fr 50px 60px 60px 60px 90px; }
+  }
+  .br-drag { display: none; }
+  .br-header { flex-direction: column; align-items: flex-start; }
+  .br-summary-bar { gap: 12px; flex-wrap: wrap; padding: 8px 12px; }
+  .br-dt-row { grid-template-columns: 30px 1fr 60px 60px 100px; }
+  .br-action-bar { padding: 4px 8px; }
+}
+
+@media (max-width: 600px) {
+  .br-table-header,
+  .br-row {
+    grid-template-columns: 30px 1fr 50px 50px 80px;
+    gap: 4px;
+    padding: 6px 8px;
+
+    &.with-ep { grid-template-columns: 30px 1fr 50px 50px 50px 80px; }
+  }
+  .br-toolbar { gap: 6px; padding: 8px 10px; }
+  .br-qe-grid { grid-template-columns: 1fr 1fr; }
+  .br-dt-row { grid-template-columns: 1fr 60px 100px; }
+  .br-action-link { font-size: 10px; padding: 2px 6px; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Community Wall
+// ═══════════════════════════════════════════════════════════
+
+// ── Wall Tabs (override sticky top for wall context) ─────
+.br-wall-tabs {
+  margin-bottom: 16px;
+}
+
+// ── Channel visibility ───────────────────────────────────
+.br-wall-channel {
+  &.hidden { display: none; }
+}
+
+// ── Post Composer ────────────────────────────────────────
+.br-wall-composer {
+  margin-bottom: 16px;
+
+  &.hidden { display: none; }
+
+  textarea.br-input {
+    resize: vertical;
+    min-height: 70px;
+    margin-bottom: 10px;
+  }
+}
+
+.br-wall-composer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+// ── Message Feed Container ───────────────────────────────
+.br-wall-feed {
+  min-height: 120px;
+}
+
+// ── Wall Card (message card) ─────────────────────────────
+.br-wall-card {
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: $radius;
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: rgba($br-primary, 0.35);
+  }
+}
+
+.br-wall-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.br-wall-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.08);
+  flex-shrink: 0;
+}
+
+.br-wall-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.br-wall-author {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba($br-white, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.br-wall-time {
+  font-size: 12px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-wall-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba($br-white, 0.8);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  p { margin: 0 0 8px; }
+  p:last-child { margin-bottom: 0; }
+  img { max-width: 100%; border-radius: $radius-sm; }
+}
+
+.br-wall-trash {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+// ── Guild Banner ─────────────────────────────────────────
+.br-wall-guild-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: $br-panel-bg;
+  border-left: 4px solid $br-teal;
+  border-radius: $radius;
+}
+
+.br-wall-guild-name {
+  @include condensed-heading(22px, 900);
+  color: $br-white;
+}
+
+// ── Activity Timeline ────────────────────────────────────
+.br-activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.br-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: $radius-sm;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($br-primary, 0.04);
+  }
+
+  & + .br-activity-item {
+    border-top: 1px solid rgba($br-white, 0.04);
+  }
+}
+
+.br-activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+
+  // Color variants
+  &.green   { background: rgba($br-green, 0.15);   color: $br-green; }
+  &.red     { background: rgba($br-red, 0.15);     color: $br-red; }
+  &.amber   { background: rgba($br-amber, 0.15);   color: $br-amber; }
+  &.blue    { background: rgba($br-primary, 0.15);  color: $br-primary; }
+  &.purple  { background: rgba($br-purple, 0.15);   color: $br-purple; }
+  &.teal    { background: rgba($br-teal, 0.15);     color: $br-teal; }
+  &.orange  { background: rgba($br-orange, 0.15);   color: $br-orange; }
+  &.default { background: rgba($br-white, 0.08);    color: rgba($br-white, 0.5); }
+}
+
+.br-activity-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.br-activity-action {
+  font-size: 14px;
+  color: rgba($br-white, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  strong {
+    color: $br-white;
+  }
+}
+
+.br-activity-detail {
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.br-activity-time {
+  font-size: 12px;
+  color: rgba($br-white, 0.3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Admin Log ────────────────────────────────────────────
+.br-admin-log-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+
+  .br-search {
+    flex: 1 1 200px;
+    max-width: 320px;
+  }
+}
+
+.br-admin-log {
+  border-radius: $radius;
+  overflow: hidden;
+
+  .br-table {
+    font-size: 13px;
+  }
+}
+
+.br-admin-log-content {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Wall Responsive ──────────────────────────────────────
+@media (max-width: 768px) {
+  .br-wall-card {
+    padding: 12px;
+  }
+
+  .br-wall-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .br-activity-item {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .br-activity-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  .br-admin-log-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    .br-search { max-width: none; }
+  }
+
+  .br-admin-log-content {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .br-wall-composer-actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    .br-btn { justify-content: center; }
+  }
+
+  .br-activity-action {
+    font-size: 13px;
+  }
+
+  .br-activity-time {
+    font-size: 11px;
+  }
 }

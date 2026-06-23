@@ -35,7 +35,7 @@
 					<?= $i->item_name; ?>
 				</div>
 			</div>
-			<h2 class="font _20 w600 text-center white-color"><?= toMoney($i->item_cost,"$");?></h2>
+			<h2 class="font _20 w600 text-center white-color"><?= BR_Utils::instance()->toMoney($i->item_cost,"$");?></h2>
 		</div>
 		<?php if($i->item_category){ ?>
 			<div class="item-category foreground <?=$i->item_category; ?>-bg-400"></div>

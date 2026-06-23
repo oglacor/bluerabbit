@@ -2,7 +2,7 @@
 
 <?php if($adventure){ ?>
 
-<?php $challenge_data = getChallenge($_GET['questID'], $adv_child_id); ?>
+<?php $challenge_data = BR_Challenge::instance()->getChallenge($_GET['questID'], $adv_child_id); ?>
 <?php if($challenge_data){ ?>
 	<?php 
 	$c = $challenge_data['challenge']; 
@@ -123,14 +123,14 @@
 			<?php } ?>
 			<h3 class="font special _16 yellow-500"><?= __("Resources","bluerabbit"); ?></h3>
 			<div class="block-text font  inline-block border rounded-8 padding-5 blue-grey-bg-900 amber-border-400 border-all">
-				<span class="font condensed amber-400 w100"><?= $xp_label; ?></span> <span class="font w600 white-color"><?= toMoney($c->mech_xp,""); ?></span>
+				<span class="font condensed amber-400 w100"><?= $xp_label; ?></span> <span class="font w600 white-color"><?= BR_Utils::instance()->toMoney($c->mech_xp,""); ?></span>
 			</div>
 			<div class="block-text font  inline-block border rounded-8 padding-5 blue-grey-bg-900 light-green-border-A200 border-all">
-				<span class="font condensed light-green-A200 w100"><?= $bloo_label; ?></span> <span class="font w600 white-color"><?= toMoney($c->mech_bloo,""); ?></span>
+				<span class="font condensed light-green-A200 w100"><?= $bloo_label; ?></span> <span class="font w600 white-color"><?= BR_Utils::instance()->toMoney($c->mech_bloo,""); ?></span>
 			</div>
 			<?php if($use_encounters){ ?>
 			<div class="block-text font  inline-block border rounded-8 padding-5 blue-grey-bg-900 cyan-border-A200 border-all">
-				<span class="font condensed cyan-A200 w100"><?= $ep_label; ?></span> <span class="font w600 white-color"><?= toMoney($c->mech_ep,""); ?></span>
+				<span class="font condensed cyan-A200 w100"><?= $ep_label; ?></span> <span class="font w600 white-color"><?= BR_Utils::instance()->toMoney($c->mech_ep,""); ?></span>
 			</div>
 			<?php } ?>
 			
@@ -186,7 +186,7 @@
 											<span class="font _24 w700"><?= __("Are you sure?","bluerabbit"); ?></span><br>
 											<span class="font _18 w300">
 												<span class="icon icon-bloo"></span>
-												<?= __("Pay","bluerabbit")." ".toMoney($c->mech_deadline_cost,""); ?>
+												<?= __("Pay","bluerabbit")." ".BR_Utils::instance()->toMoney($c->mech_deadline_cost,""); ?>
 											</span>
 										</button>
 									</div>
@@ -206,7 +206,7 @@
 								<?php $cost=0; ?>
 							<?php }else{ ?>
 								<h3 class="font special"><?= __("Attempt cost","bluerabbit"); ?></h3>
-								<h1 class=""><span class='icon icon-bloo'></span><?= toMoney($c->mech_attempt_cost); ?></h1>
+								<h1 class=""><span class='icon icon-bloo'></span><?= BR_Utils::instance()->toMoney($c->mech_attempt_cost); ?></h1>
 								<?php $cost=$c->mech_attempt_cost; ?>
 							<?php }	?>
 						</div>

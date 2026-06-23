@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-	$hexad = createHexad();
+	$hexad = BR_Player::instance()->createHexad();
 	shuffle($hexad);
 
 ?>

@@ -3,8 +3,10 @@
 <?php
 	global $wpdb;
 	$adventures = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_status='publish' AND adventure_type != 'template'" );
-	$config = getSysConfig();
-	$sysFeatures = getFeatures();
+	$config = BR_Config::instance()->getSysConfig();
+	$sysFeatures = BR_Config::instance()->getFeatures();
+	$allPlans = BR_Config::instance()->getPlans('active');
+	$allPlansAll = BR_Config::instance()->getPlans(null);
 
 	
 	$settings_array = array(
@@ -251,8 +253,8 @@
 		'leaderboard_bg' => array('label' => __("Leaderboard Background","bluerabbit"),	),
 		'my_work_bg' => array('label' => __("My Work Background","bluerabbit"),	),
 	);
-	$sponsors = getSponsors();
-	$orgs = getOrgs();
+	$sponsors = BR_Session::instance()->getSponsors();
+	$orgs = BR_Organization::instance()->getOrgs();
 ?>
 
 <h1 class="font _30 padding-20 text-center blue-bg-400 white-color w700">
@@ -282,6 +284,15 @@
 						<div class="active-content background blue-grey-bg-100"></div>
 						<div class="active-content padding-5 grey-900 foreground">
 							<span class="icon icon-teamwork"></span><?= __("Features","bluerabbit"); ?>
+						</div>
+					</li>
+					<li onClick="switchTabs('#main-tabs','#plans_settings');" class="block white-color cursor-pointer tab-button relative" id="plans_settings-tab-button">
+						<div class="inactive-content padding-5">
+							<span class="icon icon-rank"></span><?= __("Plans","bluerabbit"); ?>
+						</div>
+						<div class="active-content background indigo-bg-400"></div>
+						<div class="active-content padding-5 white-color foreground">
+							<span class="icon icon-rank"></span><?= __("Plans","bluerabbit"); ?>
 						</div>
 					</li>
 					<li onClick="switchTabs('#main-tabs','#image_settings');" class="block white-color cursor-pointer tab-button relative" id="image_settings-tab-button">
@@ -422,125 +433,285 @@
 				<?php } ?>
 				<!--FEATURES -->
 				<?php
-					$features = array(
-						'use_challenges' => array(
-							'label'=>__("Use Challenges","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_missions' => array(
-							'label'=>__("Use Missions","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_encounters' => array(
-							'label'=>__("Use Encounters","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_achievements' => array(
-							'label'=>__("Use Achievements","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_magic_codes' => array(
-							'label'=>__("Use Magic Codes","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_surveys' => array(
-							'label'=>__("Use Surveys","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_blockers' => array(
-							'label'=>__("Use Blockers","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_wall' => array(
-							'label'=>__("Use Wall","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_guilds' => array(
-							'label'=>__("Use Guilds","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_blog' => array(
-							'label'=>__("Use Blog","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_lore' => array(
-							'label'=>__("Use Lore","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_leaderboard' => array(
-							'label'=>__("Use Leaderboard","bluerabbit"),'type'=>'checkbox',
-						),
-						'leaderboard_limit' => array(
-							'label'=>__("Players in leaderboard","bluerabbit"),'type'=>'number',
-						),
-						'use_schedule' => array(
-							'label'=>__("Use Schedule","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_speakers' => array(
-							'label'=>__("Use Speakers","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_backpack' => array(
-							'label'=>__("Use Backpack","bluerabbit"),'type'=>'checkbox',
-						),
-						'use_item_shop' => array(
-							'label'=>__("Use Item Shop","bluerabbit"),'type'=>'checkbox',
-						),
-						'rate_quests' => array(
-							'label'=>__("Allow players to rate quests","bluerabbit"),'type'=>'checkbox',
-						),
-						'show_adventure_status' => array(
-							'label'=>__("Show adventure status","bluerabbit"),'type'=>'checkbox',
-							'desc'=>__("Status bars that show the added XP, EP and Coins of all players in the same adventure","bluerabbit"),
-
-						),
-						'max_players' => array(
-							'label'=>__("Max Players per adventure","bluerabbit"),'type'=>'number',
-						),
-						'max_adventures' => array(
-							'label'=>__("Max Adventures per player","bluerabbit"),'type'=>'number',
-						),
-					);
+					$dbFeatures = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_features ORDER BY feature_id ASC");
 				?>
 				<div class="tab features" id="features">
 					<h2 class="font _30 padding-10 blue-700 w300">
 						<span class="icon icon-teamwork"></span><?= __("Features","bluerabbit"); ?>
 					</h2>
-					<button class="button form-ui" onClick="allToggleButtonsOn('#features');"><?= __("All On","bluerabbit"); ?></button>
-					<button class="button form-ui red-bg-400" onClick="allToggleButtonsOff('#features');"><?= __("All Off","bluerabbit"); ?></button>
+					<p class="font _14 grey-500 padding-10"><?= __("Manage the system features available to plans. Add or remove features as your platform grows.","bluerabbit"); ?></p>
 					<table class="table w-full" cellpadding="5">
 						<thead>
 							<tr>
-								<td><?= __("Setting","bluerabbit"); ?></td>
-								<td class="w-100 text-center cursor-pointer" onClick="checkAllFeatures('free');"><?= __("Free","bluerabbit"); ?></td>
-								<td class="w-100 text-center cursor-pointer" onClick="checkAllFeatures('pro');"><?= __("Pro","bluerabbit"); ?></td>
-								<td class="w-100 text-center cursor-pointer" onClick="checkAllFeatures('admin');"><?= __("Admin","bluerabbit"); ?></td>
-								<td class="w-100 text-center cursor-pointer" onClick="checkAllFeatures('god');"><?= __("God","bluerabbit"); ?></td>
+								<td class="w-50"><?= __("ID","bluerabbit"); ?></td>
+								<td><?= __("Name","bluerabbit"); ?></td>
+								<td><?= __("Label","bluerabbit"); ?></td>
+								<td class="w-100"><?= __("Type","bluerabbit"); ?></td>
+								<td><?= __("Description","bluerabbit"); ?></td>
+								<td class="w-100"><?= __("Actions","bluerabbit"); ?></td>
 							</tr>
 						</thead>
-						<tbody class="text-center">
-							<?php foreach($features as $fKey=>$f){ ?>
-								<tr id="<?=$fKey; ?>" class="feature">				
-									<td class="font _16 block black w600 text-left">
-										<?= $f['label']; ?>
-										<?php if(isset($f['desc'])) { ?>
-											<span class="font _12 block grey-500"><?= $f['desc']; ?></span>
-										<?php } ?>
-										<input class="form-ui feature-id" type="hidden" value="<?=$sysFeatures[$fKey]['id']; ?>" >
-										<input class="form-ui feature-name" type="hidden" value="<?= $fKey;?>" >
-										<input class="form-ui feature-label" type="hidden" value="<?= $f['label']; ?>" >
-										<input class="form-ui feature-type" type="hidden" value="<?= $f['type']; ?>" >
-										<input class="form-ui feature-desc" type="hidden" value="<?= isset($f['desc']) ? $f['desc'] : ""; ?>" >
+						<tbody id="features-list">
+							<?php foreach($dbFeatures as $f){ ?>
+								<tr id="feature-row-<?= $f->feature_id; ?>">
+									<td class="font _14 grey-500"><?= $f->feature_id; ?></td>
+									<td class="font _14 w600"><code><?= $f->feature_name; ?></code></td>
+									<td class="font _14"><?= $f->feature_label; ?></td>
+									<td>
+										<span class="font _12 <?= $f->feature_type == 'number' ? 'cyan-bg-700' : 'blue-bg-400'; ?> white-color padding-5 rounded">
+											<?= $f->feature_type; ?>
+										</span>
 									</td>
-									<?php if($f['type']=='checkbox'){ ?>
-										<td><input type="checkbox" class="feature-free" <?= $sysFeatures[$fKey]['free'] ? 'checked' : ''; ?>></td>
-										<td><input type="checkbox" class="feature-pro" <?= $sysFeatures[$fKey]['pro'] ? 'checked' : ''; ?>></td>
-										<td><input type="checkbox" class="feature-admin" <?= $sysFeatures[$fKey]['admin'] ? 'checked' : ''; ?>></td>
-										<td><input type="checkbox" class="feature-god" <?= $sysFeatures[$fKey]['god'] ? 'checked' : ''; ?>></td>
-									<?php }elseif($f['type']=='number'){ ?>
-										<td><input type="number" class="feature-free form-ui w-100" value="<?= $sysFeatures[$fKey]['free']; ?>"></td>
-										<td><input type="number" class="feature-pro form-ui w-100" value="<?= $sysFeatures[$fKey]['pro']; ?>"></td>
-										<td><input type="number" class="feature-admin form-ui w-100" value="<?= $sysFeatures[$fKey]['admin']; ?>"></td>
-										<td><input type="number" class="feature-god form-ui w-100" value="<?= $sysFeatures[$fKey]['god']; ?>"></td>
-									<?php } ?>
+									<td class="font _12 grey-500"><?= $f->feature_desc; ?></td>
+									<td>
+										<button class="form-ui blue-bg-400 font _12" onClick="editFeature(<?= $f->feature_id; ?>, '<?= esc_attr($f->feature_name); ?>', '<?= esc_attr($f->feature_label); ?>', '<?= esc_attr($f->feature_type); ?>', '<?= esc_attr($f->feature_desc); ?>');">
+											<span class="icon icon-edit"></span>
+										</button>
+										<button class="form-ui red-bg-400 font _12" onClick="deleteFeatureConfirm(<?= $f->feature_id; ?>, '<?= esc_attr($f->feature_name); ?>');">
+											<span class="icon icon-trash"></span>
+										</button>
+									</td>
 								</tr>
 							<?php } ?>
 						</tbody>
 					</table>
+					<div class="padding-10">
+						<button class="form-ui orange-bg-400 grey-900 font _16" onClick="showAddFeatureForm();">
+							<span class="icon icon-add"></span><?= __("Add Feature","bluerabbit"); ?>
+						</button>
+					</div>
+					<!-- Add/Edit Feature Form -->
+					<div id="feature-form" class="padding-10 grey-bg-200 margin-10" style="display:none;">
+						<h3 class="font _20 w600 padding-5" id="feature-form-title"><?= __("Add Feature","bluerabbit"); ?></h3>
+						<input type="hidden" id="feature-form-id" value="0">
+						<table class="table w-full" cellpadding="5">
+							<tr>
+								<td class="w-150 text-right"><?= __("Feature Name","bluerabbit"); ?></td>
+								<td><input type="text" id="feature-form-name" class="form-ui w-full" placeholder="<?= __('e.g. use_custom_module','bluerabbit'); ?>"></td>
+							</tr>
+							<tr>
+								<td class="w-150 text-right"><?= __("Label","bluerabbit"); ?></td>
+								<td><input type="text" id="feature-form-label" class="form-ui w-full" placeholder="<?= __('e.g. Use Custom Module','bluerabbit'); ?>"></td>
+							</tr>
+							<tr>
+								<td class="w-150 text-right"><?= __("Type","bluerabbit"); ?></td>
+								<td>
+									<select id="feature-form-type" class="form-ui">
+										<option value="checkbox"><?= __("Checkbox (on/off)","bluerabbit"); ?></option>
+										<option value="number"><?= __("Number (limit value)","bluerabbit"); ?></option>
+									</select>
+									<span class="font _12 grey-500 block padding-5"><?= __("Use 'Number' for limits like max_players. Value of 0 = no limit.","bluerabbit"); ?></span>
+								</td>
+							</tr>
+							<tr>
+								<td class="w-150 text-right"><?= __("Description","bluerabbit"); ?></td>
+								<td><input type="text" id="feature-form-desc" class="form-ui w-full" placeholder="<?= __('Optional description','bluerabbit'); ?>"></td>
+							</tr>
+						</table>
+						<div class="padding-5">
+							<button class="form-ui green-bg-400 font _16" onClick="saveFeatureAction();">
+								<span class="icon icon-config"></span><?= __("Save Feature","bluerabbit"); ?>
+							</button>
+							<button class="form-ui grey-bg-400 font _16" onClick="$('#feature-form').hide();">
+								<span class="icon icon-cancel"></span><?= __("Cancel","bluerabbit"); ?>
+							</button>
+						</div>
+					</div>
 				</div>
-				
+
 				<!--FEATURES END -->
-				
-				
-				
+
+				<!-- PLANS TAB -->
+				<div class="tab" id="plans_settings">
+					<h2 class="font _30 padding-10 indigo-400 w300">
+						<span class="icon icon-rank"></span><?= __("Plans","bluerabbit"); ?>
+					</h2>
+
+					<!-- Plans List -->
+					<div id="plans-list-view">
+						<table class="table w-full" cellpadding="5">
+							<thead>
+								<tr>
+									<td><?= __("Plan","bluerabbit"); ?></td>
+									<td class="w-100"><?= __("Key","bluerabbit"); ?></td>
+									<td class="w-100"><?= __("Type","bluerabbit"); ?></td>
+									<td class="w-100"><?= __("Status","bluerabbit"); ?></td>
+									<td class="w-100"><?= __("Users","bluerabbit"); ?></td>
+									<td class="w-150"><?= __("Actions","bluerabbit"); ?></td>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach($allPlansAll as $plan){
+									$user_count = $wpdb->get_var($wpdb->prepare(
+										"SELECT COUNT(*) FROM {$wpdb->prefix}br_players WHERE user_plan_id = %d", $plan->plan_id
+									));
+								?>
+								<tr>
+									<td class="font _16 w600"><?= $plan->plan_label; ?></td>
+									<td><code><?= $plan->plan_key; ?></code></td>
+									<td>
+										<?php if($plan->plan_type == 'system'){ ?>
+											<span class="font _12 red-bg-700 white-color padding-5 rounded"><?= __("System","bluerabbit"); ?></span>
+										<?php }elseif($plan->plan_type == 'standard'){ ?>
+											<span class="font _12 blue-bg-400 white-color padding-5 rounded"><?= __("Standard","bluerabbit"); ?></span>
+										<?php }else{ ?>
+											<span class="font _12 orange-bg-400 white-color padding-5 rounded"><?= __("Custom","bluerabbit"); ?></span>
+										<?php } ?>
+									</td>
+									<td><?= $plan->plan_status; ?></td>
+									<td class="text-center"><?= $user_count; ?></td>
+									<td>
+										<button class="form-ui blue-bg-400 font _12" onClick="editPlanFeatures(<?= $plan->plan_id; ?>, '<?= esc_attr($plan->plan_label); ?>');">
+											<span class="icon icon-config"></span><?= __("Features","bluerabbit"); ?>
+										</button>
+										<?php if($plan->plan_type == 'custom'){ ?>
+											<button class="form-ui red-bg-400 font _12" onClick="deletePlanConfirm(<?= $plan->plan_id; ?>, '<?= esc_attr($plan->plan_label); ?>');">
+												<span class="icon icon-trash"></span>
+											</button>
+										<?php } ?>
+									</td>
+								</tr>
+								<?php } ?>
+							</tbody>
+						</table>
+						<div class="padding-10">
+							<button class="form-ui orange-bg-400 grey-900 font _16" onClick="showNewPlanForm();">
+								<span class="icon icon-add"></span><?= __("New Custom Plan","bluerabbit"); ?>
+							</button>
+						</div>
+
+						<!-- New Plan Form (hidden by default) -->
+						<div id="new-plan-form" class="padding-10 grey-bg-200 margin-10" style="display:none;">
+							<h3 class="font _20 w600 padding-5"><?= __("Create New Plan","bluerabbit"); ?></h3>
+							<table class="table w-full" cellpadding="5">
+								<tr>
+									<td class="w-150 text-right"><?= __("Plan Name","bluerabbit"); ?></td>
+									<td><input type="text" id="new-plan-label" class="form-ui w-full" placeholder="<?= __('e.g. Enterprise','bluerabbit'); ?>"></td>
+								</tr>
+								<tr>
+									<td class="w-150 text-right"><?= __("Notes","bluerabbit"); ?></td>
+									<td><textarea id="new-plan-notes" class="form-ui w-full" rows="2"></textarea></td>
+								</tr>
+								<tr>
+									<td class="w-150 text-right"><?= __("Clone features from","bluerabbit"); ?></td>
+									<td>
+										<select id="new-plan-clone" class="form-ui">
+											<option value="0"><?= __("Start empty","bluerabbit"); ?></option>
+											<?php foreach($allPlans as $plan){ ?>
+												<option value="<?= $plan->plan_id; ?>"><?= $plan->plan_label; ?></option>
+											<?php } ?>
+										</select>
+									</td>
+								</tr>
+							</table>
+							<div class="padding-5">
+								<button class="form-ui green-bg-400 font _16" onClick="createNewPlan();">
+									<span class="icon icon-add"></span><?= __("Create Plan","bluerabbit"); ?>
+								</button>
+								<button class="form-ui grey-bg-400 font _16" onClick="$('#new-plan-form').hide();">
+									<span class="icon icon-cancel"></span><?= __("Cancel","bluerabbit"); ?>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Plan Feature Editor (hidden by default) -->
+					<div id="plan-feature-editor" style="display:none;">
+						<div class="padding-10">
+							<button class="form-ui grey-bg-400" onClick="backToPlans();">
+								<span class="icon icon-back"></span><?= __("Back to Plans","bluerabbit"); ?>
+							</button>
+							<span class="font _20 w600 padding-10" id="editing-plan-label"></span>
+							<span class="padding-10">
+								<select id="copy-from-plan-select" class="form-ui font _14">
+									<option value=""><?= __("Copy features from...","bluerabbit"); ?></option>
+									<?php foreach($allPlans as $cp){ ?>
+										<option value="<?= $cp->plan_id; ?>"><?= $cp->plan_label; ?></option>
+									<?php } ?>
+								</select>
+								<button class="form-ui orange-bg-400 font _14" onClick="copyFromPlanAction();">
+									<span class="icon icon-repeat"></span><?= __("Copy","bluerabbit"); ?>
+								</button>
+							</span>
+						</div>
+						<input type="hidden" id="editing-plan-id" value="">
+						<table class="table w-full" cellpadding="5" id="plan-features-table">
+							<thead>
+								<tr>
+									<td><?= __("Feature","bluerabbit"); ?></td>
+									<td class="w-150 text-center"><?= __("Value","bluerabbit"); ?></td>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+						<div class="padding-10">
+							<button class="form-ui green-bg-400 font _16" onClick="savePlanFeaturesAction();">
+								<span class="icon icon-config"></span><?= __("Save Plan Features","bluerabbit"); ?>
+							</button>
+						</div>
+					</div>
+
+					<!-- Role Default Plans -->
+					<div class="padding-10 margin-10" style="border-top: 2px solid #eee;">
+						<h3 class="font _20 w600 padding-5">
+							<span class="icon icon-config"></span><?= __("Role Default Plans","bluerabbit"); ?>
+						</h3>
+						<p class="font _14 grey-500 padding-5"><?= __("When a user has no explicit plan assigned, they get the default plan for their WordPress role.","bluerabbit"); ?></p>
+						<table class="table w-full" cellpadding="5">
+							<thead>
+								<tr>
+									<td><?= __("Role","bluerabbit"); ?></td>
+									<td class="w-200"><?= __("Default Plan","bluerabbit"); ?></td>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								$role_config_map = array(
+									'administrator'   => __("Administrator","bluerabbit"),
+									'br_game_master'  => __("Game Master","bluerabbit"),
+									'br_npc'          => __("NPC","bluerabbit"),
+									'br_player'       => __("Player","bluerabbit"),
+									'default'         => __("Default (fallback)","bluerabbit"),
+								);
+								foreach($role_config_map as $role_key=>$role_label){
+									$cfg_name = 'role_default_plan_'.$role_key;
+									$current_val = isset($config[$cfg_name]['value']) ? $config[$cfg_name]['value'] : '';
+								?>
+								<tr>
+									<td class="font _16 w600"><?= $role_label; ?></td>
+									<td>
+										<select class="form-ui role-default-select" data-role="<?= $role_key; ?>">
+											<?php foreach($allPlans as $rp){ ?>
+												<?php if($rp->plan_key == 'god') continue; ?>
+												<option value="<?= $rp->plan_key; ?>" <?= $current_val == $rp->plan_key ? 'selected' : ''; ?>><?= $rp->plan_label; ?></option>
+											<?php } ?>
+										</select>
+									</td>
+								</tr>
+								<?php } ?>
+							</tbody>
+						</table>
+						<div class="padding-5">
+							<button class="form-ui green-bg-400 font _16" onClick="saveRoleDefaults();">
+								<span class="icon icon-config"></span><?= __("Save Role Defaults","bluerabbit"); ?>
+							</button>
+						</div>
+					</div>
+
+					<!-- User Plan Assignment -->
+					<div class="padding-10 margin-10" style="border-top: 2px solid #eee;">
+						<h3 class="font _20 w600 padding-5">
+							<span class="icon icon-players"></span><?= __("Assign Plan to User","bluerabbit"); ?>
+						</h3>
+						<div class="input-group w-full">
+							<label class="indigo-bg-400 font _14 white-color"><?= __("Search","bluerabbit"); ?></label>
+							<input type="text" id="plan-user-search" class="form-ui w-full" placeholder="<?= __('Search by name or email...','bluerabbit'); ?>" onKeyUp="searchUsersForPlanAssign();">
+						</div>
+						<div id="plan-user-results" class="padding-5"></div>
+					</div>
+				</div>
+				<!-- PLANS END -->
+
 				<div class="tab" id="image_settings">
 					<h2 class="font _30 padding-10 blue-700 w300">
 						<span class="icon icon-image"></span><?=__("Images","bluerabbit");?>
@@ -683,6 +854,10 @@
 		</div>
 	<br clear="all">
 </div>
+<script>
+var brPlans = <?= json_encode(array_map(function($p){ return array('plan_id'=>$p->plan_id, 'plan_key'=>$p->plan_key, 'plan_label'=>$p->plan_label, 'plan_type'=>$p->plan_type); }, $allPlans)); ?>;
+var brSysFeatures = <?= json_encode($sysFeatures); ?>;
+</script>
 <?php //wp_enqueue_media();?>
 <?php }else{ ?>
 <script>document.location.href="<?php echo get_bloginfo('url')."/404"; ?>";</script>

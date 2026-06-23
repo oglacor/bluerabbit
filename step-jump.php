@@ -17,7 +17,7 @@
 			<div class="edge-bottom"></div>
 			<div class="corner-br"></div>
 		</div>
-		<?= stepTag("..// ".__("Choose one option","bluerabbit")); ?>
+		<?= BR_Utils::instance()->stepTag("..// ".__("Choose one option","bluerabbit")); ?>
 
 		<div class="step-choices">
 			<?php if($step_buttons[$step->step_id]){ ?>

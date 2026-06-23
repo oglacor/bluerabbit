@@ -1,4 +1,4 @@
-<?php $announcements = getAnnouncements($adventure_id,'announcement'); ?>
+<?php $announcements = BR_Announcement::instance()->getAnnouncements($adventure_id,'announcement'); ?>
 <?php if($announcements){ ?>
 	<ul class="feed">
 		<?php foreach($announcements['anns'] as $m){ ?>

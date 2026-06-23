@@ -85,11 +85,11 @@ if($adventure){
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $q->quest_title; ?></span>
 								<span class="li-cell amber-bg-400 white-color font w900">
 									<span class="icon icon-star"></span>
-									<?= $q->mech_xp ? toMoney($q->mech_xp,'') : 0; ?>
+									<?= $q->mech_xp ? BR_Utils::instance()->toMoney($q->mech_xp,'') : 0; ?>
 								</span>
 								<span class="li-cell light-green-bg-400 white-color font w900">
 									<span class="icon icon-bloo"></span>
-									<?= $q->mech_bloo ? toMoney($q->mech_bloo,'') : 0; ?>
+									<?= $q->mech_bloo ? BR_Utils::instance()->toMoney($q->mech_bloo,'') : 0; ?>
 								</span>
 								<span class="li-cell deep-purple-bg-400 white-color font w900">
 									<?= $q->mech_level; ?>
@@ -138,11 +138,11 @@ if($adventure){
 
 								<span class="li-cell amber-bg-400 white-color font w900">
 									<span class="icon icon-star"></span>
-									<?= $a->achievement_xp ? toMoney($a->achievement_xp,'') : 0; ?>
+									<?= $a->achievement_xp ? BR_Utils::instance()->toMoney($a->achievement_xp,'') : 0; ?>
 								</span>
 								<span class="li-cell light-green-bg-400 white-color font w900">
 									<span class="icon icon-bloo"></span>
-									<?= $a->achievement_bloo ? toMoney($a->achievement_bloo,'') : 0; ?>
+									<?= $a->achievement_bloo ? BR_Utils::instance()->toMoney($a->achievement_bloo,'') : 0; ?>
 								</span>
 
 								<input type="hidden" class="reqs-id" value="<?= $a->achievement_id; ?>">
@@ -244,7 +244,7 @@ if($adventure){
 
 								<span class="li-cell light-green-bg-400 white-color font w900">
 									<span class="icon icon-bloo"></span>
-									<?= toMoney($i->item_cost); ?>
+									<?= BR_Utils::instance()->toMoney($i->item_cost); ?>
 								</span>
 
 								<input type="hidden" class="reqs-id" value="<?= $i->item_id; ?>">
@@ -297,7 +297,7 @@ if($adventure){
 								</span>
 								<span class="li-cell light-green-bg-400 white-color font w900">
 									<span class="icon icon-bloo"></span>
-									<?= toMoney($e->enc_bloo); ?>
+									<?= BR_Utils::instance()->toMoney($e->enc_bloo); ?>
 								</span>
 
 								<input type="hidden" class="reqs-id" value="<?= $e->enc_id; ?>">

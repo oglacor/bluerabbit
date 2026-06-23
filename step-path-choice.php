@@ -55,9 +55,9 @@
                 <div class="step-content-text attach-content-none">
                     <h1 class="font _18 preospe text-center"><?= __("Chosen Path","bluerabbit"); ?></h1>
                     <?php if(isset($selected_path)){ ?>
-                        <?= stepTag($selected_path->achievement_name,"chosen-path-text-value"); ?>
+                        <?= BR_Utils::instance()->stepTag($selected_path->achievement_name,"chosen-path-text-value"); ?>
                     <?php }else{ ?>
-                        <?= stepTag(__("None selected","bluerabbit"),"chosen-path-text-value"); ?>
+                        <?= BR_Utils::instance()->stepTag(__("None selected","bluerabbit"),"chosen-path-text-value"); ?>
                     <?php } ?>
                 </div>
                 <div class="step-buttons">

@@ -2,7 +2,7 @@
 <?php
 if (($isGM || $isAdmin || $isNPC) && isset($_GET['player_id'])) {
 	$the_player_id = (int) $_GET['player_id'];
-	$view_player   = getPlayerData($the_player_id);
+	$view_player   = BR_Player::instance()->getPlayerData($the_player_id);
 } else {
 	$the_player_id = $current_user->ID;
 	$view_player   = $current_player;
