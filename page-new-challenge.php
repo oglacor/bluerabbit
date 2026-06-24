@@ -112,14 +112,9 @@ $is_edit = isset($quest);
 					<tr>
 						<td class="text-right v-top"><span class="font _16 block"><?= __("Main image","bluerabbit");?></span><span class="font _12 block red-500"><?php _e("Required","bluerabbit"); ?></span></td>
 						<td>
-							<div class="gallery"><div class="gallery-item setting">
-								<div class="background" style="background-image: url(<?= isset($quest) ? $quest->mech_badge : ""; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
-								<div class="gallery-item-options relative">
-									<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-									<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_quest_badge');"><span class="icon icon-trash"></span></button>
-									<input type="hidden" id="the_quest_badge" value="<?= isset($quest) ? $quest->mech_badge : ""; ?>"/>
-								</div>
-							</div></div>
+							<div class="br-gallery br-gallery-single">
+								<?php $thumb_id = 'the_quest_badge'; $file = isset($quest) ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
+							</div>
 						</td>
 					</tr>
 				</tbody>

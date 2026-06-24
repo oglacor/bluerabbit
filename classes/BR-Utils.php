@@ -191,12 +191,12 @@ class BR_Utils {
 
     public function insertGalleryItem($thumb_id, $file=NULL, $callback=NULL){
         if($thumb_id){
+            $file     = $file ?? '';
+            $callback = $callback ?? '';
             $theFile = (get_template_directory()."/gallery-item.php");
             if(file_exists($theFile)) {
                 include ($theFile);
             }
-        }else{
-            echo "<h1>No thumb_id found</h1>";
         }
     }
 

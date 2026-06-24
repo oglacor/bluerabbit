@@ -1,16 +1,43 @@
-
-<div class="gallery-item setting">
-	<div class="background" style="background-image: url(<?= $file; ?>);" onClick="showWPUpload('<?= $thumb_id;?>' <?= $callback;?>);" id="<?= $thumb_id;?>_thumb">
-		<?php $mime = (wp_check_filetype($file));?>
-		
-		<video id="<?= $thumb_id;?>_thumb_video" class="gallery-item-video <?= strstr($mime['type'], "video") ? 'active' : ''; ?>" controls>
-			<source src="<?=$file; ?>">
+<?php
+/**
+ * Reusable gallery item component for image/video upload.
+ *
+ * Variables (set before including):
+ *   $thumb_id  (string)  — unique ID for the hidden input and thumbnail (required)
+ *   $file      (string)  — current image/video URL (optional, default '')
+ *   $callback  (string)  — extra JS callback param for showWPUpload (optional, default '')
+ *
+ * Usage:
+ *   <?php $thumb_id = 'the_quest_badge'; $file = $quest->mech_badge ?? ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
+ *   OR via helper:
+ *   <?php BR_Utils::instance()->insertGalleryItem('the_quest_badge', $quest->mech_badge); ?>
+ */
+if ( ! isset( $thumb_id ) || ! $thumb_id ) return;
+$file     = $file     ?? '';
+$callback = $callback ?? '';
+$has_file = ! empty( $file );
+$mime     = $has_file ? wp_check_filetype( $file ) : [ 'type' => '' ];
+$is_video = $has_file && isset( $mime['type'] ) && strstr( $mime['type'], 'video' );
+?>
+<div class="br-gallery-item" id="<?= esc_attr( $thumb_id ); ?>_wrap">
+	<div class="br-gallery-thumb" onClick="showWPUpload('<?= esc_attr( $thumb_id ); ?>' <?= $callback; ?>);" id="<?= esc_attr( $thumb_id ); ?>_thumb"
+		 style="<?= $has_file && ! $is_video ? 'background-image:url(' . esc_url( $file ) . ')' : ''; ?>">
+		<?php if ( ! $has_file ) { ?>
+		<span class="br-gallery-placeholder"><span class="icon icon-image"></span></span>
+		<?php } ?>
+		<?php if ( $is_video ) { ?>
+		<video id="<?= esc_attr( $thumb_id ); ?>_thumb_video" class="br-gallery-video active" controls>
+			<source src="<?= esc_url( $file ); ?>">
 		</video>
+		<?php } ?>
 	</div>
-	<div class="gallery-item-options relative">
-		<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('<?= $thumb_id;?>' <?= $callback;?>);"><span class="icon icon-image"></span></button>
-		<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?= $thumb_id;?>');"> <span class="icon icon-trash"></span> </button>
-		<input type="hidden" id="<?= $thumb_id;?>" value="<?php echo $file; ?>"/>
+	<div class="br-gallery-actions">
+		<button type="button" class="br-gallery-btn br-gallery-btn-upload" onClick="showWPUpload('<?= esc_attr( $thumb_id ); ?>' <?= $callback; ?>);" title="<?= esc_attr__( 'Choose image', 'bluerabbit' ); ?>">
+			<span class="icon icon-image"></span>
+		</button>
+		<button type="button" class="br-gallery-btn br-gallery-btn-remove" onClick="clearImage('#<?= esc_attr( $thumb_id ); ?>');" title="<?= esc_attr__( 'Remove', 'bluerabbit' ); ?>">
+			<span class="icon icon-trash"></span>
+		</button>
 	</div>
+	<input type="hidden" id="<?= esc_attr( $thumb_id ); ?>" value="<?= esc_attr( $file ); ?>">
 </div>
-

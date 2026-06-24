@@ -1,9 +1,9 @@
-	<div style="padding:14px 20px;border-bottom:1px solid rgba(28,194,235,0.12);display:flex;align-items:center;justify-content:space-between">
-		<h3 class="br-panel-title" style="margin:0"><span class="icon icon-objectives"></span> <?= __("Buttons", "bluerabbit"); ?></h3>
+	<div class="br-step-buttons-header">
+		<h3 class="br-panel-title"><span class="icon icon-objectives"></span> <?= __("Buttons", "bluerabbit"); ?></h3>
 		<button class="br-btn" onClick="addStepButton();"><span class="icon icon-add"></span> <?= __("Add button", "bluerabbit"); ?></button>
 	</div>
-	<div style="padding:14px 20px">
-		<span class="br-form-hint" style="display:block;margin-bottom:12px"><?= __("The options available to the player", "bluerabbit"); ?></span>
+	<div class="br-step-buttons-body">
+		<span class="br-form-hint"><?= __("The options available to the player", "bluerabbit"); ?></span>
 		<?php $buttons = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_step_buttons WHERE step_id=$s->step_id AND button_status='publish' AND button_type='jump'"); ?>
 		<?php $steps = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_steps WHERE quest_id=$s->quest_id AND adventure_id=$s->adventure_id AND step_status='publish' AND step_id !=$s->step_id ORDER BY step_order, step_id"); ?>
 

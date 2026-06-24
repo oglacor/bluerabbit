@@ -113,15 +113,8 @@ if ($adventure && ($isGM || $isAdmin)) {
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
 				<div class="br-form-component">
-					<div class="gallery">
-						<div class="gallery-item setting">
-							<div class="background" style="background-image: url(<?= $is_edit ? $quest->mech_badge : ''; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
-							<div class="gallery-item-options relative">
-								<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-								<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_quest_badge');"><span class="icon icon-trash"></span></button>
-								<input type="hidden" id="the_quest_badge" value="<?= $is_edit ? $quest->mech_badge : ''; ?>">
-							</div>
-						</div>
+					<div class="br-gallery br-gallery-single">
+						<?php $thumb_id = 'the_quest_badge'; $file = $is_edit ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
 					</div>
 				</div>
 			</div>

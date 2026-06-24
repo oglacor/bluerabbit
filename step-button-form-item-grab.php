@@ -1,8 +1,8 @@
-	<div style="padding:14px 20px;border-bottom:1px solid rgba(28,194,235,0.12)">
-		<h3 class="br-panel-title" style="margin:0"><span class="icon icon-objectives"></span> <?= __("Select the item the player will earn", "bluerabbit"); ?></h3>
-		<span class="br-form-hint" style="display:block;margin-top:6px"><?= __("If you don't see an item here, it may be because you added it to another step in this quest", "bluerabbit"); ?></span>
+	<div class="br-step-buttons-header">
+		<h3 class="br-panel-title"><span class="icon icon-objectives"></span> <?= __("Select the item the player will earn", "bluerabbit"); ?></h3>
 	</div>
-	<div style="padding:14px 20px">
+	<div class="br-step-buttons-body">
+		<span class="br-form-hint"><?= __("If you don't see an item here, it may be because you added it to another step in this quest", "bluerabbit"); ?></span>
 		<?php
 		if ($s->step_item) {
 			$step_items = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_items WHERE adventure_id=$s->adventure_id AND item_status='publish' AND (item_type='key' OR item_type='tabi-piece') AND item_id NOT IN (SELECT step_item FROM {$wpdb->prefix}br_steps WHERE step_item > 0 AND quest_id=$s->quest_id AND step_item != $s->step_item)");

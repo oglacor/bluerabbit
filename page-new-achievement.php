@@ -63,14 +63,9 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Achievement Badge", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
 				<div class="br-form-component">
-					<div class="gallery"><div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= isset($a) ? $a->achievement_badge : ''; ?>);" onClick="showWPUpload('the_achievement_badge');" id="the_achievement_badge_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_achievement_badge');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_achievement_badge');"><span class="icon icon-trash"></span></button>
-							<input type="hidden" id="the_achievement_badge" value="<?= isset($a) ? $a->achievement_badge : ''; ?>">
-						</div>
-					</div></div>
+					<div class="br-gallery br-gallery-single">
+						<?php $thumb_id = 'the_achievement_badge'; $file = isset($a) ? $a->achievement_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
+					</div>
 				</div>
 			</div>
 
