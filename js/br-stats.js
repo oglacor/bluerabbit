@@ -90,25 +90,57 @@
 
     // ── Quest Funnel (horizontal bar) ────────────────────
 
+    var funnelData = [], funnelPage = 0, funnelPerPage = 10;
+
     function initQuestFunnel() {
         ajax('br_stats_quest_funnel', {}, function(res) {
             if (!res.success) return;
-            var d = res.data;
-            destroyChart('quest-funnel');
-            var ctx = document.getElementById('br-quest-funnel-chart');
-            if (!ctx) return;
+            funnelData = res.data;
+            funnelPage = 0;
+            renderFunnelPage();
+        });
+    }
 
-            charts['quest-funnel'] = new Chart(ctx, {
-                type: 'horizontalBar',
-                data: {
-                    labels: d.map(function(r) { return r.quest_title.length > 30 ? r.quest_title.substring(0, 28) + '…' : r.quest_title; }),
-                    datasets: [
-                        { label: 'Enrolled',  data: d.map(function(r) { return r.started_count; }),   backgroundColor: 'rgba(28,194,235,0.25)', borderColor: palette.primary, borderWidth: 1 },
-                        { label: 'Completed', data: d.map(function(r) { return r.completed_count; }), backgroundColor: palette.green,             borderColor: palette.green,   borderWidth: 1 }
-                    ]
-                },
-                options: hBarOpts()
-            });
+    window.brFunnelPage = function(dir) {
+        var pages = Math.ceil(funnelData.length / funnelPerPage);
+        funnelPage = Math.max(0, Math.min(pages - 1, funnelPage + dir));
+        renderFunnelPage();
+    };
+
+    function renderFunnelPage() {
+        var pages = Math.max(1, Math.ceil(funnelData.length / funnelPerPage));
+        var start = funnelPage * funnelPerPage;
+        var slice = funnelData.slice(start, start + funnelPerPage);
+
+        var lbl = document.getElementById('br-funnel-page-label');
+        if (lbl) lbl.textContent = (funnelPage + 1) + '/' + pages;
+
+        destroyChart('quest-funnel');
+        var ctx = document.getElementById('br-quest-funnel-chart');
+        if (!ctx || !slice.length) return;
+
+        var labels = [], enrolled = [], completed = [], bgEnrolled = [], bgCompleted = [], borderC = [];
+        slice.forEach(function(r) {
+            var t = r.quest_title.length > 30 ? r.quest_title.substring(0, 28) + '…' : r.quest_title;
+            if (r.is_locked) t = '🔒 ' + t;
+            labels.push(t);
+            enrolled.push(r.is_locked ? 0 : r.started_count);
+            completed.push(parseInt(r.completed_count) || 0);
+            bgEnrolled.push(r.is_locked ? 'rgba(255,255,255,0.04)' : 'rgba(28,194,235,0.25)');
+            bgCompleted.push(r.is_locked ? 'rgba(255,255,255,0.08)' : palette.green);
+            borderC.push(r.is_locked ? 'rgba(255,255,255,0.1)' : palette.green);
+        });
+
+        charts['quest-funnel'] = new Chart(ctx, {
+            type: 'horizontalBar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Enrolled',  data: enrolled,  backgroundColor: bgEnrolled, borderColor: palette.primary, borderWidth: 1 },
+                    { label: 'Completed', data: completed, backgroundColor: bgCompleted, borderColor: borderC, borderWidth: 1 }
+                ]
+            },
+            options: hBarOpts()
         });
     }
 
@@ -141,8 +173,11 @@
 
     // ── Activity (line) ──────────────────────────────────
 
-    function initActivityChart() {
-        ajax('br_stats_activity_heatmap', {}, function(res) {
+    function initActivityChart(from, to) {
+        var params = {};
+        if (from && to) { params.from = from; params.to = to; showLoader('small'); }
+        ajax('br_stats_activity_heatmap', params, function(res) {
+            hideAllOverlay();
             if (!res.success) return;
             var d = res.data;
             destroyChart('activity');
@@ -168,6 +203,17 @@
             });
         });
     }
+
+    window.brReloadActivity = function() {
+        var from = document.getElementById('br-activity-from').value;
+        var to   = document.getElementById('br-activity-to').value;
+        if (from && to) initActivityChart(from, to);
+    };
+    window.brResetActivity = function() {
+        document.getElementById('br-activity-from').value = '';
+        document.getElementById('br-activity-to').value = '';
+        initActivityChart();
+    };
 
     // ── Type Completion Doughnut ─────────────────────────
 
@@ -445,6 +491,41 @@
                 e.preventDefault();
                 var uid = $(this).data('uid');
                 if (uid) loadPlayerPanel(uid);
+            });
+
+            // Player search
+            $('#br-stats-player-search').on('keyup', function() {
+                var q = ($(this).val() || '').toLowerCase();
+                $('#br-stats-player-table tbody tr').each(function() {
+                    var s = $(this).attr('data-search') || '';
+                    this.style.display = (!q || s.indexOf(q) >= 0) ? '' : 'none';
+                });
+            });
+
+            // Sortable columns
+            var sortCol = '', sortDir = 'desc';
+            $(document).on('click', '#br-stats-player-table .br-sortable', function() {
+                var col  = $(this).attr('data-sort-col');
+                var type = $(this).attr('data-sort-type');
+                if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+                else { sortCol = col; sortDir = type === 'string' ? 'asc' : 'desc'; }
+
+                $('#br-stats-player-table .br-sort-icon').text('');
+                $(this).find('.br-sort-icon').text(sortDir === 'asc' ? ' ▲' : ' ▼');
+
+                var $tbody = $('#br-stats-player-table tbody');
+                var rows = $tbody.find('tr').get();
+                rows.sort(function(a, b) {
+                    var va = $(a).attr('data-' + col) || '';
+                    var vb = $(b).attr('data-' + col) || '';
+                    if (type === 'number') { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+                    var cmp = va > vb ? 1 : (va < vb ? -1 : 0);
+                    return sortDir === 'asc' ? cmp : -cmp;
+                });
+                $.each(rows, function(i, row) {
+                    $tbody.append(row);
+                    $(row).find('.br-row-num').text(i + 1);
+                });
             });
         }
 

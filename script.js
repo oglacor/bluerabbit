@@ -3090,6 +3090,33 @@ function submitSurveyAnswer(question_id, option_id = 0, style = "") {
 }
 
 
+////////////////////////////// STEP SORTABLE HELPERS ///////////////////////////
+function brRenumberSteps() {
+    $('#steps-list > .br-step-item').each(function(i) {
+        $(this).find('.br-step-order').first().text(i + 1);
+    });
+}
+
+function brInitStepSortable() {
+    var $sl = $('#steps-list');
+    if (!$sl.length || !$.fn.sortable) return;
+    try { $sl.sortable('destroy'); } catch(e) {}
+    $sl.sortable({
+        items: '> .br-step-item',
+        handle: '.br-step-row',
+        placeholder: 'ui-sortable-placeholder',
+        helper: 'clone',
+        tolerance: 'pointer',
+        start: function(e, ui) {
+            ui.placeholder.height(ui.helper.outerHeight());
+        },
+        update: function() {
+            brRenumberSteps();
+            reorderSteps();
+        }
+    }).disableSelection();
+}
+
 ////////////////////////////// ADD STEP ///////////////////////////
 function addStep(id_to_duplicate = null) {
     let quest_id = $('#the_quest_id').val();
@@ -3111,6 +3138,8 @@ function addStep(id_to_duplicate = null) {
                 } else {
                     $('#steps-list').append(data_received);
                     $('#no-steps-label').hide();
+                    brInitStepSortable();
+                    brRenumberSteps();
                     let new_step_id = $('#steps-list .br-step-item:last-child input.the_step_id_val').val();
                     editStep(new_step_id);
                     data_received = '';
@@ -7595,6 +7624,7 @@ function displayAjaxResponse(json_data) {
     if (data.remove_step) {
         $('#step-' + data.step_id).fadeOut(300, function () {
             $(this).remove();
+            brRenumberSteps();
         });
     }
 

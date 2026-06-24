@@ -56,7 +56,7 @@
 						</a>
 					</li>
 				<?php } ?>
-				<?php if ($use_item_shop){ ?>
+				<?php if ($use_items){ ?>
 				<li class="nav-button">
 					<a href="<?= get_bloginfo('url')."/item-shop/?adventure_id=$adv_child_id"; ?>">
 						<span class="content">
@@ -423,7 +423,7 @@
 							</a>
 						</li>
 					<?php } ?>
-					<?php if($use_item_shop){ ?>
+					<?php if($use_items){ ?>
 						<li class="nav-button">
 							<a class="" href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adv_parent_id"; ?>">
 								<span class="content">

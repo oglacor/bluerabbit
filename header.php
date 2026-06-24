@@ -13,6 +13,7 @@
 	$user_plan = BR_Config::instance()->getUserPlan($current_user->ID);
 	$f_role = $user_plan ? $user_plan['plan_key'] : 'basic';
 	$features = BR_Config::instance()->getFeatures($f_role);
+	if(!is_array($features)) $features = array();
 
  	if($config['default_adventure']['value']>0){
 		$adventure_id = $config['default_adventure']['value'];
@@ -83,7 +84,7 @@
 			$use_schedule = isset($adv_settings['use_schedule']['value']) ? $adv_settings['use_schedule']['value'] : "";
 			$use_speakers = isset($adv_settings['use_speakers']['value']) ? $adv_settings['use_speakers']['value'] : "";
 			$default_journey_view = isset($adv_settings['default_journey_view']['value']) ? $adv_settings['default_journey_view']['value'] : "";
-			$use_item_shop = isset($adv_settings['use_item_shop']['value']) ? $adv_settings['use_item_shop']['value'] : "";
+			$use_items = isset($adv_settings['use_items']['value']) ? $adv_settings['use_items']['value'] : "";
 			$use_backpack = isset($adv_settings['use_backpack']['value']) ? $adv_settings['use_backpack']['value'] : "";
 			$item_shop_status = isset($adv_settings['item_shop_status']['value']) ? $adv_settings['item_shop_status']['value'] : "";
 			$reset_transatcions = isset($adv_settings['reset_transactions']['value']) ? $adv_settings['reset_transactions']['value'] : "";

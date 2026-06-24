@@ -179,6 +179,9 @@ $image_types = array(
 		<button class="br-tab-btn" onClick="brScrollTo('features', this)">
 			<span class="icon icon-teamwork"></span> <?= __("Features","bluerabbit"); ?>
 		</button>
+		<button class="br-tab-btn" onClick="brScrollTo('quick-links', this)">
+			<span class="icon icon-link"></span> <?= __("Quick Links","bluerabbit"); ?>
+		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('image_settings', this)">
 			<span class="icon icon-image"></span> <?= __("Images","bluerabbit"); ?>
 		</button>
@@ -669,45 +672,34 @@ $image_types = array(
 			on a.player_id = users.ID
 			LEFT JOIN {$wpdb->prefix}br_players b
 			on a.player_id = b.player_id
-			WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' LIMIT 1000
+			WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' LIMIT 5000
 		");
 		?>
 		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Enrolled Players","bluerabbit"); ?> <span class="br-badge"><?= count($players); ?></span></h3>
 
-		<div class="br-form-group">
-			<input type="text" class="br-input" id="search-players" placeholder="<?= __("Search players","bluerabbit"); ?>">
-			<script>
-				$('#search-players').keyup(function(){
-					var valThis = $(this).val().toLowerCase();
-					if(valThis == ""){
-						$('tbody#players-list > tr').show();
-					}else{
-						$('tbody#players-list > tr').each(function(){
-							var text = $(this).text().toLowerCase();
-							(text.indexOf(valThis) >= 0) ? $(this).show() : $(this).hide();
-						});
-					};
-				});
-			</script>
+		<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+			<input type="text" class="br-input" id="search-enrolled-players" placeholder="<?= __("Search players...","bluerabbit"); ?>" style="flex:1;min-width:200px">
+			<span style="font-size:13px;color:rgba(255,255,255,0.4)"><span id="enrolled-visible-count"><?= count($players); ?></span> / <?= count($players); ?> <?= __("players","bluerabbit"); ?></span>
 		</div>
 
 		<table class="br-table">
 			<thead>
 				<tr>
-					<td><?= __("ID","bluerabbit"); ?></td>
-					<td><?= __("User Login","bluerabbit"); ?></td>
-					<td><?= __("Name","bluerabbit"); ?></td>
-					<td><?= __("Lastname","bluerabbit"); ?></td>
-					<td><?= __("Email","bluerabbit"); ?></td>
-					<td><?= __("Work","bluerabbit"); ?></td>
-					<td><?= __("Role","bluerabbit"); ?></td>
-					<td><?= __("Actions","bluerabbit"); ?></td>
+					<th><?= __("ID","bluerabbit"); ?></th>
+					<th><?= __("User Login","bluerabbit"); ?></th>
+					<th><?= __("Name","bluerabbit"); ?></th>
+					<th><?= __("Lastname","bluerabbit"); ?></th>
+					<th><?= __("Email","bluerabbit"); ?></th>
+					<th><?= __("Work","bluerabbit"); ?></th>
+					<th><?= __("Role","bluerabbit"); ?></th>
+					<th><?= __("Actions","bluerabbit"); ?></th>
 				</tr>
 			</thead>
 			<tbody id="players-list">
 				<?php foreach($players as $play){ ?>
 					<?php $player_role = $play->player_adventure_role;  ?>
-					<tr id="player-row-<?= $play->player_id; ?>" class="<?= "role-$player_role"; ?>">
+					<tr id="player-row-<?= $play->player_id; ?>" class="<?= "role-$player_role"; ?>"
+						data-search="<?= esc_attr(strtolower($play->player_id.' '.$play->user_login.' '.$play->player_first.' '.$play->player_last.' '.$play->player_email)); ?>">
 						<td><?= $play->player_id; ?></td>
 						<td><?= $play->user_login; ?></td>
 						<td><?= $play->player_first; ?></td>
@@ -792,6 +784,48 @@ $image_types = array(
 				<?php } ?>
 			</tbody>
 		</table>
+		<div class="br-pagination" id="enrolled-pagination"></div>
+
+		<script>
+		jQuery(function($){
+			var EPG = {
+				page:1, perPage:30,
+				render: function(){
+					var search = ($('#search-enrolled-players').val()||'').toLowerCase();
+					var $rows = $('#players-list > tr');
+					var visible = [];
+					$rows.each(function(){
+						var match = !search || ($(this).attr('data-search')||'').indexOf(search) >= 0;
+						if (match) visible.push(this);
+						this.style.display = 'none';
+					});
+					var total = visible.length;
+					var pages = Math.ceil(total / this.perPage);
+					if (this.page > pages) this.page = Math.max(1, pages);
+					var start = (this.page - 1) * this.perPage;
+					var end = Math.min(start + this.perPage, total);
+					for (var i = start; i < end; i++) visible[i].style.display = '';
+					$('#enrolled-visible-count').text(total);
+					this.nav(pages);
+				},
+				nav: function(pages){
+					if (pages <= 1){ $('#enrolled-pagination').html(''); return; }
+					var h='', p=this.page;
+					if(p>1) h+='<button class="br-page-btn" onclick="EPG.goTo('+(p-1)+')">&laquo;</button>';
+					var s=Math.max(1,p-3), e=Math.min(pages,p+3);
+					if(s>1){ h+='<button class="br-page-btn" onclick="EPG.goTo(1)">1</button>'; if(s>2) h+='<span style="color:rgba(255,255,255,0.3)">&hellip;</span>'; }
+					for(var i=s;i<=e;i++) h+='<button class="br-page-btn'+(i===p?' active':'')+'" onclick="EPG.goTo('+i+')">'+i+'</button>';
+					if(e<pages){ if(e<pages-1) h+='<span style="color:rgba(255,255,255,0.3)">&hellip;</span>'; h+='<button class="br-page-btn" onclick="EPG.goTo('+pages+')">'+pages+'</button>'; }
+					if(p<pages) h+='<button class="br-page-btn" onclick="EPG.goTo('+(p+1)+')">&raquo;</button>';
+					$('#enrolled-pagination').html(h);
+				},
+				goTo: function(p){ this.page=p; this.render(); document.getElementById('enrolled-players').scrollIntoView({behavior:'smooth',block:'start'}); }
+			};
+			window.EPG = EPG;
+			$('#search-enrolled-players').on('keyup', function(){ EPG.page=1; EPG.render(); });
+			EPG.render();
+		});
+		</script>
 	</div>
 
 	<!-- Add Players -->
@@ -887,7 +921,7 @@ $image_types = array(
 					</tr>
 				</thead>
 				<tbody>
-					<?php $all_features = array_merge($features, $adv_config); ?>
+					<?php $all_features = array_merge(is_array($features) ? $features : array(), $adv_config); ?>
 					<?php foreach($all_features as $sKey=>$s){ ?>
 						<?php
 						if($my_features && isset($my_features[$sKey]) && isset($my_features[$sKey][$f_role]) && !$my_features[$sKey][$f_role]){
@@ -976,6 +1010,190 @@ $image_types = array(
 				</tbody>
 			</table>
 		</div>
+	</div>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<!-- QUICK LINKS                                            -->
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<div class="br-scroll-section" id="quick-links">
+	<div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-link"></span> <?= __("Quick Links","bluerabbit"); ?></h3>
+		<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("Configure the shortcut buttons that appear in the taskbar. Hidden links won't show for players.","bluerabbit"); ?></span>
+
+		<!-- Built-in links -->
+		<div style="display:flex;flex-direction:column;gap:4px">
+
+			<!-- Journey -->
+			<div class="br-step-row" style="border-left:3px solid #1cc2eb;cursor:default" id="ql_journey">
+				<span class="icon icon-journey" style="font-size:20px;color:#1cc2eb;flex-shrink:0;width:28px;text-align:center"></span>
+				<div style="flex:1;min-width:0">
+					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Journey","bluerabbit"); ?></span>
+					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Link to the adventure map/list","bluerabbit"); ?></span>
+				</div>
+				<div class="setting">
+					<button class="toggle-button <?= (!isset($adv_settings['ql_journey']['value']) || $adv_settings['ql_journey']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_journey');">&nbsp;</button>
+					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_journey']['value']) ? $adv_settings['ql_journey']['value'] : "1"; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_journey']['id']) ? $adv_settings['ql_journey']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_journey">
+					<input class="setting-label" type="hidden" value="<?= __("Journey Quick Link","bluerabbit"); ?>">
+				</div>
+			</div>
+
+			<!-- Magic Code -->
+			<?php if($use_achievements){ ?>
+			<div class="br-step-row" style="border-left:3px solid #9f40e2;cursor:default" id="ql_magic_code">
+				<span class="icon icon-qr" style="font-size:20px;color:#9f40e2;flex-shrink:0;width:28px;text-align:center"></span>
+				<div style="flex:1;min-width:0">
+					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Magic Code","bluerabbit"); ?></span>
+					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Opens the magic code input form","bluerabbit"); ?></span>
+				</div>
+				<div class="setting">
+					<button class="toggle-button <?= (isset($adv_settings['ql_magic_code']['value']) && $adv_settings['ql_magic_code']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_magic_code');">&nbsp;</button>
+					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_magic_code']['value']) ? $adv_settings['ql_magic_code']['value'] : "1"; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_magic_code']['id']) ? $adv_settings['ql_magic_code']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_magic_code">
+					<input class="setting-label" type="hidden" value="<?= __("Magic Code Quick Link","bluerabbit"); ?>">
+				</div>
+			</div>
+			<?php } ?>
+
+			<!-- Item Shop -->
+			<?php if($use_items){ ?>
+			<div class="br-step-row" style="border-left:3px solid #f7cb15;cursor:default" id="ql_item_shop">
+				<span class="icon icon-shop" style="font-size:20px;color:#f7cb15;flex-shrink:0;width:28px;text-align:center"></span>
+				<div style="flex:1;min-width:0">
+					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Item Shop","bluerabbit"); ?></span>
+					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Link to the item shop","bluerabbit"); ?></span>
+				</div>
+				<div class="setting">
+					<button class="toggle-button <?= (isset($adv_settings['ql_item_shop']['value']) && $adv_settings['ql_item_shop']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_item_shop');">&nbsp;</button>
+					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_item_shop']['value']) ? $adv_settings['ql_item_shop']['value'] : "1"; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_item_shop']['id']) ? $adv_settings['ql_item_shop']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_item_shop">
+					<input class="setting-label" type="hidden" value="<?= __("Item Shop Quick Link","bluerabbit"); ?>">
+				</div>
+			</div>
+			<?php } ?>
+
+			<!-- Feedback -->
+			<div class="br-step-row" style="border-left:3px solid #24da98;cursor:default" id="ql_feedback">
+				<span class="icon icon-comment" style="font-size:20px;color:#24da98;flex-shrink:0;width:28px;text-align:center"></span>
+				<div style="flex:1;min-width:0">
+					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Feedback","bluerabbit"); ?></span>
+					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Contact admin form","bluerabbit"); ?></span>
+				</div>
+				<div class="setting">
+					<button class="toggle-button <?= (!isset($adv_settings['ql_feedback']['value']) || $adv_settings['ql_feedback']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_feedback');">&nbsp;</button>
+					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_feedback']['value']) ? $adv_settings['ql_feedback']['value'] : "1"; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_feedback']['id']) ? $adv_settings['ql_feedback']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_feedback">
+					<input class="setting-label" type="hidden" value="<?= __("Feedback Quick Link","bluerabbit"); ?>">
+				</div>
+			</div>
+
+			<!-- Cooper Support -->
+			<div class="br-step-row" style="border-left:3px solid #00bcd4;cursor:default" id="ql_cooper">
+				<span class="icon icon-comment" style="font-size:20px;color:#00bcd4;flex-shrink:0;width:28px;text-align:center"></span>
+				<div style="flex:1;min-width:0">
+					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Cooper Support","bluerabbit"); ?></span>
+					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("AI support chatbot","bluerabbit"); ?></span>
+				</div>
+				<div class="setting">
+					<button class="toggle-button <?= (!isset($adv_settings['ql_cooper']['value']) || $adv_settings['ql_cooper']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_cooper');">&nbsp;</button>
+					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_cooper']['value']) ? $adv_settings['ql_cooper']['value'] : "1"; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_cooper']['id']) ? $adv_settings['ql_cooper']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_cooper">
+					<input class="setting-label" type="hidden" value="<?= __("Cooper Quick Link","bluerabbit"); ?>">
+				</div>
+			</div>
+
+			<!-- Cooper Slug -->
+			<div class="br-step-row" style="border-left:3px solid rgba(0,188,212,0.3);cursor:default" id="ql_cooper_slug">
+				<span style="font-size:20px;color:rgba(0,188,212,0.4);flex-shrink:0;width:28px;text-align:center">&nbsp;</span>
+				<div style="flex:1;min-width:0">
+					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Cooper Slug","bluerabbit"); ?></span>
+					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Custom Cooper client slug for this adventure","bluerabbit"); ?></span>
+				</div>
+				<div class="setting" style="min-width:180px">
+					<input class="br-input setting-value" type="text" placeholder="e.g. my-company" style="width:100%" value="<?= isset($adv_settings['ql_cooper_slug']['value']) ? $adv_settings['ql_cooper_slug']['value'] : ""; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_cooper_slug']['id']) ? $adv_settings['ql_cooper_slug']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_cooper_slug">
+					<input class="setting-label" type="hidden" value="<?= __("Cooper Slug","bluerabbit"); ?>">
+				</div>
+			</div>
+
+		</div>
+
+		<!-- Custom Links -->
+		<h3 class="br-panel-title" style="margin-top:24px"><span class="icon icon-link"></span> <?= __("Custom Links","bluerabbit"); ?></h3>
+		<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("Up to 3 custom buttons. They open in a new tab.","bluerabbit"); ?></span>
+
+		<?php for($ql_i = 1; $ql_i <= 3; $ql_i++){ ?>
+		<div style="background:rgba(4,22,30,0.4);border:1px solid rgba(28,194,235,0.1);border-radius:8px;padding:16px;margin-bottom:10px" id="ql-custom-<?= $ql_i; ?>-group">
+
+			<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+				<span style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:rgba(28,194,235,0.1);color:#1cc2eb;font-family:'proxima-nova-extra-condensed',sans-serif;font-size:16px;font-weight:900;flex-shrink:0"><?= $ql_i; ?></span>
+				<span style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.85);flex:1"><?= sprintf(__("Custom Link %d","bluerabbit"), $ql_i); ?></span>
+				<div id="ql_custom_<?= $ql_i; ?>_show" class="setting">
+					<button class="toggle-button <?= (isset($adv_settings['ql_custom_'.$ql_i.'_show']['value']) && $adv_settings['ql_custom_'.$ql_i.'_show']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_custom_<?= $ql_i; ?>_show');">&nbsp;</button>
+					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_show']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_show']['value'] : "0"; ?>">
+					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_show']['id']) ? $adv_settings['ql_custom_'.$ql_i.'_show']['id'] : ""; ?>">
+					<input class="setting-name" type="hidden" value="ql_custom_<?= $ql_i; ?>_show">
+					<input class="setting-label" type="hidden" value="<?= sprintf(__("Custom Link %d Show","bluerabbit"), $ql_i); ?>">
+				</div>
+			</div>
+
+			<div class="br-form-grid" style="grid-template-columns:1fr 1fr">
+				<div class="br-form-group" id="ql_custom_<?= $ql_i; ?>_label">
+					<label class="br-form-label"><?= __("Label","bluerabbit"); ?></label>
+					<div class="setting">
+						<input class="br-input setting-value" type="text" placeholder="<?= __("Button label","bluerabbit"); ?>" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_label']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_label']['value'] : ""; ?>">
+						<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_label']['id']) ? $adv_settings['ql_custom_'.$ql_i.'_label']['id'] : ""; ?>">
+						<input class="setting-name" type="hidden" value="ql_custom_<?= $ql_i; ?>_label">
+						<input class="setting-label" type="hidden" value="<?= sprintf(__("Custom Link %d Label","bluerabbit"), $ql_i); ?>">
+					</div>
+				</div>
+				<div class="br-form-group" id="ql_custom_<?= $ql_i; ?>_link">
+					<label class="br-form-label"><?= __("URL","bluerabbit"); ?></label>
+					<div class="setting">
+						<input class="br-input setting-value" type="url" placeholder="https://..." value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_link']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_link']['value'] : ""; ?>">
+						<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_link']['id']) ? $adv_settings['ql_custom_'.$ql_i.'_link']['id'] : ""; ?>">
+						<input class="setting-name" type="hidden" value="ql_custom_<?= $ql_i; ?>_link">
+						<input class="setting-label" type="hidden" value="<?= sprintf(__("Custom Link %d URL","bluerabbit"), $ql_i); ?>">
+					</div>
+				</div>
+			</div>
+
+			<div class="br-form-grid" style="grid-template-columns:1fr 1fr">
+				<div class="br-form-group" id="ql_custom_<?= $ql_i; ?>_icon">
+					<label class="br-form-label"><?= __("Icon","bluerabbit"); ?></label>
+					<div class="setting" style="display:flex;align-items:center;gap:8px">
+						<button class="br-btn" style="padding:6px 14px;font-size:12px" onClick="showWPUpload('ql_custom_<?= $ql_i; ?>_icon_val');">
+							<span class="icon icon-image"></span> <?= __("Choose","bluerabbit"); ?>
+						</button>
+						<img id="ql_custom_<?= $ql_i; ?>_icon_preview" src="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] : ''; ?>" style="height:30px;border-radius:4px;<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) && $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] ? '' : 'display:none;'; ?>">
+						<input class="form-ui setting-value" type="hidden" id="ql_custom_<?= $ql_i; ?>_icon_val" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] : ""; ?>">
+						<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['id']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['id'] : ""; ?>">
+						<input class="setting-name" type="hidden" value="ql_custom_<?= $ql_i; ?>_icon">
+						<input class="setting-label" type="hidden" value="<?= sprintf(__("Custom Link %d Icon","bluerabbit"), $ql_i); ?>">
+					</div>
+				</div>
+				<div class="br-form-group" id="ql_custom_<?= $ql_i; ?>_color">
+					<label class="br-form-label"><?= __("Color","bluerabbit"); ?></label>
+					<div class="br-form-component setting">
+						<?php $ql_color_val = isset($adv_settings['ql_custom_'.$ql_i.'_color']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_color']['value'] : 'grey'; ?>
+						<input id="ql_custom_<?= $ql_i; ?>_color_val" class="color-selected setting-value" type="hidden" value="<?= $ql_color_val; ?>">
+						<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_color']['id']) ? $adv_settings['ql_custom_'.$ql_i.'_color']['id'] : ""; ?>">
+						<input class="setting-name" type="hidden" value="ql_custom_<?= $ql_i; ?>_color">
+						<input class="setting-label" type="hidden" value="<?= sprintf(__("Custom Link %d Color","bluerabbit"), $ql_i); ?>">
+						<?php $color_select_id = "#ql_custom_".$ql_i."_color_val"; include (TEMPLATEPATH . '/color-select.php'); ?>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<?php } ?>
 	</div>
 	</div>
 

@@ -16,7 +16,7 @@ $p_last         = $stats->get_player_last_activity($view_user_id, $adv_child_id)
 $p_engagement   = $stats->get_player_engagement($view_user_id, $adv_child_id);
 
 $page     = isset($_GET['pg']) ? max(1, (int)$_GET['pg']) : 1;
-$per_page = 50;
+$per_page = 20;
 
 if ($is_manager) {
     $adv_summary      = $stats->get_adventure_summary($adv_child_id);
@@ -66,8 +66,8 @@ window.brStats = {
             <span class="br-stats-kpi-label"><?= __("Active 7d", "bluerabbit"); ?></span>
         </div>
         <div class="br-stats-kpi purple">
-            <span class="br-stats-kpi-value"><?= number_format($adv_summary['avg_xp']); ?></span>
-            <span class="br-stats-kpi-label"><?= __("Avg", "bluerabbit"); ?> <?= $xp_label; ?></span>
+            <span class="br-stats-kpi-value"><?= number_format($adv_summary['avg_xp']); ?> <small style="font-size:14px;opacity:0.5">/ <?= number_format($adv_summary['available_xp']); ?></small></span>
+            <span class="br-stats-kpi-label"><?= __("Avg", "bluerabbit"); ?> <?= $xp_label; ?> <span style="font-size:10px;opacity:0.5">(<?= __("available","bluerabbit"); ?>)</span></span>
         </div>
         <div class="br-stats-kpi green">
             <span class="br-stats-kpi-value"><?= $adv_summary['completion_pct']; ?>%</span>
@@ -78,7 +78,14 @@ window.brStats = {
     <!-- Manager Charts -->
     <div class="br-stats-charts-row">
         <div class="br-stats-panel br-stats-half">
-            <h3><?= __("Quest Funnel", "bluerabbit"); ?></h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <h3 style="margin:0"><?= __("Quest Funnel", "bluerabbit"); ?></h3>
+                <div id="br-funnel-nav" style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.4)">
+                    <button class="br-page-btn" onclick="brFunnelPage(-1)" style="min-width:24px;height:24px;font-size:11px">&laquo;</button>
+                    <span id="br-funnel-page-label">1/1</span>
+                    <button class="br-page-btn" onclick="brFunnelPage(1)" style="min-width:24px;height:24px;font-size:11px">&raquo;</button>
+                </div>
+            </div>
             <div class="br-stats-chart-wrap">
                 <canvas id="br-quest-funnel-chart"></canvas>
             </div>
@@ -92,7 +99,20 @@ window.brStats = {
     </div>
 
     <div class="br-stats-panel">
-        <h3><?= __("Daily Active Users", "bluerabbit"); ?></h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+            <h3 style="margin:0"><?= __("Daily Active Users", "bluerabbit"); ?></h3>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <input type="date" class="br-input" id="br-activity-from" style="padding:4px 8px;font-size:12px;width:auto">
+                <span style="color:rgba(255,255,255,0.3);font-size:12px"><?= __("to","bluerabbit"); ?></span>
+                <input type="date" class="br-input" id="br-activity-to" style="padding:4px 8px;font-size:12px;width:auto">
+                <button class="br-btn" style="padding:4px 12px;font-size:12px" onclick="brReloadActivity()">
+                    <span class="icon icon-check"></span> <?= __("Apply","bluerabbit"); ?>
+                </button>
+                <button class="br-btn" style="padding:4px 10px;font-size:11px;opacity:0.6" onclick="brResetActivity()" title="<?= __('Reset to last 30 days','bluerabbit'); ?>">
+                    <span class="icon icon-rotate"></span>
+                </button>
+            </div>
+        </div>
         <div class="br-stats-chart-wrap">
             <canvas id="br-activity-chart"></canvas>
         </div>
@@ -169,25 +189,54 @@ window.brStats = {
             </div>
         </div>
     </div>
-    <!-- Engagement Breakdown -->
+    <!-- Engagement Breakdown (adventure-wide averages) -->
     <div class="br-stats-panel">
-        <h3><?= __("Engagement Breakdown", "bluerabbit"); ?></h3>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <h3 style="margin:0"><?= __("Engagement Breakdown", "bluerabbit"); ?></h3>
+            <span style="font-size:11px;color:rgba(255,255,255,0.35)">(<?= __("avg across all players","bluerabbit"); ?>)</span>
+        </div>
+        <?php $ab = $adv_engagement['avg_breakdown'] ?? []; ?>
         <div class="br-stats-kpis br-stats-kpis-5">
             <?php
             $eng_kpi = [
-                'recency'     => ['label' => __("Recency", "bluerabbit"),     'color' => '#1cc2eb', 'icon' => 'clock',       'detail' => round($p_engagement['breakdown']['recency']['days_inactive']) . 'd inactive'],
-                'frequency'   => ['label' => __("Frequency", "bluerabbit"),   'color' => '#24da98', 'icon' => 'quest',       'detail' => $p_engagement['breakdown']['frequency']['recent_completions'] . ' in 30d'],
-                'completion'  => ['label' => __("Completion", "bluerabbit"),  'color' => '#9f40e2', 'icon' => 'check',       'detail' => $p_engagement['breakdown']['completion']['pct'] . '% done'],
-                'progression' => ['label' => __("Progression", "bluerabbit"), 'color' => '#f7cb15', 'icon' => 'level-up',    'detail' => 'Lv. ' . $p_engagement['breakdown']['progression']['level']],
-                'economy'     => ['label' => __("Economy", "bluerabbit"),     'color' => '#ff9800', 'icon' => 'item-shop',   'detail' => $p_engagement['breakdown']['economy']['transactions'] . ' txns'],
+                'recency'     => [
+                    'label' => __("Recency", "bluerabbit"),     'color' => '#1cc2eb',
+                    'detail' => round($ab['recency']['avg_days'] ?? 0, 1) . 'd ' . __("avg inactive","bluerabbit"),
+                    'info'   => __("How recently players have been active. 25 = today, 0 = 30+ days ago. Based on last login or activity log.","bluerabbit"),
+                ],
+                'frequency'   => [
+                    'label' => __("Frequency", "bluerabbit"),   'color' => '#24da98',
+                    'detail' => round($ab['frequency']['avg_completions_30d'] ?? 0, 1) . ' ' . __("avg in 30d","bluerabbit"),
+                    'info'   => __("How often players complete quests. Measured by completions in the last 30 days relative to 30% of total quests.","bluerabbit"),
+                ],
+                'completion'  => [
+                    'label' => __("Completion", "bluerabbit"),  'color' => '#9f40e2',
+                    'detail' => round($ab['completion']['avg_pct'] ?? 0, 1) . '% ' . __("avg done","bluerabbit"),
+                    'info'   => __("Percentage of all published quests completed. 25 = 100% done, 0 = nothing completed.","bluerabbit"),
+                ],
+                'progression' => [
+                    'label' => __("Progression", "bluerabbit"), 'color' => '#f7cb15',
+                    'detail' => '',
+                    'info'   => __("Player level relative to the highest level in the adventure. 15 = max level, 0 = level 1.","bluerabbit"),
+                ],
+                'economy'     => [
+                    'label' => __("Economy", "bluerabbit"),     'color' => '#ff9800',
+                    'detail' => '',
+                    'info'   => __("Item shop activity. Each transaction = 2 pts, capped at 10. Measures engagement with the economy system.","bluerabbit"),
+                ],
             ];
-            foreach ($p_engagement['breakdown'] as $key => $comp) {
-                $meta = $eng_kpi[$key];
+            foreach ($eng_kpi as $key => $meta) {
+                $comp = $ab[$key] ?? ['score' => 0, 'max' => 0];
             ?>
             <div class="br-stats-kpi br-stats-kpi-eng" style="border-color: <?= $meta['color']; ?>33">
                 <span class="br-stats-kpi-value" style="color:<?= $meta['color']; ?>"><?= $comp['score']; ?><small>/<?= $comp['max']; ?></small></span>
-                <span class="br-stats-kpi-label"><?= $meta['label']; ?></span>
+                <span class="br-stats-kpi-label">
+                    <?= $meta['label']; ?>
+                    <span class="br-stats-info-btn" title="<?= esc_attr($meta['info']); ?>" style="cursor:help;opacity:0.4;font-size:12px;margin-left:2px">&#9432;</span>
+                </span>
+                <?php if ($meta['detail']) { ?>
                 <span class="br-stats-kpi-detail"><?= $meta['detail']; ?></span>
+                <?php } ?>
             </div>
             <?php } ?>
         </div>
@@ -198,22 +247,33 @@ window.brStats = {
         <h2><?= __("Players", "bluerabbit"); ?></h2>
     </div>
     <div class="br-stats-panel">
+        <div style="margin-bottom:12px">
+            <input type="text" class="br-input" id="br-stats-player-search" placeholder="<?= esc_attr__("Search players...","bluerabbit"); ?>" style="max-width:300px">
+        </div>
         <table class="table transparent-bg br-stats-table" id="br-stats-player-table">
             <thead>
                 <tr>
                     <td>#</td>
-                    <td><?= __("Player", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= $xp_label; ?> <span class="icon icon-sort"></span></td>
-                    <td class="text-center"><?= $bloo_label; ?></td>
-                    <td class="text-center"><?= __("Completion", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Last Active", "bluerabbit"); ?></td>
+                    <td class="br-sortable" data-sort-col="name" data-sort-type="string" style="cursor:pointer"><?= __("Player", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable" data-sort-col="xp" data-sort-type="number" style="cursor:pointer"><?= $xp_label; ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable" data-sort-col="bloo" data-sort-type="number" style="cursor:pointer"><?= $bloo_label; ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable" data-sort-col="completion" data-sort-type="number" style="cursor:pointer"><?= __("Completion", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable" data-sort-col="last_active" data-sort-type="number" style="cursor:pointer"><?= __("Last Active", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach($all_players_data['players'] as $idx => $ap){ ?>
+                <?php foreach($all_players_data['players'] as $idx => $ap){
+                    $login_ts = ($ap['player_last_login'] && strtotime($ap['player_last_login']) > 0) ? strtotime($ap['player_last_login']) : 0;
+                ?>
                 <tr class="br-stats-player-row<?= ($ap['player_id'] == $view_user_id) ? ' active' : ''; ?>"
-                    data-uid="<?= $ap['player_id']; ?>">
-                    <td><?= ($page - 1) * $per_page + $idx + 1; ?></td>
+                    data-uid="<?= $ap['player_id']; ?>"
+                    data-search="<?= esc_attr(strtolower($ap['display_name'].' '.$ap['user_email'])); ?>"
+                    data-name="<?= esc_attr(strtolower($ap['display_name'])); ?>"
+                    data-xp="<?= (int)$ap['player_xp']; ?>"
+                    data-bloo="<?= (int)$ap['player_bloo']; ?>"
+                    data-completion="<?= (float)$ap['completion_pct']; ?>"
+                    data-last_active="<?= $login_ts; ?>">
+                    <td class="br-row-num"><?= ($page - 1) * $per_page + $idx + 1; ?></td>
                     <td>
                         <span class="br-stats-player-name">
                             <img src="<?= esc_url(get_avatar_url($ap['player_id'], ['size' => 32])); ?>"
@@ -225,7 +285,7 @@ window.brStats = {
                     <td class="text-center"><?= number_format($ap['player_bloo']); ?></td>
                     <td class="text-center"><?= $ap['completion_pct']; ?>%</td>
                     <td class="text-center">
-                        <?= ($ap['player_last_login'] && strtotime($ap['player_last_login']) > 0) ? BR_Utils::instance()->get_time_ago(strtotime($ap['player_last_login']), $adv_child_id) : '&mdash;'; ?>
+                        <?= $login_ts ? BR_Utils::instance()->get_time_ago($login_ts, $adv_child_id) : '&mdash;'; ?>
                     </td>
                 </tr>
                 <?php } ?>

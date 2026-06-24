@@ -539,40 +539,62 @@
 		<input type="hidden" id="url" value="<?= get_bloginfo('url');?>">
 		<footer class="taskbar" id="taskbar">
 			<div class="show-on-start core-nav" id="core-nav">
-				<?php if(isset($adventure)){ ?>
+				<?php if(isset($adventure)){
+					$ql_journey    = !isset($adv_settings['ql_journey']['value']) || $adv_settings['ql_journey']['value'] != 0;
+					$ql_magic_code = $use_achievements && (!isset($adv_settings['ql_magic_code']['value']) || $adv_settings['ql_magic_code']['value'] != 0);
+					$ql_item_shop  = $use_items && (!isset($adv_settings['ql_item_shop']['value']) || $adv_settings['ql_item_shop']['value'] != 0);
+					$ql_feedback   = !isset($adv_settings['ql_feedback']['value']) || $adv_settings['ql_feedback']['value'] != 0;
+					$ql_cooper     = !isset($adv_settings['ql_cooper']['value']) || $adv_settings['ql_cooper']['value'] != 0;
+					$cooper_slug   = isset($adv_settings['ql_cooper_slug']['value']) && $adv_settings['ql_cooper_slug']['value'] ? $adv_settings['ql_cooper_slug']['value'] : '';
+				?>
+					<?php if($ql_journey){ ?>
 					<a class="button-icon deep-purple-bg-400" id="journey-btn" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
 						<span class="icon icon-journey white-color perfect-center"></span>
 					</a>
-					<?php if(isset($allow_magic_codes) && $allow_magic_codes==true){ ?>
+					<?php } ?>
+					<?php if($ql_magic_code && isset($allow_magic_codes) && $allow_magic_codes){ ?>
 						<button class="button-icon amber-bg-400" id="magic-code-btn" onClick="showOverlay('#magic-code-form');">
 							<span class="icon icon-qr deep-purple-800"></span>
 						</button>
 					<?php } ?>
-					<?php if($use_item_shop){ ?>
+					<?php if($ql_item_shop){ ?>
 						<a class="button-icon pink-bg-400" id="item-shop-btn" href="<?= get_bloginfo('url')."/item-shop/?adventure_id=$adventure->adventure_id"; ?>">
 							<span class="icon icon-shop white-color perfect-center"></span>
 						</a>
 					<?php } ?>
-                    <a class="button-icon grey-bg-900" id="microsoft-teams-btn" target="_blank" href="https://teams.microsoft.com/l/channel/19:thYSSRaXLdhbiZBlDt6GmAiCAhfclbur-NLwVwD1a4c1@thread.tacv2?tenantId=f66fae02-5d36-495b-bfe0-78a6ff9f8e6e">
-                        <img src="<?= get_bloginfo('template_directory')."/images/app-icons/microsoft-teams.png"; ?>">
-                    </a>
-                    <?php
-                    // Cooper: map adventure_id → Cooper client slug
-                    // Add entries here for each adventure that has Cooper enabled
-                    $cooper_slug = 'unilever-digital-factory';
-                    if ($cooper_slug): ?>
-                    <button class="button-icon blue-bg-800" id="cooper-support-btn" onclick="openCooperModal()">
-                        <img src="<?= get_bloginfo('template_directory')."/images/cooper-white.png"; ?>">
-                    </button>
-                    <?php endif; ?>
+					<?php if($ql_feedback){ ?>
 					<button class="button-icon orange-bg-400" id="contact-admin-btn" onClick="showOverlay('#contact-admin-form');" title="<?php _e('Contact Admin','bluerabbit'); ?>">
 						<span class="icon icon-comment white-color"></span>
 					</button>
+					<?php } ?>
+					<?php if($ql_cooper && $cooper_slug){ ?>
+					<button class="button-icon blue-bg-800" id="cooper-support-btn" onclick="openCooperModal()">
+						<img src="<?= get_bloginfo('template_directory')."/images/cooper-white.png"; ?>">
+					</button>
+					<?php } ?>
 					<?php if($use_encounters){ ?>
 						<button class="button-icon cyan-bg-A400" id="random-encounter-btn" onClick="randomEncounter();">
 							<span class="icon icon-activity grey-900"></span>
 						</button>
 					<?php } ?>
+					<?php
+					// Custom Quick Links (up to 3)
+					for($ql_c = 1; $ql_c <= 3; $ql_c++){
+						$ql_show  = isset($adv_settings['ql_custom_'.$ql_c.'_show']['value']) && $adv_settings['ql_custom_'.$ql_c.'_show']['value'];
+						$ql_link  = isset($adv_settings['ql_custom_'.$ql_c.'_link']['value']) ? $adv_settings['ql_custom_'.$ql_c.'_link']['value'] : '';
+						$ql_icon  = isset($adv_settings['ql_custom_'.$ql_c.'_icon']['value']) ? $adv_settings['ql_custom_'.$ql_c.'_icon']['value'] : '';
+						$ql_color = isset($adv_settings['ql_custom_'.$ql_c.'_color']['value']) ? $adv_settings['ql_custom_'.$ql_c.'_color']['value'] : 'grey';
+						$ql_label = isset($adv_settings['ql_custom_'.$ql_c.'_label']['value']) ? $adv_settings['ql_custom_'.$ql_c.'_label']['value'] : '';
+						if($ql_show && $ql_link){ ?>
+						<a class="button-icon <?= $ql_color; ?>-bg-400" target="_blank" href="<?= esc_url($ql_link); ?>" title="<?= esc_attr($ql_label); ?>">
+							<?php if($ql_icon){ ?>
+								<img src="<?= esc_url($ql_icon); ?>">
+							<?php }else{ ?>
+								<span class="icon icon-link white-color"></span>
+							<?php } ?>
+						</a>
+					<?php }
+					} ?>
 				<?php } ?>
 			</div>
 			<button type="button" class="start-button" id="start-button" onClick="activateStartMenu();">
@@ -583,7 +605,7 @@
 		<?php wp_enqueue_media();?>
 		<?php wp_footer(); ?>
 
-		<?php if (!empty($cooper_slug)): ?>
+		<?php if (isset($cooper_slug) && !empty($cooper_slug)): ?>
 		<!-- Cooper Support Modal -->
 		<div id="cooper-modal">
 			<div id="cooper-backdrop" onclick="closeCooperModal()"></div>

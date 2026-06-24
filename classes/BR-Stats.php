@@ -272,11 +272,18 @@ class BR_Stats {
         $possible = (int) $summary['total_players'] * $total_quests;
         $summary['completion_pct'] = $possible > 0 ? round( ( $total_completions / $possible ) * 100, 1 ) : 0;
 
+        // Available XP from published non-locked quests
+        $summary['available_xp'] = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT IFNULL(SUM(mech_xp), 0) FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission')",
+            $adventure_id
+        ) );
+
         return $summary;
     }
 
     // Portable: swap $wpdb for PDO to migrate.
-    public function get_all_players( int $adventure_id, int $limit = 50, int $offset = 0 ): array {
+    public function get_all_players( int $adventure_id, int $limit = 30, int $offset = 0 ): array {
         global $wpdb;
 
         $total_quests = (int) $wpdb->get_var( $wpdb->prepare(
@@ -328,12 +335,12 @@ class BR_Stats {
 
         $quests = $wpdb->get_results( $wpdb->prepare(
             "SELECT
-                q.quest_id, q.quest_title, q.quest_type, q.quest_order,
+                q.quest_id, q.quest_title, q.quest_type, q.quest_order, q.quest_status,
                 COUNT(pp.player_id) AS completed_count
             FROM {$wpdb->prefix}br_quests q
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.adventure_id = %d
-            WHERE q.adventure_id = %d AND q.quest_status = 'publish'
+            WHERE q.adventure_id = %d AND q.quest_status IN ('publish','locked')
               AND q.quest_type IN ('quest','challenge','survey','mission')
             GROUP BY q.quest_id
             ORDER BY q.quest_order ASC",
@@ -342,6 +349,7 @@ class BR_Stats {
 
         foreach ( $quests as &$q ) {
             $q['started_count'] = $total_players;
+            $q['is_locked'] = ( $q['quest_status'] === 'locked' && (int) $q['completed_count'] === 0 );
         }
 
         return $quests;
@@ -384,27 +392,36 @@ class BR_Stats {
     }
 
     // Portable: swap $wpdb for PDO to migrate.
-    public function get_activity_heatmap( int $adventure_id, int $days = 30 ): array {
+    public function get_activity_heatmap( int $adventure_id, int $days = 30, string $from = '', string $to = '' ): array {
         global $wpdb;
+
+        if ( $from && $to ) {
+            $start = date( 'Y-m-d', strtotime( $from ) );
+            $end   = date( 'Y-m-d', strtotime( $to ) );
+        } else {
+            $end   = date( 'Y-m-d' );
+            $start = date( 'Y-m-d', strtotime( "-{$days} days" ) );
+        }
+
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT DATE(log_date) AS date, COUNT(DISTINCT player_id) AS count
             FROM {$wpdb->prefix}br_activity_log
-            WHERE adventure_id = %d AND log_date >= DATE_SUB(NOW(), INTERVAL %d DAY)
+            WHERE adventure_id = %d AND DATE(log_date) >= %s AND DATE(log_date) <= %s
             GROUP BY DATE(log_date)
             ORDER BY date ASC",
-            $adventure_id, $days
+            $adventure_id, $start, $end
         ), ARRAY_A );
 
         $map = [];
         foreach ( $rows as $r ) $map[ $r['date'] ] = (int) $r['count'];
 
-        $output = [];
-        for ( $i = $days - 1; $i >= 0; $i-- ) {
-            $d = date( 'Y-m-d', strtotime( "-{$i} days" ) );
-            $output[] = [
-                'date'  => $d,
-                'count' => $map[ $d ] ?? 0,
-            ];
+        $output  = [];
+        $current = strtotime( $start );
+        $last    = strtotime( $end );
+        while ( $current <= $last ) {
+            $d = date( 'Y-m-d', $current );
+            $output[] = [ 'date' => $d, 'count' => $map[ $d ] ?? 0 ];
+            $current += 86400;
         }
         return $output;
     }
@@ -702,6 +719,10 @@ class BR_Stats {
         // ── Score every player in PHP ───────────────────────
         $dist  = [ 'on_fire' => 0, 'active' => 0, 'moderate' => 0, 'cooling_off' => 0, 'dormant' => 0, 'never_logged_in' => 0 ];
         $sum   = 0;
+        $comp_sums = [ 'recency' => 0, 'frequency' => 0, 'completion' => 0, 'progression' => 0, 'economy' => 0 ];
+        $avg_days_inactive = 0;
+        $avg_recent_comp   = 0;
+        $avg_comp_pct      = 0;
         $scored = 0;
         $now   = time();
 
@@ -746,6 +767,15 @@ class BR_Stats {
             $total = $rec + $frq + $cmp + $prg + $eco;
             $sum  += $total;
 
+            $comp_sums['recency']     += $rec;
+            $comp_sums['frequency']   += $frq;
+            $comp_sums['completion']  += $cmp;
+            $comp_sums['progression'] += $prg;
+            $comp_sums['economy']     += $eco;
+            $avg_days_inactive += $days;
+            $avg_recent_comp   += $rd;
+            $avg_comp_pct      += $total_q > 0 ? round( ( $dn / $total_q ) * 100, 1 ) : 0;
+
             if      ( $total >= 80 ) $dist['on_fire']++;
             elseif  ( $total >= 60 ) $dist['active']++;
             elseif  ( $total >= 40 ) $dist['moderate']++;
@@ -753,11 +783,20 @@ class BR_Stats {
             else                     $dist['dormant']++;
         }
 
+        $avg_breakdown = [
+            'recency'     => [ 'score' => $scored > 0 ? round( $comp_sums['recency'] / $scored, 1 ) : 0,     'max' => 25, 'avg_days' => $scored > 0 ? round( $avg_days_inactive / $scored, 1 ) : 0 ],
+            'frequency'   => [ 'score' => $scored > 0 ? round( $comp_sums['frequency'] / $scored, 1 ) : 0,   'max' => 25, 'avg_completions_30d' => $scored > 0 ? round( $avg_recent_comp / $scored, 1 ) : 0 ],
+            'completion'  => [ 'score' => $scored > 0 ? round( $comp_sums['completion'] / $scored, 1 ) : 0,   'max' => 25, 'avg_pct' => $scored > 0 ? round( $avg_comp_pct / $scored, 1 ) : 0 ],
+            'progression' => [ 'score' => $scored > 0 ? round( $comp_sums['progression'] / $scored, 1 ) : 0, 'max' => 15 ],
+            'economy'     => [ 'score' => $scored > 0 ? round( $comp_sums['economy'] / $scored, 1 ) : 0,     'max' => 10 ],
+        ];
+
         return [
-            'avg_score'    => $scored > 0 ? (int) round( $sum / $scored ) : 0,
-            'distribution' => $dist,
-            'count'        => count( $pids ),
-            'scored'       => $scored,
+            'avg_score'     => $scored > 0 ? (int) round( $sum / $scored ) : 0,
+            'distribution'  => $dist,
+            'count'         => count( $pids ),
+            'scored'        => $scored,
+            'avg_breakdown' => $avg_breakdown,
         ];
     }
 

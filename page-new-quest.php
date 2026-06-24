@@ -181,7 +181,6 @@ if ($adventure && ($isGM || $isAdmin)) {
 
 			<div style="display:flex;gap:8px;margin-top:12px">
 				<button class="br-btn" onClick="addStep();"><span class="icon icon-add"></span> <?= __("Add Step", "bluerabbit"); ?></button>
-				<button class="br-btn" onClick="reorderSteps();"><span class="icon icon-rotate"></span> <?= __("Reorder Steps", "bluerabbit"); ?></button>
 			</div>
 			<?php } else { ?>
 			<div class="br-empty" style="padding:24px">
@@ -288,11 +287,7 @@ if (isset($items['key'])) { foreach ($items['key'] as $i) { $items_json[] = ['te
 jQuery(document).ready(function($) {
 	<?php if ($is_edit) { ?>checkRequirements(<?= $quest->mech_level; ?>);<?php } else { ?>checkRequirements(1);<?php } ?>
 	$(document).keyup(function(e) { if (e.ctrlKey && e.keyCode == 13) updateQuest(); });
-	var $sl = $('#steps-list');
-	if ($sl.length && $.fn.sortable) {
-		try { $sl.sortable('destroy'); } catch(e) {}
-		$sl.sortable({ items: '> .br-step-item', handle: '.br-step-order' }).disableSelection();
-	}
+	brInitStepSortable();
 });
 function brScrollTo(id, btn) {
 	document.querySelectorAll('#main-tabs-buttons .br-tab-btn').forEach(function(b) { b.classList.remove('active'); });

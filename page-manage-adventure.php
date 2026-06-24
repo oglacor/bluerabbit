@@ -8,7 +8,7 @@
 		['key'=>'journey',      'icon'=>'journey',     'label'=>__("Journey","bluerabbit"),      'show'=>true],
 		['key'=>'achievements', 'icon'=>'achievement', 'label'=>__("Achievements","bluerabbit"), 'show'=>!empty($use_achievements)],
 		['key'=>'encounters',   'icon'=>'battle',      'label'=>__("Encounters","bluerabbit"),   'show'=>!empty($use_encounters)],
-		['key'=>'items',        'icon'=>'basket',      'label'=>__("Items","bluerabbit"),        'show'=>!empty($use_item_shop) || !empty($use_backpack)],
+		['key'=>'items',        'icon'=>'basket',      'label'=>__("Items","bluerabbit"),        'show'=>!empty($use_items) || !empty($use_backpack)],
 		['key'=>'guilds',       'icon'=>'guild',       'label'=>__("Guilds","bluerabbit"),       'show'=>!empty($use_guilds)],
 		['key'=>'tabis',        'icon'=>'sabotage',    'label'=>__("Tabis","bluerabbit"),        'show'=>true],
 		['key'=>'blockers',     'icon'=>'lock',        'label'=>__("Blockers","bluerabbit"),     'show'=>!empty($use_blockers)],

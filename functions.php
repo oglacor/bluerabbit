@@ -1246,10 +1246,13 @@ add_action( 'wp_ajax_br_stats_xp_distribution', 'br_stats_xp_distribution' );
 
 function br_stats_activity_heatmap() {
 	check_ajax_referer( 'br_stats_nonce', 'nonce' );
-	$aid = (int) $_POST['adventure_id'];
+	$aid  = (int) $_POST['adventure_id'];
 	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$from = sanitize_text_field( $_POST['from'] ?? '' );
+	$to   = sanitize_text_field( $_POST['to']   ?? '' );
+	$days = (int) ( $_POST['days'] ?? 30 );
 	$stats = new BR_Stats();
-	wp_send_json_success( $stats->get_activity_heatmap( $aid ) );
+	wp_send_json_success( $stats->get_activity_heatmap( $aid, $days, $from, $to ) );
 }
 add_action( 'wp_ajax_br_stats_activity_heatmap', 'br_stats_activity_heatmap' );
 

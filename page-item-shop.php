@@ -102,7 +102,7 @@
 								$buy_button_label = __("Blocked to GMs","bluerabbit");
 							}
 						}
-						if(!$use_item_shop){
+						if(!$use_items){
 							$can_buy = false;
 							$available = false;
 							$buy_button_label = __("The item Shop is now closed!","bluerabbit");

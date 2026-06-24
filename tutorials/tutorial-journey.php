@@ -377,7 +377,7 @@ const intro_steps = [
         ]
     }, 
 	<?php } ?>
-	<?php if($use_item_shop){ ?>
+	<?php if($use_items){ ?>
     {
         id: 'step-4_6',
         title: "<?= __("The Item Shop","bluerabbit"); ?>",
