@@ -8,7 +8,7 @@
 	</div>
 	<div class="layer base absolute bottom-40 blog-post-content">
 		<?php if($b->achievement_name){ ?>
-			<span class="block padding-5 <?= "$b->achievement_color-bg-400";?>"><span class="icon icon-rank"></span> <?= "$b->achievement_name";?></span>
+			<span class="block padding-5" <?= br_color_attr($b->achievement_color) ?>><span class="icon icon-rank"></span> <?= "$b->achievement_name";?></span>
 		<?php } ?>
 		<?php if($current_player->player_level >= $b->mech_level){ ?>
 			<a class="blog-post-headline" href="<?= get_bloginfo('url')."/blog-post/?adventure_id=$adventure->adventure_id&questID=$b->quest_id"; ?>">

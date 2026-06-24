@@ -164,9 +164,10 @@ class BR_Utils {
         if($type && $adventure_id){
             $message = $p_message ? $p_message : __("Add new","bluerabbit");
             $color = $p_color ? $p_color : "blue-grey";
+            $hex = br_color_to_hex($color);
             $button = '
                 <div class="highlight padding-10 white-bg-50 text-center">
-                    <a href="'.get_bloginfo('url').'/new-'.$type.'/?adventure_id='.$adventure_id.'" class="form-ui '.$color.'-bg-400">
+                    <a href="'.get_bloginfo('url').'/new-'.$type.'/?adventure_id='.$adventure_id.'" class="form-ui" style="background-color:'.$hex.'">
                         <span class="icon icon-add"></span>'.$message.'
                     </a>
                 </div>

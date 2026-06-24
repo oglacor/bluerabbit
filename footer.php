@@ -386,7 +386,7 @@
 						<?php if(isset($myRank)){?>
 						<button class="form-ui transparent-bg" onClick="loadAchievementCard(<?= $myRank->achievement_id; ?>);">
 							<span class="layer background absolute white-bg opacity-10 background-badge"></span>
-							<span class="layer base button-icon badge-icon sq-40 font _22 <?= $myRank->achievement_color ? $myRank->achievement_color : $adventure->adventure_color;?>-bg-400">
+							<span class="layer base button-icon badge-icon sq-40 font _22" <?= br_color_attr($myRank->achievement_color ? $myRank->achievement_color : $adventure->adventure_color) ?>>
 								<span class="icon icon-rank perfect-center absolute"></span>
 							</span>
 							<span class="relative layer base text"><?= $myRank->achievement_name ? $myRank->achievement_name : $adventure->adventure_nickname;?></span>
@@ -586,7 +586,7 @@
 						$ql_color = isset($adv_settings['ql_custom_'.$ql_c.'_color']['value']) ? $adv_settings['ql_custom_'.$ql_c.'_color']['value'] : 'grey';
 						$ql_label = isset($adv_settings['ql_custom_'.$ql_c.'_label']['value']) ? $adv_settings['ql_custom_'.$ql_c.'_label']['value'] : '';
 						if($ql_show && $ql_link){ ?>
-						<a class="button-icon <?= $ql_color; ?>-bg-400" target="_blank" href="<?= esc_url($ql_link); ?>" title="<?= esc_attr($ql_label); ?>">
+						<a class="button-icon" <?= br_color_attr($ql_color) ?> target="_blank" href="<?= esc_url($ql_link); ?>" title="<?= esc_attr($ql_label); ?>">
 							<?php if($ql_icon){ ?>
 								<img src="<?= esc_url($ql_icon); ?>">
 							<?php }else{ ?>

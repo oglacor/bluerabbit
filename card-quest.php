@@ -54,7 +54,7 @@
 			<div class="layer background absolute sq-full top left grey-bg-900 opacity-80"></div>
 			<div class="layer background absolute sq-full top left <?=$mi_color;?>-gradient-900 opacity-60"></div>
 			<div class="layer base absolute sq-full top left">
-				<div class="card-type text-center <?=$mi_color;?>-bg-400 blue-grey-900" >
+				<div class="card-type text-center blue-grey-900" <?= br_color_attr($mi_color) ?> >
 					<span class="inline-block" id="xp-number-q-<?=$quest->quest_id; ?>">
 						<span class="icon icon-star"></span>
 						<span class="number">0</span>
@@ -173,7 +173,7 @@
 						<?php } ?>
 					</div>
 					
-					<a href="<?php echo $mi_link; ?>" class="form-ui <?php echo $mi_color; ?>-bg-400 font _20 padding-10 margin-10">
+					<a href="<?php echo $mi_link; ?>" class="form-ui font _20 padding-10 margin-10" <?= br_color_attr($mi_color) ?>>
 						<?=$legend;?>
 					</a>
 					<?php if(($isGM || $isNPC || $isAdmin) && $quest->quest_type=='survey'){ ?>
@@ -188,7 +188,7 @@
 			</div>
 		</div>
 		<div class="card-face backface">
-			<div class="layer base absolute sq-full <?=$quest->quest_color; ?>-bg-400" style="background-image: url(<?= $adventure->adventure_badge; ?>);"></div>
+			<div class="layer base absolute sq-full" style="<?= br_color_attr($quest->quest_color, 'bg', true) ?> background-image: url(<?= $adventure->adventure_badge; ?>);"></div>
 			<div class="layer base absolute sq-full <?=$quest->quest_color; ?>-gradient-500"></div>
 				<div class="layer foreground absolute perfect-center mix-blend-overlay">
 					<span class="relative block border border-all rounded-max border-10 white-color sq-200 padding-20">

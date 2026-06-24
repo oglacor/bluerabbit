@@ -65,7 +65,7 @@
 				</td>
 				<td class="color relative layer base">
 					<input type="hidden" value="<?= $g->guild_logo; ?>" id="the_guild_color-<?= $g->guild_id; ?>">
-					<button class="button-icon font _24 sq-40 <?=$g->guild_color;?>-bg-400" id="color-trigger-guild-<?= $g->guild_id; ?>" onClick="activate('#color-select-<?=$g->guild_id;?>');"><span class="icon icon-guild"></span>
+					<button class="button-icon font _24 sq-40" <?= br_color_attr($g->guild_color) ?> id="color-trigger-guild-<?= $g->guild_id; ?>" onClick="activate('#color-select-<?=$g->guild_id;?>');"><span class="icon icon-guild"></span>
 					</button>
 					<div class="color-select-popup" id="color-select-<?=$g->guild_id;?>">
 						<?php

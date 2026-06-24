@@ -75,7 +75,7 @@ $tabi_count = $tabis ? count($tabis) : 0;
 						<!-- Color -->
 						<div>
 							<button class="br-type-icon" id="color-trigger-tabi-<?= $a->tabi_id; ?>" onClick="activate('#color-select-<?= $a->tabi_id; ?>');" style="background:rgba(255,255,255,0.08);width:34px;height:34px;border:2px solid <?= $a->tabi_color; ?>;border-radius:6px;cursor:pointer;">
-								<span style="display:block;width:20px;height:20px;border-radius:4px;" class="<?= $a->tabi_color; ?>-bg-400"></span>
+								<span style="display:block;width:20px;height:20px;border-radius:4px;<?= br_color_attr($a->tabi_color, 'bg', true) ?>"></span>
 							</button>
 							<input type="hidden" value="<?= $a->tabi_color; ?>" id="the_tabi_color-<?= $a->tabi_id; ?>">
 						</div>

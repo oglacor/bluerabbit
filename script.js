@@ -2597,7 +2597,7 @@ function activateMilestone(id = null, sound_on = null, sound_off = null) {
                 'color': $(`#milestone-${id} .milestone-data-color`).val(),
                 'type': $(`#milestone-${id} .milestone-data-type`).val(),
             }
-            $('#milestone-preview-bg').attr('style', 'background-image:url(' + preview_data.badge + ');').addClass(preview_data.color + '-bg-400');
+            $('#milestone-preview-bg').attr('style', 'background-image:url(' + preview_data.badge + '); background-color:' + preview_data.color + ';');
             $('#milestone-preview').addClass('active ' + preview_data.type);
             $('#milestone-preview-bg').addClass('active');
             $('#milestone-preview .milestone-preview-content').html($('#milestone-' + id + ' .milestone-cta').html());
@@ -6789,7 +6789,7 @@ function setBadge(id, type) {
 function setColor(id, color, type) {
     let nonce = $("#title-nonce").val();
     let adventure_id = $("#the_adventure_id").val();
-    $("#color-trigger-" + type + "-" + id).removeClass().addClass('button-icon font _24 sq-40 ' + color + '-bg-400');
+    $("#color-trigger-" + type + "-" + id).removeClass().addClass('button-icon font _24 sq-40').css('background-color', color);
     showLoader('small');
     jQuery.ajax({
         url: runAJAX.ajaxurl,
@@ -6814,6 +6814,38 @@ function setColor(id, color, type) {
 
 function selectColor(id, color) {
     $(id).val(color);
+}
+
+function brPickColor(uid, inputId, hex) {
+    $('#' + uid + ' .br-color-swatch').removeClass('active');
+    $('#' + uid + ' .br-color-swatch[data-hex="' + hex + '"]').addClass('active');
+    $('#' + uid + '_preview').css('background', hex);
+    $('#' + uid).data('hex', hex);
+    var opacity = parseInt($('#' + uid + '_opacity').val()) / 100;
+    brSetColorValue(inputId, hex, opacity);
+}
+
+function brUpdateOpacity(uid, inputId) {
+    var val = parseInt($('#' + uid + '_opacity').val());
+    $('#' + uid + '_opacity_val').text(val + '%');
+    var hex = $('#' + uid).data('hex') || '#9e9e9e';
+    var opacity = val / 100;
+    var r = parseInt(hex.substring(1, 3), 16);
+    var g = parseInt(hex.substring(3, 5), 16);
+    var b = parseInt(hex.substring(5, 7), 16);
+    $('#' + uid + '_preview').css('background', 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')');
+    brSetColorValue(inputId, hex, opacity);
+}
+
+function brSetColorValue(inputId, hex, opacity) {
+    if (opacity < 1) {
+        var r = parseInt(hex.substring(1, 3), 16);
+        var g = parseInt(hex.substring(3, 5), 16);
+        var b = parseInt(hex.substring(5, 7), 16);
+        $(inputId).val('rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')');
+    } else {
+        $(inputId).val(hex);
+    }
 }
 
 ///////////////////////// Set Magic Code  //////////////////

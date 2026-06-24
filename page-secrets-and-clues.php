@@ -27,7 +27,7 @@
 				<?php foreach($myquests as $key=>$q){ ?>
 					<?php if($q->quest_success_message){ ?>
 						<div class="white-color quest-success-message margin-10 padding-10 w-third min-w-300 relative grow-1">
-							<div class="layer background absolute sq-full border rounded-8 <?= $q->quest_color;?>-bg-400 opacity-70"></div>
+							<div class="layer background absolute sq-full border rounded-8 opacity-70" <?= br_color_attr($q->quest_color) ?>></div>
 							<div class="layer background absolute sq-full border rounded-8 black-bg opacity-20" style="background-image: url(<?= $q->mech_badge;?>);"></div>
 							<div class="layer base relative border rounded-8">
 								<h2 class="font _24 w300 padding-10 text-center padding-5" style="background-color: rgba(0,0,0,0.3)"><?php echo $q->quest_title; ?></h2>

@@ -192,7 +192,7 @@
 									<?= __("RECHARGE","bluerabbit"); ?>
 								</button>
 							<?php }else{ ?>
-								<button onClick="switchTabs('#tab-group','#mission-objectives');" class="form-ui padding-10 <?= $m->quest_color; ?>-bg-400 <?= $textcolor; ?> border rounded-max" id="mission-objectives-tab-button">
+								<button onClick="switchTabs('#tab-group','#mission-objectives');" class="form-ui padding-10 <?= $textcolor; ?> border rounded-max" <?= br_color_attr($m->quest_color) ?> id="mission-objectives-tab-button">
 									<?= __("Mission Objectives","bluerabbit");?>
 								</button>
 							<?php } ?>
@@ -202,7 +202,7 @@
 							<?= apply_filters('the_content',$m->quest_content); ?>
 						</div>
 						<div class="text-center padding-10">
-							<button onClick="switchTabs('#tab-group','#mission-objectives');" class="form-ui <?= $m->quest_color; ?>-bg-400 <?= $textcolor; ?> white-color" id="mission-objectives-tab-button">
+							<button onClick="switchTabs('#tab-group','#mission-objectives');" class="form-ui <?= $textcolor; ?> white-color" <?= br_color_attr($m->quest_color) ?> id="mission-objectives-tab-button">
 								<?= __("Mission Objectives","bluerabbit");?>
 							</button>
 						</div>

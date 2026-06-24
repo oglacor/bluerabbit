@@ -9,7 +9,7 @@ $isOwner = $adv->adventure_owner == $current_user->ID ? true : false;
 $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 ?>
 	<li class="adventure <?= isset($adv->adventure_type) ? $adv->adventure_type : ""; ?>" id="adventure-<?=$adv->adventure_id;?>">
-		<div class="adventure-image <?= $adv_color; ?>-bg-400" style="background-image: url(<?= $adv->adventure_badge; ?>)">
+		<div class="adventure-image" style="<?= br_color_attr($adv_color, 'bg', true) ?> background-image: url(<?= $adv->adventure_badge; ?>)">
 			<a class="background black-bg opacity-70" href="<?=$adventureLink; ?>" >&nbsp;</a>
 			<?php if(isset($adv->adventure_type)  && $adv->adventure_type =='template') { ?>
 				<div class="adventure-type orange-bg-400 grey-900 text-left">
@@ -61,9 +61,9 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 			</div>
 			<div class="adventure-play-button">
 				<?php if($adv->player_id){ ?>
-					<a class="<?= $adv_color; ?>-bg-400 " href="<?= $adventureLink; ?>"><?= __('Play!','bluerabbit'); ?></a>
+					<a class="" <?= br_color_attr($adv_color) ?> href="<?= $adventureLink; ?>"><?= __('Play!','bluerabbit'); ?></a>
 				<?php }else{ ?>
-					<button class="<?= $adv_color; ?>-bg-400" onClick="showOverlay('#confirm-enroll-<?=$adv->adventure_id;?>');">
+					<button class="" <?= br_color_attr($adv_color) ?> onClick="showOverlay('#confirm-enroll-<?=$adv->adventure_id;?>');">
 						<?= __('Enroll','bluerabbit'); ?>
 					</button>
 					<div class="confirm-action overlay-layer text-center" id="confirm-enroll-<?php echo $adv->adventure_id; ?>">

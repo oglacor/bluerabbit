@@ -8,7 +8,7 @@
 							if ((isset($quest) && $q->quest_id != $quest->quest_id) && in_array($q->quest_type, ['quest', 'challenge', 'survey']) && $q->quest_status == 'publish') {
 								$status = (!empty($reqs['quests']) && in_array($q->quest_id, $reqs['quests'])) ? 'active' : '';
 						?>
-						<li id="req-<?= $q->quest_id; ?>" class="<?= $status; ?> <?= $q->quest_color; ?>-border-400 border border-all border-2 white-bg" onClick="toggleReq('#req-<?= $q->quest_id; ?>');" style="background-image: url(<?= $q->mech_badge; ?>);">
+						<li id="req-<?= $q->quest_id; ?>" class="<?= $status; ?> border border-all border-2 white-bg" onClick="toggleReq('#req-<?= $q->quest_id; ?>');" style="<?= br_color_attr($q->quest_color, 'border', true) ?> background-image: url(<?= $q->mech_badge; ?>);">
 							<div class="layer background absolute sq-full top left color-overlay"></div>
 							<span class="button-icon green-bg-400 active-content font _18 absolute top-10 right-10"><span class="icon icon-check"></span></span>
 							<div class="layer base absolute perfect-center text-center achievement-name"><span class="font _18"><?= $q->quest_title; ?></span></div>

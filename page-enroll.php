@@ -64,7 +64,7 @@
 <?php if($e['success']== true){ ?>
 
 	<div class="layer background fixed sq-full top left blue-grey-bg-800 blend-overlay opacity-80" style="background-image: url('<?php echo $e['adventure']->adventure_badge; ?>');"></div>
-	<div class="layer background fixed sq-full top left opacity-60 <?php echo $e['adventure']->adventure_color; ?>-bg-400"></div>
+	<div class="layer background fixed sq-full top left opacity-60" <?php echo br_color_attr($e['adventure']->adventure_color); ?>></div>
 	<div class="layer base fixed perfect-center text-center white-color">
 		<?php echo $e['message']; ?>
 		<br>
@@ -87,7 +87,7 @@
 	<div class="layer background fixed sq-full top left orange-gradient-900 mix-blend-overlay"></div>
 	<div class="layer background fixed sq-full top left grey-gradient-900 opacity-70"></div>
 	<?php if(isset($e['adventure'])){ ?>
-		<div class="layer background fixed sq-full top left opacity-60 <?php echo $e['adventure']->adventure_color; ?>-bg-400"></div>
+		<div class="layer background fixed sq-full top left opacity-60" <?php echo br_color_attr($e['adventure']->adventure_color); ?>></div>
 	<?php }else{ ?>
 		<div class="layer background fixed sq-full top left opacity-60 red-bg-400"></div>
 	<?php } ?>

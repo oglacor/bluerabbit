@@ -1200,6 +1200,64 @@ function br_enqueue_analytics() {
 }
 add_action('wp_enqueue_scripts', 'br_enqueue_analytics');
 
+// ── Color System ─────────────────────────────────────────────────────────────
+
+function br_color_map(): array {
+	return [
+		// Legacy Material Design names → hex
+		'red'          => '#f44336', 'pink'         => '#e91e63', 'purple'       => '#9c27b0',
+		'deep-purple'  => '#673ab7', 'indigo'       => '#3f51b5', 'blue'         => '#2196f3',
+		'light-blue'   => '#03a9f4', 'cyan'         => '#00bcd4', 'teal'         => '#009688',
+		'green'        => '#4caf50', 'light-green'  => '#8bc34a', 'lime'         => '#cddc39',
+		'yellow'       => '#ffeb3b', 'amber'        => '#ffc107', 'orange'       => '#ff9800',
+		'deep-orange'  => '#ff5722', 'brown'        => '#795548', 'grey'         => '#9e9e9e',
+		'blue-grey'    => '#607d8b',
+		// Dark theme palette
+		'br-primary'   => '#1cc2eb', 'br-accent'    => '#f7cb15', 'br-purple'    => '#9f40e2',
+		'br-green'     => '#24da98', 'br-red'       => '#f44336', 'br-amber'     => '#ffc107',
+		'br-teal'      => '#00bcd4', 'br-orange'    => '#ff9800', 'br-pink'      => '#e040fb',
+		'br-indigo'    => '#7c4dff', 'br-lime'      => '#c6ff00', 'br-coral'     => '#ff6e6e',
+		'br-sky'       => '#42a5f5', 'br-mint'      => '#69f0ae', 'br-rose'      => '#ff80ab',
+		'br-gold'      => '#ffd54f', 'br-slate'     => '#78909c', 'br-charcoal'  => '#455a64',
+	];
+}
+
+function br_color_to_hex( string $color ): string {
+	if ( empty( $color ) ) return '#9e9e9e';
+	if ( $color[0] === '#' ) return $color;
+	if ( strpos( $color, 'rgba' ) === 0 || strpos( $color, 'rgb' ) === 0 ) return $color;
+	$map = br_color_map();
+	return $map[ $color ] ?? '#9e9e9e';
+}
+
+function br_color_style( string $color, string $property = 'background-color', float $opacity = 1.0 ): string {
+	$hex = br_color_to_hex( $color );
+	if ( $opacity < 1.0 && $hex[0] === '#' ) {
+		$r = hexdec( substr( $hex, 1, 2 ) );
+		$g = hexdec( substr( $hex, 3, 2 ) );
+		$b = hexdec( substr( $hex, 5, 2 ) );
+		return "{$property}:rgba({$r},{$g},{$b},{$opacity})";
+	}
+	return "{$property}:{$hex}";
+}
+
+/**
+ * Backward-compatible color class OR inline style.
+ * Usage:  <div class="foo" <?= br_color_attr($quest->quest_color, 'bg') ?>>
+ * Output for legacy "red":       class fragment not used — outputs style="background-color:#f44336"
+ * Output for hex "#f44336":      style="background-color:#f44336"
+ * Output for rgba:               style="background-color:rgba(36,218,152,0.5)"
+ *
+ * $type: 'bg' = background-color, 'border' = border-color, 'text' = color
+ */
+function br_color_attr( string $color, string $type = 'bg', bool $declaration_only = false ): string {
+	$props = [ 'bg' => 'background-color', 'border' => 'border-color', 'text' => 'color' ];
+	$prop  = $props[ $type ] ?? 'background-color';
+	$val   = br_color_to_hex( $color );
+	if ( $declaration_only ) return "{$prop}:{$val};";
+	return 'style="' . esc_attr( "{$prop}:{$val}" ) . '"';
+}
+
 function br_stats_enqueue_assets() {
 	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
 	if ( is_page('stats') ) {

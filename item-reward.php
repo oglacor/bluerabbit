@@ -14,7 +14,7 @@
 				<div class="table-cell">
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  hidden-mobile <?php echo $i_color; ?>-bg-400 ">
+							<span class="button-icon font _24 sq-40  hidden-mobile" <?php echo br_color_attr($i_color); ?>>
 								<span class="icon icon-<?php echo $icon_type; ?>"></span>
 							</span>
 							<span class="icon-content">
@@ -85,7 +85,7 @@
 							<?php } ?>
 						<?php } ?>
 					<?php } ?>
-					<div class="spacer fluid bottom <?php echo $i_color; ?>-bg-400 white-color text-center font _28 w300 condensed padding-10 foreground">
+					<div class="spacer fluid bottom white-color text-center font _28 w300 condensed padding-10 foreground" <?php echo br_color_attr($i_color); ?>>
 					<?php echo $i->item_name; ?></div>
 				</div>
 			</div>
@@ -105,7 +105,7 @@
 				<div class="table-cell">
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  <?php echo $i_color; ?>-bg-400 hidden-mobile">
+							<span class="button-icon font _24 sq-40  hidden-mobile" <?php echo br_color_attr($i_color); ?>>
 								<span class="icon icon-<?php echo $icon_type; ?>"></span>
 							</span>
 							<span class="icon-content">

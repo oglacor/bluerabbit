@@ -48,7 +48,7 @@
 		<div class="milestone-level">
 			<h2><?= $mi->mech_level; ?></h2>
 		</div>
-		<div class="milestone-bg-color <?= $mi->quest_color; ?>-bg-400"></div>
+		<div class="milestone-bg-color" <?= br_color_attr($mi->quest_color) ?>></div>
 		<div class="milestone-bg-badge" style="background-image: url(<?= $mi->mech_badge; ?>);">
 			<?php if($isAdmin || $isGM){ ?>
 				<span class="absolute v-center left block icon icon-<?= $mi->quest_type; ?> font _24 black-color opacity-50"></span>

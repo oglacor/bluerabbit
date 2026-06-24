@@ -188,7 +188,7 @@
 					<div class="w-full <?= $player_account->player_hexad_slug; ?> white-color">
 						<div class="text-center">
 							<div class="icon-group inline-table">
-								<span class="button-icon font _36  <?= $color[$player_account->player_hexad_slug]; ?>-bg-400">
+								<span class="button-icon font _36" <?= br_color_attr($color[$player_account->player_hexad_slug]) ?>>
 									<span class="icon icon-<?= $player_account->player_hexad_slug; ?>"></span>
 								</span>
 								<div class="icon-content">

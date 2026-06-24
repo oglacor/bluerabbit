@@ -77,7 +77,7 @@
 			<?php } ?>
 		</div>
 		<div class="card-face backface">
-			<div class="layer base absolute sq-full <?=$color; ?>-bg-400" style="background-image: url(<?= $adventure->adventure_badge; ?>);"></div>
+			<div class="layer base absolute sq-full" style="<?= br_color_attr($color, 'bg', true) ?> background-image: url(<?= $adventure->adventure_badge; ?>);"></div>
 			<div class="layer base absolute sq-full <?=$color; ?>-gradient-500"></div>
 			<div class="layer foreground absolute perfect-center mix-blend-overlay">
 				<span class="relative block border border-all rounded-max border-10 white-color sq-200 padding-20">

@@ -310,7 +310,7 @@
 										$grade_color = 'blue-grey';
 									}
 									?>
-									<div class="relative layer base border rounded-max overflow-hidden <?=$grade_color;?>-bg-400">
+									<div class="relative layer base border rounded-max overflow-hidden" <?= br_color_attr($grade_color) ?>>
 										<?php if($q->quest_type=="quest"){ ?>
 											<a class="button-icon relative layer base font _16 sq-30 transparent-bg icon-sm" href="<?= get_bloginfo('url')."/post/?adventure_id=$adventure->adventure_id&questID=$q->quest_id&uID=$p->player_id"; ?>">
 												<span class="icon icon-check white-color perfect-center"></span>

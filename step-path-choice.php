@@ -30,7 +30,7 @@
                         <?php echo $message; ?>
                     </div>
                     <?php foreach($step_paths as $p){ ?>
-                        <button class="path <?= $p->achievement_color;?>-border-400 <?=$p->achievement_id == $selected_path->achievement_id ? 'selected' : '';?> " id="path-<?= $p->achievement_id;?>" style="background-image: url(<?= $p->achievement_badge;?>)" onClick="notification('#locked-path-<?= $step->step_id;?>');">
+                        <button class="path <?=$p->achievement_id == $selected_path->achievement_id ? 'selected' : '';?>" id="path-<?= $p->achievement_id;?>" style="<?= br_color_attr($p->achievement_color, 'border', true) ?> background-image: url(<?= $p->achievement_badge;?>)" onClick="notification('#locked-path-<?= $step->step_id;?>');">
                             <?= $p->achievement_name; ?>
                         </button>
                     <?php } ?>

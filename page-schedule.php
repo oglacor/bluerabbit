@@ -220,14 +220,10 @@ $speakers = $wpdb->get_results("
 								<?php } ?>
 								<div class="highlight text-center padding-10 margin-10">
 									<?php if($session->quest_id){ ?>
-										<?php 
-										if($session->quest_type == 'quest'){ 
-											$color = "blue-bg-400";
-										}elseif($session->quest_type == 'challenge'){
-											$color = "brown-bg-400";
-										}
+										<?php
+										$sched_color = $session->quest_type == 'quest' ? '#2196f3' : '#795548';
 										?>
-										<a class="form-ui <?= $color; ?>" href="<?= get_bloginfo('url')."/$session->quest_type/?adventure_id=$adventure->adventure_id&questID=$session->quest_id"; ?>">
+										<a class="form-ui" style="background-color:<?= $sched_color; ?>" href="<?= get_bloginfo('url')."/$session->quest_type/?adventure_id=$adventure->adventure_id&questID=$session->quest_id"; ?>">
 											<span class="icon icon-<?= $session->quest_type; ?>"></span>
 											<?= __("View")." $session->quest_type"; ?>
 										</a>

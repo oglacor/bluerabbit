@@ -37,7 +37,7 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 		<?php } ?>
 	</div>
 	<div class="hex-actions">
-		<a class="big-hex-button <?=$adv_color; ?>-bg-400" href="<?=$adventureLink;?>"><span class="icon icon-run"></span></a>
+		<a class="big-hex-button" <?= br_color_attr($adv_color) ?> href="<?=$adventureLink;?>"><span class="icon icon-run"></span></a>
 		<?php if($isOwner || $isNPC || $isGM || $isAdmin){ ?>
 			<div class="hex-actions-details">
 				<a class="small-hex-button edit-button grey-900" href="<?= get_bloginfo('url')."/new-adventure/?adventure_id=$adv->adventure_id"; ?>"><span class="icon icon-edit"></span></a>
@@ -62,8 +62,8 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 			<div class="hex-actions-details opacity-40"></div>
 		<?php } ?>
 	</div>
-	<div class="hex-bg <?=$adv_color; ?>-bg-400" style="background-image: url(<?= $adv->adventure_badge; ?>)">
+	<div class="hex-bg" style="<?= br_color_attr($adv_color, 'bg', true) ?> background-image: url(<?= $adv->adventure_badge; ?>)">
 		<a href="<?=$adventureLink;?>" class="block sq-full"></a>
 	</div>
-	<div class="hex-border <?=$adv_color; ?>-bg-400"></div>
+	<div class="hex-border" <?= br_color_attr($adv_color) ?>></div>
 </div>

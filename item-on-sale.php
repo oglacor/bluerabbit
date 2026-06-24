@@ -11,7 +11,7 @@
 		<input type="hidden" class="item-badge-url" value="<?php echo $i->item_badge; ?>">
 		<input type="hidden" class="item-type-val" value="<?php echo $i->item_type; ?>">
 		<input type="hidden" class="player_has_it" value="<?php echo $player_has_it; ?>">
-		<div class="item-back <?=$i_color;?>-bg-400 opacity-1 absolute top left sq-full">
+		<div class="item-back opacity-1 absolute top left sq-full" <?= br_color_attr($i_color) ?>>
 			<div class="background opacity-40 mix-blend-overlay"  style="background-image: url(<?= $i->item_badge;?>);"></div>
 			<div class="background black-gradient opacity-40 mix-blend-overlay blend-overlay"  style="background-image: url(<?= $i->item_badge;?>);"></div>
 			<div class="table sq-full">
@@ -57,7 +57,7 @@
 		<?php }elseif(!$available){ ?>
 				<div class="layer background black-bg opacity-70" <?php if($isGM || $isNPC || $isAdmin){ ?> onClick="loadItemCard(<?= $i->item_id; ?>);" <?php } ?>></div>
 				<div class="layer base absolute perfect-center text-center">
-					<h3 class="font _18 condensed w900 <?= $i_color; ?>-bg-400 padding-10 white-color uppercase">
+					<h3 class="font _18 condensed w900 padding-10 white-color uppercase" <?= br_color_attr($i_color) ?>>
 						<?= $selling_label; ?>
 					</h3>
 				</div>

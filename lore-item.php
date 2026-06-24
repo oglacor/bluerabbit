@@ -1,5 +1,5 @@
 <div class="layer base relative lore-item">
-	<div class="layer background absolute sq-full top left <?=$b->quest_color;?>-bg-400 opacity-30"></div>
+	<div class="layer background absolute sq-full top left opacity-30" <?= br_color_attr($b->quest_color) ?>></div>
 	<div class="icon-group layer base w-full realtive padding-0">
 		<?php if($b->quest_style =='resource'){ ?>
 			<div class="icon-content sq-100 background layer relative">

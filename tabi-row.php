@@ -19,7 +19,7 @@
             </button>
         </div>
         <div class="cell cell-color relative layer base">
-            <button class="button-icon font _24 sq-40 <?=$a->tabi_color;?>-bg-400" id="color-trigger-tabi-<?= $a->tabi_id; ?>" onClick="activate('#color-select-<?=$a->tabi_id;?>');">
+            <button class="button-icon font _24 sq-40" <?= br_color_attr($a->tabi_color) ?> id="color-trigger-tabi-<?= $a->tabi_id; ?>" onClick="activate('#color-select-<?=$a->tabi_id;?>');">
             </button> 
             <input type="hidden" value="<?= $a->tabi_color; ?>" id="the_tabi_color-<?= $a->tabi_id; ?>">
         </div>

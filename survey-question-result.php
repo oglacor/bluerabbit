@@ -13,7 +13,7 @@ switch ($style){
 <li class="question" id="question-<?=  $key; ?>">
 	<div class="highlight padding-10 <?=$color; ?>-bg-50 <?=  !$q['image'] ? 'sticky' : ''; ?>">
 		<span class="icon-group">
-			<span class="button-icon font _24 sq-40  <?=$color; ?>-bg-400 white-color">
+			<span class="button-icon font _24 sq-40 white-color" <?= br_color_attr($color) ?>>
 				<span class="icon icon-<?=$icon; ?>"></span>
 			</span>
 			<span class="icon-content">

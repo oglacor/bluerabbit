@@ -12,7 +12,7 @@
 <div class="card card-scene " id="<?= "item-$item->item_id"; ?>">
 	<div class="background fixed" onClick="unloadCard();"></div>
 	<div class="card-type text-center">
-		<div class="background <?=$color; ?>-bg-400 border rounded-max"></div>
+		<div class="background border rounded-max" <?= br_color_attr($color) ?>></div>
 		<div class="highlight text-center padding-5 margin-0">
 			<div class="icon-group">
 				<span class="button-icon font _24 sq-40  transparent-bg icon-sm"><span class="icon icon-<?=$icon; ?>"></span></span>
@@ -64,7 +64,7 @@
 								<div class="background" style="background-image: url(<?= $item->item_secret_badge; ?>);"></div>
 							</div>
 							<div class="book-face left grey-bg-900"></div>
-							<div class="book-face right <?= $color; ?>-bg-400">
+							<div class="book-face right" <?= br_color_attr($color) ?>>
 								<div class="background <?= $color; ?>-gradient-900"></div>
 								<div class="foreground padding-20">
 									<span class="button-icon font _24 sq-40  white-bg">
@@ -77,7 +77,7 @@
 						</div>
 					</div>
 				</div>
-				<button class="form-ui <?=$color;?>-bg-400" onClick="showOverlay('#item-description-<?=$item->item_id; ?>');">
+				<button class="form-ui" <?= br_color_attr($color) ?> onClick="showOverlay('#item-description-<?=$item->item_id; ?>');">
 					<?= __("Description","bluerabbit"); ?>
 				</button>
 			</div>
