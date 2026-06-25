@@ -6065,7 +6065,7 @@ svg.icon-image.active line.yellow, svg.icon-image.active polyline.yellow, svg.ic
 .gallery {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(23%, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(23%, 300px));
   grid-gap: 10px;
   padding: 10px;
 }

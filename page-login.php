@@ -8,7 +8,7 @@
 <div class="w-400 h-600 layer foreground perfect-center border rounded-5 absolute overflow-hidden " id="the-login-form">
 	<div class="layer background white-bg opacity-10 sq-full"></div>
 	<div class="w-full padding-20 text-center layer base relative">
-		<img src="<?= $config['login_logo']['value'] ? $config['login_logo']['value'] : get_bloginfo('template_directory')."/images/logo-white-letters.png" ; ?>" class="max-w-350 max-h-100 inline-block">
+		<img src="<?= $config['login_logo']['value'] ? $config['login_logo']['value'] : get_bloginfo('template_directory')."/images/logo-full-for-dark-bg.png" ; ?>" class="max-w-350 max-h-100 inline-block">
 	</div>
 	<div class="flippable w-full layer base" id="flip-box">
 	<div class="front">

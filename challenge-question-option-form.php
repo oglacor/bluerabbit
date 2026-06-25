@@ -1,40 +1,33 @@
 <?php $params = "'option-image-$oKey','o','challenge',$qKey, $oKey"; ?>
-<tr id="option-<?php echo $oKey; ?>">
-	<td>
-		<button class="toggle-button question <?= ($option['answer_correct'] > 0) ? 'active' : false; ?>" onClick="toggleCorrect('#option-<?php echo $oKey; ?>');updateOption('challenge',<?php echo "$qKey, $oKey"; ?>);">&nbsp;</button>
-
-		<input type="hidden" class="option-correct" value="<?= ($option['answer_correct'] > 0) ? 1 : 0; ?>">			
-	</td>
-	<td>
-		<button class="button-icon sq-50" id="option-image-<?php echo $oKey; ?>_thumb" style="background-image: url(<?php echo $option['answer_image']; ?>);" onClick="showWPUpload(<?php echo $params; ?>);"></button>
-		<button class="button-icon font _14 sq-20 red-bg-400 white-color" onClick="clearImage('#option-image-<?php echo $oKey; ?>'); updateOption('challenge',<?php echo "$qKey, $oKey"; ?>);">
+<div class="br-option-row" id="option-<?= $oKey; ?>">
+	<div class="br-opt-col-toggle">
+		<button class="toggle-button question <?= ($option['answer_correct'] > 0) ? 'active' : ''; ?>" onClick="toggleCorrect('#option-<?= $oKey; ?>');updateOption('challenge',<?= "$qKey, $oKey"; ?>);">&nbsp;</button>
+		<input type="hidden" class="option-correct" value="<?= ($option['answer_correct'] > 0) ? 1 : 0; ?>">
+	</div>
+	<div class="br-opt-col-img">
+		<button class="br-opt-img-btn" id="option-image-<?= $oKey; ?>_thumb" style="<?= $option['answer_image'] ? 'background-image:url('.$option['answer_image'].');' : ''; ?>" onClick="showWPUpload(<?= $params; ?>);"></button>
+		<button class="br-opt-img-clear" onClick="clearImage('#option-image-<?= $oKey; ?>'); updateOption('challenge',<?= "$qKey, $oKey"; ?>);">
 			<span class="icon icon-trash"></span>
 		</button>
-		<input type="hidden" id="option-image-<?php echo $oKey; ?>" value="<?php echo $option['answer_image']; ?>">
-
-	</td>
-	<td>
-		<textarea id="option-text-<?php echo $oKey; ?>" rows="2" class="form-ui option-value grey-bg-100 border border-all grey-border-800" placeholder="<?php _e("Option Text","bluerabbit"); ?>" onChange="updateOption('challenge',<?php echo "$qKey, $oKey"; ?>);" ><?php echo $option['answer_value'] ; ?></textarea>
-	</td>
-	<td class="relative">
-		<button class="button-icon font _24 sq-40  red-bg-400 white-color remove-option" onClick="showOverlay('#confirm-option-<?php echo $oKey; ?>');">
+		<input type="hidden" id="option-image-<?= $oKey; ?>" value="<?= $option['answer_image']; ?>">
+	</div>
+	<div class="br-opt-col-text">
+		<textarea id="option-text-<?= $oKey; ?>" rows="2" class="br-input" placeholder="<?= __("Option Text","bluerabbit"); ?>" onChange="updateOption('challenge',<?= "$qKey, $oKey"; ?>);"><?= $option['answer_value']; ?></textarea>
+	</div>
+	<div class="br-opt-col-del relative">
+		<button class="br-btn br-btn-sm br-btn-red" style="padding:4px 8px" onClick="showOverlay('#confirm-option-<?= $oKey; ?>');">
 			<span class="icon icon-cancel"></span>
 		</button>
-		<div class="confirm-action overlay-layer" id="confirm-option-<?php echo $oKey; ?>">
-			<button class="form-ui white-bg" onClick="removeOption(<?php echo $oKey; ?>,'challenge');">
-				<span class="icon-group">
-					<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
-						<span class="icon icon-trash white-color"></span>
-					</span>
-					<span class="icon-content">
-						<span class="line red-A400 font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
-						<span class="line font _14 grey-400"><?php _e("You can't undo this","bluerabbit"); ?></span>
-					</span>
-				</span>
-			</button>
-			<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
-				<span class="icon icon-cancel white-color"></span>
-			</button>
+		<div class="confirm-action overlay-layer" id="confirm-option-<?= $oKey; ?>" style="background:rgba(30,30,30,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;white-space:nowrap">
+			<span style="display:block;font-size:13px;font-weight:700;color:#f44336;margin-bottom:8px"><?= __("Delete option?", "bluerabbit"); ?></span>
+			<div style="display:flex;gap:6px">
+				<button class="br-btn br-btn-sm br-btn-red" onClick="removeOption(<?= $oKey; ?>,'challenge');">
+					<span class="icon icon-trash"></span> <?= __("Delete", "bluerabbit"); ?>
+				</button>
+				<button class="br-btn br-btn-sm" onClick="hideAllOverlay();">
+					<span class="icon icon-cancel"></span>
+				</button>
+			</div>
 		</div>
-	</td>
-</tr>
+	</div>
+</div>

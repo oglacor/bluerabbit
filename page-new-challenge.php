@@ -44,13 +44,18 @@ $is_edit = isset($quest);
 			<span class="icon icon-challenge" style="font-size:28px;color:#f44336"></span>
 		</div>
 		<div>
-			<h1 class="br-page-title"><?= $is_edit ? __("Edit Challenge", "bluerabbit") : __("New Challenge", "bluerabbit"); ?></h1>
+			<h1 class="br-page-title" id="challenge-title-label"><?= $is_edit ? __("Edit Challenge", "bluerabbit") . ' &rsaquo; ' . esc_html($quest->quest_title) : __("New Challenge", "bluerabbit"); ?></h1>
 			<span class="br-page-subtitle"><?= esc_html($adventure->adventure_title); ?></span>
 		</div>
 		<input type="hidden" id="the_quest_type" value="challenge">
 		<input type="hidden" id="the_quest_id" value="<?= $questID; ?>">
 		<input type="hidden" id="the_challenge_id" value="<?= $questID; ?>">
 		<input type="hidden" id="the_quest_order" value="<?= isset($quest) ? $quest->quest_order : count($quests); ?>">
+		<?php if ($is_edit) { ?>
+		<a class="br-btn" href="<?= get_bloginfo('url') . "/challenge/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank" style="margin-left:auto">
+			<span class="icon icon-view"></span> <?= __("View Challenge", "bluerabbit"); ?>
+		</a>
+		<?php } ?>
 	</div>
 
 	<!-- Sticky Tabs -->
@@ -72,129 +77,151 @@ $is_edit = isset($quest);
 		</button>
 	</div>
 
-	<!-- Tab Content -->
+	<!-- ═══ GENERAL ═══ -->
+	<div class="br-scroll-section" id="general"><div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-challenge"></span> <?= __("General Settings", "bluerabbit"); ?></h3>
 
-		<!-- ═══ GENERAL ═══ -->
-		<div class="br-scroll-section" id="general"><div class="br-panel">
-			<div class="highlight padding-10 grey-bg-200">
-				<span class="icon-group">
-					<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-challenge"></span></span>
-					<span class="icon-content"><span class="line font _24 grey-800"><?php _e("General Settings","bluerabbit"); ?></span></span>
-				</span>
-			</div>
-			<table class="table w-full" cellpadding="0">
-				<thead><tr class="font _12 grey-600"><td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td><td><?php _e('Value','bluerabbit'); ?></td></tr></thead>
-				<tbody class="font _16">
-					<tr>
-						<td class="text-right w-150"><?php _e('Name','bluerabbit'); ?></td>
-						<td><div class="input-group w-full"><label class="light-blue-bg-800 font w900"><span class="icon icon-challenge"></span></label><input class="form-ui font _30 w-full" placeholder="<?= __("Challenge Title","bluerabbit"); ?>" type="text" value="<?= isset($quest) ? $quest->quest_title : '' ; ?>" id="the_quest_title"></div></td>
-					</tr>
-					<tr>
-						<td class="text-right w-150"><?php _e('Color','bluerabbit'); ?></td>
-						<td>
-							<div class="highlight padding-10 grey-bg-200" id="tutorial-color-select">
-								<?php $selected_color = isset($quest->quest_color) ? $quest->quest_color : 'red' ; ?>
-								<input id="the_quest_color" class="color-selected" type="hidden" value="<?= $selected_color; ?>">
-								<?php $color_select_id = "#the_quest_color"; include (TEMPLATEPATH . '/color-select.php'); ?>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td class="text-right w-150"><?php _e('Icon','bluerabbit'); ?></td>
-						<td>
-							<div class="highlight padding-10 grey-bg-200" id="tutorial-icon-select">
-								<?php $selected_icon = isset($quest->quest_icon) ? $quest->quest_icon : 'challenge' ; ?>
-								<input id="the_quest_icon" class="icon-selected" type="hidden" value="<?= $selected_icon; ?>">
-								<?php include (TEMPLATEPATH . '/icon-select.php'); ?>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td class="text-right v-top"><span class="font _16 block"><?= __("Main image","bluerabbit");?></span><span class="font _12 block red-500"><?php _e("Required","bluerabbit"); ?></span></td>
-						<td>
-							<div class="br-gallery br-gallery-single">
-								<?php $thumb_id = 'the_quest_badge'; $file = isset($quest) ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div></div>
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Name", "bluerabbit"); ?></label>
+			<input class="br-input br-input-lg" type="text" id="the_quest_title"
+				   placeholder="<?= __('Challenge Title', 'bluerabbit'); ?>"
+				   value="<?= isset($quest) ? esc_attr($quest->quest_title) : ''; ?>"
+				   onChange="$('#challenge-title-label').text('<?= __("Edit Challenge", "bluerabbit"); ?> › '+$('#the_quest_title').val());">
+		</div>
 
-		<!-- ═══ MECHANICS ═══ -->
-		<div class="br-scroll-section" id="challenge-mechanics"><div class="br-panel">
-			<?php include (get_stylesheet_directory() . '/component-quest-base-mechs.php'); ?>
-			<div class="highlight padding-10 grey-bg-200">
-				<span class="icon-group">
-					<span class="button-icon font _24 sq-40 red-bg-400"><span class="icon icon-challenge"></span></span>
-					<span class="icon-content"><span class="line font _24 grey-800"><?php _e("Challenge Mechanics","bluerabbit"); ?></span></span>
-				</span>
-			</div>
-			<table class="table w-full" cellpadding="0">
-				<thead><tr class="font _12 grey-600"><td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td><td><?php _e('Value','bluerabbit'); ?></td></tr></thead>
-				<tbody class="font _16">
-					<tr><td class="text-right w-150"><?php _e('Time Limit','bluerabbit'); ?></td><td><div class="input-group w-full"><input type="number" class="form-ui" id="the_quest_time_limit" value="<?= isset($quest->mech_time_limit) ? $quest->mech_time_limit : ""; ?>"><label class="pink-bg-400 font _18 condensed w900 uppercase"><?php _e('seconds','bluerabbit'); ?></label></div></td></tr>
-					<tr><td class="text-right w-150"><?php _e('Questions to display','bluerabbit'); ?></td><td><input type="number" class="form-ui" id="the_quest_questions_to_display" value="<?= isset($quest->mech_questions_to_display) ? $quest->mech_questions_to_display : '' ; ?>"></td></tr>
-					<tr><td class="text-right w-150"><?php _e('Answers to win','bluerabbit'); ?></td><td><input type="number" class="form-ui" id="the_quest_answers_to_win" value="<?= isset($quest->mech_answers_to_win) ? $quest->mech_answers_to_win : '' ; ?>"></td></tr>
-					<tr><td class="text-right w-150"><?php _e('Max Chances','bluerabbit'); ?></td><td><div class="input-group w-full"><input type="number" min="1" class="form-ui" id="the_quest_max_attempts" value="<?= isset($quest->mech_max_attempts) ? $quest->mech_max_attempts : '' ; ?>"><label class="grey-bg-400 black-color font _12"><?php _e('zero for infinite','bluerabbit'); ?></label></div></td></tr>
-					<tr><td class="text-right w-150"><?php _e('Free Attempts','bluerabbit'); ?></td><td><input type="number" class="form-ui" id="the_quest_free_attempts" value="<?= isset($quest->mech_free_attempts) ? $quest->mech_free_attempts : '' ; ?>"></td></tr>
-					<tr><td class="text-right w-150"><?php _e('Attempt Cost','bluerabbit'); ?></td><td><div class="input-group w-full"><input type="number" class="form-ui" id="the_quest_attempt_cost" value="<?= isset($quest->mech_attempt_cost) ? $quest->mech_attempt_cost : '' ; ?>"><label class="grey-bg-400 black-color font _12"><?php _e('after all free attempts are used','bluerabbit'); ?></label></div></td></tr>
-				</tbody>
-			</table>
-		</div></div>
-
-		<!-- ═══ CONTENT ═══ -->
-		<div class="br-scroll-section" id="content"><div class="br-panel">
-			<?php include (get_stylesheet_directory() . '/component-quest-content.php'); ?>
-		</div></div>
-
-		<!-- ═══ QUESTIONS ═══ -->
-		<div class="br-scroll-section" id="challenge-questions"><div class="br-panel">
-			<div class="highlight padding-10 grey-bg-200">
-				<span class="icon-group">
-					<span class="button-icon font _24 sq-40 red-bg-400"><span class="icon icon-question"></span></span>
-					<span class="icon-content">
-						<span class="line font _24 grey-800"><?php _e("Challenge Questions","bluerabbit"); ?></span>
-						<span class="line font _14 grey-500"><?php _e("The more questions the more random the challenge","bluerabbit"); ?></span>
-					</span>
-				</span>
-			</div>
-			<?php if(isset($adventure) && isset($quest)){ ?>
-				<div class="highlight input-group">
-					<div class="form-ui font _14">
-						<form id="upload_bulk_questions_form" class="form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
-							<table><tbody><tr>
-								<td class="w-200"><label for="the_csv_file_with_questions"><?= __("Upload Questions","bluerabbit"); ?>:</label><input type="file" name="the_csv_file_with_questions" id="the_csv_file_with_questions" size="20" /></td>
-								<td class="w-100"><button type="button" onClick="uploadBulkQuestions();" name="upload_csv" class="form-ui button"><?= __("Upload file","bluerabbit"); ?></button></td>
-							</tr></tbody></table>
-						</form>
-					</div>
+		<div class="br-form-grid">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Color", "bluerabbit"); ?></label>
+				<div class="br-form-component" id="tutorial-color-select">
+					<?php $selected_color = isset($quest->quest_color) ? $quest->quest_color : 'red' ; ?>
+					<input id="the_quest_color" class="color-selected" type="hidden" value="<?= $selected_color; ?>">
+					<?php $color_select_id = "#the_quest_color"; include (TEMPLATEPATH . '/color-select.php'); ?>
 				</div>
-				<div class="w-full">
-					<div class="questions accordion" id="questions">
-						<?php if(isset($questions)){ $qCount = 0; foreach($questions as $qKey=>$question){ $qCount++; include (TEMPLATEPATH . '/challenge-question-form.php'); } } ?>
-					</div>
-					<div id="questions-bottom"></div>
-					<div class="highlight padding-10 indigo-bg-100 text-right">
-						<button class="form-ui blue-bg-800 font condensed _18 w300" onClick="addQuestion('challenge');"><span class="icon icon-add"></span> <?php _e("Add Question","bluerabbit"); ?></button>
-					</div>
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Icon", "bluerabbit"); ?></label>
+				<div class="br-form-component" id="tutorial-icon-select">
+					<?php $selected_icon = isset($quest->quest_icon) ? $quest->quest_icon : 'challenge' ; ?>
+					<input id="the_quest_icon" class="icon-selected" type="hidden" value="<?= $selected_icon; ?>">
+					<?php include (TEMPLATEPATH . '/icon-select.php'); ?>
 				</div>
-			<?php }else{ ?>
-				<div class="highlight padding-10 red-bg-100 text-center font _24 w400"><?= __('Please save the challenge before adding questions','bluerabbit'); ?></div>
-			<?php } ?>
-		</div></div>
+			</div>
+		</div>
 
-		<!-- ═══ ADVANCED ═══ -->
-		<div class="br-scroll-section" id="advanced-options"><div class="br-panel">
-			<?php
-			include (TEMPLATEPATH . '/component-quest-additional-mechs.php');
-			include (TEMPLATEPATH . '/component-quest-item-reward.php');
-			include (TEMPLATEPATH . '/component-quest-achievement-reward.php');
-			include (TEMPLATEPATH . '/component-quest-key-item-req.php');
-			include (TEMPLATEPATH . '/component-quest-reqs.php');
-			include (TEMPLATEPATH . '/component-quest-achievement-reqs.php');
-			?>
-		</div></div>
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+			<div class="br-form-component">
+				<div class="br-gallery br-gallery-single">
+					<?php $thumb_id = 'the_quest_badge'; $file = isset($quest) ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
+				</div>
+			</div>
+		</div>
+	</div></div>
+
+	<!-- ═══ MECHANICS ═══ -->
+	<div class="br-scroll-section" id="challenge-mechanics"><div class="br-panel">
+		<?php include (get_stylesheet_directory() . '/component-quest-base-mechs.php'); ?>
+
+		<h3 class="br-panel-title" style="margin-top:24px"><span class="icon icon-challenge"></span> <?= __("Challenge Mechanics", "bluerabbit"); ?></h3>
+
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Time Limit", "bluerabbit"); ?></label>
+			<div class="br-input-group">
+				<input class="br-input" type="number" id="the_quest_time_limit"
+					   value="<?= isset($quest->mech_time_limit) ? $quest->mech_time_limit : ''; ?>">
+				<span class="br-input-suffix"><?= __("seconds", "bluerabbit"); ?></span>
+			</div>
+		</div>
+
+		<div class="br-form-grid" style="grid-template-columns:1fr 1fr 1fr">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Questions to display", "bluerabbit"); ?></label>
+				<input class="br-input" type="number" id="the_quest_questions_to_display"
+					   value="<?= isset($quest->mech_questions_to_display) ? $quest->mech_questions_to_display : ''; ?>">
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Answers to win", "bluerabbit"); ?></label>
+				<input class="br-input" type="number" id="the_quest_answers_to_win"
+					   value="<?= isset($quest->mech_answers_to_win) ? $quest->mech_answers_to_win : ''; ?>">
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Max Chances", "bluerabbit"); ?></label>
+				<div class="br-input-group">
+					<input class="br-input" type="number" min="1" id="the_quest_max_attempts"
+						   value="<?= isset($quest->mech_max_attempts) ? $quest->mech_max_attempts : ''; ?>">
+					<span class="br-input-suffix" style="font-size:10px"><?= __("0 = infinite", "bluerabbit"); ?></span>
+				</div>
+			</div>
+		</div>
+
+		<div class="br-form-grid">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Free Attempts", "bluerabbit"); ?></label>
+				<input class="br-input" type="number" id="the_quest_free_attempts"
+					   value="<?= isset($quest->mech_free_attempts) ? $quest->mech_free_attempts : ''; ?>">
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Attempt Cost", "bluerabbit"); ?></label>
+				<div class="br-input-group">
+					<input class="br-input" type="number" id="the_quest_attempt_cost"
+						   value="<?= isset($quest->mech_attempt_cost) ? $quest->mech_attempt_cost : ''; ?>">
+					<span class="br-input-suffix" style="font-size:10px"><?= __("after free attempts", "bluerabbit"); ?></span>
+				</div>
+			</div>
+		</div>
+	</div></div>
+
+	<!-- ═══ CONTENT ═══ -->
+	<div class="br-scroll-section" id="content"><div class="br-panel">
+		<?php include (get_stylesheet_directory() . '/component-quest-content.php'); ?>
+	</div></div>
+
+	<!-- ═══ QUESTIONS ═══ -->
+	<div class="br-scroll-section" id="challenge-questions"><div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-question"></span> <?= __("Challenge Questions", "bluerabbit"); ?></h3>
+		<p class="br-panel-subtitle"><?= __("The more questions the more random the challenge", "bluerabbit"); ?></p>
+
+		<?php if(isset($adventure) && isset($quest)){ ?>
+			<div class="br-form-group" style="margin-bottom:16px">
+				<label class="br-form-label"><?= __("Bulk Upload", "bluerabbit"); ?></label>
+				<div class="br-question-upload">
+					<form id="upload_bulk_questions_form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
+						<input type="file" name="the_csv_file_with_questions" id="the_csv_file_with_questions" class="br-input" style="flex:1">
+						<button type="button" class="br-btn br-btn-green" onClick="uploadBulkQuestions();">
+							<span class="icon icon-upload"></span> <?= __("Upload file", "bluerabbit"); ?>
+						</button>
+					</form>
+				</div>
+			</div>
+
+			<div class="questions accordion" id="questions">
+				<?php if(isset($questions)){ $qCount = 0; foreach($questions as $qKey=>$question){ $qCount++; include (TEMPLATEPATH . '/challenge-question-form.php'); } } ?>
+			</div>
+			<div id="questions-bottom"></div>
+			<div style="padding:12px 0;text-align:right">
+				<button class="br-btn br-btn-green" onClick="addQuestion('challenge');">
+					<span class="icon icon-add"></span> <?= __("Add Question", "bluerabbit"); ?>
+				</button>
+			</div>
+		<?php }else{ ?>
+			<div class="br-empty-state">
+				<span class="icon icon-warning" style="font-size:24px;color:#f44336"></span>
+				<span><?= __('Please save the challenge before adding questions','bluerabbit'); ?></span>
+			</div>
+		<?php } ?>
+	</div></div>
+
+	<!-- ═══ ADVANCED ═══ -->
+	<div class="br-scroll-section" id="advanced-options"><div class="br-panel">
+		<?php
+		include (TEMPLATEPATH . '/component-quest-additional-mechs.php');
+		include (TEMPLATEPATH . '/component-quest-item-reward.php');
+		include (TEMPLATEPATH . '/component-quest-achievement-reward.php');
+		include (TEMPLATEPATH . '/component-quest-key-item-req.php');
+		include (TEMPLATEPATH . '/component-quest-reqs.php');
+		include (TEMPLATEPATH . '/component-quest-achievement-reqs.php');
+		?>
+	</div></div>
 
 </div>
 
@@ -223,19 +250,21 @@ $is_edit = isset($quest);
 		<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>">
 		<input type="hidden" id="delete-question-nonce" value="<?= wp_create_nonce('br_delete_question_nonce'); ?>">
 		<input type="hidden" id="delete-option-nonce" value="<?= wp_create_nonce('br_delete_option_nonce'); ?>">
-		<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+		<button id="submit-button" type="button" class="br-btn br-btn-green" onClick="updateQuest();">
 			<span class="icon icon-check"></span>
 			<?= $is_edit ? __("Update Challenge", "bluerabbit") : __("Create Challenge", "bluerabbit"); ?>
 		</button>
 		<?php if($is_edit){ ?>
 		<button class="br-btn" onClick="showOverlay('#list-of-adventures');"><span class="icon icon-infinite"></span> <?= __("Duplicate","bluerabbit"); ?></button>
-		<div class="confirm-action overlay-layer red-bg-400" id="list-of-adventures">
-			<span class="line font _14 w900 white-color"><?php _e('Select destination','bluerabbit'); ?></span>
-			<select class="form-ui" id="adventure_target">
+		<div class="confirm-action overlay-layer" id="list-of-adventures" style="background:rgba(30,30,30,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:16px">
+			<span style="display:block;font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:8px"><?= __('Select destination','bluerabbit'); ?></span>
+			<select class="br-input" id="adventure_target" style="margin-bottom:8px">
 				<?php foreach($adventures as $c){ ?><option value="<?= $c->adventure_id;?>"><?= $c->adventure_id == $adventure->adventure_id ? __("Same adventure","bluerabbit") : $c->adventure_title;?></option><?php } ?>
-			</select><br>
-			<button class="form-ui red-A400 white-bg" onClick="duplicateQuest(<?= $quest->quest_id; ?>);"><span class="icon icon-infinite"></span> <?php _e("Duplicate","bluerabbit");?></button>
-			<button class="form-ui grey-bg-600 white-color" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span> <?php _e("Cancel","bluerabbit");?></button>
+			</select>
+			<div style="display:flex;gap:6px">
+				<button class="br-btn br-btn-green" onClick="duplicateQuest(<?= $quest->quest_id; ?>);"><span class="icon icon-infinite"></span> <?= __("Duplicate","bluerabbit");?></button>
+				<button class="br-btn" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit");?></button>
+			</div>
 			<input type="hidden" id="duplicator_nonce" value="<?= wp_create_nonce('duplicate_nonce'); ?>">
 		</div>
 		<?php } ?>
