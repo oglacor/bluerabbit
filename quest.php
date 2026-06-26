@@ -27,15 +27,31 @@
 		?>
 	<?php }else{ ?>
 
-		<?php foreach($steps as $i=>$step){
-			//$step = $steps[$i];
-			if($step->step_type == 'instruction'){
-				$step->step_type = 'dialogue';
+		<?php
+		$skin_to_file = [
+			'open' => 'open', 'open_text' => 'open',
+			'jump' => 'jump', 'jump_to_step' => 'jump',
+			'item-grab' => 'item-grab', 'find_item' => 'find-item',
+			'item-req' => 'item-req', 'backpack_item' => 'backpack-item',
+			'path-choice' => 'path-choice', 'branch_choice' => 'branch-choice',
+			'choose-nickname' => 'choose-nickname', 'choose_nickname' => 'choose-nickname',
+			'choose-avatar' => 'choose-avatar', 'choose_avatar' => 'choose-avatar',
+			'instruction' => 'dialogue',
+			'multiple_choice' => 'multiple-choice',
+			'survey_choice' => 'survey-choice', 'survey_rating' => 'survey-rating', 'survey_poll' => 'survey-poll',
+			'upload_image' => 'upload-image', 'upload_video' => 'upload-video',
+		];
+		foreach($steps as $i=>$step){
+			$skin = $step->step_skin ?: $step->step_type;
+			if ($skin === 'instruction') $skin = 'dialogue';
+			if (in_array($skin, ['open','open_text'])) { $override = false; }
+			$tpl_name = $skin_to_file[$skin] ?? $skin;
+			$tpl_file = TEMPLATEPATH . "/step-$tpl_name.php";
+			if (file_exists($tpl_file)) {
+				include ($tpl_file);
+			} else {
+				include (TEMPLATEPATH . "/step-dialogue.php");
 			}
-			if($step->step_type == 'open'){
-				$override = false;
-			}
-			include (TEMPLATEPATH . "/step-$step->step_type.php");
 		} ?>
 		<?php if($isGM){ ?>
 			<div class="steps-admin-nav">

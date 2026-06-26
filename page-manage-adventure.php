@@ -11,6 +11,7 @@
 		['key'=>'items',        'icon'=>'basket',      'label'=>__("Items","bluerabbit"),        'show'=>!empty($use_items) || !empty($use_backpack)],
 		['key'=>'guilds',       'icon'=>'guild',       'label'=>__("Guilds","bluerabbit"),       'show'=>!empty($use_guilds)],
 		['key'=>'tabis',        'icon'=>'sabotage',    'label'=>__("Tabis","bluerabbit"),        'show'=>true],
+		['key'=>'branches',     'icon'=>'quest',       'label'=>__("Branches","bluerabbit"),     'show'=>true],
 		['key'=>'blockers',     'icon'=>'lock',        'label'=>__("Blockers","bluerabbit"),     'show'=>!empty($use_blockers)],
 		['key'=>'blog',         'icon'=>'duplicate',   'label'=>__("Blog","bluerabbit"),         'show'=>!empty($use_blog)],
 		['key'=>'lore',         'icon'=>'narrative',   'label'=>__("Lore","bluerabbit"),         'show'=>!empty($use_lore)],

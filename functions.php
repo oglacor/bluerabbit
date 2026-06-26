@@ -1169,6 +1169,7 @@ require_once ("$dirName/classes/BR-Announcement.php");
 require_once ("$dirName/classes/BR-Request.php");
 require_once ("$dirName/classes/BR-Content.php");
 require_once ("$dirName/classes/BR-Progression.php");
+require_once ("$dirName/classes/BR-Branch.php");
 require_once ("$dirName/classes/BR-Trash.php");
 require_once ("$dirName/classes/BR-Scorm.php");
 require_once ("$dirName/classes/BR-mailer.php");
@@ -1419,6 +1420,380 @@ function br_migrate_tabi_tables() {
 	}
 }
 add_action('init', 'br_migrate_tabi_tables');
+
+function br_migrate_milestone_schema() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$prefix = $wpdb->prefix;
+
+	$quest_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_quests");
+	if (!in_array('milestone_grade_type', $quest_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_quests ADD COLUMN `milestone_grade_type` VARCHAR(20) DEFAULT 'completion'");
+	}
+	if (!in_array('quest_branch_lock', $quest_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_quests ADD COLUMN `quest_branch_lock` TINYINT NULL DEFAULT 0");
+	}
+
+	$ach_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_achievements");
+	if (!in_array('branch_group_id', $ach_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_achievements ADD COLUMN `branch_group_id` BIGINT DEFAULT NULL");
+	}
+
+	$step_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_steps");
+	$step_additions = [
+		'step_skin'               => "VARCHAR(50) DEFAULT NULL",
+		'step_correct'            => "LONGTEXT DEFAULT NULL",
+		'step_mistake_message'    => "LONGTEXT DEFAULT NULL",
+		'step_xp_reward'          => "INT DEFAULT 0",
+		'step_bloo_reward'        => "INT DEFAULT 0",
+		'step_ep_reward'          => "INT DEFAULT 0",
+		'step_item_reward'        => "BIGINT DEFAULT NULL",
+		'step_achievement_reward' => "BIGINT DEFAULT NULL",
+		'step_required'           => "TINYINT DEFAULT 1",
+		'step_branch_group_id'    => "BIGINT DEFAULT NULL",
+	];
+	foreach ($step_additions as $col => $def) {
+		if (!in_array($col, $step_cols)) {
+			$wpdb->query("ALTER TABLE {$prefix}br_steps ADD COLUMN `$col` $def");
+		}
+	}
+
+	$ps_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_player_steps");
+	$ps_additions = [
+		'ps_step_type' => "VARCHAR(50) DEFAULT NULL",
+		'ps_response'  => "LONGTEXT DEFAULT NULL",
+		'ps_correct'   => "TINYINT DEFAULT NULL",
+		'ps_attempt'   => "INT DEFAULT 1",
+		'ps_score'     => "INT DEFAULT NULL",
+	];
+	foreach ($ps_additions as $col => $def) {
+		if (!in_array($col, $ps_cols)) {
+			$wpdb->query("ALTER TABLE {$prefix}br_player_steps ADD COLUMN `$col` $def");
+		}
+	}
+
+	$table = $prefix . 'br_branch_groups';
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`group_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`adventure_id` BIGINT NOT NULL,
+			`group_name` VARCHAR(255) NOT NULL,
+			`group_description` TEXT DEFAULT NULL,
+			`group_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
+			`group_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`group_id`),
+			KEY `adventure_id` (`adventure_id`)
+		) $charset_collate");
+	}
+
+	$table = $prefix . 'br_player_branches';
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`player_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL,
+			`group_id` BIGINT NOT NULL,
+			`achievement_id` BIGINT NOT NULL,
+			`chosen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`player_id`, `adventure_id`, `group_id`)
+		) $charset_collate");
+	}
+
+	$table = $prefix . 'br_branch_rules';
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`rule_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`achievement_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL,
+			`rule_action` VARCHAR(20) NOT NULL,
+			`rule_target_type` VARCHAR(20) NOT NULL,
+			`rule_target_id` BIGINT NOT NULL,
+			`rule_order` INT DEFAULT 0,
+			PRIMARY KEY (`rule_id`),
+			KEY `achievement_id` (`achievement_id`),
+			KEY `adventure_id` (`adventure_id`)
+		) $charset_collate");
+	}
+}
+add_action('init', 'br_migrate_milestone_schema');
+
+function br_run_milestone_migration() {
+	if (!current_user_can('manage_options')) { wp_die('Unauthorized'); }
+
+	global $wpdb;
+	$prefix = $wpdb->prefix;
+	$log = [];
+
+	$count_before = [
+		'objectives'        => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_objectives"),
+		'player_objectives' => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_player_objectives"),
+		'survey_questions'  => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_survey_questions"),
+		'survey_answers'    => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_survey_answers"),
+		'steps_before'      => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_steps"),
+		'player_steps_before' => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_player_steps"),
+	];
+	$log['counts_before'] = $count_before;
+
+	// Ensure all source rows have ref_ids before migration
+	$null_obj_refs = $wpdb->get_results("SELECT objective_id FROM {$prefix}br_objectives WHERE ref_id IS NULL");
+	foreach ($null_obj_refs as $row) {
+		$wpdb->update("{$prefix}br_objectives", ['ref_id' => substr(md5(uniqid(rand(), true)), 0, 8)], ['objective_id' => $row->objective_id]);
+	}
+	$null_sq_refs = $wpdb->get_results("SELECT survey_question_id FROM {$prefix}br_survey_questions WHERE ref_id IS NULL");
+	foreach ($null_sq_refs as $row) {
+		$wpdb->update("{$prefix}br_survey_questions", ['ref_id' => substr(md5(uniqid(rand(), true)), 0, 8)], ['survey_question_id' => $row->survey_question_id]);
+	}
+
+	// 4a — Migrate objectives → steps
+	$objectives = $wpdb->get_results("SELECT * FROM {$prefix}br_objectives");
+	$obj_migrated = 0;
+	foreach ($objectives as $o) {
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT step_id FROM {$prefix}br_steps WHERE ref_id = %s AND quest_id = %d",
+			$o->ref_id, $o->quest_id
+		));
+		if ($exists) continue;
+
+		$is_keyword = ($o->objective_type === 'keyword-input' && !empty($o->objective_keyword));
+		$step_type = $is_keyword ? 'validate' : 'collect';
+		$step_skin = $is_keyword ? 'keyphrase' : 'open_text';
+
+		$settings = [
+			'prompt'          => $o->objective_content,
+			'case_sensitive'  => false,
+			'trim_whitespace' => true,
+		];
+		if (!empty($o->objective_keyword)) {
+			$settings['keyword'] = $o->objective_keyword;
+		}
+		if (!empty($o->ep_cost)) {
+			$settings['ep_cost'] = (int) $o->ep_cost;
+		}
+
+		$step_correct = $is_keyword ? json_encode([$o->objective_keyword]) : null;
+
+		$wpdb->insert("{$prefix}br_steps", [
+			'quest_id'             => $o->quest_id,
+			'adventure_id'         => $o->adventure_id,
+			'ref_id'               => $o->ref_id,
+			'step_type'            => $step_type,
+			'step_skin'            => $step_skin,
+			'step_title'           => '',
+			'step_content'         => $o->objective_content,
+			'step_order'           => $o->objective_order,
+			'step_status'          => $o->objective_status,
+			'step_date'            => $o->objective_date,
+			'step_modified'        => $o->objective_modified,
+			'step_settings'        => json_encode($settings),
+			'step_correct'         => $step_correct,
+			'step_mistake_message' => !empty($o->objective_success_message) ? $o->objective_success_message : null,
+			'step_required'        => 1,
+			'step_parent'          => $o->objective_parent,
+			'step_ep_reward'       => (int) $o->ep_cost,
+		]);
+		$obj_migrated++;
+	}
+	$log['objectives_migrated'] = $obj_migrated;
+
+	// 4b — Migrate player_objectives → player_steps
+	$player_objs = $wpdb->get_results("SELECT po.*, o.quest_id, o.ref_id, o.objective_type
+		FROM {$prefix}br_player_objectives po
+		JOIN {$prefix}br_objectives o ON o.objective_id = po.objective_id");
+	$po_migrated = 0;
+	foreach ($player_objs as $po) {
+		$step_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT step_id FROM {$prefix}br_steps WHERE ref_id = %s AND quest_id = %d",
+			$po->ref_id, $po->quest_id
+		));
+		if (!$step_id) continue;
+
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT step_id FROM {$prefix}br_player_steps WHERE player_id = %d AND step_id = %d",
+			$po->player_id, $step_id
+		));
+		if ($exists) continue;
+
+		$ps_type = ($po->objective_type === 'keyword-input') ? 'keyphrase' : 'open_text';
+		$wpdb->insert("{$prefix}br_player_steps", [
+			'quest_id'     => $po->quest_id,
+			'adventure_id' => $po->adventure_id,
+			'player_id'    => $po->player_id,
+			'step_id'      => $step_id,
+			'ps_date'      => $po->timestamp,
+			'ps_status'    => 'publish',
+			'ps_step_type' => $ps_type,
+			'ps_correct'   => null,
+		]);
+		$po_migrated++;
+	}
+	$log['player_objectives_migrated'] = $po_migrated;
+
+	// 4c — Migrate survey_questions → steps
+	$sq_rows = $wpdb->get_results("SELECT * FROM {$prefix}br_survey_questions");
+	$sq_migrated = 0;
+	foreach ($sq_rows as $sq) {
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT step_id FROM {$prefix}br_steps WHERE ref_id = %s",
+			$sq->ref_id
+		));
+		if ($exists) continue;
+
+		$adventure_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT adventure_id FROM {$prefix}br_quests WHERE quest_id = %d",
+			$sq->survey_id
+		));
+		if (!$adventure_id) continue;
+
+		$options_rows = $wpdb->get_results($wpdb->prepare(
+			"SELECT survey_option_id, survey_option_text, survey_option_image
+			FROM {$prefix}br_survey_options
+			WHERE survey_question_id = %d AND survey_option_status = 'publish'",
+			$sq->survey_question_id
+		));
+		$options_arr = [];
+		foreach ($options_rows as $opt) {
+			$options_arr[] = [
+				'id'    => (string) $opt->survey_option_id,
+				'text'  => $opt->survey_option_text,
+				'image' => $opt->survey_option_image,
+			];
+		}
+
+		switch ($sq->survey_question_type) {
+			case 'rating':
+				$step_skin = 'survey_rating';
+				$settings = [
+					'question' => $sq->survey_question_text,
+					'min'      => 1,
+					'max'      => (int) ($sq->survey_question_range ?: 5),
+					'labels'   => ['min' => '', 'max' => ''],
+				];
+				break;
+			case 'number':
+				$step_skin = 'survey_rating';
+				$settings = [
+					'question' => $sq->survey_question_text,
+					'min'      => 1,
+					'max'      => (int) ($sq->survey_question_range ?: 10),
+					'labels'   => ['min' => '', 'max' => ''],
+					'display'  => $sq->survey_question_display,
+				];
+				break;
+			case 'open':
+				$step_skin = 'open_text';
+				$settings = [
+					'prompt'         => $sq->survey_question_text,
+					'min_words'      => 0,
+					'use_wp_editor'  => false,
+					'llm_validate'   => false,
+					'llm_prompt'     => null,
+				];
+				break;
+			case 'multi-choice':
+				$step_skin = 'survey_choice';
+				$settings = [
+					'question'       => $sq->survey_question_text,
+					'question_image' => $sq->survey_question_image,
+					'options'        => $options_arr,
+					'allow_multiple' => true,
+					'show_results'   => false,
+				];
+				break;
+			default: // closed
+				$step_skin = 'survey_choice';
+				$settings = [
+					'question'       => $sq->survey_question_text,
+					'question_image' => $sq->survey_question_image,
+					'options'        => $options_arr,
+					'allow_multiple' => false,
+					'show_results'   => false,
+					'display'        => $sq->survey_question_display,
+				];
+				break;
+		}
+
+		$step_type = ($step_skin === 'open_text') ? 'collect' : 'collect';
+
+		$wpdb->insert("{$prefix}br_steps", [
+			'quest_id'     => $sq->survey_id,
+			'adventure_id' => $adventure_id,
+			'ref_id'       => $sq->ref_id,
+			'step_type'    => $step_type,
+			'step_skin'    => $step_skin,
+			'step_content' => $sq->survey_question_text,
+			'step_order'   => $sq->survey_question_order,
+			'step_status'  => $sq->survey_question_status,
+			'step_settings'=> json_encode($settings),
+			'step_parent'  => $sq->survey_question_parent,
+			'step_required'=> 1,
+		]);
+		$sq_migrated++;
+	}
+	$log['survey_questions_migrated'] = $sq_migrated;
+
+	// 4d — Migrate survey_answers → player_steps
+	$sa_rows = $wpdb->get_results("SELECT sa.*, sq.ref_id, sq.survey_question_type
+		FROM {$prefix}br_survey_answers sa
+		JOIN {$prefix}br_survey_questions sq ON sq.survey_question_id = sa.survey_question_id");
+	$sa_migrated = 0;
+	foreach ($sa_rows as $sa) {
+		$step_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT step_id FROM {$prefix}br_steps WHERE ref_id = %s",
+			$sa->ref_id
+		));
+		if (!$step_id) continue;
+
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT step_id FROM {$prefix}br_player_steps WHERE player_id = %d AND step_id = %d",
+			$sa->player_id, $step_id
+		));
+		if ($exists) continue;
+
+		$skin_map = [
+			'rating' => 'survey_rating', 'number' => 'survey_rating',
+			'open' => 'open_text', 'multi-choice' => 'survey_choice',
+		];
+		$ps_type = $skin_map[$sa->survey_question_type] ?? 'survey_choice';
+
+		$response = json_encode([
+			'option_id' => $sa->survey_option_id ?? null,
+			'value'     => $sa->survey_answer_value ?? null,
+		]);
+
+		$wpdb->insert("{$prefix}br_player_steps", [
+			'quest_id'     => $sa->survey_id,
+			'adventure_id' => $sa->adventure_id,
+			'player_id'    => $sa->player_id,
+			'step_id'      => $step_id,
+			'ps_date'      => $sa->survey_answer_date,
+			'ps_status'    => 'publish',
+			'ps_step_type' => $ps_type,
+			'ps_correct'   => null,
+			'ps_response'  => $response,
+		]);
+		$sa_migrated++;
+	}
+	$log['survey_answers_migrated'] = $sa_migrated;
+
+	// Update quest_type values
+	$missions_updated = $wpdb->query("UPDATE {$prefix}br_quests SET quest_type = 'quest' WHERE quest_type = 'mission'");
+	$surveys_updated  = $wpdb->query("UPDATE {$prefix}br_quests SET quest_type = 'quest' WHERE quest_type = 'survey'");
+	$log['quest_type_updates'] = [
+		'missions_to_quest' => $missions_updated,
+		'surveys_to_quest'  => $surveys_updated,
+	];
+
+	// Verification counts
+	$log['counts_after'] = [
+		'steps_total'        => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_steps"),
+		'player_steps_total' => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_player_steps"),
+		'quest_types'        => $wpdb->get_results("SELECT quest_type, COUNT(*) as cnt FROM {$prefix}br_quests GROUP BY quest_type"),
+		'step_skins'         => $wpdb->get_results("SELECT step_skin, COUNT(*) as cnt FROM {$prefix}br_steps WHERE step_skin IS NOT NULL GROUP BY step_skin"),
+		'orphaned_steps'     => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$prefix}br_steps s LEFT JOIN {$prefix}br_quests q ON q.quest_id = s.quest_id WHERE q.quest_id IS NULL"),
+	];
+
+	wp_send_json_success($log);
+}
+
 add_action('switch_theme', 'delete_roles');
 add_filter('show_admin_bar', '__return_false');
 add_action('template_redirect', 'ajaxFunctions');
@@ -1611,4 +1986,13 @@ add_action("wp_ajax_submitRequest", [BR_Request::instance(), 'submitRequest']);
 add_action("wp_ajax_getRequests", [BR_Request::instance(), 'getRequests']);
 add_action("wp_ajax_getMyRequests", [BR_Request::instance(), 'getMyRequests']);
 add_action("wp_ajax_updateRequestStatus", [BR_Request::instance(), 'updateRequestStatus']);
+add_action("wp_ajax_br_run_milestone_migration", 'br_run_milestone_migration');
+add_action("wp_ajax_br_complete_step", [BR_Step::instance(), 'ajaxCompleteStep']);
+add_action("wp_ajax_br_update_branch_group", [BR_Branch::instance(), 'updateBranchGroup']);
+add_action("wp_ajax_br_save_branch_rule", [BR_Branch::instance(), 'saveBranchRule']);
+add_action("wp_ajax_br_delete_branch_rule", [BR_Branch::instance(), 'deleteBranchRule']);
+add_action("wp_ajax_br_assign_achievement_to_group", [BR_Branch::instance(), 'assignAchievementToGroup']);
+add_action("wp_ajax_br_remove_achievement_from_group", [BR_Branch::instance(), 'removeAchievementFromGroup']);
+add_action("wp_ajax_br_delete_branch_group", [BR_Branch::instance(), 'deleteBranchGroup']);
+add_action("wp_ajax_br_player_branch_choice", [BR_Branch::instance(), 'ajaxPlayerBranchChoice']);
 

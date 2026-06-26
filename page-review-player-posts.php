@@ -20,14 +20,14 @@
 						</td>
 						<td width="80%" class="text-center">
 							<h3 class="white-color font _18 uppercase">
-								<?= __("Quest review","bluerabbit"); ?>
+								<?= __("Milestone Review","bluerabbit"); ?>
 							</h3>
 							<h1 class="white-color font _30 w900" id="quest-review-title">
 								<?= $q->quest_title;?>
 							</h1>
 						</td>
 						<td width="10%" class="font _14 w900 white-color">
-							<a href="<?= get_bloginfo('url')."/quest/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>"><?= __("View Quest","bluerabbit"); ?><span class="icon icon-arrow-right"></span></a>
+							<a href="<?= get_bloginfo('url')."/quest/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>"><?= __("View Milestone","bluerabbit"); ?><span class="icon icon-arrow-right"></span></a>
 						</td>
 					</tr>
 				</thead>
@@ -111,14 +111,14 @@
 						</div>
 					<?php } ?>
 					<div class="highlight padding-10">
-						<h2 class="font _20 w900 uppercase padding-10"><?= __("Quest data","bluerabbit"); ?></h2>
+						<h2 class="font _20 w900 uppercase padding-10"><?= __("Milestone Data","bluerabbit"); ?></h2>
 						<h4 class="font _14 white-color w900 uppercase padding-5 text-center"><?= __("Total Entries","bluerabbit")." <strong>".count($player_posts)."</strong>"; ?></h4>
 						<span class="icon-group">
 							<span class="button-icon font _18 sq-30  amber-bg-400">
 								<span class="icon icon-star"></span>
 							</span>
 							<span class="icon-content">
-								<span class="line font _24"><?= __("Quest Rating","bluerabbit")." <strong>".$rating/count($player_posts)."</strong>"; ?></span>
+								<span class="line font _24"><?= __("Milestone Rating","bluerabbit")." <strong>".$rating/count($player_posts)."</strong>"; ?></span>
 							</span>
 						</span>
 						<input type="hidden" id="file_prefix" value="<?= $q->quest_type.'-'.$q->quest_id.'-'; ?>">
@@ -139,7 +139,7 @@
 				- <h2 class="white-color font _30 text-center padding-20"><?= __("No player posts to display","bluerabbit"); ?></h2> -
 			<?php } ?>
 		<?php }else{ ?>
-			- <h2 class="white-color font _24 text-center padding-20"><?= __("This quest doesn't exist","bluerabbit"); ?></h2> -
+			- <h2 class="white-color font _24 text-center padding-20"><?= __("This milestone doesn't exist","bluerabbit"); ?></h2> -
 		<?php } ?>
 	<?php }else{ ?>
 		<script>document.location.href="<?php bloginfo('url');?>/404"; </script>

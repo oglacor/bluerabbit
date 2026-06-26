@@ -79,7 +79,7 @@ window.brStats = {
     <div class="br-stats-charts-row">
         <div class="br-stats-panel br-stats-half">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <h3 style="margin:0"><?= __("Quest Funnel", "bluerabbit"); ?></h3>
+                <h3 style="margin:0"><?= __("Milestone Funnel", "bluerabbit"); ?></h3>
                 <div id="br-funnel-nav" style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.4)">
                     <button class="br-page-btn" onclick="brFunnelPage(-1)" style="min-width:24px;height:24px;font-size:11px">&laquo;</button>
                     <span id="br-funnel-page-label">1/1</span>
@@ -207,12 +207,12 @@ window.brStats = {
                 'frequency'   => [
                     'label' => __("Frequency", "bluerabbit"),   'color' => '#24da98',
                     'detail' => round($ab['frequency']['avg_completions_30d'] ?? 0, 1) . ' ' . __("avg in 30d","bluerabbit"),
-                    'info'   => __("How often players complete quests. Measured by completions in the last 30 days relative to 30% of total quests.","bluerabbit"),
+                    'info'   => __("How often players complete milestones. Measured by completions in the last 30 days relative to 30% of total milestones.","bluerabbit"),
                 ],
                 'completion'  => [
                     'label' => __("Completion", "bluerabbit"),  'color' => '#9f40e2',
                     'detail' => round($ab['completion']['avg_pct'] ?? 0, 1) . '% ' . __("avg done","bluerabbit"),
-                    'info'   => __("Percentage of all published quests completed. 25 = 100% done, 0 = nothing completed.","bluerabbit"),
+                    'info'   => __("Percentage of all published milestones completed. 25 = 100% done, 0 = nothing completed.","bluerabbit"),
                 ],
                 'progression' => [
                     'label' => __("Progression", "bluerabbit"), 'color' => '#f7cb15',
@@ -357,7 +357,7 @@ window.brStats = {
                 <span><?= __("Last login", "bluerabbit"); ?>: <strong><?= round($p_last['days_since_login']); ?>d ago</strong></span>
                 <?php } ?>
                 <?php if ($p_last['days_since_quest'] !== null) { ?>
-                <span><?= __("Last quest", "bluerabbit"); ?>: <strong><?= round($p_last['days_since_quest']); ?>d ago</strong></span>
+                <span><?= __("Last milestone", "bluerabbit"); ?>: <strong><?= round($p_last['days_since_quest']); ?>d ago</strong></span>
                 <?php } ?>
                 <?php if ($p_last['days_since_activity'] !== null) { ?>
                 <span><?= __("Last activity", "bluerabbit"); ?>: <strong><?= round($p_last['days_since_activity']); ?>d ago</strong></span>
@@ -411,7 +411,7 @@ window.brStats = {
 
     <!-- Quest Progress -->
     <div class="br-stats-panel">
-        <h3><?= __("Quest Progress", "bluerabbit"); ?></h3>
+        <h3><?= __("Milestone Progress", "bluerabbit"); ?></h3>
         <div class="br-stats-quest-list">
             <?php foreach ($p_quests as $pq) {
                 $status_class = 'locked';

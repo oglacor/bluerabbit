@@ -493,10 +493,14 @@ select.br-input {
   padding-right: 36px;
   cursor: pointer;
 
-  option {
-    background: #0b3d4f;
-    color: $br-white;
-  }
+    option {
+        background: rgb(11, 61, 79, 0.5);
+        color: $br-white;
+        &:hover{
+            background: rgb(11, 61, 79, 0.75);
+            color: $br-white;
+        }
+    }
 }
 
 .br-input-row {
@@ -1186,6 +1190,300 @@ select.br-input {
 
 .br-step-buttons-container {
   border-top: 1px solid rgba($br-primary, 0.12);
+}
+
+// ── Step form skin panels ───────────────────────────────
+.br-skin-panel {
+  display: none;
+  padding: 12px 0;
+  border-top: 1px solid rgba($br-white, 0.04);
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.br-skin-panel-inline {
+  display: none;
+}
+
+.br-option-row {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: $radius-sm;
+  padding: 6px 10px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .mc-correct {
+    width: 18px;
+    height: 18px;
+    accent-color: $br-green;
+    flex-shrink: 0;
+  }
+}
+
+.br-gallery-thumb {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+// ── Branch selector buttons ─────────────────────────────
+.br-branch-opt {
+  &:hover {
+    border-color: rgba($br-primary, 0.4) !important;
+    background: rgba($br-primary, 0.08) !important;
+  }
+}
+
+.br-branch-ach-card {
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($br-white, 0.08);
+  }
+}
+
+// ── Page-level avatar colors ────────────────────────────
+.br-avatar-purple {
+  background: rgba(159, 64, 226, 0.2);
+  border-color: rgba(159, 64, 226, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-icon-purple { color: #9f40e2; }
+.br-icon-lg { font-size: 28px; }
+
+// ── Required asterisk ───────────────────────────────────
+.br-required {
+  color: #f44336;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+// ── QR preview ──────────────────────────────────────────
+.br-qr-preview {
+  height: 198px;
+  width: 198px;
+}
+
+// ── Section description (below panel-title) ─────────────
+.br-section-desc {
+  display: block;
+  margin: -12px 0 16px;
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+// ── Section title (condensed heading) ───────────────────
+.br-section-title {
+  font-family: $condensed;
+  font-size: 22px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.9);
+}
+
+.br-section-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+// ── Readonly inputs ─────────────────────────────────────
+.br-input-readonly {
+  color: rgba($br-white, 0.5);
+}
+
+.br-input-auto {
+  width: auto;
+}
+
+// ── Button sizes ────────────────────────────────────────
+.br-btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.br-btn-submit {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+// ── Spacing utilities ───────────────────────────────────
+.br-mt-lg { margin-top: 24px; }
+.br-ml-auto { margin-left: auto; }
+
+// ── Tabs inline (no margin, border-bottom) ──────────────
+.br-tabs-inline {
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba($br-primary, 0.08);
+  padding-bottom: 12px;
+}
+
+// ── Tab content spacing ─────────────────────────────────
+.br-tab-content {
+  padding-top: 12px;
+}
+
+.br-tab-content-flush {
+  padding-top: 4px;
+}
+
+// ── Tab count pill ──────────────────────────────────────
+.br-tab-count {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.br-tab-count-purple {
+  background: rgba(159, 64, 226, 0.25);
+  color: #9f40e2;
+}
+
+// ── Table column sizing ─────────────────────────────────
+.br-th-narrow {
+  width: 50px;
+}
+
+.br-th-actions {
+  width: 120px;
+  text-align: right;
+}
+
+.br-td-actions {
+  text-align: right;
+}
+
+.br-td-meta {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+}
+
+// ── Code values ─────────────────────────────────────────
+.br-code-value {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.br-code-expired {
+  opacity: 0.5;
+}
+
+// ── Details / links panel ───────────────────────────────
+.br-details-links {
+  margin-top: 12px;
+
+  summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: rgba($br-white, 0.35);
+  }
+}
+
+.br-links-panel {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: $radius-sm;
+  padding: 10px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba($br-white, 0.4);
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.br-link-line {
+  padding: 2px 0;
+}
+
+// ── Empty state sizes ───────────────────────────────────
+.br-empty-sm {
+  padding: 20px;
+}
+
+.br-empty-md {
+  padding: 24px;
+}
+
+// ── Search bar ──────────────────────────────────────────
+.br-search-bar {
+  margin-bottom: 10px;
+}
+
+.br-search-input {
+  max-width: 300px;
+}
+
+// ── Branch selector ─────────────────────────────────────
+.br-branch-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.br-branch-opt {
+  padding: 8px 16px;
+  border-radius: $radius;
+  border: 2px solid rgba($br-white, 0.1);
+  background: rgba($br-white, 0.04);
+  color: $br-white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: rgba($br-primary, 0.4);
+    background: rgba($br-primary, 0.08);
+  }
+
+  &.active {
+    border-color: rgba(159, 64, 226, 0.6);
+    background: rgba(159, 64, 226, 0.15);
+
+    &:first-child {
+      border-color: rgba($br-primary, 0.6);
+      background: rgba($br-primary, 0.12);
+    }
+  }
+}
+
+.br-branch-add {
+  border-style: dashed;
+  border-color: rgba($br-primary, 0.3);
+  background: transparent;
+  color: rgba($br-primary, 0.7);
+}
+
+.br-branch-count {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: 4px;
+}
+
+.br-branch-inline-form {
+  display: none;
+  margin-top: 10px;
+  align-items: center;
+  gap: 8px;
+
+  .br-input {
+    flex: 1;
+    max-width: 250px;
+  }
 }
 
 // Drag state

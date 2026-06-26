@@ -148,10 +148,8 @@ $base_url = get_bloginfo('url');
                 <h2><?php _e('Journey Manager', 'bluerabbit'); ?></h2>
                 <div class="br-header-counts">
                     <span class="br-count-badge"><span class="br-cnt"><?= $count_publish; ?></span> <?php _e('Total', 'bluerabbit'); ?></span>
-                    <?php if ($counts['quest'] > 0) { ?><span class="br-count-badge type-quest"><span class="br-cnt"><?= $counts['quest']; ?></span> <?php _e('Quests', 'bluerabbit'); ?></span><?php } ?>
-                    <?php if ($counts['mission'] > 0) { ?><span class="br-count-badge type-mission"><span class="br-cnt"><?= $counts['mission']; ?></span> <?php _e('Missions', 'bluerabbit'); ?></span><?php } ?>
+                    <?php if ($counts['quest'] > 0) { ?><span class="br-count-badge type-quest"><span class="br-cnt"><?= $counts['quest']; ?></span> <?php _e('Milestones', 'bluerabbit'); ?></span><?php } ?>
                     <?php if ($counts['challenge'] > 0) { ?><span class="br-count-badge type-challenge"><span class="br-cnt"><?= $counts['challenge']; ?></span> <?php _e('Challenges', 'bluerabbit'); ?></span><?php } ?>
-                    <?php if ($counts['survey'] > 0) { ?><span class="br-count-badge type-survey"><span class="br-cnt"><?= $counts['survey']; ?></span> <?php _e('Surveys', 'bluerabbit'); ?></span><?php } ?>
                 </div>
             </div>
         </div>
@@ -176,10 +174,8 @@ $base_url = get_bloginfo('url');
         <!-- Type Filter Buttons -->
         <div class="br-type-filters">
             <button class="br-type-btn t-all active" data-filter="all" title="All"><span class="icon icon-infinite"></span></button>
-            <button class="br-type-btn t-quest" data-filter="quest" title="Quests"><span class="icon icon-quest"></span></button>
-            <button class="br-type-btn t-mission" data-filter="mission" title="Missions"><span class="icon icon-mission"></span></button>
+            <button class="br-type-btn t-quest" data-filter="quest" title="Milestones"><span class="icon icon-quest"></span></button>
             <button class="br-type-btn t-challenge" data-filter="challenge" title="Challenges"><span class="icon icon-challenge"></span></button>
-            <button class="br-type-btn t-survey" data-filter="survey" title="Surveys"><span class="icon icon-survey"></span></button>
         </div>
 
         <!-- Path dropdown -->
@@ -402,7 +398,7 @@ $base_url = get_bloginfo('url');
         } else if (item.type === 'survey') {
             reportLink = '<a href="' + baseUrl + '/survey-results/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-chart"></span> Survey Results</a>';
         } else if (item.type === 'quest') {
-            reportLink = '<a href="' + baseUrl + '/review-player-posts/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-document"></span> Quest Review</a>';
+            reportLink = '<a href="' + baseUrl + '/review-player-posts/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-document"></span> Review</a>';
         }
 
         var thumbStyle = item.badge ? 'background-image:url(' + item.badge + ')' : '';

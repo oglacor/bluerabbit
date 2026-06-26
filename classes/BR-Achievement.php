@@ -154,6 +154,9 @@ class BR_Achievement {
             $magic_code = trim(strtolower($a_data['magic_code']));
             $awarded_players = $a_data['awarded_players'];
 
+            if(!$magic_code){
+                $magic_code = BR_Utils::instance()->random_str(20,'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'); 
+            }
 
 
             if(!$a_name){
@@ -184,13 +187,19 @@ class BR_Achievement {
                 if($updated_id){
                     $data['success']=true;
                         $achQrCode = BR_Utils::instance()->createQR($ach_args = array(
-                            'filename' => "achievement-QR-$updated_id.png",
+                            'filename' => "achievement-$updated_id-QR-$magic_code.png",
                             'content' => get_bloginfo('url')."/magic-link/?c=$magic_code&adv=$adventure->adventure_id",
                             'logo' => $a_badge
                         ));
                         $wpdb->update(
                             $wpdb->prefix.'br_achievements',
                             array('achievement_qrcode' => $achQrCode),
+                            array('achievement_id' => $updated_id)
+                        );
+                        $branch_group_id = isset($a_data['branch_group_id']) ? (int) $a_data['branch_group_id'] : null;
+                        $wpdb->update(
+                            $wpdb->prefix.'br_achievements',
+                            array('branch_group_id' => $branch_group_id ?: null),
                             array('achievement_id' => $updated_id)
                         );
                         $data['debug']= $achQrCode;

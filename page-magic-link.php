@@ -16,7 +16,7 @@ if($code){
 
 	
 	$code=strtolower($code);
-	$c = magicCode($code,$adv_id);
+	$c = BR_Achievement::instance()->magicCode($code,$adv_id);
 	$error = $c['errors'];
 		if(empty($error)){
 			?>	

@@ -586,6 +586,132 @@ class BR_Quest {
 		die();
     }
 
+    public function getMilestone($quest_id) {
+        $quest = $this->getQuest($quest_id);
+        if (!$quest) return false;
+        $quest->milestone_type = ($quest->quest_type === 'challenge') ? 'challenge' : 'quest';
+        $quest->is_challenge = ($quest->quest_type === 'challenge');
+        return $quest;
+    }
+
+    public function completeMilestone($player_id, $quest_id, $adventure_id) {
+        global $wpdb;
+
+        $quest = $this->getQuest($quest_id);
+        if (!$quest) return ['success' => false, 'error' => 'quest_not_found'];
+
+        $adventure = BR_Adventure::instance()->getAdventure($adventure_id);
+        $adv_child_id = $adventure->adventure_id;
+        $adv_parent_id = $adventure->adventure_parent ?: $adventure->adventure_id;
+
+        if ($adventure->adventure_gmt) { date_default_timezone_set($adventure->adventure_gmt); }
+        $now = date('Y-m-d H:i:s');
+
+        // Check if already completed via player_posts
+        $existing = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_player_posts
+             WHERE quest_id = %d AND player_id = %d AND adventure_id = %d AND pp_status = 'publish'",
+            $quest_id, $player_id, $adv_child_id
+        ));
+        if ($existing) return ['success' => true, 'already_complete' => true];
+
+        // Calculate score from steps if grade_type is percentage
+        $grade = null;
+        if ($quest->milestone_grade_type === 'percentage') {
+            $step_scores = $wpdb->get_results($wpdb->prepare(
+                "SELECT ps.ps_score FROM {$wpdb->prefix}br_player_steps ps
+                 JOIN {$wpdb->prefix}br_steps s ON ps.step_id = s.step_id
+                 WHERE ps.quest_id = %d AND ps.player_id = %d AND ps.adventure_id = %d
+                   AND s.step_required = 1 AND ps.ps_score IS NOT NULL",
+                $quest_id, $player_id, $adv_child_id
+            ));
+            if ($step_scores) {
+                $total = array_sum(array_column($step_scores, 'ps_score'));
+                $grade = round($total / count($step_scores));
+            }
+        }
+
+        // Insert player_post (marks milestone as complete)
+        $pp_content = 'Completed via step system';
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}br_player_posts
+             (quest_id, adventure_id, player_id, pp_date, pp_modified, pp_content, pp_type, pp_status, pp_grade)
+             VALUES (%d, %d, %d, %s, %s, %s, %s, %s, %d)
+             ON DUPLICATE KEY UPDATE pp_modified = %s, pp_status = 'publish', pp_grade = %d",
+            $quest_id, $adv_child_id, $player_id, $now, $now, $pp_content, 'quest', 'publish', ($grade ?: 0),
+            $now, ($grade ?: 0)
+        ));
+
+        $result = [
+            'success' => true,
+            'xp'      => (int) $quest->mech_xp,
+            'ep'      => (int) $quest->mech_ep,
+            'rewards' => [],
+        ];
+
+        // Bloo: grade-proportional if graded
+        if ($grade && $quest->mech_validate) {
+            $result['bloo'] = round($quest->mech_bloo * $grade / 100);
+        } else {
+            $result['bloo'] = (int) $quest->mech_bloo;
+        }
+
+        if ($grade !== null) $result['grade'] = $grade;
+
+        // Item reward
+        if ($quest->mech_item_reward) {
+            $has = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}br_transactions
+                 WHERE player_id = %d AND adventure_id = %d AND object_id = %d AND trnx_status = 'publish'",
+                $player_id, $adv_child_id, $quest->mech_item_reward
+            ));
+            if (!$has) {
+                $item = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}br_items WHERE item_id = %d", $quest->mech_item_reward
+                ));
+                if ($item) {
+                    $wpdb->insert("{$wpdb->prefix}br_transactions", [
+                        'player_id'    => $player_id,
+                        'adventure_id' => $adv_child_id,
+                        'object_id'    => $quest->mech_item_reward,
+                        'trnx_author'  => $player_id,
+                        'trnx_amount'  => 0,
+                        'trnx_type'    => $item->item_type,
+                        'trnx_date'    => $now,
+                        'trnx_modified'=> $now,
+                    ]);
+                    BR_Activity::instance()->logActivity($adv_child_id, 'earned', 'item', $quest->mech_item_reward, $quest_id);
+                    $result['rewards'][] = ['type' => 'item', 'id' => $quest->mech_item_reward, 'name' => $item->item_name];
+                }
+            }
+        }
+
+        // Achievement reward
+        if ($quest->mech_achievement_reward) {
+            $has = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement
+                 WHERE player_id = %d AND adventure_id = %d AND achievement_id = %d",
+                $player_id, $adv_child_id, $quest->mech_achievement_reward
+            ));
+            if (!$has) {
+                $wpdb->insert("{$wpdb->prefix}br_player_achievement", [
+                    'player_id'           => $player_id,
+                    'adventure_id'        => $adv_child_id,
+                    'achievement_id'      => $quest->mech_achievement_reward,
+                    'achievement_applied' => $now,
+                ]);
+                BR_Activity::instance()->logActivity($adv_child_id, 'earned', 'achievement', $quest->mech_achievement_reward, $quest_id);
+                $result['rewards'][] = ['type' => 'achievement', 'id' => $quest->mech_achievement_reward];
+            }
+        }
+
+        // Recalculate player state
+        BR_Player::instance()->resetPlayer($adv_child_id, $player_id);
+        BR_Activity::instance()->logActivity($adv_child_id, 'complete', 'milestone', $quest_id);
+
+        return $result;
+    }
+
     public function getQuest($quest_id=NULL){
 		if($quest_id){
 			global $wpdb; $current_user = wp_get_current_user();

@@ -65,7 +65,7 @@ $adv_config=array(
 		'type'=>'radio',
 	),
 	'rate_quests' => array(
-		'label'=>__("Allow players to rate quests","bluerabbit"),
+		'label'=>__("Allow players to rate milestones","bluerabbit"),
 		'icon'=>'star',
 		'type'=>'radio',
 	),
@@ -383,8 +383,8 @@ $image_types = array(
 
 		<div class="br-form-grid">
 			<div class="br-form-group">
-				<label class="br-form-label"><?= __('Hide quests','bluerabbit'); ?></label>
-				<span class="br-form-hint"><?= __("How to hide quests based on time.","bluerabbit"); ?></span>
+				<label class="br-form-label"><?= __('Hide milestones','bluerabbit'); ?></label>
+				<span class="br-form-hint"><?= __("How to hide milestones based on time.","bluerabbit"); ?></span>
 				<select id="the_adventure_hide_quests" class="br-input">
 					<option <?php if(!$adventure->adventure_hide_quests){ echo 'selected'; }?> value="">
 						<?= __('Never','bluerabbit'); ?>
@@ -436,7 +436,7 @@ $image_types = array(
 			</div>
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __('Assign Resources','bluerabbit'); ?></label>
-				<span class="br-form-hint"><?= __("If grading the players, when will the players receive the resources from each quest.","bluerabbit"); ?></span>
+				<span class="br-form-hint"><?= __("If grading the players, when will the players receive the resources from each milestone.","bluerabbit"); ?></span>
 				<select id="the_adventure_progression_type" class="br-input">
 					<option  <?php if($adventure->adventure_progression_type == 'before' || !$adventure->adventure_progression_type){ echo 'selected'; }?> value="before"><?= __('Before Grading','bluerabbit'); ?></option>
 					<option <?php if($adventure->adventure_progression_type == 'after'){ echo 'selected'; }?> value="after"><?= __('After Grading','bluerabbit'); ?></option>

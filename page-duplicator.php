@@ -49,7 +49,7 @@ if($adventure){
 					<div class="icon-group">
 						<div class="button-icon font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Quests","bluerabbit");?></div>
+							<div class="line font _24"><?= __("Milestones","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
