@@ -19,7 +19,7 @@
 	");
 ?>
 <div class="layer base relative max-w-1200 boxed">
-	<h1 class=" text-center inline-block font _36 w100 condensed padding-10 w-full white-color text-left border rounded-8" style="background-color: rgba(0,0,0,0.5);">
+	<h1 class="text-center inline-block font _36 w100 condensed padding-10 w-full white-color text-left border rounded-8 br-secrets-title">
 		<?php _e("Secret Messages","bluerabbit"); ?>
 	</h1>
 	<?php if($myquests){ ?>
@@ -30,7 +30,7 @@
 							<div class="layer background absolute sq-full border rounded-8 opacity-70" <?= br_color_attr($q->quest_color) ?>></div>
 							<div class="layer background absolute sq-full border rounded-8 black-bg opacity-20" style="background-image: url(<?= $q->mech_badge;?>);"></div>
 							<div class="layer base relative border rounded-8">
-								<h2 class="font _24 w300 padding-10 text-center padding-5" style="background-color: rgba(0,0,0,0.3)"><?php echo $q->quest_title; ?></h2>
+								<h2 class="font _24 w300 padding-10 text-center padding-5 br-secrets-message-header"><?php echo $q->quest_title; ?></h2>
 								<div class="quest-success-message-entry">
 									<?= apply_filters('the_content',$q->quest_success_message); ?>
 								</div>

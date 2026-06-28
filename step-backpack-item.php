@@ -18,31 +18,32 @@ $has_item = $req_item_id ? $wpdb->get_var($wpdb->prepare(
 		<div class="dialogue-box">
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
-			<div class="center" style="text-align:center">
+			<div class="center br-text-center">
 				<?php if (!empty($settings['prompt'])) { ?><h3><?= esc_html($settings['prompt']); ?></h3><?php } ?>
 				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
 
 				<?php if ($req_item) { ?>
-				<div style="margin:16px auto;display:inline-block;opacity:<?= ($has_item || $already_done) ? '1' : '0.4'; ?>">
+				<div class="br-step-item-display <?= ($has_item || $already_done) ? '' : 'br-step-item-locked'; ?>">
 					<?php if ($req_item->item_badge) { ?>
-					<img src="<?= esc_attr($req_item->item_badge); ?>" alt="" style="max-width:100px;border-radius:12px">
+					<img src="<?= esc_attr($req_item->item_badge); ?>" alt="" class="br-step-item-badge">
 					<?php } ?>
-					<div style="font-weight:700;margin-top:6px"><?= esc_html($req_item->item_name); ?></div>
+					<div class="br-step-item-name"><?= esc_html($req_item->item_name); ?></div>
 				</div>
 				<?php } ?>
 
 				<?php if ($already_done) { ?>
-				<div style="padding:12px;border-radius:8px;background:rgba(36,218,152,0.15);color:#24da98;font-weight:700;margin:12px 0">
+				<div class="br-step-feedback br-step-feedback-success">
 					<span class="icon icon-check"></span> <?= __("Item verified!", "bluerabbit"); ?>
 				</div>
 				<?php } elseif ($has_item) { ?>
 				<div class="steps-navigation action-buttons">
-					<button class="action-button success" onClick="brSubmitGenericStep(<?= $step->step_id; ?>, <?= $q->quest_id; ?>, <?= $adv_child_id; ?>, {player_id:<?= $current_user->ID; ?>,adventure_id:<?= $adv_child_id; ?>});">
+					<button class="action-button success" onClick="brSubmitGenericStep(<?= $step->step_id; ?>, <?= $q->quest_id; ?>, <?= $adv_child_id; ?>, {player_id:<?= $current_user->ID; ?>,adventure_id:<?= $adv_child_id; ?>}, 'backpack-fb-<?= $step->step_id; ?>');">
 						<?= __("Use Item", "bluerabbit"); ?>
 					</button>
 				</div>
+				<div id="backpack-fb-<?= $step->step_id; ?>" class="br-step-feedback"></div>
 				<?php } else { ?>
-				<div style="padding:12px;border-radius:8px;background:rgba(244,67,54,0.15);color:#f44336;font-weight:700;margin:12px 0">
+				<div class="br-step-feedback br-step-feedback-error">
 					<span class="icon icon-lock"></span> <?= __("You don't have this item yet", "bluerabbit"); ?>
 				</div>
 				<?php } ?>

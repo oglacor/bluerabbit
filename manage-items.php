@@ -99,7 +99,7 @@
 										<input type="hidden" class="item-id" value="<?= $i->item_id; ?>">
 									</td>
 									<td class="<?=$a_color; ?> name">
-										<div class="br-name" style="display:flex;align-items:center;gap:6px;">
+										<div class="br-name br-items-name-cell">
 											<span class="br-badge br-badge-<?= $i->item_type == 'key' ? 'purple' : ($i->item_type == 'consumable' ? 'red' : 'teal'); ?>">
 												<?php if($i->item_type == "consumable") { ?>
 													<span class="icon icon-basket"></span>
@@ -129,17 +129,17 @@
 											</select>
 										</div>
 										<?php }else{ ?>
-											<span class="icon icon-remove" style="opacity:0.3;"></span>
+											<span class="icon icon-remove br-items-icon-dim"></span>
 										<?php }?>
 									</td>
 									<td class="text-center <?=$a_color; ?> cost">
 										<?php if($i->item_type != 'reward' ){ ?>
 											<div class="br-num">
-												<span class="icon icon-bloo" style="color:#24da98;"></span>
+												<span class="icon icon-bloo br-items-bloo-icon"></span>
 												<input type="number" class="br-input" id="the_bloo-item-<?= $i->item_id; ?>" value="<?= $i->item_cost; ?>" onChange="setBLOO(<?= $i->item_id; ?>,'item');">
 											</div>
 										<?php }else{?>
-											<span class="icon icon-remove" style="opacity:0.3;"></span>
+											<span class="icon icon-remove br-items-icon-dim"></span>
 										<?php }?>
 									</td>
 									<td class="text-center <?=$a_color; ?> stock">
@@ -165,7 +165,7 @@
 												<?php } ?>
 											</select>
 										<?php }else{?>
-											<span class="icon icon-remove" style="opacity:0.3;"></span>
+											<span class="icon icon-remove br-items-icon-dim"></span>
 										<?php }?>
 									</td>
 									<td class="text-center <?=$a_color; ?> step">
@@ -174,7 +174,7 @@
 												<span class="icon icon-quest"></span>
 											</a>
 										<?php }else{?>
-											<span class="icon icon-remove" style="opacity:0.3;"></span>
+											<span class="icon icon-remove br-items-icon-dim"></span>
 										<?php }?>
 									</td>
 									<td class="text-center <?=$a_color; ?>">
@@ -281,7 +281,7 @@
 				<div class="br-section">
 					<div class="br-section-header" onclick="$(this).toggleClass('collapsed');$(this).next('.br-section-body').toggleClass('collapsed');">
 						<h3>
-							<span class="icon icon-duplicate" style="color:#ffc107;"></span>
+							<span class="icon icon-duplicate br-items-draft-icon"></span>
 							<?= __('Draft Items','bluerabbit'); ?>
 							<span class="br-count-badge"><?= count($items['draft']); ?></span>
 						</h3>
@@ -330,7 +330,7 @@
 													}
 												}
 										  	}else{
-												echo '<span class="icon icon-remove" style="opacity:0.3;"></span>';
+												echo '<span class="icon icon-remove br-items-icon-dim"></span>';
 										  	}
 											?>
 										</td>
@@ -343,7 +343,7 @@
 													}
 												}
 										  	}else{
-												echo '<span class="icon icon-remove" style="opacity:0.3;"></span>';
+												echo '<span class="icon icon-remove br-items-icon-dim"></span>';
 										  	}
 											?>
 										</td>
@@ -396,7 +396,7 @@
 				<div class="br-section">
 					<div class="br-section-header collapsed" onclick="$(this).toggleClass('collapsed');$(this).next('.br-section-body').toggleClass('collapsed');">
 						<h3>
-							<span class="icon icon-trash" style="color:#f44336;"></span>
+							<span class="icon icon-trash br-items-trash-icon"></span>
 							<?= __('Trashed Items','bluerabbit'); ?>
 							<span class="br-count-badge"><?= count($items['trash']); ?></span>
 						</h3>

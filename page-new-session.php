@@ -12,12 +12,12 @@ $guilds = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_guilds WHERE adven
 $is_edit = ($adventure && isset($session) && $session);
 ?>
 
-<div class="br-page" style="max-width:900px">
+<div class="br-page br-page-narrow">
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(121,85,72,0.25);display:flex;align-items:center;justify-content:center;border-color:rgba(121,85,72,0.5)">
-			<span class="icon icon-calendar" style="font-size:28px;color:#8d6e63"></span>
+		<div class="br-page-header-avatar br-avatar-brown">
+			<span class="icon icon-calendar br-icon-lg br-icon-brown"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Session", "bluerabbit") : __("New Session", "bluerabbit"); ?></h1>
@@ -128,11 +128,11 @@ $is_edit = ($adventure && isset($session) && $session);
 		<?php if (!empty($speakers)) { ?>
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Speakers", "bluerabbit"); ?></label>
-			<div class="br-form-component" style="display:flex;flex-wrap:wrap;gap:8px">
+			<div class="br-form-component br-speaker-grid">
 				<?php foreach ($speakers as $s) { ?>
-				<label class="br-btn" style="cursor:pointer;<?= in_array($s->speaker_id, $speaker_ids) ? 'background:rgba(28,194,235,0.18);border-color:rgba(28,194,235,0.4)' : ''; ?>">
-					<input type="checkbox" class="speaker_ids" name="speaker_ids" value="<?= $s->speaker_id; ?>"
-						   <?= in_array($s->speaker_id, $speaker_ids) ? 'checked' : ''; ?> style="display:none">
+				<label class="br-btn br-speaker-label<?= in_array($s->speaker_id, $speaker_ids) ? ' active' : ''; ?>">
+					<input type="checkbox" class="speaker_ids br-initially-hidden" name="speaker_ids" value="<?= $s->speaker_id; ?>"
+						   <?= in_array($s->speaker_id, $speaker_ids) ? 'checked' : ''; ?>>
 					<?= esc_html("$s->speaker_first_name $s->speaker_last_name"); ?>
 				</label>
 				<?php } ?>
@@ -147,12 +147,12 @@ $is_edit = ($adventure && isset($session) && $session);
 			</a>
 			<div class="br-actions">
 				<input type="hidden" id="session_nonce" value="<?= wp_create_nonce('br_session_nonce'); ?>">
-				<select id="the_session_status" class="br-input" style="width:auto">
+				<select id="the_session_status" class="br-input br-select-auto">
 					<option value="publish"><?= __("Publish", "bluerabbit"); ?></option>
 					<option value="draft"><?= __("Draft", "bluerabbit"); ?></option>
 					<option value="trash"><?= __("Trash", "bluerabbit"); ?></option>
 				</select>
-				<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateSession();">
+				<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateSession();">
 					<span class="icon icon-check"></span>
 					<?= $is_edit ? __("Update Session", "bluerabbit") : __("Create Session", "bluerabbit"); ?>
 				</button>

@@ -20,8 +20,8 @@ $medal_colors = ['#f7cb15', '#b0bec5', '#cd7f32'];
 
 <div class="br-page">
 
-	<div class="br-panel" style="text-align:center;margin-bottom:24px">
-		<h1 class="br-page-title" style="font-size:40px"><?= __("Leaderboard", "bluerabbit"); ?></h1>
+	<div class="br-panel br-leaderboard-header">
+		<h1 class="br-page-title br-leaderboard-title"><?= __("Leaderboard", "bluerabbit"); ?></h1>
 		<span class="br-page-subtitle"><?= esc_html($adventure->adventure_title); ?></span>
 	</div>
 
@@ -29,7 +29,7 @@ $medal_colors = ['#f7cb15', '#b0bec5', '#cd7f32'];
 		<table class="br-table" id="br-leaderboard-table">
 			<thead>
 				<tr>
-					<th class="text-center" style="width:70px"><?php _e("Rank", "bluerabbit"); ?></th>
+					<th class="text-center br-th-narrow"><?php _e("Rank", "bluerabbit"); ?></th>
 					<th><?php _e("Player", "bluerabbit"); ?></th>
 					<th class="text-center"><?php _e("Level", "bluerabbit"); ?></th>
 					<?php if($isGM){ ?>
@@ -43,7 +43,7 @@ $medal_colors = ['#f7cb15', '#b0bec5', '#cd7f32'];
 					$rank = $key + 1;
 					$is_me = ($p->player_id == $current_user->ID);
 				?>
-				<tr<?= $is_me ? ' style="background:rgba(28,194,235,0.1)"' : ''; ?>>
+				<tr<?= $is_me ? ' class="br-leaderboard-highlight"' : ''; ?>>
 					<td class="text-center">
 						<?php if($rank <= 3){ ?>
 						<span class="br-leaderboard-medal" style="background:<?= $medal_colors[$rank - 1]; ?>"><?= $rank; ?></span>
@@ -61,8 +61,8 @@ $medal_colors = ['#f7cb15', '#b0bec5', '#cd7f32'];
 						<span class="br-leaderboard-level"><span class="icon icon-level"></span> <?= $p->player_level; ?></span>
 					</td>
 					<?php if($isGM){ ?>
-					<td class="text-center" style="color:#1cc2eb;font-weight:700"><?= number_format($p->player_xp); ?></td>
-					<td class="text-center" style="color:#f7cb15;font-weight:700"><?= number_format($p->player_bloo); ?></td>
+					<td class="text-center br-leaderboard-xp"><?= number_format($p->player_xp); ?></td>
+					<td class="text-center br-leaderboard-bloo"><?= number_format($p->player_bloo); ?></td>
 					<?php } ?>
 				</tr>
 				<?php } ?>

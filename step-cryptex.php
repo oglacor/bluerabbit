@@ -13,24 +13,24 @@ $already_correct = ($player_step && $player_step->ps_correct == 1);
 		<div class="dialogue-box">
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
-			<div class="center" style="text-align:center">
+			<div class="center br-text-center">
 				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
 				<?php if (!empty($settings['prompt'])) { ?>
-				<h3 style="margin:16px 0 8px"><?= esc_html($settings['prompt']); ?></h3>
+				<h3 class="br-step-prompt"><?= esc_html($settings['prompt']); ?></h3>
 				<?php } ?>
 
 				<?php if ($already_correct) { ?>
-				<div style="padding:12px;border-radius:8px;background:rgba(36,218,152,0.15);border:1px solid rgba(36,218,152,0.3);color:#24da98;font-weight:700;margin:12px 0">
+				<div class="br-step-feedback br-step-feedback-success">
 					<span class="icon icon-check"></span> <?= __("Unlocked!", "bluerabbit"); ?>
 				</div>
 				<?php } else { ?>
-				<div class="br-cryptex-wheels" id="cryptex-<?= $step->step_id; ?>" style="display:flex;gap:4px;justify-content:center;margin:20px 0">
+				<div class="br-cryptex-wheels" id="cryptex-<?= $step->step_id; ?>">
 					<?php for ($w = 0; $w < $wheel_count; $w++) { ?>
-					<input type="text" maxlength="1" class="cryptex-wheel form-ui" style="width:42px;height:52px;text-align:center;font-size:24px;font-weight:900;text-transform:uppercase;padding:0;border-radius:6px" data-index="<?= $w; ?>"
+					<input type="text" maxlength="1" class="cryptex-wheel form-ui" data-index="<?= $w; ?>"
 						onkeyup="if(this.value.length===1){var n=this.nextElementSibling;if(n&&n.classList.contains('cryptex-wheel'))n.focus();}" autocomplete="off">
 					<?php } ?>
 				</div>
-				<div id="cryptex-feedback-<?= $step->step_id; ?>" style="display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-weight:700"></div>
+				<div id="cryptex-feedback-<?= $step->step_id; ?>" class="br-step-feedback"></div>
 				<div class="steps-navigation action-buttons">
 					<button class="action-button" onClick="brSubmitCryptexStep(<?= $step->step_id; ?>, <?= $q->quest_id; ?>, <?= $adv_child_id; ?>);">
 						<?= __("Unlock", "bluerabbit"); ?>

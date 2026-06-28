@@ -14,23 +14,23 @@ $max_mb = (int) ($settings['max_size_mb'] ?? 100);
 		<div class="dialogue-box">
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
-			<div class="center" style="text-align:center">
+			<div class="center br-text-center">
 				<?php if (!empty($settings['prompt'])) { ?><h3><?= esc_html($settings['prompt']); ?></h3><?php } ?>
 				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
 
 				<?php if ($already_done && !empty($prev_response['url'])) { ?>
-				<video controls style="max-width:100%;border-radius:8px;margin:12px 0">
+				<video controls class="br-step-uploaded-video">
 					<source src="<?= esc_attr($prev_response['url']); ?>">
 				</video>
-				<div style="padding:8px;color:rgba(255,255,255,0.4);font-size:12px"><span class="icon icon-check"></span> <?= __("Video uploaded", "bluerabbit"); ?></div>
+				<div class="br-step-recorded"><span class="icon icon-check"></span> <?= __("Video uploaded", "bluerabbit"); ?></div>
 				<?php } else { ?>
-				<div style="margin:16px 0">
+				<div class="br-step-upload-area">
 					<input type="hidden" id="upload-vid-url-<?= $step->step_id; ?>" value="">
-					<div id="upload-vid-preview-<?= $step->step_id; ?>" style="margin-bottom:8px"></div>
+					<div id="upload-vid-preview-<?= $step->step_id; ?>"></div>
 					<button class="action-button" onClick="brUploadStepVideo(<?= $step->step_id; ?>, <?= $q->quest_id; ?>, <?= $adv_child_id; ?>);">
 						<span class="icon icon-video"></span> <?= __("Select Video", "bluerabbit"); ?>
 					</button>
-					<p style="font-size:11px;opacity:0.4;margin-top:6px"><?= sprintf(__("Max %dMB", "bluerabbit"), $max_mb); ?></p>
+					<p class="br-step-upload-hint"><?= sprintf(__("Max %dMB", "bluerabbit"), $max_mb); ?></p>
 				</div>
 				<?php } ?>
 			</div>

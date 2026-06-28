@@ -3,19 +3,19 @@ $objective_success_editor_id = "objective_success_message_" . $c->objective_id;
 ?>
 <div class="w-full h-70"></div>
 <div class="objective max-w-900 boxed relative layer base" id="objective-form-<?= $c->objective_id; ?>"
-	 style="background:rgba(11,61,79,0.95);border:1px solid rgba(28,194,235,0.2);border-radius:12px;color:#fff">
+	 class="br-obj-form">
 	<input class="objective-id-value" value="<?= $c->objective_id; ?>" type="hidden">
 	<input type="hidden" value="keyword-search" class="objective-type">
 	<input type="hidden" value="<?= $c->objective_order; ?>" class="objective-order">
 
 	<!-- Header -->
-	<div style="padding:14px 20px;border-bottom:1px solid rgba(28,194,235,0.12);display:flex;align-items:center;gap:12px">
-		<span class="icon icon-objectives" style="font-size:20px;color:#1cc2eb"></span>
-		<span style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;flex:1"><?= __("Edit True/False", "bluerabbit"); ?></span>
-		<button class="br-btn br-btn-red" style="padding:6px 10px" onClick="tinymce.remove('#<?= $objective_success_editor_id; ?>');hideAllOverlay();"><span class="icon icon-cancel"></span></button>
+	<div class="br-obj-header">
+		<span class="icon icon-objectives br-obj-header-icon"></span>
+		<span class="br-obj-header-title"><?= __("Edit True/False", "bluerabbit"); ?></span>
+		<button class="br-btn br-btn-red br-obj-close-btn" onClick="tinymce.remove('#<?= $objective_success_editor_id; ?>');hideAllOverlay();"><span class="icon icon-cancel"></span></button>
 	</div>
 
-	<div style="padding:20px">
+	<div class="br-obj-body">
 		<!-- Hint -->
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Hint", "bluerabbit"); ?></label>
@@ -26,7 +26,7 @@ $objective_success_editor_id = "objective_success_message_" . $c->objective_id;
 		<!-- True or False -->
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("True or False", "bluerabbit"); ?></label>
-			<span class="br-form-hint" style="color:#f44336"><span class="icon icon-warning"></span> <?= __("Updating the value will reset the objective for the players", "bluerabbit"); ?></span>
+			<span class="br-form-hint br-obj-hint-warning"><span class="icon icon-warning"></span> <?= __("Updating the value will reset the objective for the players", "bluerabbit"); ?></span>
 			<select class="br-input objective-keyword">
 				<option <?= $c->objective_keyword === 'True' ? 'selected' : ''; ?> value="True"><?= __("True", "bluerabbit"); ?></option>
 				<option <?= $c->objective_keyword === 'False' ? 'selected' : ''; ?> value="False"><?= __("False", "bluerabbit"); ?></option>
@@ -54,8 +54,8 @@ $objective_success_editor_id = "objective_success_message_" . $c->objective_id;
 			?>
 		</div>
 
-		<div style="text-align:center;padding-top:12px">
-			<button class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateObjective(<?= $c->objective_id; ?>);">
+		<div class="br-obj-submit-wrap">
+			<button class="br-btn br-btn-green br-obj-submit-btn" onClick="updateObjective(<?= $c->objective_id; ?>);">
 				<span class="icon icon-check"></span> <?= __("Update objective", "bluerabbit"); ?>
 			</button>
 		</div>

@@ -241,13 +241,13 @@ $base_url = get_bloginfo('url');
             <div>&nbsp;</div><!-- type -->
             <div>&nbsp;</div><!-- thumb -->
             <div><?= __('Name', 'bluerabbit'); ?></div>
-            <div style="text-align:center;"><?= __('Lv', 'bluerabbit'); ?></div>
-            <div style="text-align:center;"><?= $xp_label; ?></div>
-            <div style="text-align:center;"><?= $bloo_label; ?></div>
+            <div class="br-text-center"><?= __('Lv', 'bluerabbit'); ?></div>
+            <div class="br-text-center"><?= $xp_label; ?></div>
+            <div class="br-text-center"><?= $bloo_label; ?></div>
             <?php if ($use_encounters) { ?>
-                <div style="text-align:center;"><?= $ep_label; ?></div>
+                <div class="br-text-center"><?= $ep_label; ?></div>
             <?php } ?>
-            <div style="text-align:center;"><?= __('Status', 'bluerabbit'); ?></div>
+            <div class="br-text-center"><?= __('Status', 'bluerabbit'); ?></div>
         </div>
 
         <!-- Sortable container — JS renders rows here -->
@@ -269,7 +269,7 @@ $base_url = get_bloginfo('url');
     <div class="br-section" id="br-drafts-section">
         <div class="br-section-header" id="br-drafts-toggle">
             <h3>
-                <span class="icon icon-document" style="color: #f7cb15;"></span>
+                <span class="icon icon-document br-icon-accent"></span>
                 <?php _e('Journey Drafts', 'bluerabbit'); ?>
                 <span class="br-count-badge" id="br-draft-count"><?= count($draft_items); ?></span>
             </h3>
@@ -284,7 +284,7 @@ $base_url = get_bloginfo('url');
     <div class="br-section" id="br-trash-section">
         <div class="br-section-header collapsed" id="br-trash-toggle">
             <h3>
-                <span class="icon icon-trash" style="color: #f44336;"></span>
+                <span class="icon icon-trash br-icon-red"></span>
                 <?php _e('Journey Trash', 'bluerabbit'); ?>
                 <span class="br-count-badge" id="br-trash-count"><?= count($trash_items); ?></span>
             </h3>
@@ -303,21 +303,21 @@ $base_url = get_bloginfo('url');
 <!-- ════════════ STICKY SUMMARY BAR ════════════ -->
 <div class="br-summary-bar" id="br-summary-bar">
     <div class="br-summary-stat">
-        <span class="icon icon-quest" style="color: #1cc2eb;"></span>
+        <span class="icon icon-quest br-icon-primary"></span>
         <div>
             <span class="br-stat-val" id="br-total-count"><?= $count_publish; ?></span>
             <span class="br-stat-label"><?= __('Milestones', 'bluerabbit'); ?></span>
         </div>
     </div>
     <div class="br-summary-stat">
-        <span class="icon icon-star" style="color: #f7cb15;"></span>
+        <span class="icon icon-star br-icon-accent"></span>
         <div>
             <span class="br-stat-val" id="br-total-xp"><?= $total_xp; ?></span>
             <span class="br-stat-label"><?= __('Total', 'bluerabbit') . ' ' . $xp_label; ?></span>
         </div>
     </div>
     <div class="br-summary-stat">
-        <span class="icon icon-bloo" style="color: #24da98;"></span>
+        <span class="icon icon-bloo br-icon-green"></span>
         <div>
             <span class="br-stat-val" id="br-total-bloo"><?= $total_bloo; ?></span>
             <span class="br-stat-label"><?= __('Total', 'bluerabbit') . ' ' . $bloo_label; ?></span>

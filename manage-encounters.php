@@ -50,19 +50,19 @@ ORDER BY enc.enc_level, FIELD(enc.enc_status,'publish','trash')");
 								<td class="text-center"><?= $e->enc_id; ?></td>
 								<td><?= $e->enc_question; ?></td>
 								<td>
-									<input type="number" class="br-input" style="width: 70px; text-align: center;" id="the_level-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_level; ?>" onChange="setLevel(<?= $e->enc_id; ?>,'encounter');">
+									<input type="number" class="br-input br-enc-input-narrow" id="the_level-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_level; ?>" onChange="setLevel(<?= $e->enc_id; ?>,'encounter');">
 								</td>
 								<td>
-									<input type="number" class="br-input" style="width: 70px; text-align: center;" id="the_ep-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_ep; ?>" onChange="setEP(<?= $e->enc_id; ?>,'encounter');">
+									<input type="number" class="br-input br-enc-input-narrow" id="the_ep-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_ep; ?>" onChange="setEP(<?= $e->enc_id; ?>,'encounter');">
 								</td>
 								<td>
-									<input type="number" class="br-input" style="width: 70px; text-align: center;" id="the_xp-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_xp; ?>" onChange="setXP(<?= $e->enc_id; ?>,'encounter');">
+									<input type="number" class="br-input br-enc-input-narrow" id="the_xp-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_xp; ?>" onChange="setXP(<?= $e->enc_id; ?>,'encounter');">
 								</td>
 								<td>
-									<input type="number" class="br-input" style="width: 70px; text-align: center;" id="the_bloo-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_bloo; ?>" onChange="setBLOO(<?= $e->enc_id; ?>,'encounter');">
+									<input type="number" class="br-input br-enc-input-narrow" id="the_bloo-encounter-<?= $e->enc_id; ?>" value="<?= $e->enc_bloo; ?>" onChange="setBLOO(<?= $e->enc_id; ?>,'encounter');">
 								</td>
 								<td>
-									<select class="br-input update-achievement" style="width: 150px;" onChange="setAchievement(<?= $e->enc_id; ?>,'encounter')">
+									<select class="br-input update-achievement br-enc-select-path" onChange="setAchievement(<?= $e->enc_id; ?>,'encounter')">
 										<option value="0" <?php if(!$e->achievement_id){ echo 'selected'; }?>><?php _e('All paths','bluerabbit'); ?></option>
 										<?php if($achievements['publish']){ ?>
 											<?php foreach($achievements['publish'] as $a){ ?>

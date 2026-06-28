@@ -8,10 +8,10 @@
 			<div class="center">
 				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
 				<?php if ($images) { ?>
-				<div class="br-step-gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px">
+				<div class="br-step-gallery-grid">
 					<?php foreach ($images as $img) { ?>
-					<a href="<?= esc_attr($img); ?>" target="_blank" style="display:block;aspect-ratio:1;border-radius:8px;overflow:hidden;background:rgba(0,0,0,0.3)">
-						<img src="<?= esc_attr($img); ?>" alt="" style="width:100%;height:100%;object-fit:cover">
+					<a href="<?= esc_attr($img); ?>" target="_blank" class="br-step-gallery-item">
+						<img src="<?= esc_attr($img); ?>" alt="">
 					</a>
 					<?php } ?>
 				</div>

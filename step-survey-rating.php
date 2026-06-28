@@ -16,23 +16,23 @@ $prev_value = $already_done && $player_step->ps_response ? json_decode($player_s
 		<div class="dialogue-box">
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
-			<div class="center" style="text-align:center">
+			<div class="center br-text-center">
 				<?php if (!empty($settings['question'])) { ?><h3><?= esc_html($settings['question']); ?></h3><?php } ?>
 
-				<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0;flex-wrap:wrap">
+				<div class="br-rating-row">
 					<?php if (!empty($labels['min'])) { ?>
-					<span style="font-size:12px;opacity:0.5"><?= esc_html($labels['min']); ?></span>
+					<span class="br-rating-label"><?= esc_html($labels['min']); ?></span>
 					<?php } ?>
-					<div style="display:flex;gap:6px" id="sr-buttons-<?= $step->step_id; ?>">
+					<div class="br-rating-buttons" id="sr-buttons-<?= $step->step_id; ?>">
 						<?php for ($v = $min; $v <= $max; $v++) { ?>
-						<button class="sr-rating-btn <?= ($prev_value !== null && (int)$prev_value === $v) ? 'active' : ''; ?>" data-value="<?= $v; ?>"
-							style="width:42px;height:42px;border-radius:8px;border:2px solid rgba(28,194,235,0.3);background:<?= ($prev_value !== null && (int)$prev_value === $v) ? 'rgba(28,194,235,0.3)' : 'rgba(255,255,255,0.06)'; ?>;color:#fff;font-weight:700;font-size:16px;cursor:pointer;transition:all 0.15s"
+						<button class="sr-rating-btn <?= ($prev_value !== null && (int)$prev_value === $v) ? 'br-rating-active' : ''; ?>"
+							data-value="<?= $v; ?>"
 							<?= $already_done ? 'disabled' : ''; ?>
 							onClick="brSelectRating(<?= $step->step_id; ?>, <?= $v; ?>);"><?= $v; ?></button>
 						<?php } ?>
 					</div>
 					<?php if (!empty($labels['max'])) { ?>
-					<span style="font-size:12px;opacity:0.5"><?= esc_html($labels['max']); ?></span>
+					<span class="br-rating-label"><?= esc_html($labels['max']); ?></span>
 					<?php } ?>
 				</div>
 				<input type="hidden" id="sr-value-<?= $step->step_id; ?>" value="<?= $prev_value ?? ''; ?>">
@@ -44,7 +44,7 @@ $prev_value = $already_done && $player_step->ps_response ? json_decode($player_s
 					</button>
 				</div>
 				<?php } else { ?>
-				<div style="padding:8px;color:rgba(255,255,255,0.4);font-size:12px"><span class="icon icon-check"></span> <?= __("Response recorded", "bluerabbit"); ?></div>
+				<div class="br-step-recorded"><span class="icon icon-check"></span> <?= __("Response recorded", "bluerabbit"); ?></div>
 				<?php } ?>
 			</div>
 			<div class="edge-right"></div>

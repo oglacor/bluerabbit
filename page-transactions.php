@@ -26,7 +26,7 @@ $type_badges = [
 	<!-- Header -->
 	<div class="br-panel">
 		<div class="br-trnx-header">
-			<h3 class="br-panel-title" style="margin:0">
+			<h3 class="br-panel-title br-m0">
 				<span class="icon icon-transactions"></span>
 				<?= __("Transactions", "bluerabbit"); ?>
 			</h3>
@@ -47,8 +47,8 @@ $type_badges = [
 
 				<!-- Search -->
 				<div class="br-trnx-search">
-					<span class="icon icon-search" style="color:rgba(255,255,255,0.3);position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px"></span>
-					<input type="text" class="br-input" id="search-trnxs" placeholder="<?= __('Search transactions', 'bluerabbit'); ?>" style="padding-left:34px">
+					<span class="icon icon-search br-trnx-search-icon"></span>
+					<input type="text" class="br-input br-trnx-search-input" id="search-trnxs" placeholder="<?= __('Search transactions', 'bluerabbit'); ?>">
 				</div>
 				<script>
 				$('#search-trnxs').keyup(function(){
@@ -72,15 +72,15 @@ $type_badges = [
 		<table class="br-table" id="table-trnxs">
 			<thead>
 				<tr>
-					<th style="width:60px"><?= __("ID", "bluerabbit"); ?></th>
+					<th class="br-th-narrow"><?= __("ID", "bluerabbit"); ?></th>
 					<th><?= __("Player", "bluerabbit"); ?></th>
 					<th><?= __("Email", "bluerabbit"); ?></th>
 					<th><?= __("Date", "bluerabbit"); ?></th>
 					<th><?= __("Item", "bluerabbit"); ?></th>
-					<th class="text-center" style="width:60px"><?= __("Use", "bluerabbit"); ?></th>
-					<th class="text-center" style="width:60px"><?= __("Return", "bluerabbit"); ?></th>
+					<th class="text-center br-th-narrow"><?= __("Use", "bluerabbit"); ?></th>
+					<th class="text-center br-th-narrow"><?= __("Return", "bluerabbit"); ?></th>
 					<?php if($isGM || $isAdmin){ ?>
-					<th class="text-center" style="width:60px"><?= __("Delete", "bluerabbit"); ?></th>
+					<th class="text-center br-th-narrow"><?= __("Delete", "bluerabbit"); ?></th>
 					<?php } ?>
 				</tr>
 			</thead>
@@ -93,7 +93,7 @@ $type_badges = [
 				?>
 				<tr class="<?= $row_class; ?>">
 					<td>
-						<span style="color:rgba(255,255,255,0.35);font-size:12px">#<?= $iT->trnx_id; ?></span>
+						<span class="br-trnx-id">#<?= $iT->trnx_id; ?></span>
 					</td>
 					<td>
 						<?php if($isAdmin || $isGM){ ?>
@@ -104,14 +104,14 @@ $type_badges = [
 						<?= esc_html($iT->player_display_name); ?>
 						<?php } ?>
 					</td>
-					<td style="color:rgba(255,255,255,0.45);font-size:13px"><?= esc_html($iT->player_email); ?></td>
+					<td class="br-trnx-email"><?= esc_html($iT->player_email); ?></td>
 					<td>
 						<?php
 						$trnx_date = date('M j, Y', strtotime($iT->trnx_date));
 						$trnx_time = date('g:i A', strtotime($iT->trnx_date));
 						?>
-						<span style="font-size:13px"><?= $trnx_date; ?></span>
-						<span style="font-size:11px;color:rgba(255,255,255,0.3);display:block"><?= $trnx_time; ?></span>
+						<span class="br-trnx-date"><?= $trnx_date; ?></span>
+						<span class="br-trnx-time"><?= $trnx_time; ?></span>
 					</td>
 					<td>
 						<span class="br-badge <?= $type_badges[$iT->trnx_type] ?? 'br-badge-blue'; ?>">
@@ -120,23 +120,23 @@ $type_badges = [
 					</td>
 					<td class="text-center">
 						<?php if(!$iT->trnx_use && $iT->item_type == 'consumable'){ ?>
-						<button class="br-btn br-btn-green" style="padding:4px 8px" onClick="useItem(<?= "$iT->trnx_id, $iT->player_id, 1"; ?>);" title="<?= __('Mark as used', 'bluerabbit'); ?>">
+						<button class="br-btn br-btn-green br-trnx-btn-action" onClick="useItem(<?= "$iT->trnx_id, $iT->player_id, 1"; ?>);" title="<?= __('Mark as used', 'bluerabbit'); ?>">
 							<span class="icon icon-check"></span>
 						</button>
 						<?php } elseif(!$iT->trnx_use) { ?>
-						<span class="br-badge br-badge-green" style="font-size:9px"><?= __("New", "bluerabbit"); ?></span>
+						<span class="br-badge br-badge-green br-trnx-new-badge"><?= __("New", "bluerabbit"); ?></span>
 						<?php } ?>
 					</td>
 					<td class="text-center">
 						<?php if($iT->trnx_use){ ?>
-						<button class="br-btn" style="padding:4px 8px" onClick="useItem(<?= "$iT->trnx_id, $iT->player_id, 0"; ?>);" title="<?= __('Return item', 'bluerabbit'); ?>">
+						<button class="br-btn br-trnx-btn-action" onClick="useItem(<?= "$iT->trnx_id, $iT->player_id, 0"; ?>);" title="<?= __('Return item', 'bluerabbit'); ?>">
 							<span class="icon icon-restore"></span>
 						</button>
 						<?php } ?>
 					</td>
 					<?php if($isGM || $isAdmin){ ?>
 					<td class="text-center">
-						<button class="br-btn br-btn-red" style="padding:4px 8px" onClick="br_confirm_trd('delete',<?= $iT->trnx_id; ?>,'trnx');">
+						<button class="br-btn br-btn-red br-trnx-btn-action" onClick="br_confirm_trd('delete',<?= $iT->trnx_id; ?>,'trnx');">
 							<span class="icon icon-cancel"></span>
 						</button>
 					</td>
@@ -147,10 +147,10 @@ $type_badges = [
 		</table>
 
 		<?php if($spentBLOO > 0){ ?>
-		<div style="text-align:right;margin-top:16px;padding-top:12px;border-top:1px solid rgba(28,194,235,0.1)">
-			<span style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px"><?= __("Total Spent", "bluerabbit"); ?></span>
-			<span style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:28px;font-weight:900;color:#f7cb15;margin-left:10px"><?= number_format($spentBLOO); ?></span>
-			<span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:4px"><?= $bloo_label; ?></span>
+		<div class="br-trnx-total">
+			<span class="br-trnx-total-label"><?= __("Total Spent", "bluerabbit"); ?></span>
+			<span class="br-trnx-total-value"><?= number_format($spentBLOO); ?></span>
+			<span class="br-trnx-total-unit"><?= $bloo_label; ?></span>
 		</div>
 		<?php } ?>
 	</div>

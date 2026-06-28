@@ -8,12 +8,12 @@ $the_roles    = ['br_npc', 'br_game_master', 'administrator'];
 $speakerUsers = get_users(['role__in' => $the_roles]);
 ?>
 
-<div class="br-page" style="max-width:900px">
+<div class="br-page br-page-narrow">
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(121,85,72,0.25);display:flex;align-items:center;justify-content:center;border-color:rgba(121,85,72,0.5)">
-			<span class="icon icon-socialiser" style="font-size:28px;color:#8d6e63"></span>
+		<div class="br-page-header-avatar br-avatar-brown">
+			<span class="icon icon-socialiser br-icon-lg br-icon-brown"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Speaker", "bluerabbit") : __("New Speaker", "bluerabbit"); ?></h1>
@@ -45,7 +45,7 @@ $speakerUsers = get_users(['role__in' => $the_roles]);
 
 		<!-- Speaker Picture -->
 		<div class="br-form-group">
-			<label class="br-form-label"><?= __("Speaker Picture", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+			<label class="br-form-label"><?= __("Speaker Picture", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
 				<div class="gallery">
 					<div class="gallery-item setting">
@@ -112,7 +112,7 @@ $speakerUsers = get_users(['role__in' => $the_roles]);
 				<span class="icon icon-cancel"></span> <?= __("Cancel", "bluerabbit"); ?>
 			</a>
 			<input type="hidden" id="speaker_nonce" value="<?= wp_create_nonce('br_speaker_nonce'); ?>">
-			<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateSpeaker();">
+			<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateSpeaker();">
 				<span class="icon icon-check"></span>
 				<?= $is_edit ? __("Update Speaker", "bluerabbit") : __("Create Speaker", "bluerabbit"); ?>
 			</button>

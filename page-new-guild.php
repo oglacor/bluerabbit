@@ -34,12 +34,12 @@ if (isset($adventure) && $isGM) {
 	}
 ?>
 
-<div class="br-page" style="max-width:1000px">
+<div class="br-page br-page-mid">
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(36,218,152,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(36,218,152,0.4)">
-			<span class="icon icon-guild" style="font-size:28px;color:#24da98"></span>
+		<div class="br-page-header-avatar br-avatar-green">
+			<span class="icon icon-guild br-icon-lg br-icon-green"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Guild", "bluerabbit") : __("New Guild", "bluerabbit"); ?></h1>
@@ -56,7 +56,7 @@ if (isset($adventure) && $isGM) {
 		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('guild-members-section', this)">
 			<span class="icon icon-guild"></span> <?= __("Members", "bluerabbit"); ?>
-			<span class="br-badge br-badge-green" style="margin-left:4px;font-size:10px"><?= count($guild_members); ?></span>
+			<span class="br-badge br-badge-green br-badge-ml-sm"><?= count($guild_members); ?></span>
 		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('guild-assign-section', this)">
 			<span class="icon icon-players"></span> <?= __("Assign Players", "bluerabbit"); ?>
@@ -79,7 +79,7 @@ if (isset($adventure) && $isGM) {
 
 		<!-- Logo -->
 		<div class="br-form-group">
-			<label class="br-form-label"><?= __("Guild Logo", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+			<label class="br-form-label"><?= __("Guild Logo", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
 				<div class="gallery">
 					<div class="gallery-item setting">
@@ -105,7 +105,7 @@ if (isset($adventure) && $isGM) {
 		</div>
 
 		<!-- Auto-assign + Group + Capacity -->
-		<div class="br-form-grid" style="grid-template-columns:1fr 1fr 1fr">
+		<div class="br-form-grid br-form-grid-3">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Auto-assign on login", "bluerabbit"); ?></label>
 				<select id="the_guild_assign_on_login" class="br-input">
@@ -131,7 +131,7 @@ if (isset($adventure) && $isGM) {
 		<!-- Enrollment Link -->
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Enrollment Link", "bluerabbit"); ?></label>
-			<input type="text" readonly class="br-input" style="color:rgba(255,255,255,0.5);cursor:text"
+			<input type="text" readonly class="br-input br-input-readonly"
 				   value="<?= get_bloginfo('url') . "/guild-enroll/?adventure_id=$adventure->adventure_id&t=$g->guild_code"; ?>"
 				   onClick="this.select();">
 		</div>
@@ -140,7 +140,7 @@ if (isset($adventure) && $isGM) {
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Bulk Assign Players (CSV)", "bluerabbit"); ?></label>
 			<div class="br-input-row">
-				<input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" class="br-input" style="padding:7px 14px">
+				<input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" class="br-input br-input-file">
 				<button type="button" class="br-btn br-btn-green" onClick="assignBulkUsersToGuild();">
 					<span class="icon icon-check"></span> <?= __("Upload", "bluerabbit"); ?>
 				</button>
@@ -155,12 +155,12 @@ if (isset($adventure) && $isGM) {
 			</a>
 			<div class="br-actions">
 				<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_guild_nonce'); ?>">
-				<select id="the_guild_status" class="br-input" style="width:auto">
+				<select id="the_guild_status" class="br-input br-select-auto">
 					<option value="publish" <?= (!$is_edit || $g->guild_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish", "bluerabbit"); ?></option>
 					<option value="draft" <?= ($is_edit && $g->guild_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft", "bluerabbit"); ?></option>
 					<option value="trash" <?= ($is_edit && $g->guild_status == 'trash') ? 'selected' : ''; ?>><?= __("Trash", "bluerabbit"); ?></option>
 				</select>
-				<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateGuild();">
+				<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateGuild();">
 					<span class="icon icon-check"></span>
 					<?= $is_edit ? __("Update Guild", "bluerabbit") : __("Create Guild", "bluerabbit"); ?>
 				</button>
@@ -176,29 +176,29 @@ if (isset($adventure) && $isGM) {
 	<div class="br-panel">
 		<h3 class="br-panel-title">
 			<span class="icon icon-guild"></span> <?= __("Guild Members", "bluerabbit"); ?>
-			<span class="br-badge br-badge-green" style="margin-left:8px"><?= count($guild_members); ?></span>
+			<span class="br-badge br-badge-green br-badge-ml"><?= count($guild_members); ?></span>
 		</h3>
 
 		<?php if (!empty($guild_members)) { ?>
 		<table class="br-table" id="guild-members-table">
 			<thead>
 				<tr>
-					<th style="width:50px"></th>
+					<th class="br-th-narrow"></th>
 					<th><?= __("Name", "bluerabbit"); ?></th>
 					<th><?= __("Email", "bluerabbit"); ?></th>
-					<th style="width:100px"><?= __("Actions", "bluerabbit"); ?></th>
+					<th class="br-th-actions"><?= __("Actions", "bluerabbit"); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach ($guild_members as $gm) { ?>
 				<tr id="member-row-<?= $gm->player_id; ?>">
 					<td>
-						<div style="width:32px;height:32px;border-radius:50%;background-size:cover;background-position:center;background-image:url(<?= esc_url($gm->player_picture); ?>);border:1px solid rgba(28,194,235,0.2)"></div>
+						<div class="br-member-avatar" style="background-image:url(<?= esc_url($gm->player_picture); ?>)"></div>
 					</td>
 					<td><?= esc_html($gm->player_display_name ?: ($gm->player_first . ' ' . $gm->player_last)); ?></td>
-					<td style="color:rgba(255,255,255,0.45);font-size:13px"><?= esc_html($gm->player_email); ?></td>
+					<td class="br-text-muted-sm"><?= esc_html($gm->player_email); ?></td>
 					<td>
-						<button class="br-btn br-btn-red" style="padding:4px 10px" onClick="triggerGuild(<?= "$g->guild_id, $gm->player_id"; ?>); document.getElementById('member-row-<?= $gm->player_id; ?>').style.opacity='0.3';">
+						<button class="br-btn br-btn-red br-btn-compact" onClick="triggerGuild(<?= "$g->guild_id, $gm->player_id"; ?>); document.getElementById('member-row-<?= $gm->player_id; ?>').style.opacity='0.3';">
 							<span class="icon icon-cancel"></span> <?= __("Remove", "bluerabbit"); ?>
 						</button>
 					</td>
@@ -207,7 +207,7 @@ if (isset($adventure) && $isGM) {
 			</tbody>
 		</table>
 		<?php } else { ?>
-		<div class="br-empty" style="padding:24px">
+		<div class="br-empty br-empty-md">
 			<span class="icon icon-guild"></span>
 			<h3><?= __("No members yet", "bluerabbit"); ?></h3>
 			<p><?= __("Assign players from the list below.", "bluerabbit"); ?></p>
@@ -221,16 +221,16 @@ if (isset($adventure) && $isGM) {
 	<div class="br-panel">
 		<h3 class="br-panel-title">
 			<span class="icon icon-players"></span> <?= __("Assign Players", "bluerabbit"); ?>
-			<span style="font-size:12px;color:rgba(255,255,255,0.35);font-family:inherit;text-transform:none;letter-spacing:0;margin-left:8px">
+			<span class="br-helper-text">
 				<?= count($all_players); ?> <?= __("enrolled", "bluerabbit"); ?>
 			</span>
 		</h3>
 
 		<!-- Search -->
-		<div class="br-form-group" style="margin-bottom:14px">
-			<div style="position:relative">
-				<span class="icon icon-search" style="color:rgba(255,255,255,0.3);position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px"></span>
-				<input type="text" class="br-input" id="guild-player-search" style="padding-left:34px"
+		<div class="br-form-group br-mb-14">
+			<div class="br-search-inline">
+				<span class="icon icon-search"></span>
+				<input type="text" class="br-input" id="guild-player-search"
 					   placeholder="<?= __('Search by name or email...', 'bluerabbit'); ?>">
 			</div>
 		</div>
@@ -238,11 +238,11 @@ if (isset($adventure) && $isGM) {
 		<table class="br-table" id="guild-all-players">
 			<thead>
 				<tr>
-					<th style="width:50px"></th>
+					<th class="br-th-narrow"></th>
 					<th><?= __("Name", "bluerabbit"); ?></th>
 					<th><?= __("Email", "bluerabbit"); ?></th>
-					<th class="text-center" style="width:60px"><?= __("Status", "bluerabbit"); ?></th>
-					<th style="width:100px"><?= __("Actions", "bluerabbit"); ?></th>
+					<th class="text-center br-th-narrow"><?= __("Status", "bluerabbit"); ?></th>
+					<th class="br-th-actions"><?= __("Actions", "bluerabbit"); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -251,18 +251,18 @@ if (isset($adventure) && $isGM) {
 				?>
 				<tr class="guild-player-row" data-in-guild="<?= $in_guild ? '1' : '0'; ?>" id="player-guild-list-<?= $play->player_id; ?>" <?= $in_guild ? 'class="guild-player-row active"' : ''; ?>>
 					<td>
-						<div style="width:32px;height:32px;border-radius:50%;background-size:cover;background-position:center;background-image:url(<?= esc_url($play->player_picture); ?>);border:1px solid rgba(28,194,235,0.2)"></div>
+						<div class="br-member-avatar" style="background-image:url(<?= esc_url($play->player_picture); ?>)"></div>
 					</td>
 					<td><?= esc_html($play->player_display_name ?: ($play->player_first . ' ' . $play->player_last)); ?></td>
-					<td style="color:rgba(255,255,255,0.45);font-size:13px"><?= esc_html($play->player_email); ?></td>
+					<td class="br-text-muted-sm"><?= esc_html($play->player_email); ?></td>
 					<td class="text-center">
-						<span class="active-content br-badge br-badge-green" style="font-size:9px"><?= __("In Guild", "bluerabbit"); ?></span>
+						<span class="active-content br-badge br-badge-green br-badge-sm"><?= __("In Guild", "bluerabbit"); ?></span>
 					</td>
 					<td>
-						<button class="active-content br-btn br-btn-red" style="padding:4px 10px" onClick="triggerGuild(<?= "$g->guild_id, $play->player_id"; ?>);">
+						<button class="active-content br-btn br-btn-red br-btn-compact" onClick="triggerGuild(<?= "$g->guild_id, $play->player_id"; ?>);">
 							<span class="icon icon-cancel"></span>
 						</button>
-						<button class="inactive-content br-btn" style="padding:4px 10px" onClick="triggerGuild(<?= "$g->guild_id, $play->player_id"; ?>);">
+						<button class="inactive-content br-btn br-btn-compact" onClick="triggerGuild(<?= "$g->guild_id, $play->player_id"; ?>);">
 							<span class="icon icon-check"></span> <?= __("Assign", "bluerabbit"); ?>
 						</button>
 					</td>
@@ -272,7 +272,7 @@ if (isset($adventure) && $isGM) {
 		</table>
 
 		<!-- Pagination -->
-		<div class="br-stats-pagination" id="guild-pagination" style="margin-top:16px"></div>
+		<div class="br-stats-pagination br-mt-sm" id="guild-pagination"></div>
 	</div>
 	</div>
 

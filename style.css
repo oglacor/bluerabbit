@@ -1874,6 +1874,9 @@ span.divider {
   min-height: 100vh;
   display: flex;
   padding-bottom: 75px;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
 }
 .steps .step .step-content-container svg.step-tag-img {
   width: 100%;
@@ -6954,6 +6957,96 @@ ul.color-select li.active .icon-check {
 }
 
 /*************************************************************/
+/************************** HUD AUDIO PLAYER ****************************/
+/*************************************************************/
+.hud-audio-player {
+  width: 100%;
+  max-width: 720px;
+  background: #030f18;
+  border: 1px solid rgba(28, 194, 235, 0.2);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hud-audio-player .player-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hud-audio-player .player-top .play-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(28, 194, 235, 0.15);
+  border: 2px solid #1cc2eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.hud-audio-player .player-top .play-btn:hover {
+  background: rgba(28, 194, 235, 0.3);
+}
+.hud-audio-player .player-top .play-btn .icon {
+  font-size: 20px;
+  color: #1cc2eb;
+}
+.hud-audio-player .player-top .player-info {
+  flex: 1;
+}
+.hud-audio-player .player-top .player-info .player-title {
+  font-size: 13px;
+  color: #90f3fe;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.hud-audio-player .player-top .player-info .player-hint {
+  font-size: 10px;
+  color: rgba(28, 194, 235, 0.45);
+  letter-spacing: 0.06em;
+}
+.hud-audio-player .player-top .waveform {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+}
+.hud-audio-player .player-top .waveform .bar {
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(28, 194, 235, 0.3);
+}
+.hud-audio-player .player-top .waveform .bar.active {
+  background: #1cc2eb;
+  animation: wave-pulse 0.4s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+.hud-audio-player .player-track {
+  height: 3px;
+  background: #0b3d4f;
+  border-radius: 2px;
+  position: relative;
+}
+.hud-audio-player .player-track .player-progress {
+  height: 100%;
+  background: #1cc2eb;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.3s linear;
+}
+.hud-audio-player .player-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: rgba(28, 194, 235, 0.45);
+  font-family: "proxima-nova-extra-condensed", sans-serif;
+}
+
+/*************************************************************/
 /************************** CHALLENGES / SURVEYS ****************************/
 /*************************************************************/
 .challenge-gradient-overlay {
@@ -7487,92 +7580,6 @@ ul.color-select li.active .icon-check {
   max-width: 720px;
   border-radius: 10px;
   filter: none;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player {
-  width: 100%;
-  max-width: 720px;
-  background: #030f18;
-  border: 1px solid rgba(28, 194, 235, 0.2);
-  border-radius: 10px;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .play-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: rgba(28, 194, 235, 0.15);
-  border: 2px solid #1cc2eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .play-btn:hover {
-  background: rgba(28, 194, 235, 0.3);
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .play-btn .icon {
-  font-size: 20px;
-  color: #1cc2eb;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .player-info {
-  flex: 1;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .player-info .player-title {
-  font-size: 13px;
-  color: #90f3fe;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .player-info .player-hint {
-  font-size: 10px;
-  color: rgba(28, 194, 235, 0.45);
-  letter-spacing: 0.06em;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .waveform {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  height: 28px;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .waveform .bar {
-  width: 3px;
-  border-radius: 2px;
-  background: rgba(28, 194, 235, 0.3);
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-top .waveform .bar.active {
-  background: #1cc2eb;
-  animation: wave-pulse 0.4s ease-in-out infinite alternate;
-  transform-origin: bottom center;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-track {
-  height: 3px;
-  background: #0b3d4f;
-  border-radius: 2px;
-  position: relative;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-track .player-progress {
-  height: 100%;
-  background: #1cc2eb;
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.3s linear;
-}
-.challenge-quest .challenge-content .challenge-question .hud-audio-player .player-times {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: rgba(28, 194, 235, 0.45);
-  font-family: "proxima-nova-extra-condensed", sans-serif;
 }
 .challenge-quest .challenge-content .challenge-question .question-title {
   font-size: 18px;

@@ -299,28 +299,28 @@
 		</div>
 		<!-- END Message inputs -->
 		<div class="svg-container">
-			<svg class="hex-clip-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.5 0, 1 0.25, 1 0.75, 0.5 1, 0 0.75, 0 0.25" />
 					</clipPath>
 				</defs>
 			</svg>  	
-			<svg class="hex-clip-flat-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-flat-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-flat-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.25 0, 0.75 0, 1 0.5, 0.75 1, 0.25 1, 0 0.5" />
 					</clipPath>
 				</defs>
 			</svg>  	
-			<svg class="hex-clip-long-flat-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-long-flat-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-long-flat-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.175 0, 0.825 0, 1 0.5, 0.825 1, 0.175 1, 0 0.5" />
 					</clipPath>
 				</defs>
 			</svg>  	
-			<svg class="hex-clip-longer-flat-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-longer-flat-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-longer-flat-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.125 0, 0.875 0, 1 0.5, 0.875 1, 0.125 1, 0 0.5" />

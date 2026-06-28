@@ -45,7 +45,7 @@
 			</div>
 			<div class="highlight text-center padding-0 white-color font _18">
 				<div class="book-container">
-					<img src="<?= $item->item_badge; ?>" style="visibility:hidden;">
+					<img src="<?= $item->item_badge; ?>" class="br-invisible">
 					<div class="background">
 						<div class="table padding-10"><div class="table-cell text-center bottom">
 							<button class="button-icon font _24 sq-40  transparent-bg icon-lg opacity-70" onClick="changeSide();">

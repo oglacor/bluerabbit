@@ -221,14 +221,14 @@
 						<tbody>
 						<?php foreach($_lb_players as $_lk => $_lp): ?>
 							<tr>
-								<td class="font _16 w900 yellow-bg-400 black-color text-center" style="width:28px;"><?= $_lk+1; ?></td>
-								<td style="padding: 2px 6px;">
+								<td class="font _16 w900 yellow-bg-400 black-color text-center br-lb-rank-cell"><?= $_lk+1; ?></td>
+								<td class="br-lb-name-cell">
 									<?php if($_lp->player_picture): ?>
-									<span class="button-icon sq-24" style="display:inline-block; background-image: url(<?= esc_url($_lp->player_picture); ?>); background-size:cover; border-radius:50%; vertical-align:middle;"></span>
+									<span class="button-icon sq-24 br-lb-avatar-inline" style="background-image: url(<?= esc_url($_lp->player_picture); ?>)"></span>
 									<?php endif; ?>
 									<span class="font _13"><?= esc_html($_lp->player_display_name); ?></span>
 								</td>
-								<td class="text-center font _14 w900 purple-400" style="width:32px;">Lv<?= $_lp->player_level; ?></td>
+								<td class="text-center font _14 w900 purple-400 br-lb-level-cell">Lv<?= $_lp->player_level; ?></td>
 							</tr>
 						<?php endforeach; ?>
 						</tbody>

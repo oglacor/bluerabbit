@@ -24,7 +24,7 @@
 			<?php } ?>
 		</ul>
 		<?php } else { ?>
-		<div class="br-empty" style="padding:20px">
+		<div class="br-empty br-empty-sm">
 			<h3><?= __("No key items available", "bluerabbit"); ?></h3>
 			<a class="br-btn" href="<?= get_bloginfo('url') . "/new-item/?adventure_id=$s->adventure_id&type=key"; ?>" target="_blank"><?= __("Add new key item", "bluerabbit"); ?></a>
 		</div>

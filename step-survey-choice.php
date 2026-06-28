@@ -19,12 +19,12 @@ $prev_response = $already_done && $player_step->ps_response ? json_decode($playe
 			<div class="center">
 				<?php if (!empty($settings['question'])) { ?><h3><?= esc_html($settings['question']); ?></h3><?php } ?>
 
-				<div id="sc-options-<?= $step->step_id; ?>" style="display:flex;flex-direction:column;gap:8px;margin:16px 0">
+				<div class="br-step-options-list" id="sc-options-<?= $step->step_id; ?>">
 					<?php foreach ($options as $opt) { ?>
-					<label class="br-step-option <?= $already_done ? 'disabled' : ''; ?>" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);cursor:pointer">
-						<input type="<?= $input_type; ?>" name="sc-<?= $step->step_id; ?>" value="<?= esc_attr($opt['id']); ?>" class="sc-input" <?= $already_done ? 'disabled' : ''; ?> style="width:18px;height:18px;accent-color:#1cc2eb"
+					<label class="br-step-option <?= $already_done ? 'disabled' : ''; ?> <?= (isset($prev_response['selected']) && in_array($opt['id'], (array) $prev_response['selected'])) ? 'br-option-correct' : ''; ?>">
+						<input type="<?= $input_type; ?>" name="sc-<?= $step->step_id; ?>" value="<?= esc_attr($opt['id']); ?>" class="sc-input" <?= $already_done ? 'disabled' : ''; ?>
 							<?= (isset($prev_response['selected']) && in_array($opt['id'], (array) $prev_response['selected'])) ? 'checked' : ''; ?>>
-						<span><?= esc_html($opt['text']); ?></span>
+						<span class="br-step-option-text"><?= esc_html($opt['text']); ?></span>
 					</label>
 					<?php } ?>
 				</div>
@@ -36,7 +36,7 @@ $prev_response = $already_done && $player_step->ps_response ? json_decode($playe
 					</button>
 				</div>
 				<?php } else { ?>
-				<div style="padding:8px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center"><span class="icon icon-check"></span> <?= __("Response recorded", "bluerabbit"); ?></div>
+				<div class="br-step-recorded"><span class="icon icon-check"></span> <?= __("Response recorded", "bluerabbit"); ?></div>
 				<?php } ?>
 			</div>
 			<div class="edge-right"></div>

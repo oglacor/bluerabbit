@@ -11,20 +11,20 @@ $can_send = isset( $adventure ) && $adventure
 if ( ! isset( $adventure_id ) || ! $adventure_id ) :
 ?>
 <div class="br-page">
-	<div class="br-panel" style="max-width:800px;margin:40px auto;text-align:center;padding:40px">
-		<span class="icon icon-mail" style="font-size:48px;color:rgba(28,194,235,0.4);display:block;margin-bottom:16px"></span>
-		<h2 style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.9);margin:0 0 8px"><?php _e( 'Email Notifications', 'bluerabbit' ); ?></h2>
-		<p style="color:rgba(255,255,255,0.4);font-size:14px"><?php _e( 'No adventure selected. Add ?adventure_id=X to the URL.', 'bluerabbit' ); ?></p>
+	<div class="br-panel br-notif-empty">
+		<span class="icon icon-mail br-notif-empty-icon"></span>
+		<h2 class="br-notif-empty-title"><?php _e( 'Email Notifications', 'bluerabbit' ); ?></h2>
+		<p class="br-notif-empty-text"><?php _e( 'No adventure selected. Add ?adventure_id=X to the URL.', 'bluerabbit' ); ?></p>
 	</div>
 </div>
 
 <?php elseif ( ! $can_send ) : ?>
 
 <div class="br-page">
-	<div class="br-panel" style="max-width:800px;margin:40px auto;text-align:center;padding:40px;border-color:rgba(244,67,54,0.3)">
-		<span class="icon icon-cancel" style="font-size:48px;color:rgba(244,67,54,0.5);display:block;margin-bottom:16px"></span>
-		<h2 style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:#f44336;margin:0 0 8px"><?php _e( 'Access Denied', 'bluerabbit' ); ?></h2>
-		<p style="color:rgba(255,255,255,0.4);font-size:14px"><?php _e( 'You must be the adventure owner or a Game Master to send notifications.', 'bluerabbit' ); ?></p>
+	<div class="br-panel br-notif-denied">
+		<span class="icon icon-cancel br-notif-denied-icon"></span>
+		<h2 class="br-notif-denied-title"><?php _e( 'Access Denied', 'bluerabbit' ); ?></h2>
+		<p class="br-notif-empty-text"><?php _e( 'You must be the adventure owner or a Game Master to send notifications.', 'bluerabbit' ); ?></p>
 	</div>
 </div>
 
@@ -51,28 +51,28 @@ $recipient_count  = count( $enrolled_players );
 $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 ?>
 
-<div class="br-page" style="max-width:900px">
+<div class="br-page br-page-narrow">
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(28,194,235,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(28,194,235,0.4)">
-			<span class="icon icon-mail" style="font-size:28px;color:#1cc2eb"></span>
+		<div class="br-page-header-avatar br-config-header-icon">
+			<span class="icon icon-mail"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?php _e( 'Email Notification', 'bluerabbit' ); ?></h1>
 			<span class="br-page-subtitle"><?php echo esc_html( $adventure->adventure_title ); ?></span>
 		</div>
-		<div style="margin-left:auto;text-align:right">
-			<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);display:block"><?php _e( 'Eligible', 'bluerabbit' ); ?></span>
-			<span style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:28px;font-weight:900;color:#1cc2eb"><?php echo (int) $recipient_count; ?></span>
+		<div class="br-notif-header-stats">
+			<span class="br-notif-eligible-label"><?php _e( 'Eligible', 'bluerabbit' ); ?></span>
+			<span class="br-notif-eligible-count"><?php echo (int) $recipient_count; ?></span>
 		</div>
 	</div>
 
 	<!-- Status Banner -->
-	<div id="br-notif-status" style="display:none;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:14px"></div>
+	<div id="br-notif-status" class="br-notif-status"></div>
 
 	<!-- Sender + Compose -->
-	<div class="br-panel" style="padding:20px">
+	<div class="br-panel br-notif-compose-panel">
 		<h3 class="br-panel-title"><span class="icon icon-document"></span> <?php _e( 'Compose Message', 'bluerabbit' ); ?></h3>
 
 		<form id="br-email-notif-form" onsubmit="return false;">
@@ -81,7 +81,7 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 			<div class="br-form-group">
 				<label class="br-form-label"><?php _e( 'Send on behalf of', 'bluerabbit' ); ?></label>
 				<span class="br-form-hint"><?php _e( 'The reply-to address will be set to this person.', 'bluerabbit' ); ?></span>
-				<select class="br-input" id="br-notif-sender" style="max-width:400px">
+				<select class="br-input br-max-w-400" id="br-notif-sender">
 					<?php if ( $owner ) : ?>
 					<option value="<?php echo (int) $owner->ID; ?>" data-name="<?php echo esc_attr( $owner->display_name ); ?>" data-email="<?php echo esc_attr( $owner->user_email ); ?>" selected>
 						<?php echo esc_html( $owner->display_name ); ?> &middot; <?php _e( 'Adventure Owner', 'bluerabbit' ); ?> (<?php echo esc_html( $owner->user_email ); ?>)
@@ -103,11 +103,11 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 
 			<div class="br-form-group">
 				<label class="br-form-label"><?php _e( 'Message', 'bluerabbit' ); ?></label>
-				<span class="br-form-hint" style="display:block;margin-bottom:8px">
+				<span class="br-form-hint br-hint-block-spacer">
 					<?php _e( 'Merge tags:', 'bluerabbit' ); ?>
-					<code style="background:rgba(28,194,235,0.1);color:#1cc2eb;padding:2px 6px;border-radius:4px;font-size:12px">{{name}}</code>
-					<code style="background:rgba(28,194,235,0.1);color:#1cc2eb;padding:2px 6px;border-radius:4px;font-size:12px">{{adventure_name}}</code>
-					<code style="background:rgba(28,194,235,0.1);color:#1cc2eb;padding:2px 6px;border-radius:4px;font-size:12px">{{site_name}}</code>
+					<code class="br-notif-code-hint">{{name}}</code>
+					<code class="br-notif-code-hint">{{adventure_name}}</code>
+					<code class="br-notif-code-hint">{{site_name}}</code>
 				</span>
 				<?php
 				wp_editor( '', 'br_notif_body', [
@@ -126,26 +126,26 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 	</div>
 
 	<!-- Recipients — always visible -->
-	<div class="br-panel" style="padding:20px">
+	<div class="br-panel br-notif-compose-panel">
 		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?php _e( 'Recipients', 'bluerabbit' ); ?></h3>
 
-		<div class="br-form-group" style="margin-bottom:12px">
+		<div class="br-form-group">
 			<label class="br-form-label"><?php _e( 'Send to', 'bluerabbit' ); ?></label>
-			<select class="br-input" id="br-notif-recipient-mode" style="max-width:300px">
+			<select class="br-input br-max-w-300" id="br-notif-recipient-mode">
 				<option value="all"><?php printf( __( 'All enrolled players (%d)', 'bluerabbit' ), $recipient_count ); ?></option>
 				<option value="select"><?php _e( 'Selected players only', 'bluerabbit' ); ?></option>
 			</select>
 		</div>
 
 		<!-- Player selection panel — hidden until "Selected players only" is chosen -->
-		<div id="br-recipient-panel" style="display:none">
+		<div id="br-recipient-panel" class="br-initially-hidden">
 
 			<!-- CSV Upload -->
-			<div style="padding:10px 0;border-bottom:1px solid rgba(28,194,235,0.08)">
-				<label class="br-form-label" style="margin-bottom:6px"><?php _e( 'Bulk select from CSV', 'bluerabbit' ); ?></label>
-				<span class="br-form-hint" style="display:block;margin-bottom:8px"><?php _e( 'Upload a CSV with a single column of email addresses to auto-select matching players.', 'bluerabbit' ); ?></span>
-				<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-					<input type="file" id="br-notif-csv" class="br-input" style="padding:7px 14px;flex:1;min-width:200px" accept=".csv">
+			<div class="br-notif-csv-section">
+				<label class="br-form-label"><?php _e( 'Bulk select from CSV', 'bluerabbit' ); ?></label>
+				<span class="br-form-hint br-hint-block-spacer"><?php _e( 'Upload a CSV with a single column of email addresses to auto-select matching players.', 'bluerabbit' ); ?></span>
+				<div class="br-notif-csv-row">
+					<input type="file" id="br-notif-csv" class="br-input br-input-csv" accept=".csv">
 					<button type="button" class="br-btn br-btn-green" id="br-notif-csv-btn">
 						<span class="icon icon-upload"></span> <?php _e( 'Match & Select', 'bluerabbit' ); ?>
 					</button>
@@ -153,17 +153,17 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 			</div>
 
 			<!-- Search bar + actions -->
-			<div style="display:flex;align-items:center;gap:10px;padding:12px 0;flex-wrap:wrap">
-				<input type="text" class="br-input" id="br-notif-player-search" placeholder="<?php esc_attr_e( 'Search players...', 'bluerabbit' ); ?>" style="flex:1;min-width:180px">
-				<span style="font-size:13px;color:rgba(255,255,255,0.4)">
+			<div class="br-notif-search-bar">
+				<input type="text" class="br-input br-input-search-flex" id="br-notif-player-search" placeholder="<?php esc_attr_e( 'Search players...', 'bluerabbit' ); ?>">
+				<span class="br-notif-meta-text">
 					<span id="br-notif-visible-count"><?php echo $recipient_count; ?></span> <?php _e( 'players', 'bluerabbit' ); ?>
-					&middot; <span id="br-notif-selected-count" style="color:#24da98;font-weight:700">0</span> <?php _e( 'selected', 'bluerabbit' ); ?>
+					&middot; <span id="br-notif-selected-count" class="br-notif-selected-count">0</span> <?php _e( 'selected', 'bluerabbit' ); ?>
 				</span>
-				<div class="br-actions" style="gap:6px">
-					<button type="button" class="br-btn" style="padding:6px 12px;font-size:12px" onclick="brNotifSelectAll()">
+				<div class="br-actions br-gap-6">
+					<button type="button" class="br-btn br-stats-btn-sm" onclick="brNotifSelectAll()">
 						<span class="icon icon-check"></span> <?php _e( 'Select all', 'bluerabbit' ); ?>
 					</button>
-					<button type="button" class="br-btn br-btn-red" style="padding:6px 12px;font-size:12px" onclick="brNotifDeselectAll()">
+					<button type="button" class="br-btn br-btn-red br-stats-btn-sm" onclick="brNotifDeselectAll()">
 						<span class="icon icon-cancel"></span> <?php _e( 'Clear', 'bluerabbit' ); ?>
 					</button>
 				</div>
@@ -171,7 +171,7 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 
 			<!-- Player Cards -->
 			<?php if ( $recipient_count === 0 ) : ?>
-			<div class="br-empty" style="padding:20px">
+			<div class="br-empty">
 				<span class="icon icon-players"></span>
 				<h3><?php _e( 'No enrolled players found', 'bluerabbit' ); ?></h3>
 			</div>
@@ -188,7 +188,7 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 					<div class="br-player-info">
 						<span class="br-player-name"><?php echo esc_html( $pName ); ?></span>
 						<span class="br-player-meta">
-							<span style="color:#9f40e2;font-weight:700">Lv.<?php echo (int) $p->player_level; ?></span> &middot; <?php echo esc_html( $p->user_email ); ?>
+							<span class="br-notif-player-level">Lv.<?php echo (int) $p->player_level; ?></span> &middot; <?php echo esc_html( $p->user_email ); ?>
 						</span>
 					</div>
 					<span class="br-player-check icon icon-check"></span>
@@ -202,27 +202,23 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 	</div>
 
 	<!-- Actions -->
-	<div class="br-panel" style="padding:16px 20px">
-		<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-			<button type="button" id="br-notif-preview-btn" class="br-btn" style="padding:10px 20px">
+	<div class="br-panel br-notif-actions-panel">
+		<div class="br-notif-actions-row">
+			<button type="button" id="br-notif-preview-btn" class="br-btn br-btn-preview">
 				<span class="icon icon-view"></span> <?php _e( 'Preview', 'bluerabbit' ); ?>
 			</button>
-			<button type="button" id="br-notif-send-btn" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px">
+			<button type="button" id="br-notif-send-btn" class="br-btn br-btn-green br-btn-send">
 				<span class="icon icon-mail"></span> <?php _e( 'Send Email', 'bluerabbit' ); ?>
 			</button>
-			<span id="br-notif-spinner" style="display:none;font-size:13px;color:rgba(255,255,255,0.4)">
-				<span class="icon icon-rotate" style="animation:spin 1s linear infinite"></span>
+			<span id="br-notif-spinner" class="br-notif-spinner">
+				<span class="icon icon-rotate"></span>
 				<?php _e( 'Sending…', 'bluerabbit' ); ?>
 			</span>
-			<span id="br-notif-send-summary" style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.4)"></span>
+			<span id="br-notif-send-summary" class="br-notif-send-summary"></span>
 		</div>
 	</div>
 
 </div>
-
-<style>
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-</style>
 
 <script>
 jQuery(function($){
@@ -324,9 +320,9 @@ jQuery(function($){
 			var h='', p=this.page;
 			if(p>1) h+='<button class="br-page-btn" onclick="PG.goTo('+(p-1)+')">&laquo;</button>';
 			var s=Math.max(1,p-3), e=Math.min(pages,p+3);
-			if(s>1){ h+='<button class="br-page-btn" onclick="PG.goTo(1)">1</button>'; if(s>2) h+='<span style="color:rgba(255,255,255,0.3)">&hellip;</span>'; }
+			if(s>1){ h+='<button class="br-page-btn" onclick="PG.goTo(1)">1</button>'; if(s>2) h+='<span class="br-notif-pagination-dots">&hellip;</span>'; }
 			for(var i=s;i<=e;i++) h+='<button class="br-page-btn'+(i===p?' active':'')+'" onclick="PG.goTo('+i+')">'+i+'</button>';
-			if(e<pages){ if(e<pages-1) h+='<span style="color:rgba(255,255,255,0.3)">&hellip;</span>'; h+='<button class="br-page-btn" onclick="PG.goTo('+pages+')">'+pages+'</button>'; }
+			if(e<pages){ if(e<pages-1) h+='<span class="br-notif-pagination-dots">&hellip;</span>'; h+='<button class="br-page-btn" onclick="PG.goTo('+pages+')">'+pages+'</button>'; }
 			if(p<pages) h+='<button class="br-page-btn" onclick="PG.goTo('+(p+1)+')">&raquo;</button>';
 			$('#br-notif-pagination').html(h);
 		},

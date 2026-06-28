@@ -2,7 +2,7 @@
 	<h3><?= $challenge->quest_title;?></h3>
 	<h1 class="font w900 uppercase padding-10"><?= __("Challenge conquered!","bluerabbit"); ?></h1>
 	<?php if($challenge->quest_success_message){ ?>
-		<div class="success-message text-center white-color padding-10 max-w-900 boxed relative border rounded-8" style="background-color: rgba(255,255,255,0.15);">
+		<div class="success-message text-center white-color padding-10 max-w-900 boxed relative border rounded-8 br-success-bg">
 			<?= apply_filters('the_content', $challenge->quest_success_message); ?>
 		</div>
 	<?php } ?>

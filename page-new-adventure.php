@@ -1,16 +1,59 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 $my_features = BR_Config::instance()->getFeatures($f_role);
-
 if($roles[0] == 'administrator'){
 	$orgs = BR_Organization::instance()->getOrgs();
 }
-if($adventure){
-	 if(!$isAdmin && !$isGM){
+if (isset($adventure) && $adventure) {
+	if (!$isAdmin && !$isGM) {
 	?> <script>document.location.href="<?php bloginfo('url');?>/404"; </script> <?php
 	exit();
-	 }
+	}
 }
+
+if (!isset($adventure) || !$adventure) {
+	$adventure = (object) [
+		'adventure_id' => '', 'adventure_title' => '', 'adventure_code' => '',
+		'adventure_badge' => '', 'adventure_logo' => '', 'adventure_color' => '',
+		'adventure_type' => 'normal', 'adventure_owner' => get_current_user_id(),
+		'adventure_privacy' => '', 'adventure_nickname' => '',
+		'adventure_has_guilds' => 0, 'adventure_gmt' => 'America/Mexico_City',
+		'adventure_hide_quests' => '', 'adventure_hide_schedule' => 'no',
+		'adventure_grade_scale' => 'none', 'adventure_progression_type' => 'before',
+		'adventure_instructions' => '', 'adventure_start_date' => '',
+		'adventure_end_date' => '', 'adventure_certificate_signature' => '',
+		'adventure_level_up_array' => '', 'adventure_status' => 'publish',
+		'adventure_ai_api_key' => '',
+		'adventure_xp_label' => 'XP', 'adventure_bloo_label' => 'BLOO',
+		'adventure_ep_label' => 'EP', 'adventure_xp_long_label' => 'Experience Points',
+		'adventure_bloo_long_label' => 'Bloo', 'adventure_ep_long_label' => 'Exploration Points',
+	];
+}
+if (!isset($xp_label)) $xp_label = $adventure->adventure_xp_label ?: 'XP';
+if (!isset($bloo_label)) $bloo_label = $adventure->adventure_bloo_label ?: 'BLOO';
+if (!isset($ep_label)) $ep_label = $adventure->adventure_ep_label ?: 'EP';
+if (!isset($xp_long_label)) $xp_long_label = $adventure->adventure_xp_long_label ?: 'Experience Points';
+if (!isset($bloo_long_label)) $bloo_long_label = $adventure->adventure_bloo_long_label ?: 'Bloo coins';
+if (!isset($ep_long_label)) $ep_long_label = $adventure->adventure_ep_long_label ?: 'Energy Points';
+if (!isset($adventure_id)) $adventure_id = $adventure->adventure_id ?: 0;
+if (!isset($adv_parent_id)) $adv_parent_id = $adventure_id;
+if (!isset($adv_child_id)) $adv_child_id = $adventure_id;
+if (!isset($isAdmin)) $isAdmin = in_array('administrator', $roles ?? []);
+if (!isset($isGM)) $isGM = $isAdmin;
+if (!isset($isOwner)) $isOwner = false;
+if (!isset($use_achievements)) $use_achievements = '';
+if (!isset($use_items)) $use_items = '';
+if (!isset($use_backpack)) $use_backpack = '';
+if (!isset($use_blockers)) $use_blockers = '';
+if (!isset($use_guilds)) $use_guilds = '';
+if (!isset($use_leaderboard)) $use_leaderboard = '';
+if (!isset($allow_magic_codes)) $allow_magic_codes = '';
+if (!isset($use_blog)) $use_blog = '';
+if (!isset($use_lore)) $use_lore = '';
+if (!isset($use_schedule)) $use_schedule = '';
+if (!isset($use_speakers)) $use_speakers = '';
+if (!isset($use_wall)) $use_wall = '';
+if (!isset($use_encounters)) $use_encounters = '';
 
 $adv_config=array(
 	'journey_zoom_level' => array(
@@ -139,8 +182,8 @@ $image_types = array(
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(255,152,0,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(255,152,0,0.4)">
-			<span class="icon icon-adventure" style="font-size:28px;color:#ff9800"></span>
+		<div class="br-page-header-avatar br-adv-header-avatar">
+			<span class="icon icon-adventure br-adv-header-icon"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title">
@@ -179,6 +222,12 @@ $image_types = array(
 		<button class="br-tab-btn" onClick="brScrollTo('features', this)">
 			<span class="icon icon-teamwork"></span> <?= __("Features","bluerabbit"); ?>
 		</button>
+		<?php $br_ai_allowed = !empty($adventure) && !($my_features && isset($my_features['allow_use_claude_api'][$f_role]) && !$my_features['allow_use_claude_api'][$f_role]); ?>
+		<?php if ($br_ai_allowed) { ?>
+		<button class="br-tab-btn" onClick="brScrollTo('ai-settings', this)">
+			<span class="icon icon-data"></span> <?= __("A.I.","bluerabbit"); ?>
+		</button>
+		<?php } ?>
 		<button class="br-tab-btn" onClick="brScrollTo('quick-links', this)">
 			<span class="icon icon-link"></span> <?= __("Quick Links","bluerabbit"); ?>
 		</button>
@@ -578,9 +627,12 @@ $image_types = array(
 		<p class="br-form-hint"><?= __('This will show a special message every time the player reaches the specified level and will assign your chosen achievement (this will show as the rank for the player).','bluerabbit'); ?></p>
 
 		<?php
-			$achievements = $wpdb->get_results(
-				"SELECT * FROM {$wpdb->prefix}br_achievements WHERE adventure_id=$adv_parent_id AND achievement_status = 'publish' AND achievement_display='rank'"
-			);
+			$achievements = [];
+			if ($adv_parent_id) {
+				$achievements = $wpdb->get_results(
+					"SELECT * FROM {$wpdb->prefix}br_achievements WHERE adventure_id=$adv_parent_id AND achievement_status = 'publish' AND achievement_display='rank'"
+				);
+			}
 		?>
 		<?php if($achievements) { ?>
 			<table class="br-table" id="adventure-ranks">
@@ -666,20 +718,23 @@ $image_types = array(
 	<div class="br-scroll-section" id="enrolled-players">
 	<div class="br-panel">
 		<?php
-		$players = $wpdb->get_results("
-			SELECT a.*, b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_hexad, b.player_hexad_slug, users.user_login FROM {$wpdb->prefix}br_player_adventure a
-			JOIN {$wpdb->prefix}users users
-			on a.player_id = users.ID
-			LEFT JOIN {$wpdb->prefix}br_players b
-			on a.player_id = b.player_id
-			WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' LIMIT 5000
-		");
+		$players = [];
+		if ($adventure->adventure_id) {
+			$players = $wpdb->get_results("
+				SELECT a.*, b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_hexad, b.player_hexad_slug, users.user_login FROM {$wpdb->prefix}br_player_adventure a
+				JOIN {$wpdb->prefix}users users
+				on a.player_id = users.ID
+				LEFT JOIN {$wpdb->prefix}br_players b
+				on a.player_id = b.player_id
+				WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' LIMIT 5000
+			");
+		}
 		?>
 		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Enrolled Players","bluerabbit"); ?> <span class="br-badge"><?= count($players); ?></span></h3>
 
-		<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-			<input type="text" class="br-input" id="search-enrolled-players" placeholder="<?= __("Search players...","bluerabbit"); ?>" style="flex:1;min-width:200px">
-			<span style="font-size:13px;color:rgba(255,255,255,0.4)"><span id="enrolled-visible-count"><?= count($players); ?></span> / <?= count($players); ?> <?= __("players","bluerabbit"); ?></span>
+		<div class="br-adv-enrolled-toolbar">
+			<input type="text" class="br-input br-adv-enrolled-search" id="search-enrolled-players" placeholder="<?= __("Search players...","bluerabbit"); ?>">
+			<span class="br-adv-enrolled-count"><span id="enrolled-visible-count"><?= count($players); ?></span> / <?= count($players); ?> <?= __("players","bluerabbit"); ?></span>
 		</div>
 
 		<table class="br-table">
@@ -813,9 +868,9 @@ $image_types = array(
 					var h='', p=this.page;
 					if(p>1) h+='<button class="br-page-btn" onclick="EPG.goTo('+(p-1)+')">&laquo;</button>';
 					var s=Math.max(1,p-3), e=Math.min(pages,p+3);
-					if(s>1){ h+='<button class="br-page-btn" onclick="EPG.goTo(1)">1</button>'; if(s>2) h+='<span style="color:rgba(255,255,255,0.3)">&hellip;</span>'; }
+					if(s>1){ h+='<button class="br-page-btn" onclick="EPG.goTo(1)">1</button>'; if(s>2) h+='<span class="br-pagination-ellipsis">&hellip;</span>'; }
 					for(var i=s;i<=e;i++) h+='<button class="br-page-btn'+(i===p?' active':'')+'" onclick="EPG.goTo('+i+')">'+i+'</button>';
-					if(e<pages){ if(e<pages-1) h+='<span style="color:rgba(255,255,255,0.3)">&hellip;</span>'; h+='<button class="br-page-btn" onclick="EPG.goTo('+pages+')">'+pages+'</button>'; }
+					if(e<pages){ if(e<pages-1) h+='<span class="br-pagination-ellipsis">&hellip;</span>'; h+='<button class="br-page-btn" onclick="EPG.goTo('+pages+')">'+pages+'</button>'; }
 					if(p<pages) h+='<button class="br-page-btn" onclick="EPG.goTo('+(p+1)+')">&raquo;</button>';
 					$('#enrolled-pagination').html(h);
 				},
@@ -906,7 +961,7 @@ $image_types = array(
 	<div class="br-panel">
 		<h3 class="br-panel-title">
 			<span class="icon icon-teamwork"></span> <?= __("Features","bluerabbit"); ?>
-			<span class="br-actions" style="margin-left:auto;display:inline-flex;gap:6px">
+			<span class="br-actions br-adv-features-actions">
 				<button class="br-btn ghost" onClick="allToggleButtonsOn('#features');"><?= __("All On","bluerabbit"); ?></button>
 				<button class="br-btn red" onClick="allToggleButtonsOff('#features');"><?= __("All Off","bluerabbit"); ?></button>
 			</span>
@@ -921,10 +976,21 @@ $image_types = array(
 					</tr>
 				</thead>
 				<tbody>
-					<?php $all_features = array_merge(is_array($features) ? $features : array(), $adv_config); ?>
+					<?php
+					$all_features = $adv_config;
+					if (is_array($features)) {
+						foreach ($features as $fk => $fv) {
+							if (isset($all_features[$fk])) {
+								$all_features[$fk] = array_merge($all_features[$fk], $fv);
+							} else {
+								$all_features[$fk] = $fv;
+							}
+						}
+					}
+					?>
 					<?php foreach($all_features as $sKey=>$s){ ?>
 						<?php
-						if($my_features && isset($my_features[$sKey]) && isset($my_features[$sKey][$f_role]) && !$my_features[$sKey][$f_role]){
+						if ($my_features && isset($my_features[$sKey][$f_role]) && !$my_features[$sKey][$f_role]) {
 							continue;
 						}
 						?>
@@ -1014,22 +1080,62 @@ $image_types = array(
 	</div>
 
 	<!-- ═══════════════════════════════════════════════════════ -->
+	<!-- A.I. SETTINGS                                          -->
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<?php if ($br_ai_allowed) { ?>
+	<div class="br-scroll-section" id="ai-settings">
+	<div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-data"></span> <?= __("A.I. Content Validation","bluerabbit"); ?></h3>
+		<span class="br-form-hint"><?= __("Add a Claude API key to enable A.I. validation on Open Text steps. The key is stored per-adventure and used server-side only.","bluerabbit"); ?></span>
+
+		<?php $ai_key = $adventure->adventure_ai_api_key ?? ''; ?>
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Claude API Key","bluerabbit"); ?></label>
+			<div class="br-form-grid br-form-grid-2">
+				<input type="password" class="br-input" id="the_adventure_ai_api_key" value="<?= esc_attr($ai_key); ?>" placeholder="sk-ant-...">
+				<div>
+					<button class="br-btn br-btn-green" onClick="brSaveAiKey();"><?= __("Save Key","bluerabbit"); ?></button>
+					<?php if ($ai_key) { ?>
+					<button class="br-btn red" onClick="brRemoveAiKey();"><?= __("Remove Key","bluerabbit"); ?></button>
+					<?php } ?>
+				</div>
+			</div>
+		</div>
+
+		<details class="br-ai-help">
+			<summary class="br-form-label"><?= __("How to get a Claude API Key", "bluerabbit"); ?></summary>
+			<div class="br-ai-help-content">
+				<ol>
+					<li><?= __('Go to', 'bluerabbit'); ?> <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a></li>
+					<li><?= __('Create an account or sign in.', 'bluerabbit'); ?></li>
+					<li><?= __('Navigate to', 'bluerabbit'); ?> <strong>Settings &rarr; API Keys</strong></li>
+					<li><?= __('Click "Create Key", give it a name, and copy the key.', 'bluerabbit'); ?></li>
+					<li><?= __('Paste the key above. It starts with', 'bluerabbit'); ?> <code>sk-ant-</code></li>
+				</ol>
+				<p class="br-muted"><?= __('The key is used server-side to validate player text responses with Claude Haiku. Typical cost: less than $0.01 per validation.', 'bluerabbit'); ?></p>
+			</div>
+		</details>
+	</div>
+	</div>
+	<?php } ?>
+
+	<!-- ═══════════════════════════════════════════════════════ -->
 	<!-- QUICK LINKS                                            -->
 	<!-- ═══════════════════════════════════════════════════════ -->
 	<div class="br-scroll-section" id="quick-links">
 	<div class="br-panel">
 		<h3 class="br-panel-title"><span class="icon icon-link"></span> <?= __("Quick Links","bluerabbit"); ?></h3>
-		<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("Configure the shortcut buttons that appear in the taskbar. Hidden links won't show for players.","bluerabbit"); ?></span>
+		<span class="br-form-hint br-ql-hint"><?= __("Configure the shortcut buttons that appear in the taskbar. Hidden links won't show for players.","bluerabbit"); ?></span>
 
 		<!-- Built-in links -->
-		<div style="display:flex;flex-direction:column;gap:4px">
+		<div class="br-ql-list">
 
 			<!-- Journey -->
-			<div class="br-step-row" style="border-left:3px solid #1cc2eb;cursor:default" id="ql_journey">
-				<span class="icon icon-journey" style="font-size:20px;color:#1cc2eb;flex-shrink:0;width:28px;text-align:center"></span>
-				<div style="flex:1;min-width:0">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Journey","bluerabbit"); ?></span>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Link to the adventure map/list","bluerabbit"); ?></span>
+			<div class="br-step-row br-ql-row" style="--ql-color:#1cc2eb" id="ql_journey">
+				<span class="icon icon-journey br-ql-icon" style="--ql-color:#1cc2eb"></span>
+				<div class="br-ql-info">
+					<span class="br-ql-title"><?= __("Journey","bluerabbit"); ?></span>
+					<span class="br-ql-desc"><?= __("Link to the adventure map/list","bluerabbit"); ?></span>
 				</div>
 				<div class="setting">
 					<button class="toggle-button <?= (!isset($adv_settings['ql_journey']['value']) || $adv_settings['ql_journey']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_journey');">&nbsp;</button>
@@ -1042,11 +1148,11 @@ $image_types = array(
 
 			<!-- Magic Code -->
 			<?php if($use_achievements){ ?>
-			<div class="br-step-row" style="border-left:3px solid #9f40e2;cursor:default" id="ql_magic_code">
-				<span class="icon icon-qr" style="font-size:20px;color:#9f40e2;flex-shrink:0;width:28px;text-align:center"></span>
-				<div style="flex:1;min-width:0">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Magic Code","bluerabbit"); ?></span>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Opens the magic code input form","bluerabbit"); ?></span>
+			<div class="br-step-row br-ql-row" style="--ql-color:#9f40e2" id="ql_magic_code">
+				<span class="icon icon-qr br-ql-icon" style="--ql-color:#9f40e2"></span>
+				<div class="br-ql-info">
+					<span class="br-ql-title"><?= __("Magic Code","bluerabbit"); ?></span>
+					<span class="br-ql-desc"><?= __("Opens the magic code input form","bluerabbit"); ?></span>
 				</div>
 				<div class="setting">
 					<button class="toggle-button <?= (isset($adv_settings['ql_magic_code']['value']) && $adv_settings['ql_magic_code']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_magic_code');">&nbsp;</button>
@@ -1060,11 +1166,11 @@ $image_types = array(
 
 			<!-- Item Shop -->
 			<?php if($use_items){ ?>
-			<div class="br-step-row" style="border-left:3px solid #f7cb15;cursor:default" id="ql_item_shop">
-				<span class="icon icon-shop" style="font-size:20px;color:#f7cb15;flex-shrink:0;width:28px;text-align:center"></span>
-				<div style="flex:1;min-width:0">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Item Shop","bluerabbit"); ?></span>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Link to the item shop","bluerabbit"); ?></span>
+			<div class="br-step-row br-ql-row" style="--ql-color:#f7cb15" id="ql_item_shop">
+				<span class="icon icon-shop br-ql-icon" style="--ql-color:#f7cb15"></span>
+				<div class="br-ql-info">
+					<span class="br-ql-title"><?= __("Item Shop","bluerabbit"); ?></span>
+					<span class="br-ql-desc"><?= __("Link to the item shop","bluerabbit"); ?></span>
 				</div>
 				<div class="setting">
 					<button class="toggle-button <?= (isset($adv_settings['ql_item_shop']['value']) && $adv_settings['ql_item_shop']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_item_shop');">&nbsp;</button>
@@ -1077,11 +1183,11 @@ $image_types = array(
 			<?php } ?>
 
 			<!-- Feedback -->
-			<div class="br-step-row" style="border-left:3px solid #24da98;cursor:default" id="ql_feedback">
-				<span class="icon icon-comment" style="font-size:20px;color:#24da98;flex-shrink:0;width:28px;text-align:center"></span>
-				<div style="flex:1;min-width:0">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Feedback","bluerabbit"); ?></span>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Contact admin form","bluerabbit"); ?></span>
+			<div class="br-step-row br-ql-row" style="--ql-color:#24da98" id="ql_feedback">
+				<span class="icon icon-comment br-ql-icon" style="--ql-color:#24da98"></span>
+				<div class="br-ql-info">
+					<span class="br-ql-title"><?= __("Feedback","bluerabbit"); ?></span>
+					<span class="br-ql-desc"><?= __("Contact admin form","bluerabbit"); ?></span>
 				</div>
 				<div class="setting">
 					<button class="toggle-button <?= (!isset($adv_settings['ql_feedback']['value']) || $adv_settings['ql_feedback']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_feedback');">&nbsp;</button>
@@ -1093,11 +1199,11 @@ $image_types = array(
 			</div>
 
 			<!-- Cooper Support -->
-			<div class="br-step-row" style="border-left:3px solid #00bcd4;cursor:default" id="ql_cooper">
-				<span class="icon icon-comment" style="font-size:20px;color:#00bcd4;flex-shrink:0;width:28px;text-align:center"></span>
-				<div style="flex:1;min-width:0">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Cooper Support","bluerabbit"); ?></span>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("AI support chatbot","bluerabbit"); ?></span>
+			<div class="br-step-row br-ql-row" style="--ql-color:#00bcd4" id="ql_cooper">
+				<span class="icon icon-comment br-ql-icon" style="--ql-color:#00bcd4"></span>
+				<div class="br-ql-info">
+					<span class="br-ql-title"><?= __("Cooper Support","bluerabbit"); ?></span>
+					<span class="br-ql-desc"><?= __("AI support chatbot","bluerabbit"); ?></span>
 				</div>
 				<div class="setting">
 					<button class="toggle-button <?= (!isset($adv_settings['ql_cooper']['value']) || $adv_settings['ql_cooper']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_cooper');">&nbsp;</button>
@@ -1109,14 +1215,14 @@ $image_types = array(
 			</div>
 
 			<!-- Cooper Slug -->
-			<div class="br-step-row" style="border-left:3px solid rgba(0,188,212,0.3);cursor:default" id="ql_cooper_slug">
-				<span style="font-size:20px;color:rgba(0,188,212,0.4);flex-shrink:0;width:28px;text-align:center">&nbsp;</span>
-				<div style="flex:1;min-width:0">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block"><?= __("Cooper Slug","bluerabbit"); ?></span>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= __("Custom Cooper client slug for this adventure","bluerabbit"); ?></span>
+			<div class="br-step-row br-ql-row" style="--ql-color:rgba(0,188,212,0.3)" id="ql_cooper_slug">
+				<span class="br-ql-icon" style="--ql-color:rgba(0,188,212,0.4)">&nbsp;</span>
+				<div class="br-ql-info">
+					<span class="br-ql-title"><?= __("Cooper Slug","bluerabbit"); ?></span>
+					<span class="br-ql-desc"><?= __("Custom Cooper client slug for this adventure","bluerabbit"); ?></span>
 				</div>
-				<div class="setting" style="min-width:180px">
-					<input class="br-input setting-value" type="text" placeholder="e.g. my-company" style="width:100%" value="<?= isset($adv_settings['ql_cooper_slug']['value']) ? $adv_settings['ql_cooper_slug']['value'] : ""; ?>">
+				<div class="setting br-ql-setting-wide">
+					<input class="br-input setting-value br-w-full" type="text" placeholder="e.g. my-company" value="<?= isset($adv_settings['ql_cooper_slug']['value']) ? $adv_settings['ql_cooper_slug']['value'] : ""; ?>">
 					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_cooper_slug']['id']) ? $adv_settings['ql_cooper_slug']['id'] : ""; ?>">
 					<input class="setting-name" type="hidden" value="ql_cooper_slug">
 					<input class="setting-label" type="hidden" value="<?= __("Cooper Slug","bluerabbit"); ?>">
@@ -1126,15 +1232,15 @@ $image_types = array(
 		</div>
 
 		<!-- Custom Links -->
-		<h3 class="br-panel-title" style="margin-top:24px"><span class="icon icon-link"></span> <?= __("Custom Links","bluerabbit"); ?></h3>
-		<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("Up to 3 custom buttons. They open in a new tab.","bluerabbit"); ?></span>
+		<h3 class="br-panel-title br-ql-custom-links-title"><span class="icon icon-link"></span> <?= __("Custom Links","bluerabbit"); ?></h3>
+		<span class="br-form-hint br-ql-hint"><?= __("Up to 3 custom buttons. They open in a new tab.","bluerabbit"); ?></span>
 
 		<?php for($ql_i = 1; $ql_i <= 3; $ql_i++){ ?>
-		<div style="background:rgba(4,22,30,0.4);border:1px solid rgba(28,194,235,0.1);border-radius:8px;padding:16px;margin-bottom:10px" id="ql-custom-<?= $ql_i; ?>-group">
+		<div class="br-ql-custom-card" id="ql-custom-<?= $ql_i; ?>-group">
 
-			<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-				<span style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:rgba(28,194,235,0.1);color:#1cc2eb;font-family:'proxima-nova-extra-condensed',sans-serif;font-size:16px;font-weight:900;flex-shrink:0"><?= $ql_i; ?></span>
-				<span style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.85);flex:1"><?= sprintf(__("Custom Link %d","bluerabbit"), $ql_i); ?></span>
+			<div class="br-ql-custom-header">
+				<span class="br-ql-custom-number"><?= $ql_i; ?></span>
+				<span class="br-ql-custom-title"><?= sprintf(__("Custom Link %d","bluerabbit"), $ql_i); ?></span>
 				<div id="ql_custom_<?= $ql_i; ?>_show" class="setting">
 					<button class="toggle-button <?= (isset($adv_settings['ql_custom_'.$ql_i.'_show']['value']) && $adv_settings['ql_custom_'.$ql_i.'_show']['value'] != 0) ? 'active' : ''; ?>" onClick="toggleSetting('#ql_custom_<?= $ql_i; ?>_show');">&nbsp;</button>
 					<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_show']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_show']['value'] : "0"; ?>">
@@ -1144,7 +1250,7 @@ $image_types = array(
 				</div>
 			</div>
 
-			<div class="br-form-grid" style="grid-template-columns:1fr 1fr">
+			<div class="br-form-grid br-ql-grid-2">
 				<div class="br-form-group" id="ql_custom_<?= $ql_i; ?>_label">
 					<label class="br-form-label"><?= __("Label","bluerabbit"); ?></label>
 					<div class="setting">
@@ -1165,14 +1271,14 @@ $image_types = array(
 				</div>
 			</div>
 
-			<div class="br-form-grid" style="grid-template-columns:1fr 1fr">
+			<div class="br-form-grid br-ql-grid-2">
 				<div class="br-form-group" id="ql_custom_<?= $ql_i; ?>_icon">
 					<label class="br-form-label"><?= __("Icon","bluerabbit"); ?></label>
-					<div class="setting" style="display:flex;align-items:center;gap:8px">
-						<button class="br-btn" style="padding:6px 14px;font-size:12px" onClick="showWPUpload('ql_custom_<?= $ql_i; ?>_icon_val');">
+					<div class="setting br-ql-icon-setting">
+						<button class="br-btn br-ql-icon-btn" onClick="showWPUpload('ql_custom_<?= $ql_i; ?>_icon_val');">
 							<span class="icon icon-image"></span> <?= __("Choose","bluerabbit"); ?>
 						</button>
-						<img id="ql_custom_<?= $ql_i; ?>_icon_preview" src="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] : ''; ?>" style="height:30px;border-radius:4px;<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) && $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] ? '' : 'display:none;'; ?>">
+						<img id="ql_custom_<?= $ql_i; ?>_icon_preview" src="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] : ''; ?>" class="br-ql-icon-preview" style="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) && $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] ? '' : 'display:none;'; ?>">
 						<input class="form-ui setting-value" type="hidden" id="ql_custom_<?= $ql_i; ?>_icon_val" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['value']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['value'] : ""; ?>">
 						<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_custom_'.$ql_i.'_icon']['id']) ? $adv_settings['ql_custom_'.$ql_i.'_icon']['id'] : ""; ?>">
 						<input class="setting-name" type="hidden" value="ql_custom_<?= $ql_i; ?>_icon">
@@ -1251,7 +1357,7 @@ $image_types = array(
 	<!-- Bottom Bar -->
 	<div class="br-form-bottom-bar">
 		<div class="br-actions">
-			<select class="br-input" id="the_adventure_status" style="width:auto">
+			<select class="br-input br-select-auto" id="the_adventure_status">
 				<option value="publish" <?php if($adventure->adventure_status == 'publish' || !$adventure){echo 'selected';} ?> ><?= __('Publish','bluerabbit'); ?></option>
 				<option value="draft"  <?php if($adventure->adventure_status == 'draft'){echo 'selected';} ?>><?= __('Draft','bluerabbit'); ?></option>
 				<option value="trash"  <?php if($adventure->adventure_status == 'trash'){echo 'selected';} ?>><?= __('Trash','bluerabbit'); ?></option>

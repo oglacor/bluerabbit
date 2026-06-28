@@ -339,6 +339,7 @@ $attempt_answers = $wpdb->get_results("SELECT a.*, b.answer_value AS c_answer_va
 </div>
 
 <input type="hidden" id="reload" value="true">
+<input type="hidden" id="trd-player-id" value="<?= $the_player_id; ?>">
 <input type="hidden" id="trash-nonce" value="<?= wp_create_nonce('trash_nonce'); ?>">
 <input type="hidden" id="delete-nonce" value="<?= wp_create_nonce('delete_nonce'); ?>">
 <input type="hidden" id="publish-nonce" value="<?= wp_create_nonce('publish_nonce'); ?>">

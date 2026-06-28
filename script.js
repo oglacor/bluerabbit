@@ -3237,7 +3237,11 @@ function brCollectStepSettings(sid) {
             step_correct = JSON.stringify(answers);
             break;
         case 'puzzle':
-            settings = { image: $('#step-puzzle-image-' + sid).val(), pieces: parseInt($('#step-puzzle-pieces-' + sid).val()), difficulty: $('#step-puzzle-diff-' + sid).val() };
+            settings = { image: $('#step-puzzle-image-' + sid).val(), cols: parseInt($('#step-puzzle-cols-' + sid).val()) || 3, rows: parseInt($('#step-puzzle-rows-' + sid).val()) || 3 };
+            break;
+        case 'scorm':
+            var scormUrl = $('#scorm-launch-url-' + sid).val();
+            if (scormUrl) settings = { scorm_launch_url: scormUrl };
             break;
         case 'backpack_item':
             var itemId = $('#step-bi-item-' + sid).val();
@@ -3257,7 +3261,7 @@ function brCollectStepSettings(sid) {
             settings = { question: $('#step-sr-question-' + sid).val(), min: parseInt($('#step-sr-min-' + sid).val()), max: parseInt($('#step-sr-max-' + sid).val()), labels: { min: $('#step-sr-lmin-' + sid).val(), max: $('#step-sr-lmax-' + sid).val() } };
             break;
         case 'open_text':
-            settings = { prompt: '', min_words: parseInt($('#step-ot-minwords-' + sid).val()) || 0, use_wp_editor: !!parseInt($('#step-ot-editor-' + sid).val()), llm_validate: false, llm_prompt: null };
+            settings = { min_words: parseInt($('#step-ot-minwords-' + sid).val()) || 0, use_wp_editor: !!parseInt($('#step-ot-editor-' + sid).val()), ai_validate: !!parseInt($('#step-ot-ai-' + sid).val()) };
             break;
         case 'upload_image': case 'upload_video':
             settings = { prompt: $('#step-upload-prompt-' + sid).val(), max_size_mb: parseInt($('#step-upload-maxsize-' + sid).val()) || 5 };
@@ -4350,6 +4354,35 @@ function updateAdventure() {
     });
 }
 
+function brSaveAiKey() {
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_save_ai_api_key',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            api_key: $('#the_adventure_ai_api_key').val()
+        },
+        success: function(raw) { displayAjaxResponse(raw); }
+    });
+}
+
+function brRemoveAiKey() {
+    $('#the_adventure_ai_api_key').val('');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_save_ai_api_key',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            api_key: ''
+        },
+        success: function(raw) { displayAjaxResponse(raw); }
+    });
+}
+
 ////////////////////////////////////////// Preview Template  ////////////////////////////////////////////
 
 function previewTemplate(adv_id = null) {
@@ -4486,7 +4519,9 @@ function saveSysConfig() {
         }),
         method: "POST",
         success: function (data_received) {
-            displayAjaxResponse(data_received);
+            saveAllPlanFeatures(function() {
+                displayAjaxResponse(data_received);
+            });
         }
     });
 }
@@ -4552,72 +4587,61 @@ function deletePlanConfirm(plan_id, plan_label) {
     }
 }
 
-function editPlanFeatures(plan_id, plan_label) {
-    $('#plans-list-view').hide();
-    $('#plan-feature-editor').show();
-    $('#editing-plan-id').val(plan_id);
-    $('#editing-plan-label').text(plan_label);
+function brPopulatePlanAccordions() {
+    if (typeof brSysFeatures === 'undefined' || typeof brPlans === 'undefined') return;
 
-    if (typeof brSysFeatures === 'undefined') return;
+    $('.plan-features-body').each(function() {
+        var $tbody = $(this);
+        var planId = $tbody.data('plan-id');
+        var planKey = '';
+        brPlans.forEach(function(p) { if (p.plan_id == planId) planKey = p.plan_key; });
 
-    var plan_key = '';
-    if (typeof brPlans !== 'undefined') {
-        brPlans.forEach(function(p) {
-            if (p.plan_id == plan_id) plan_key = p.plan_key;
-        });
-    }
-
-    var tbody = $('#plan-features-table tbody');
-    tbody.empty();
-    for (var fKey in brSysFeatures) {
-        var f = brSysFeatures[fKey];
-        var val = (plan_key && f[plan_key] !== undefined) ? f[plan_key] : '0';
-        var row = '<tr class="plan-feature-row">';
-        row += '<td class="font _16 w600 text-left">' + (f.label || fKey) + '</td>';
-        row += '<td class="text-center">';
-        row += '<input type="hidden" class="pf-feature-id" value="' + f.id + '">';
-        if (f.type === 'number') {
-            row += '<input type="number" class="form-ui pf-value w-100" value="' + val + '">';
-        } else {
-            row += '<input type="checkbox" class="pf-value" ' + (parseInt(val) ? 'checked' : '') + '>';
+        $tbody.empty();
+        for (var fKey in brSysFeatures) {
+            var f = brSysFeatures[fKey];
+            var val = (planKey && f[planKey] !== undefined) ? f[planKey] : '0';
+            var row = '<tr class="plan-feature-row">';
+            row += '<td>' + (f.label || fKey) + '</td>';
+            row += '<td class="text-center">';
+            row += '<input type="hidden" class="pf-feature-id" value="' + f.id + '">';
+            if (f.type === 'number') {
+                row += '<input type="number" class="form-ui pf-value" value="' + val + '" style="width:80px">';
+            } else {
+                row += '<input type="checkbox" class="pf-value" ' + (parseInt(val) ? 'checked' : '') + '>';
+            }
+            row += '</td></tr>';
+            $tbody.append(row);
         }
-        row += '</td></tr>';
-        tbody.append(row);
-    }
+    });
 }
 
-function backToPlans() {
-    $('#plan-feature-editor').hide();
-    $('#plans-list-view').show();
+function saveAllPlanFeatures(onDone) {
+    if (typeof brPlans === 'undefined') { if (onDone) onDone(); return; }
+    var pending = 0;
+    $('.plan-features-body').each(function() {
+        var planId = $(this).data('plan-id');
+        var features_data = [];
+        $(this).find('.plan-feature-row').each(function() {
+            var fid = $(this).find('.pf-feature-id').val();
+            var el = $(this).find('.pf-value');
+            var val = el.is(':checkbox') ? (el.is(':checked') ? 1 : 0) : (el.val() || 0);
+            features_data.push({ feature_id: fid, feature_value: val });
+        });
+        if (!features_data.length) return;
+        pending++;
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: { action: 'savePlanFeatures', plan_id: planId, features_data: features_data },
+            method: 'POST',
+            success: function() { pending--; if (pending <= 0 && onDone) onDone(); }
+        });
+    });
+    if (pending === 0 && onDone) onDone();
 }
 
 function savePlanFeaturesAction() {
     showLoader('small');
-    var plan_id = $('#editing-plan-id').val();
-    var features_data = [];
-    $('.plan-feature-row').each(function () {
-        var feature_id = $('.pf-feature-id', this).val();
-        var el = $('.pf-value', this);
-        var val = 0;
-        if (el.is(':checkbox')) {
-            val = el.is(':checked') ? 1 : 0;
-        } else {
-            val = el.val() || 0;
-        }
-        features_data.push({ feature_id: feature_id, feature_value: val });
-    });
-    jQuery.ajax({
-        url: runAJAX.ajaxurl,
-        data: {
-            action: 'savePlanFeatures',
-            plan_id: plan_id,
-            features_data: features_data
-        },
-        method: "POST",
-        success: function (data_received) {
-            displayAjaxResponse(data_received);
-        }
-    });
+    saveAllPlanFeatures(function() { displayAjaxResponse('{"success":true,"message":"Plan features saved","just_notify":true}'); });
 }
 
 var planSearchTimer = null;
@@ -6303,6 +6327,7 @@ function br_trash() {
     let id = $('#br-' + trash_action + '-id').val();
     let type = $("#trd-type").val();
     let reload = $("#reload").val();
+    let player_id = $("#trd-player-id").val();
     jQuery.ajax({
         url: runAJAX.ajaxurl,
         data: ({
@@ -6311,7 +6336,8 @@ function br_trash() {
             nonce: nonce,
             adventure_id: adventure_id,
             type: type,
-            reload: reload
+            reload: reload,
+            player_id: player_id || ''
         }),
         method: "POST",
         success: function (data_received) {
@@ -8290,20 +8316,31 @@ function brStepAjax(stepId, questId, adventureId, response, onSuccess) {
     });
 }
 
-function brShowStepNext(stepId) {
-    var $step = $('#step-' + stepId).closest('.step');
+function brShowStepNext(contextId) {
+    var $step = $('#' + contextId).closest('.step');
+    if (!$step.length) $step = $('[id$="-' + contextId + '"]').closest('.step').first();
+    if (!$step.length) return;
     var idx = $('.step').index($step);
     var $nextStep = $('.step').eq(idx + 1);
+    // Hide the submit button inside the dialogue box
+    $step.find('.steps-navigation.action-buttons').hide();
+    // Create nav as direct child of .step-content-container (same level as dialogue-box)
+    var $container = $step.find('.step-content-container');
+    var $nav = $container.children('.steps-navigation.br-step-nav-injected');
+    if (!$nav.length) {
+        $nav = $('<div class="steps-navigation br-step-nav-injected"></div>');
+        $container.append($nav);
+    }
     if ($nextStep.length) {
         var nextOrder = $nextStep.attr('id').replace('step-', '');
-        $step.find('.steps-navigation.action-buttons').html(
+        $nav.html(
             '<a class="step-nav-button step-next" href="#step-' + nextOrder + '">' +
             '<svg id="button-step-next" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 172 172"><rect class="outline" x="1" y="1" width="170" height="170"/><rect class="back-color" x="15.69" y="15.69" width="140.63" height="140.63"/><polygon class="main-arrow" points="129.27 86.02 70.31 51.98 70.31 71.73 44.66 71.73 44.66 100.31 70.31 100.31 70.31 120.06 129.27 86.02"/></svg></a>'
-        );
+        ).show();
     } else {
-        $step.find('.steps-navigation.action-buttons').html(
+        $nav.html(
             '<button class="action-button success" onClick="submitPlayerWork();">Submit</button>'
-        );
+        ).show();
     }
 }
 
@@ -8325,7 +8362,8 @@ function brSubmitMcStep(stepId, questId, advId) {
             brShowFeedback('#mc-feedback-' + stepId, true);
             $('#mc-submit-' + stepId).hide();
             $('#mc-options-' + stepId + ' .mc-input').prop('disabled', true);
-            brShowStepNext(data.result.step_id);
+            $('#mc-options-' + stepId + ' .mc-input:checked').closest('.br-step-option').addClass('br-option-correct');
+            brShowStepNext('mc-feedback-' + stepId);
         } else {
             brShowFeedback('#mc-feedback-' + stepId, false, data.result ? data.result.mistake_message : null);
         }
@@ -8340,7 +8378,7 @@ function brSubmitKpStep(stepId, questId, advId) {
             brShowFeedback('#kp-feedback-' + stepId, true);
             $('#kp-submit-' + stepId).hide();
             $('#kp-answer-' + stepId).prop('disabled', true);
-            brShowStepNext(data.result.step_id);
+            brShowStepNext('kp-feedback-' + stepId);
         } else {
             brShowFeedback('#kp-feedback-' + stepId, false, data.result ? data.result.mistake_message : null);
             $('#kp-answer-' + stepId).val('').focus();
@@ -8355,7 +8393,8 @@ function brSubmitCryptexStep(stepId, questId, advId) {
     brStepAjax(stepId, questId, advId, { answer: answer }, function(data) {
         if (data.result && data.result.correct === 1) {
             brShowFeedback('#cryptex-feedback-' + stepId, true, 'Unlocked!');
-            brShowStepNext(data.result.step_id);
+            $('#cryptex-' + stepId + ' .cryptex-wheel').prop('disabled', true);
+            brShowStepNext('cryptex-feedback-' + stepId);
         } else {
             brShowFeedback('#cryptex-feedback-' + stepId, false, data.result ? data.result.mistake_message : null);
             $('#cryptex-' + stepId + ' .cryptex-wheel').val('').first().focus();
@@ -8363,9 +8402,12 @@ function brSubmitCryptexStep(stepId, questId, advId) {
     });
 }
 
-function brSubmitGenericStep(stepId, questId, advId, extraData) {
+function brSubmitGenericStep(stepId, questId, advId, extraData, contextId) {
     brStepAjax(stepId, questId, advId, extraData || {}, function(data) {
-        if (data.success) { location.reload(); }
+        if (data.success) {
+            if (contextId) { brShowStepNext(contextId); }
+            else { location.reload(); }
+        }
     });
 }
 
@@ -8374,7 +8416,12 @@ function brSubmitSurveyChoice(stepId, questId, advId) {
     $('#sc-options-' + stepId + ' .sc-input:checked').each(function() { selected.push($(this).val()); });
     if (!selected.length) return;
     brStepAjax(stepId, questId, advId, { selected: selected }, function(data) {
-        if (data.success) { location.reload(); }
+        if (data.success) {
+            $('#sc-submit-' + stepId).hide();
+            $('#sc-options-' + stepId + ' .sc-input').prop('disabled', true);
+            $('#sc-options-' + stepId + ' .sc-input:checked').closest('.br-step-option').addClass('br-option-correct');
+            brShowStepNext('sc-options-' + stepId);
+        }
     });
 }
 
@@ -8389,10 +8436,10 @@ function brSubmitPoll(stepId, questId, advId) {
 
 function brSelectRating(stepId, value) {
     $('#sr-value-' + stepId).val(value);
-    $('#sr-buttons-' + stepId + ' .sr-rating-btn').css('background', 'rgba(255,255,255,0.06)');
+    $('#sr-buttons-' + stepId + ' .sr-rating-btn').removeClass('br-rating-active');
     $('#sr-buttons-' + stepId + ' .sr-rating-btn').each(function() {
         if (parseInt($(this).data('value')) <= value) {
-            $(this).css('background', 'rgba(28,194,235,0.3)');
+            $(this).addClass('br-rating-active');
         }
     });
 }
@@ -8445,3 +8492,97 @@ function brChooseBranch(advId, groupId, achievementId, stepId, questId) {
         }
     });
 }
+
+// ── Open Text: word count + AI validation ────────────────────────
+function brCountWords(html) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    div.querySelectorAll('img, a, iframe, video, audio').forEach(function(el) { el.remove(); });
+    var text = (div.textContent || div.innerText || '').trim();
+    if (!text) return 0;
+    return text.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+}
+
+function brGetOpenTextContent() {
+    if (typeof tinyMCE === 'object' && typeof tinyMCE.triggerSave === 'function') {
+        tinyMCE.triggerSave();
+    }
+    return $('#the_pp_content').val() || '';
+}
+
+function brCheckOpenText(stepId) {
+    var $container = $('[data-step-id="' + stepId + '"].open-field');
+    var minWords = parseInt($container.attr('data-min-words')) || 0;
+    var aiValidate = $container.attr('data-ai-validate') === '1';
+    var $feedback = $('#ot-feedback-' + stepId);
+    var content = brGetOpenTextContent();
+    var wordCount = brCountWords(content);
+
+    $feedback.removeClass('br-step-feedback-error br-step-feedback-success').html('');
+
+    if (minWords > 0 && wordCount < minWords) {
+        $feedback.addClass('br-step-feedback-error').html(
+            '<span class="icon icon-cancel"></span> ' +
+            brI18n.ot_min_words.replace('%d', minWords).replace('%c', wordCount)
+        );
+        return;
+    }
+
+    if (aiValidate) {
+        $feedback.html('<span class="icon icon-data"></span> ' + brI18n.ot_ai_checking);
+        showLoader('small');
+        $.ajax({
+            url: runAJAX.ajaxurl,
+            method: 'POST',
+            data: {
+                action: 'br_ai_validate_text',
+                step_id: stepId,
+                quest_id: $container.attr('data-quest-id'),
+                adventure_id: $container.attr('data-adventure-id'),
+                content: content
+            },
+            success: function(raw) {
+                var data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+                if (data.valid) {
+                    brOpenTextPassed(stepId, content);
+                } else {
+                    $feedback.addClass('br-step-feedback-error').html('<span class="icon icon-cancel"></span> ' + (data.message || brI18n.ot_ai_fail));
+                }
+            },
+            error: function() {
+                brOpenTextPassed(stepId, content);
+            }
+        });
+        return;
+    }
+
+    brOpenTextPassed(stepId, content);
+}
+
+function brOpenTextPassed(stepId, content) {
+    var $feedback = $('#ot-feedback-' + stepId);
+    $feedback.removeClass('br-step-feedback-error').html('');
+
+    // Hide editor, show answer display
+    $('#ot-editor-wrap-' + stepId).hide();
+    $('#ot-answer-text-' + stepId).html(content);
+    $('#ot-answer-' + stepId).show();
+    $('#ot-success-' + stepId).show();
+
+    // Show next step navigation
+    brShowStepNext('ot-success-' + stepId);
+}
+
+function brEditOpenText(stepId) {
+    $('#ot-answer-' + stepId).hide();
+    $('#ot-success-' + stepId).hide();
+    // Hide the injected next nav
+    $('[data-step-id="' + stepId + '"]').find('.br-step-nav-injected').remove();
+    $('#ot-editor-wrap-' + stepId).show();
+}
+
+var brI18n = window.brI18n || {};
+brI18n.ot_min_words = brI18n.ot_min_words || 'You need at least %d words. You have %c.';
+brI18n.ot_ai_checking = brI18n.ot_ai_checking || 'Validating your content...';
+brI18n.ot_ai_pass = brI18n.ot_ai_pass || 'Content validated!';
+brI18n.ot_ai_fail = brI18n.ot_ai_fail || 'Your response doesn\'t seem to address the question. Please revise and try again.';

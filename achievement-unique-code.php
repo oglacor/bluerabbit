@@ -1,22 +1,22 @@
 <tr id="achievement-unique-code-<?= $c->code_id; ?>">
-	<td style="width:50px">
+	<td class="br-auc-copy-cell">
 		<input id="<?= "ach-code-$c->code_id"; ?>" type="hidden" value="<?= get_bloginfo('url') . "/magic-link/?c=$c->code_value&adv=$a->adventure_id"; ?>">
-		<button class="br-step-btn br-step-btn-green" style="width:36px;height:36px" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');" title="<?= __('Copy', 'bluerabbit'); ?>">
-			<span class="icon icon-qr" style="font-size:18px"></span>
+		<button class="br-step-btn br-step-btn-green br-auc-copy-btn" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');" title="<?= __('Copy', 'bluerabbit'); ?>">
+			<span class="icon icon-qr br-auc-copy-icon"></span>
 		</button>
 	</td>
-	<td style="position:relative">
-		<span style="font-size:15px;font-weight:600;letter-spacing:0.5px;color:rgba(255,255,255,0.85)"><?= $c->code_value; ?></span>
-		<span class="legend border rounded-max" id="legend-<?= $c->code_id; ?>" style="background:#24da98;color:#fff;position:absolute;top:-6px;right:10px;padding:3px 10px;border-radius:12px;font-size:11px;opacity:0;transition:opacity 0.3s">
+	<td class="br-auc-code-cell">
+		<span class="br-auc-code-value"><?= $c->code_value; ?></span>
+		<span class="legend border rounded-max br-auc-copied-legend" id="legend-<?= $c->code_id; ?>">
 			<?= __("Link Copied", "bluerabbit"); ?>
 		</span>
 	</td>
-	<td style="width:120px">
-		<div style="display:flex;gap:4px;justify-content:flex-end">
-			<button class="br-btn" style="padding:4px 10px;font-size:12px" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');">
+	<td class="br-auc-actions-cell">
+		<div class="br-auc-actions-row">
+			<button class="br-btn br-auc-action-copy" onClick="copyTextFrom('<?= "#ach-code-$c->code_id"; ?>','#legend-<?= $c->code_id; ?>');">
 				<span class="icon icon-duplicate"></span> <?= __("Copy", "bluerabbit"); ?>
 			</button>
-			<button class="br-step-btn br-step-btn-red" style="width:30px;height:30px" onClick="deleteAchievementCode(<?= $c->code_id; ?>);" title="<?= __('Delete', 'bluerabbit'); ?>">
+			<button class="br-step-btn br-step-btn-red br-auc-action-delete" onClick="deleteAchievementCode(<?= $c->code_id; ?>);" title="<?= __('Delete', 'bluerabbit'); ?>">
 				<span class="icon icon-trash"></span>
 			</button>
 		</div>

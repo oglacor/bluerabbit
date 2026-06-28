@@ -66,8 +66,8 @@ window.brStats = {
             <span class="br-stats-kpi-label"><?= __("Active 7d", "bluerabbit"); ?></span>
         </div>
         <div class="br-stats-kpi purple">
-            <span class="br-stats-kpi-value"><?= number_format($adv_summary['avg_xp']); ?> <small style="font-size:14px;opacity:0.5">/ <?= number_format($adv_summary['available_xp']); ?></small></span>
-            <span class="br-stats-kpi-label"><?= __("Avg", "bluerabbit"); ?> <?= $xp_label; ?> <span style="font-size:10px;opacity:0.5">(<?= __("available","bluerabbit"); ?>)</span></span>
+            <span class="br-stats-kpi-value"><?= number_format($adv_summary['avg_xp']); ?> <small class="br-stats-kpi-small">/ <?= number_format($adv_summary['available_xp']); ?></small></span>
+            <span class="br-stats-kpi-label"><?= __("Avg", "bluerabbit"); ?> <?= $xp_label; ?> <span class="br-stats-kpi-label-note">(<?= __("available","bluerabbit"); ?>)</span></span>
         </div>
         <div class="br-stats-kpi green">
             <span class="br-stats-kpi-value"><?= $adv_summary['completion_pct']; ?>%</span>
@@ -78,12 +78,12 @@ window.brStats = {
     <!-- Manager Charts -->
     <div class="br-stats-charts-row">
         <div class="br-stats-panel br-stats-half">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <h3 style="margin:0"><?= __("Milestone Funnel", "bluerabbit"); ?></h3>
-                <div id="br-funnel-nav" style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.4)">
-                    <button class="br-page-btn" onclick="brFunnelPage(-1)" style="min-width:24px;height:24px;font-size:11px">&laquo;</button>
+            <div class="br-stats-filter-row">
+                <h3 class="br-m0"><?= __("Milestone Funnel", "bluerabbit"); ?></h3>
+                <div id="br-funnel-nav" class="br-stats-funnel-nav">
+                    <button class="br-page-btn br-stats-funnel-btn" onclick="brFunnelPage(-1)">&laquo;</button>
                     <span id="br-funnel-page-label">1/1</span>
-                    <button class="br-page-btn" onclick="brFunnelPage(1)" style="min-width:24px;height:24px;font-size:11px">&raquo;</button>
+                    <button class="br-page-btn br-stats-funnel-btn" onclick="brFunnelPage(1)">&raquo;</button>
                 </div>
             </div>
             <div class="br-stats-chart-wrap">
@@ -99,16 +99,16 @@ window.brStats = {
     </div>
 
     <div class="br-stats-panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
-            <h3 style="margin:0"><?= __("Daily Active Users", "bluerabbit"); ?></h3>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-                <input type="date" class="br-input" id="br-activity-from" style="padding:4px 8px;font-size:12px;width:auto">
-                <span style="color:rgba(255,255,255,0.3);font-size:12px"><?= __("to","bluerabbit"); ?></span>
-                <input type="date" class="br-input" id="br-activity-to" style="padding:4px 8px;font-size:12px;width:auto">
-                <button class="br-btn" style="padding:4px 12px;font-size:12px" onclick="brReloadActivity()">
+        <div class="br-stats-filter-row">
+            <h3 class="br-m0"><?= __("Daily Active Users", "bluerabbit"); ?></h3>
+            <div class="br-stats-filter-controls">
+                <input type="date" class="br-input br-stats-date-input" id="br-activity-from">
+                <span class="br-stats-date-sep"><?= __("to","bluerabbit"); ?></span>
+                <input type="date" class="br-input br-stats-date-input" id="br-activity-to">
+                <button class="br-btn br-stats-btn-sm" onclick="brReloadActivity()">
                     <span class="icon icon-check"></span> <?= __("Apply","bluerabbit"); ?>
                 </button>
-                <button class="br-btn" style="padding:4px 10px;font-size:11px;opacity:0.6" onclick="brResetActivity()" title="<?= __('Reset to last 30 days','bluerabbit'); ?>">
+                <button class="br-btn br-stats-btn-reset" onclick="brResetActivity()" title="<?= __('Reset to last 30 days','bluerabbit'); ?>">
                     <span class="icon icon-rotate"></span>
                 </button>
             </div>
@@ -191,9 +191,9 @@ window.brStats = {
     </div>
     <!-- Engagement Breakdown (adventure-wide averages) -->
     <div class="br-stats-panel">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-            <h3 style="margin:0"><?= __("Engagement Breakdown", "bluerabbit"); ?></h3>
-            <span style="font-size:11px;color:rgba(255,255,255,0.35)">(<?= __("avg across all players","bluerabbit"); ?>)</span>
+        <div class="br-stats-breakdown-header">
+            <h3 class="br-m0"><?= __("Engagement Breakdown", "bluerabbit"); ?></h3>
+            <span class="br-stats-breakdown-note">(<?= __("avg across all players","bluerabbit"); ?>)</span>
         </div>
         <?php $ab = $adv_engagement['avg_breakdown'] ?? []; ?>
         <div class="br-stats-kpis br-stats-kpis-5">
@@ -232,7 +232,7 @@ window.brStats = {
                 <span class="br-stats-kpi-value" style="color:<?= $meta['color']; ?>"><?= $comp['score']; ?><small>/<?= $comp['max']; ?></small></span>
                 <span class="br-stats-kpi-label">
                     <?= $meta['label']; ?>
-                    <span class="br-stats-info-btn" title="<?= esc_attr($meta['info']); ?>" style="cursor:help;opacity:0.4;font-size:12px;margin-left:2px">&#9432;</span>
+                    <span class="br-stats-info-btn br-stats-info-icon" title="<?= esc_attr($meta['info']); ?>">&#9432;</span>
                 </span>
                 <?php if ($meta['detail']) { ?>
                 <span class="br-stats-kpi-detail"><?= $meta['detail']; ?></span>
@@ -243,22 +243,22 @@ window.brStats = {
     </div>
 
     <!-- Player Table -->
-    <div class="br-stats-section-title" style="margin-top:8px">
+    <div class="br-stats-section-title br-stats-section-gap">
         <h2><?= __("Players", "bluerabbit"); ?></h2>
     </div>
     <div class="br-stats-panel">
-        <div style="margin-bottom:12px">
-            <input type="text" class="br-input" id="br-stats-player-search" placeholder="<?= esc_attr__("Search players...","bluerabbit"); ?>" style="max-width:300px">
+        <div class="br-stats-search-wrap">
+            <input type="text" class="br-input br-max-w-300" id="br-stats-player-search" placeholder="<?= esc_attr__("Search players...","bluerabbit"); ?>">
         </div>
         <table class="table transparent-bg br-stats-table" id="br-stats-player-table">
             <thead>
                 <tr>
                     <td>#</td>
-                    <td class="br-sortable" data-sort-col="name" data-sort-type="string" style="cursor:pointer"><?= __("Player", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable" data-sort-col="xp" data-sort-type="number" style="cursor:pointer"><?= $xp_label; ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable" data-sort-col="bloo" data-sort-type="number" style="cursor:pointer"><?= $bloo_label; ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable" data-sort-col="completion" data-sort-type="number" style="cursor:pointer"><?= __("Completion", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable" data-sort-col="last_active" data-sort-type="number" style="cursor:pointer"><?= __("Last Active", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
+                    <td class="br-sortable br-stats-sortable" data-sort-col="name" data-sort-type="string"><?= __("Player", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="xp" data-sort-type="number"><?= $xp_label; ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="bloo" data-sort-type="number"><?= $bloo_label; ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="completion" data-sort-type="number"><?= __("Completion", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
+                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="last_active" data-sort-type="number"><?= __("Last Active", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
                 </tr>
             </thead>
             <tbody>

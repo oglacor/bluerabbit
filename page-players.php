@@ -147,7 +147,7 @@
 						</div>
 						<?php if(isset($isAdmin)){ ?>
 							<div class="cell player-refresh cursor-pointer w-80">
-								<span class="icon icon-rotate" style="opacity:0.3;"></span>
+								<span class="icon icon-rotate br-config-icon-hint"></span>
 							</div>
 						<?php } ?>
 						<div class="cell player-name cursor-pointer layer foreground w-250">

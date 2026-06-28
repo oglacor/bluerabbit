@@ -1,5 +1,4 @@
-$main-font: "proxima-nova", sans-serif;  
-$base-font: "proxima-nova", sans-serif;  
+$main-font: "proxima-nova", sans-serif;
 $condensed-font: "proxima-nova-extra-condensed",sans-serif;  
 $preospe-font: "Preospe", sans-serif;
 
@@ -140,13 +139,6 @@ $preospe-font: "Preospe", sans-serif;
 
 
 // VISIBILITY, OPACITY AND DISPLAY
-.hidden{
-	display: none !important;
-	visibility: hidden !important;
-	width: 0 !important; height: 0 !important;
-	overflow: hidden !important;
-	z-index: -100; position: fixed !important;	top: 100% !important; left: 100% !important;
-}
 .hidden{
 	display: none !important;
 	visibility: hidden !important;

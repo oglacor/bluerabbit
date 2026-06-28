@@ -196,11 +196,11 @@
 					</div>
 					<div class="br-type-filters" id="admin-log-filters">
 						<button type="button" class="br-type-btn t-all active" data-filter="all" title="All"><span class="icon icon-activity"></span></button>
-						<button type="button" class="br-type-btn" data-filter="login" title="Login" style="background:rgba(28,194,235,0.25);color:#1cc2eb;"><span class="icon icon-login"></span></button>
-						<button type="button" class="br-type-btn" data-filter="complete" title="Complete" style="background:rgba(36,218,152,0.25);color:#24da98;"><span class="icon icon-check"></span></button>
-						<button type="button" class="br-type-btn" data-filter="purchase" title="Purchase" style="background:rgba(255,193,7,0.25);color:#ffc107;"><span class="icon icon-basket"></span></button>
-						<button type="button" class="br-type-btn" data-filter="attempt" title="Attempt" style="background:rgba(255,152,0,0.25);color:#ff9800;"><span class="icon icon-challenge"></span></button>
-						<button type="button" class="br-type-btn" data-filter="failed" title="Failed" style="background:rgba(244,67,54,0.25);color:#f44336;"><span class="icon icon-cancel"></span></button>
+						<button type="button" class="br-type-btn br-wall-type-btn-login" data-filter="login" title="Login"><span class="icon icon-login"></span></button>
+						<button type="button" class="br-type-btn br-wall-type-btn-complete" data-filter="complete" title="Complete"><span class="icon icon-check"></span></button>
+						<button type="button" class="br-type-btn br-wall-type-btn-purchase" data-filter="purchase" title="Purchase"><span class="icon icon-basket"></span></button>
+						<button type="button" class="br-type-btn br-wall-type-btn-attempt" data-filter="attempt" title="Attempt"><span class="icon icon-challenge"></span></button>
+						<button type="button" class="br-type-btn br-wall-type-btn-failed" data-filter="failed" title="Failed"><span class="icon icon-cancel"></span></button>
 					</div>
 				</div>
 
@@ -222,7 +222,7 @@
 								<?php foreach($admin_log as $log){ ?>
 									<tr class="br-admin-log-row" data-action="<?= esc_attr(strtolower($log->log_action)); ?>" data-search="<?= esc_attr(strtolower($log->player_display_name . ' ' . $log->log_action . ' ' . $log->log_type . ' ' . $log->log_content)); ?>">
 										<td>
-											<div class="br-player-avatar" style="background-image:url(<?= esc_attr($log->player_picture); ?>); width:32px; height:32px;"></div>
+											<div class="br-player-avatar br-wall-log-avatar" style="background-image:url(<?= esc_attr($log->player_picture); ?>)"></div>
 										</td>
 										<td><strong><?= esc_html($log->player_display_name); ?></strong></td>
 										<td>

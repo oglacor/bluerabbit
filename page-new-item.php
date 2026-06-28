@@ -22,7 +22,7 @@ if($adventure && ($isGM || $isAdmin)){
 						<?php }?>
 					</h1>
 					<div class="dashboard-grid">
-						<div class="dashboard-gallery-image-container" style="grid-column: 1 / span 5; grid-row: 1 / span 5;">
+						<div class="dashboard-gallery-image-container br-item-col-image">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Image","bluerabbit");?></h3>
 							<div class="gallery">
 								<div class="gallery-item setting">
@@ -35,13 +35,13 @@ if($adventure && ($isGM || $isAdmin)){
 								</div>
 							</div>
 						</div>
-						<div class="dashboard-input-field-container" style="grid-column: 6 / span 7; grid-row: 1 / span 2;">
+						<div class="dashboard-input-field-container br-item-col-name">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Item name","bluerabbit");?></h3>
 							<?php if(isset($i)) { ?><input type="hidden" id="the_item_id" value="<?= $i->item_id; ?>"><?php } ?>
 							<input type="hidden" id="the_item_type" value="<?= (isset($i) && $i->item_type) ? $i->item_type : 'consumable'; ?>">
 							<input class="form-ui font _30 w-full" type="text" value="<?= isset($i) ? $i->item_name : ""; ?>" id="the_item_name">
 						</div>
-						<div class="dashboard-grid-cell-container" style="grid-column: 6 / span 7; grid-row: 3 / span 3;">
+						<div class="dashboard-grid-cell-container br-item-col-type">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Item type","bluerabbit");?></h3>
 							<div class="dashboard-type-selector">
 								<button class="item-type-choice type-choice" id="button-consumable" onClick="setItemType('consumable');">
@@ -133,16 +133,16 @@ if($adventure && ($isGM || $isAdmin)){
 								</button>
 							</div>						
 						</div>
-						<div class="dashboard-grid-cell-container" id="item-options-panel" style="grid-column: 13 / span 5; grid-row: 1 / span 10;">
+						<div class="dashboard-grid-cell-container br-item-col-options" id="item-options-panel">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Options","bluerabbit");?></h3>
 							<div class="dashboard-grid-cell-options-container">
 								<h3 class="dashboard-grid-cell-headline"><?= __("Display in shop","bluerabbit");?></h3>
 								<div class="input-group w-full">
 									<select id="the_item_visibility" class="form-ui w-full  cond-opt cond-opt-consumable cond-opt-tabi-piece">
-										<option class="white-color black-bg capitalize" value="visible"  <?= ($i->item_visibility=='visible' || !$i->item_visibility) ? 'selected' : ""; ?>>
+										<option class="white-color black-bg capitalize" value="visible"  <?= (!isset($i) || !$i || $i->item_visibility=='visible' || !$i->item_visibility) ? 'selected' : ""; ?>>
 											<?= __("Visible","bluerabbit"); ?>
 										</option>
-										<option class="white-color black-bg capitalize" value="hidden"  <?= $i->item_visibility=='hidden' ? 'selected' : ""; ?>>
+										<option class="white-color black-bg capitalize" value="hidden"  <?= (isset($i) && $i && $i->item_visibility=='hidden') ? 'selected' : ""; ?>>
 											<?= __("Hidden","bluerabbit"); ?>
 										</option>
 									</select>
@@ -185,7 +185,7 @@ if($adventure && ($isGM || $isAdmin)){
 								</div>
 							</div>
 						</div>
-						<div class="dashboard-grid-cell-container" id="item-tabi-settings-panel" style="grid-column: 18 / span 6; grid-row: 1 / span 10;">
+						<div class="dashboard-grid-cell-container br-item-col-tabi" id="item-tabi-settings-panel">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Tabi Settings","bluerabbit");?></h3>
 							<div class="dashboard-grid-cell-options-container">
 								<h3 class="dashboard-grid-cell-headline"><?= __("Tabi","bluerabbit");?></h3>
@@ -230,7 +230,7 @@ if($adventure && ($isGM || $isAdmin)){
 								</div>
 							</div>
 						</div>
-						<div class="dashboard-text-area-container" style="grid-column: 1 / span 12; grid-row: 6 / span 4;">
+						<div class="dashboard-text-area-container br-item-col-desc">
 							<h3 class="dashboard-grid-cell-headline"><?= __("Description","bluerabbit");?></h3>
 							<?php 
 							if($roles[0]=="administrator"){
@@ -245,7 +245,7 @@ if($adventure && ($isGM || $isAdmin)){
 							}
 							?>
 						</div>
-						<div class="dashboard-save-form-container" style="grid-column: 15 / span 9; grid-row: 10 / span 4;">
+						<div class="dashboard-save-form-container br-item-col-save">
 								<?php if(isset($achievements['publish'])){ ?>
 									<select id="the_achievement_id" class="form-ui">
 										<option value="0"  <?php if( !isset($i) || !$i->achievement_id){ echo 'selected'; }?>><?php _e('All paths','bluerabbit'); ?></option>

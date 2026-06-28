@@ -16,15 +16,15 @@ $available_achievements = array_filter($path_achievements, function($a) { return
 <div class="br-journey-manager">
 
 	<!-- ════════════ HEADER ════════════ -->
-	<div class="br-panel" style="margin-bottom:0;border-radius:12px 12px 0 0;">
-		<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;">
-			<div style="display:flex;align-items:center;gap:14px;">
-				<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(159,64,226,0.15);border-radius:10px;font-size:22px;color:#9f40e2;">
+	<div class="br-panel br-manage-header-panel">
+		<div class="br-manage-header-row">
+			<div class="br-manage-header-left">
+				<div class="br-manage-icon-box">
 					<span class="icon icon-quest"></span>
 				</div>
 				<div>
-					<h2 class="br-panel-title" style="margin:0;"><?php _e('Branch Groups', 'bluerabbit'); ?></h2>
-					<span style="font-size:13px;color:rgba(255,255,255,0.45);">
+					<h2 class="br-panel-title br-manage-panel-title"><?php _e('Branch Groups', 'bluerabbit'); ?></h2>
+					<span class="br-manage-subtitle">
 						<?= __("Group path achievements so players can choose between them", "bluerabbit"); ?>
 					</span>
 				</div>
@@ -36,24 +36,24 @@ $available_achievements = array_filter($path_achievements, function($a) { return
 	</div>
 
 	<?php if (empty($path_achievements)) { ?>
-	<div class="br-panel" style="margin-top:2px;border-radius:0;padding:16px;text-align:center">
-		<span style="color:rgba(255,255,255,0.5);font-size:14px">
-			<span class="icon icon-warning" style="color:#f7cb15"></span>
+	<div class="br-panel br-branch-warning-panel">
+		<span class="br-branch-warning-text">
+			<span class="icon icon-warning br-icon-accent"></span>
 			<?= __("No PATH or RANK achievements found. Create path achievements in the Achievements tab first.", "bluerabbit"); ?>
 		</span>
 	</div>
 	<?php } ?>
 
 	<!-- ════════════ NEW GROUP FORM (inline) ════════════ -->
-	<div id="branch-group-form" style="display:none;margin-top:2px;">
-		<div class="br-panel" style="border-radius:0;">
+	<div id="branch-group-form" class="br-branch-form">
+		<div class="br-panel br-branch-form-panel">
 			<input type="hidden" id="branch-group-id" value="">
-			<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-				<div class="br-form-group" style="flex:1;min-width:200px;margin:0">
+			<div class="br-branch-form-row">
+				<div class="br-form-group br-branch-form-input-wrap">
 					<label class="br-form-label"><?= __("Branch Name", "bluerabbit"); ?></label>
 					<input class="br-input" id="branch-group-name" placeholder="<?= __('e.g. Class, Faction, House', 'bluerabbit'); ?>">
 				</div>
-				<div style="display:flex;gap:6px;padding-bottom:2px">
+				<div class="br-branch-form-actions">
 					<button class="br-btn br-btn-green" onClick="brSaveBranchGroup();"><span class="icon icon-check"></span> <?= __("Save", "bluerabbit"); ?></button>
 					<button class="br-btn ghost" onClick="brHideGroupForm();"><?= __("Cancel", "bluerabbit"); ?></button>
 				</div>
@@ -62,57 +62,57 @@ $available_achievements = array_filter($path_achievements, function($a) { return
 	</div>
 
 	<!-- ════════════ GROUPS LIST ════════════ -->
-	<div class="br-section-body" id="branch-groups-list" style="border-radius:0 0 12px 12px;">
+	<div class="br-section-body br-branch-list" id="branch-groups-list">
 		<?php if ($branch_groups) { ?>
 			<?php foreach ($branch_groups as $bg) { ?>
 			<?php $group_achievements = BR_Branch::instance()->getGroupAchievements($bg->group_id); ?>
-			<div class="br-panel" style="margin-bottom:2px;border-radius:0;padding:16px" id="branch-group-<?= $bg->group_id; ?>">
+			<div class="br-panel br-branch-group-panel" id="branch-group-<?= $bg->group_id; ?>">
 
 				<!-- Group title row -->
-				<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-					<div style="display:flex;align-items:center;gap:10px">
-						<span style="font-size:17px;font-weight:700;color:#fff"><?= esc_html($bg->group_name); ?></span>
-						<span class="br-badge" style="font-size:10px;background:rgba(159,64,226,0.15);color:#9f40e2"><?= count($group_achievements); ?> <?= __("paths", "bluerabbit"); ?></span>
+				<div class="br-branch-group-title-row">
+					<div class="br-branch-group-name-row">
+						<span class="br-branch-group-name"><?= esc_html($bg->group_name); ?></span>
+						<span class="br-badge br-branch-badge"><?= count($group_achievements); ?> <?= __("paths", "bluerabbit"); ?></span>
 					</div>
 					<?php if (empty($group_achievements)) { ?>
-					<button class="br-btn br-btn-red" style="padding:4px 10px;font-size:11px" onClick="brDeleteGroup(<?= $bg->group_id; ?>);">
+					<button class="br-btn br-btn-red br-branch-delete-btn" onClick="brDeleteGroup(<?= $bg->group_id; ?>);">
 						<span class="icon icon-trash"></span> <?= __("Delete", "bluerabbit"); ?>
 					</button>
 					<?php } ?>
 				</div>
 
 				<!-- Assigned achievements -->
-				<div class="br-branch-achievements" id="branch-ach-list-<?= $bg->group_id; ?>" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+				<div class="br-branch-achievements br-branch-ach-list" id="branch-ach-list-<?= $bg->group_id; ?>">
 					<?php if ($group_achievements) { foreach ($group_achievements as $ga) { ?>
-					<div class="br-branch-ach-card" id="branch-ach-<?= $ga->achievement_id; ?>" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)">
+					<div class="br-branch-ach-card" id="branch-ach-<?= $ga->achievement_id; ?>">
 						<?php if ($ga->achievement_badge) { ?>
-						<div style="width:36px;height:36px;border-radius:6px;background:url(<?= esc_attr($ga->achievement_badge); ?>) center/cover;flex-shrink:0"></div>
+						<div class="br-branch-ach-thumb" style="background-image:url(<?= esc_attr($ga->achievement_badge); ?>)"></div>
 						<?php } else { ?>
-						<div style="width:36px;height:36px;border-radius:6px;background:rgba(159,64,226,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="icon icon-achievement" style="color:#9f40e2"></span></div>
+						<div class="br-branch-ach-placeholder"><span class="icon icon-achievement br-icon-purple"></span></div>
 						<?php } ?>
 						<div>
-							<span style="font-weight:600;font-size:14px;color:#fff"><?= esc_html($ga->achievement_name); ?></span>
-							<span style="display:block;font-size:11px;color:rgba(255,255,255,0.35)"><?= $ga->achievement_display; ?></span>
+							<span class="br-branch-ach-name"><?= esc_html($ga->achievement_name); ?></span>
+							<span class="br-branch-ach-type"><?= $ga->achievement_display; ?></span>
 						</div>
-						<button class="br-btn ghost" style="padding:2px 6px;font-size:10px;margin-left:4px" onClick="brRemoveAchFromGroup(<?= $ga->achievement_id; ?>, <?= $bg->group_id; ?>);" title="<?= __('Remove', 'bluerabbit'); ?>">
-							<span class="icon icon-cancel" style="color:#f44336"></span>
+						<button class="br-btn ghost br-branch-remove-btn" onClick="brRemoveAchFromGroup(<?= $ga->achievement_id; ?>, <?= $bg->group_id; ?>);" title="<?= __('Remove', 'bluerabbit'); ?>">
+							<span class="icon icon-cancel br-icon-red"></span>
 						</button>
 					</div>
 					<?php } } else { ?>
-					<span style="font-size:13px;color:rgba(255,255,255,0.3);padding:4px 0"><?= __("No achievements assigned yet. Add one below.", "bluerabbit"); ?></span>
+					<span class="br-branch-empty-text"><?= __("No achievements assigned yet. Add one below.", "bluerabbit"); ?></span>
 					<?php } ?>
 				</div>
 
 				<!-- Add achievement -->
-				<div style="display:flex;gap:6px;align-items:center">
-					<select class="br-input" id="add-ach-select-<?= $bg->group_id; ?>" style="flex:1;max-width:300px;padding:6px 12px;font-size:13px">
+				<div class="br-branch-add-row">
+					<select class="br-input br-branch-add-select" id="add-ach-select-<?= $bg->group_id; ?>">
 						<option value=""><?= __("Select a path achievement...", "bluerabbit"); ?></option>
 						<?php foreach ($available_achievements as $aa) { ?>
 						<option value="<?= $aa->achievement_id; ?>"><?= esc_html($aa->achievement_name); ?> (<?= $aa->achievement_display; ?>)</option>
 						<?php } ?>
 						<?php foreach ($group_achievements as $ga) { /* already assigned — don't show */ } ?>
 					</select>
-					<button class="br-btn cyan" style="padding:6px 12px;font-size:12px" onClick="brAssignAchToGroup(<?= $bg->group_id; ?>);">
+					<button class="br-btn cyan br-branch-add-btn" onClick="brAssignAchToGroup(<?= $bg->group_id; ?>);">
 						<span class="icon icon-add"></span> <?= __("Add", "bluerabbit"); ?>
 					</button>
 				</div>

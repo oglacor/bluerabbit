@@ -29,17 +29,17 @@ $total_votes = array_sum($vote_counts) ?: 1;
 			<div class="center">
 				<?php if (!empty($settings['question'])) { ?><h3><?= esc_html($settings['question']); ?></h3><?php } ?>
 
-				<div id="poll-options-<?= $step->step_id; ?>" style="display:flex;flex-direction:column;gap:8px;margin:16px 0">
+				<div class="br-step-options-list" id="poll-options-<?= $step->step_id; ?>">
 					<?php foreach ($options as $opt) { ?>
 					<?php $pct = $already_done ? round(($vote_counts[$opt['id']] ?? 0) / $total_votes * 100) : 0; ?>
-					<label class="br-step-option <?= $already_done ? 'disabled' : ''; ?>" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);cursor:pointer;position:relative;overflow:hidden">
+					<label class="br-step-option br-poll-option <?= $already_done ? 'disabled' : ''; ?>">
 						<?php if ($already_done) { ?>
-						<div style="position:absolute;left:0;top:0;bottom:0;width:<?= $pct; ?>%;background:rgba(28,194,235,0.12);transition:width 0.3s"></div>
+						<div class="br-poll-bar" style="--poll-w:<?= $pct; ?>%"></div>
 						<?php } ?>
-						<input type="radio" name="poll-<?= $step->step_id; ?>" value="<?= esc_attr($opt['id']); ?>" class="poll-input" <?= $already_done ? 'disabled' : ''; ?> style="width:18px;height:18px;accent-color:#1cc2eb;position:relative;z-index:1">
-						<span style="position:relative;z-index:1;flex:1"><?= esc_html($opt['text']); ?></span>
+						<input type="radio" name="poll-<?= $step->step_id; ?>" value="<?= esc_attr($opt['id']); ?>" class="poll-input" <?= $already_done ? 'disabled' : ''; ?>>
+						<span class="br-step-option-text"><?= esc_html($opt['text']); ?></span>
 						<?php if ($already_done) { ?>
-						<span style="position:relative;z-index:1;font-weight:700;color:#1cc2eb"><?= $pct; ?>%</span>
+						<span class="br-poll-pct"><?= $pct; ?>%</span>
 						<?php } ?>
 					</label>
 					<?php } ?>

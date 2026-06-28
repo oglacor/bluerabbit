@@ -39,8 +39,8 @@ $is_edit = isset($quest) && $quest;
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(0,150,136,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(0,150,136,0.4)">
-			<span class="icon icon-survey" style="font-size:28px;color:#009688"></span>
+		<div class="br-page-header-avatar br-avatar-survey">
+			<span class="icon icon-survey br-icon-lg br-icon-survey"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Survey", "bluerabbit") : __("New Survey", "bluerabbit"); ?></h1>
@@ -181,7 +181,7 @@ $is_edit = isset($quest) && $quest;
 	</a>
 	<div class="br-actions">
 		<?php if(isset($paths['publish'])){ ?>
-		<select id="the_achievement_id" class="br-input" style="width:auto">
+		<select id="the_achievement_id" class="br-input br-select-auto">
 			<option value="0" <?= !isset($quest->achievement_id) ? 'selected' : ''; ?>><?= __('All paths','bluerabbit'); ?></option>
 			<?php foreach($paths['publish'] as $a){ ?>
 				<option id="achievement-option-<?= $a->achievement_id; ?>" value="<?= $a->achievement_id;?>" <?= (isset($quest->achievement_id) && $quest->achievement_id == $a->achievement_id) ? 'selected' : ''; ?>><?= $a->achievement_name; ?></option>
@@ -190,7 +190,7 @@ $is_edit = isset($quest) && $quest;
 		<?php } else { ?>
 			<input id="the_achievement_id" type="hidden" value="0">
 		<?php } ?>
-		<select id="the_quest_status" class="br-input" style="width:auto">
+		<select id="the_quest_status" class="br-input br-select-auto">
 			<option value="publish" <?= (!$is_edit || $quest->quest_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish","bluerabbit"); ?></option>
 			<option value="draft" <?= ($is_edit && $quest->quest_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft","bluerabbit"); ?></option>
 			<option value="locked" <?= ($is_edit && $quest->quest_status == 'locked') ? 'selected' : ''; ?>><?= __("Locked","bluerabbit"); ?></option>
@@ -199,7 +199,7 @@ $is_edit = isset($quest) && $quest;
 		<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>">
 		<input type="hidden" id="delete-question-nonce" value="<?= wp_create_nonce('br_delete_question_nonce'); ?>">
 		<input type="hidden" id="delete-option-nonce" value="<?= wp_create_nonce('br_delete_option_nonce'); ?>">
-		<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+		<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateQuest();">
 			<span class="icon icon-check"></span>
 			<?= $is_edit ? __("Update Survey", "bluerabbit") : __("Create Survey", "bluerabbit"); ?>
 		</button>

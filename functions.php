@@ -1513,8 +1513,110 @@ function br_migrate_milestone_schema() {
 			KEY `adventure_id` (`adventure_id`)
 		) $charset_collate");
 	}
+	// AI API key on adventures
+	$ai_col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_adventures LIKE 'adventure_ai_api_key'");
+	if (empty($ai_col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_adventures ADD COLUMN adventure_ai_api_key VARCHAR(255) DEFAULT NULL");
+	}
 }
 add_action('init', 'br_migrate_milestone_schema');
+
+function br_save_ai_api_key() {
+	global $wpdb;
+	$n = new Notification();
+
+	if (!wp_verify_nonce($_POST['nonce'] ?? '', 'br_update_adventure_nonce')) {
+		echo json_encode(['success' => false, 'message' => $n->pop(__('Security check failed.', 'bluerabbit'), 'red', 'cancel'), 'just_notify' => true]);
+		die();
+	}
+
+	$adventure_id = intval($_POST['adventure_id'] ?? 0);
+	$api_key = sanitize_text_field($_POST['api_key'] ?? '');
+
+	$wpdb->update(
+		"{$wpdb->prefix}br_adventures",
+		['adventure_ai_api_key' => $api_key ?: null],
+		['adventure_id' => $adventure_id],
+		['%s'],
+		['%d']
+	);
+
+	echo json_encode(['success' => true, 'message' => $n->pop(__('API Key saved!', 'bluerabbit'), 'green', 'check'), 'just_notify' => true]);
+	die();
+}
+
+function br_ai_validate_text() {
+	global $wpdb;
+
+	$step_id = intval($_POST['step_id'] ?? 0);
+	$adventure_id = intval($_POST['adventure_id'] ?? 0);
+	$content = wp_kses_post($_POST['content'] ?? '');
+
+	if (!$step_id || !$adventure_id) {
+		echo json_encode(['valid' => false, 'message' => __('Invalid parameters.', 'bluerabbit')]);
+		die();
+	}
+
+	$adventure = $wpdb->get_row($wpdb->prepare(
+		"SELECT adventure_ai_api_key FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d", $adventure_id
+	));
+
+	$api_key = $adventure->adventure_ai_api_key ?? '';
+	if (!$api_key) {
+		echo json_encode(['valid' => true, 'message' => __('No AI key configured — skipping validation.', 'bluerabbit')]);
+		die();
+	}
+
+	$step = $wpdb->get_row($wpdb->prepare(
+		"SELECT step_content, step_settings FROM {$wpdb->prefix}br_steps WHERE step_id = %d", $step_id
+	));
+	$step_prompt = $step->step_content ? wp_strip_all_tags($step->step_content) : '';
+
+	$plain_text = wp_strip_all_tags($content);
+	$word_count = str_word_count($plain_text);
+
+	$system_prompt = "You are a content validator for an educational platform. A student was asked to write a response to a prompt. You must determine if the response is a genuine attempt to address the prompt. Reject responses that are: random words, copy-pasted gibberish, completely off-topic, or obvious filler text. Be lenient — imperfect grammar or short answers are fine as long as they genuinely try to address the topic. Respond ONLY with a JSON object: {\"valid\": true} or {\"valid\": false, \"reason\": \"brief explanation\"}";
+
+	$user_message = "PROMPT GIVEN TO STUDENT:\n" . ($step_prompt ?: '(open response, no specific prompt)') . "\n\nSTUDENT RESPONSE ({$word_count} words):\n" . $plain_text;
+
+	$response = wp_remote_post('https://api.anthropic.com/v1/messages', [
+		'timeout' => 15,
+		'headers' => [
+			'Content-Type' => 'application/json',
+			'x-api-key' => $api_key,
+			'anthropic-version' => '2023-06-01',
+		],
+		'body' => json_encode([
+			'model' => 'claude-haiku-4-5-20251001',
+			'max_tokens' => 150,
+			'system' => $system_prompt,
+			'messages' => [['role' => 'user', 'content' => $user_message]],
+		]),
+	]);
+
+	if (is_wp_error($response)) {
+		echo json_encode(['valid' => true, 'message' => __('AI service unavailable — accepted.', 'bluerabbit')]);
+		die();
+	}
+
+	$body = json_decode(wp_remote_retrieve_body($response), true);
+	$ai_text = $body['content'][0]['text'] ?? '';
+
+	$json_match = [];
+	if (preg_match('/\{[^}]+\}/', $ai_text, $json_match)) {
+		$result = json_decode($json_match[0], true);
+		if (isset($result['valid'])) {
+			$message = $result['valid']
+				? __('Content validated!', 'bluerabbit')
+				: ($result['reason'] ?? __("Your response doesn't seem to address the question. Please revise and try again.", 'bluerabbit'));
+			echo json_encode(['valid' => (bool) $result['valid'], 'message' => $message]);
+			die();
+		}
+	}
+
+	echo json_encode(['valid' => true, 'message' => __('Content accepted.', 'bluerabbit')]);
+	die();
+}
 
 function br_run_milestone_migration() {
 	if (!current_user_can('manage_options')) { wp_die('Unauthorized'); }
@@ -1995,4 +2097,6 @@ add_action("wp_ajax_br_assign_achievement_to_group", [BR_Branch::instance(), 'as
 add_action("wp_ajax_br_remove_achievement_from_group", [BR_Branch::instance(), 'removeAchievementFromGroup']);
 add_action("wp_ajax_br_delete_branch_group", [BR_Branch::instance(), 'deleteBranchGroup']);
 add_action("wp_ajax_br_player_branch_choice", [BR_Branch::instance(), 'ajaxPlayerBranchChoice']);
+add_action("wp_ajax_br_save_ai_api_key", 'br_save_ai_api_key');
+add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
 

@@ -176,6 +176,25 @@ $darkblue700: #020d12;
 $darkblue800: #02090c;
 $darkblue900: #010406;
 
+// ── Design tokens ───────────────────────────────────────────────────────────
+$hud-bg:          #04161e;
+$hud-surface:     #030f18;
+$hud-surface-2:   #0b3d4f;
+$hud-border:      rgba(28, 194, 235, 0.2);
+$hud-border-mid:  rgba(28, 194, 235, 0.4);
+$hud-border-hi:   rgba(28, 194, 235, 0.7);
+$hud-cyan:        #1cc2eb;
+$hud-cyan-dim:    rgba(28, 194, 235, 0.55);
+$hud-text:        #90f3fe;
+$hud-text-muted:  rgba(144, 243, 254, 0.6);
+$hud-text-dim:    rgba(28, 194, 235, 0.45);
+$hud-purple:      #9f40e2;
+$hud-violet:      #c892f7;
+$hud-green:       #24da98;
+$hud-yellow:      #f7cb15;
+$hud-red:         #e24040;
+$hud-orange:      #ffa780;
+ 
 
 
 
@@ -1927,7 +1946,10 @@ span.divider{
 			min-height: 100vh;
 			display: flex;
             padding-bottom: 75px; 
-			svg.step-tag-img{
+            align-content: center;
+            align-items: center;
+            justify-content: center;
+  			svg.step-tag-img{
 				width: 100%; height: 100%;
 				.outline{
 					fill: none;
@@ -6496,27 +6518,77 @@ ul.color-select{
 }
 
 /*************************************************************/
+/************************** HUD AUDIO PLAYER ****************************/
+/*************************************************************/
+
+// Custom HUD audio player (replaces native <audio> when class added)
+.hud-audio-player {
+    width: 100%; max-width: 720px;
+    background: $hud-surface;
+    border: 1px solid $hud-border;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+
+    .player-top {
+        display: flex; align-items: center; gap: 14px;
+
+        .play-btn {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: rgba(28,194,235,.15);
+            border: 2px solid $hud-cyan;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+            transition: all .15s;
+            &:hover { background: rgba(28,194,235,.3); }
+            .icon { font-size: 20px; color: $hud-cyan; }
+        }
+
+        .player-info {
+            flex: 1;
+            .player-title { font-size: 13px; color: $hud-text; font-weight: 600; margin-bottom: 2px; }
+            .player-hint  { font-size: 10px; color: $hud-text-dim; letter-spacing: .06em; }
+        }
+
+        .waveform {
+            display: flex; align-items: center; gap: 2px; height: 28px;
+            .bar {
+                width: 3px; border-radius: 2px;
+                background: rgba(28,194,235,.3);
+                height: var(--bar-h, 12px);
+                animation-delay: var(--bar-delay, 0s);
+                &.active {
+                    background: $hud-cyan;
+                    animation: wave-pulse .4s ease-in-out infinite alternate;
+                    animation-delay: var(--bar-delay, 0s);
+                    transform-origin: bottom center;
+                }
+            }
+        }
+    }
+
+    .player-track {
+        height: 3px; background: $hud-surface-2;
+        border-radius: 2px; position: relative;
+        .player-progress {
+            height: 100%; background: $hud-cyan;
+            border-radius: 2px; width: 0%;
+            transition: width .3s linear;
+        }
+    }
+    .player-times {
+        display: flex; justify-content: space-between;
+        font-size: 10px; color: $hud-text-dim;
+        font-family: $condensed-font;
+    }
+}
+
+
+
+/*************************************************************/
 /************************** CHALLENGES / SURVEYS ****************************/
 /*************************************************************/
-// ── Design tokens ───────────────────────────────────────────────────────────
-$hud-bg:          #04161e;
-$hud-surface:     #030f18;
-$hud-surface-2:   #0b3d4f;
-$hud-border:      rgba(28, 194, 235, 0.2);
-$hud-border-mid:  rgba(28, 194, 235, 0.4);
-$hud-border-hi:   rgba(28, 194, 235, 0.7);
-$hud-cyan:        #1cc2eb;
-$hud-cyan-dim:    rgba(28, 194, 235, 0.55);
-$hud-text:        #90f3fe;
-$hud-text-muted:  rgba(144, 243, 254, 0.6);
-$hud-text-dim:    rgba(28, 194, 235, 0.45);
-$hud-purple:      #9f40e2;
-$hud-violet:      #c892f7;
-$hud-green:       #24da98;
-$hud-yellow:      #f7cb15;
-$hud-red:         #e24040;
-$hud-orange:      #ffa780;
- 
 
 .challenge-gradient-overlay { 
 	background-image: linear-gradient(
@@ -6984,65 +7056,6 @@ $hud-orange:      #ffa780;
 				filter: none;
 			}
 
-			// Custom HUD audio player (replaces native <audio> when class added)
-			.hud-audio-player {
-				width: 100%; max-width: 720px;
-				background: $hud-surface;
-				border: 1px solid $hud-border;
-				border-radius: 10px;
-				padding: 16px 20px;
-				display: flex; flex-direction: column; gap: 10px;
-
-				.player-top {
-					display: flex; align-items: center; gap: 14px;
-
-					.play-btn {
-						width: 46px; height: 46px;
-						border-radius: 50%;
-						background: rgba(28,194,235,.15);
-						border: 2px solid $hud-cyan;
-						display: flex; align-items: center; justify-content: center;
-						cursor: pointer; flex-shrink: 0;
-						transition: all .15s;
-						&:hover { background: rgba(28,194,235,.3); }
-						.icon { font-size: 20px; color: $hud-cyan; }
-					}
-
-					.player-info {
-						flex: 1;
-						.player-title { font-size: 13px; color: $hud-text; font-weight: 600; margin-bottom: 2px; }
-						.player-hint  { font-size: 10px; color: $hud-text-dim; letter-spacing: .06em; }
-					}
-
-					.waveform {
-						display: flex; align-items: center; gap: 2px; height: 28px;
-						.bar {
-							width: 3px; border-radius: 2px;
-							background: rgba(28,194,235,.3);
-							&.active {
-								background: $hud-cyan;
-								animation: wave-pulse .4s ease-in-out infinite alternate;
-                                transform-origin: bottom center;
-							}
-						}
-					}
-				}
-
-				.player-track {
-					height: 3px; background: $hud-surface-2;
-					border-radius: 2px; position: relative;
-					.player-progress {
-						height: 100%; background: $hud-cyan;
-						border-radius: 2px; width: 0%;
-						transition: width .3s linear;
-					}
-				}
-				.player-times {
-					display: flex; justify-content: space-between;
-					font-size: 10px; color: $hud-text-dim;
-					font-family: $condensed-font;
-				}
-			}
 
 			// ── QUESTION TEXT ─────────────────────────────────────────────
 			.question-title {

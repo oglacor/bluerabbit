@@ -34,8 +34,8 @@ if ($adventure && ($isGM || $isAdmin)) {
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(33,150,243,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(33,150,243,0.4)">
-			<span class="icon icon-quest" style="font-size:28px;color:#2196f3"></span>
+		<div class="br-page-header-avatar br-avatar-blue">
+			<span class="icon icon-quest br-icon-lg br-icon-blue"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title" id="quest-title-label"><?= $is_edit ? __("Edit Milestone", "bluerabbit") . ' &rsaquo; ' . esc_html($quest->quest_title) : __("New Milestone", "bluerabbit"); ?></h1>
@@ -45,7 +45,7 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<input type="hidden" id="the_quest_id" value="<?= $is_edit ? $quest->quest_id : ''; ?>">
 		<input type="hidden" id="the_quest_order" value="<?= $is_edit ? $quest->quest_order : count($quests ?? []); ?>">
 		<?php if ($is_edit) { ?>
-		<a class="br-btn" href="<?= get_bloginfo('url') . "/quest/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank" style="margin-left:auto">
+		<a class="br-btn br-ml-auto" href="<?= get_bloginfo('url') . "/quest/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank">
 			<span class="icon icon-view"></span> <?= __("View Milestone", "bluerabbit"); ?>
 		</a>
 		<?php } ?>
@@ -111,7 +111,7 @@ if ($adventure && ($isGM || $isAdmin)) {
 			</div>
 
 			<div class="br-form-group">
-				<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+				<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 				<div class="br-form-component">
 					<div class="br-gallery br-gallery-single">
 						<?php $thumb_id = 'the_quest_badge'; $file = $is_edit ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
@@ -126,8 +126,8 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<div class="br-panel">
 			<?php include(get_stylesheet_directory() . '/component-quest-base-mechs.php'); ?>
 
-			<h3 class="br-panel-title" style="margin-top:24px"><span class="icon icon-quest"></span> <?= __("Milestone Mechanics", "bluerabbit"); ?></h3>
-			<div class="br-form-grid" style="grid-template-columns:1fr 1fr 1fr">
+			<h3 class="br-panel-title br-mt-md"><span class="icon icon-quest"></span> <?= __("Milestone Mechanics", "bluerabbit"); ?></h3>
+			<div class="br-form-grid br-form-grid-3">
 				<div class="br-form-group">
 					<label class="br-form-label"><?= __("Required Words", "bluerabbit"); ?></label>
 					<input class="br-input" type="number" min="1" id="the_quest_min_words"
@@ -158,12 +158,12 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<div class="br-scroll-section" id="boss-fight-steps">
 		<div class="br-panel">
 			<h3 class="br-panel-title"><span class="icon icon-progression"></span> <?= __("Milestone Steps", "bluerabbit"); ?></h3>
-			<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("All the steps the player must do to complete the milestone", "bluerabbit"); ?></span>
+			<span class="br-form-hint br-form-hint-block"><?= __("All the steps the player must do to complete the milestone", "bluerabbit"); ?></span>
 
 			<?php if ($is_edit) { ?>
 			<?php $steps = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_steps WHERE quest_id=$quest->quest_id AND adventure_id=$quest->adventure_id AND step_status='publish' ORDER BY step_order, step_id"); ?>
 			<?php if (!$steps) { ?>
-				<p id="no-steps-label" style="text-align:center;color:rgba(255,255,255,0.35);padding:16px">— <?= __("No steps", "bluerabbit"); ?> —</p>
+				<p id="no-steps-label" class="br-empty-text">— <?= __("No steps", "bluerabbit"); ?> —</p>
 			<?php } ?>
 
 			<div class="br-step-list" id="steps-list">
@@ -172,11 +172,11 @@ if ($adventure && ($isGM || $isAdmin)) {
 				<?php } ?>
 			</div>
 
-			<div style="display:flex;gap:8px;margin-top:12px">
+			<div class="br-flex-mt-sm">
 				<button class="br-btn" onClick="addStep();"><span class="icon icon-add"></span> <?= __("Add Step", "bluerabbit"); ?></button>
 			</div>
 			<?php } else { ?>
-			<div class="br-empty" style="padding:24px">
+			<div class="br-empty br-empty-md">
 				<span class="icon icon-level"></span>
 				<h3><?= __("Save the milestone first", "bluerabbit"); ?></h3>
 			</div>
@@ -207,7 +207,7 @@ if ($adventure && ($isGM || $isAdmin)) {
 	</a>
 	<div class="br-actions">
 		<?php if (isset($paths['publish'])) { ?>
-		<select id="the_achievement_id" class="br-input" style="width:auto">
+		<select id="the_achievement_id" class="br-input br-select-auto">
 			<option value="0" <?= !isset($quest->achievement_id) ? 'selected' : ''; ?>><?= __("All paths", "bluerabbit"); ?></option>
 			<?php foreach ($paths['publish'] as $a) { ?>
 			<option id="achievement-option-<?= $a->achievement_id; ?>" value="<?= $a->achievement_id; ?>"
@@ -218,7 +218,7 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<input id="the_achievement_id" type="hidden" value="0">
 		<?php } ?>
 
-		<select id="the_quest_status" class="br-input" style="width:auto">
+		<select id="the_quest_status" class="br-input br-select-auto">
 			<option value="publish" <?= (!$is_edit || $quest->quest_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish", "bluerabbit"); ?></option>
 			<option value="draft" <?= ($is_edit && $quest->quest_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft", "bluerabbit"); ?></option>
 			<option value="locked" <?= ($is_edit && $quest->quest_status == 'locked') ? 'selected' : ''; ?>><?= __("Locked", "bluerabbit"); ?></option>
@@ -229,7 +229,7 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<input type="hidden" id="delete-question-nonce" value="<?= wp_create_nonce('br_delete_question_nonce'); ?>">
 		<input type="hidden" id="delete-option-nonce" value="<?= wp_create_nonce('br_delete_option_nonce'); ?>">
 
-		<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+		<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateQuest();">
 			<span class="icon icon-check"></span>
 			<?= $is_edit ? __("Update Milestone", "bluerabbit") : __("Create Milestone", "bluerabbit"); ?>
 		</button>

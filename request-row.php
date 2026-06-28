@@ -9,34 +9,34 @@ $badge_class = isset($status_colors[$req->request_status]) ? 'br-badge-' . $stat
 $profile_pic = $req->player_picture ? $req->player_picture : get_bloginfo('template_directory').'/images/no-profile.png';
 $time_ago = human_time_diff(strtotime($req->request_date), current_time('timestamp'));
 ?>
-<div class="br-panel request-card" id="request-<?= $req->request_id; ?>" style="margin-bottom:8px;padding:16px">
-	<div style="display:flex;gap:12px;align-items:flex-start">
-		<div class="br-player-avatar" style="background-image: url(<?= $profile_pic; ?>); width:40px;height:40px;flex-shrink:0"></div>
-		<div style="flex:1;min-width:0">
-			<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+<div class="br-panel request-card br-req-card" id="request-<?= $req->request_id; ?>">
+	<div class="br-req-layout">
+		<div class="br-player-avatar br-req-avatar" style="background-image:url(<?= $profile_pic; ?>)"></div>
+		<div class="br-req-body">
+			<div class="br-req-header">
 				<div>
-					<span style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.9)"><?= esc_html($req->request_subject); ?></span>
+					<span class="br-req-subject"><?= esc_html($req->request_subject); ?></span>
 					<span class="<?= $badge_class; ?>"><?= $req->request_status; ?></span>
 				</div>
-				<span style="font-size:12px;color:rgba(255,255,255,0.35)"><?= $time_ago . ' ' . __("ago","bluerabbit"); ?></span>
+				<span class="br-req-time"><?= $time_ago . ' ' . __("ago","bluerabbit"); ?></span>
 			</div>
-			<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px">
-				<strong style="color:rgba(255,255,255,0.7)"><?= esc_html($req->player_display_name); ?></strong>
+			<div class="br-req-sender">
+				<strong class="br-req-sender-name"><?= esc_html($req->player_display_name); ?></strong>
 				<?php if($req->player_email){ ?>
-					<span style="opacity:0.6">(<?= esc_html($req->player_email); ?>)</span>
+					<span class="br-req-sender-email">(<?= esc_html($req->player_email); ?>)</span>
 				<?php } ?>
 			</div>
-			<div class="br-form-component" style="margin-top:10px;white-space:pre-wrap;font-size:14px;color:rgba(255,255,255,0.8)"><?= esc_html($req->request_content); ?></div>
+			<div class="br-form-component br-req-content"><?= esc_html($req->request_content); ?></div>
 
 			<?php if($req->request_admin_note){ ?>
-				<div style="font-size:13px;color:rgba(28,194,235,0.7);padding:6px 0;margin-top:6px">
+				<div class="br-req-admin-note">
 					<span class="icon icon-document"></span> <strong><?= __("Admin note:","bluerabbit"); ?></strong> <?= esc_html($req->request_admin_note); ?>
 				</div>
 			<?php } ?>
 
-			<div style="margin-top:10px">
+			<div class="br-req-actions-wrap">
 				<textarea class="br-input" id="admin-note-<?= $req->request_id; ?>" rows="2" placeholder="<?= __("Admin note (optional)","bluerabbit"); ?>"><?= esc_html($req->request_admin_note); ?></textarea>
-				<div class="br-actions" style="margin-top:8px;gap:6px">
+				<div class="br-actions br-req-actions-bar">
 					<?php if($req->request_status == 'pending'){ ?>
 						<button class="br-btn cyan" onClick="updateRequestStatus(<?= $req->request_id; ?>, 'read');">
 							<span class="icon icon-check"></span> <?= __("Mark Read","bluerabbit"); ?>
