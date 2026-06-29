@@ -13,13 +13,13 @@ switch ($style){
 <li class="question" id="question-<?=  $key; ?>">
 	<div class="highlight padding-10 <?=$color; ?>-bg-50 <?=  !$q['image'] ? 'sticky' : ''; ?>">
 		<span class="icon-group">
-			<span class="button-icon font _24 sq-40 white-color" <?= br_color_attr($color) ?>>
+			<span class="br-icon-btn white-color" <?= br_color_attr($color) ?>>
 				<span class="icon icon-<?=$icon; ?>"></span>
 			</span>
 			<span class="icon-content">
-				<span class="line font _14 grey-600"> <?=  __("Question","bluerabbit")." ".($key); ?></span>
-				<span class="line font _24 <?=$color; ?>-800"><?=  $q['text']; ?></span>
-				<span class="line font _18 grey-600"><?=  $q['survey_question_description']; ?></span>
+				<span class="line br-text-14 grey-600"> <?=  __("Question","bluerabbit")." ".($key); ?></span>
+				<span class="line br-text-24 <?=$color; ?>-800"><?=  $q['text']; ?></span>
+				<span class="line br-text-18 grey-600"><?=  $q['survey_question_description']; ?></span>
 			</span>
 		</span>
 		<span class="highlight-cell pull-right">
@@ -67,7 +67,7 @@ switch ($style){
 				</thead>
 				<tbody>
 					<?php for ($i=0; $i<=$q['range']; $i++){ ?>
-						<tr class="font _16 w300">
+						<tr class="br-text-16 w300">
 							<td class="text-center">
 								<?php
 									if($i==0){
@@ -100,7 +100,7 @@ switch ($style){
 				<tbody>
 					<?php foreach ($rating as $key=>$r){ ?>
 						<?php $absValue += ($key*$r); ?>
-						<tr class="font _16 w300">
+						<tr class="br-text-16 w300">
 							<td class="text-center"><?=  ($key); ?></td>
 							<td class="text-center font w900"><?=  $r; ?></td>
 						</tr>				
@@ -108,7 +108,7 @@ switch ($style){
 				</tbody>
 			</table>
 			<?php if($q['survey_question_display']=='spinner'){ ?>
-				<div class="highlight text-center padding-5 purple-bg-50 font _24 grey-800">
+				<div class="highlight text-center padding-5 purple-bg-50 br-text-24 grey-800">
 					<?= __("Added Value","bluerabbit").": <strong>$absValue</strong>"; ?>
 				</div>
 			<?php } ?>
@@ -135,13 +135,13 @@ switch ($style){
 				?>	
 				<thead>
 					<tr>
-						<td colspan="3" class="font _14 grey-600"><?=  __("Question","bluerabbit")." ".($key); ?></td>
+						<td colspan="3" class="br-text-14 grey-600"><?=  __("Question","bluerabbit")." ".($key); ?></td>
 					</tr>
 					<tr>
-						<td colspan="3" class="font _24 <?=$color; ?>-800"><?=  $q['text']; ?></td>
+						<td colspan="3" class="br-text-24 <?=$color; ?>-800"><?=  $q['text']; ?></td>
 					</tr>
 					<tr>
-						<td colspan="3" class="font _18 grey-600"><?=  $q['survey_question_description']; ?></td>
+						<td colspan="3" class="br-text-18 grey-600"><?=  $q['survey_question_description']; ?></td>
 					</tr>
 					<tr>
 						<td class="text-center"><?= __("Guild","bluerabbit"); ?></td>
@@ -156,10 +156,10 @@ switch ($style){
 					$value = round($answers[$key][$t->guild_id]*100/$answers[$key]['total']);
 					$value = is_nan($value) ? 0 : $value;
 					?>
-					<tr class="font _16 w300">
+					<tr class="br-text-16 w300">
 						<td class="text-center">
 							<div class="icon-group">
-								<span class="button-icon font _24 sq-40 " style="background-image: url(<?=  $t->guild_logo; ?>);"></span>
+								<span class="br-icon-btn" style="background-image: url(<?=  $t->guild_logo; ?>);"></span>
 								<span class="icon-content">
 									<span class="line"><?=  $t->guild_name; ?></span>
 								</span>
@@ -190,11 +190,11 @@ switch ($style){
 				</thead>
 				<tbody>
 					<?php foreach($q['options'] as $oKey=>$o) { ?>
-						<tr class="font _16 w300">
+						<tr class="br-text-16 w300">
 							<td class="text-center">
 								<div class="icon-group">
 									<?php if($o['image']) { ?>
-										<span class="button-icon font _24 sq-40 " style="background-image: url(<?=  $o['image']; ?>);"></span>
+										<span class="br-icon-btn" style="background-image: url(<?=  $o['image']; ?>);"></span>
 									<?php } ?>
 									<span class="icon-content">
 										<span class="line"><?=  $o['text']; ?></span>
@@ -223,11 +223,11 @@ switch ($style){
 -->
 				<tbody>
 					<?php foreach($q['options'] as $oKey=>$o) { ?>
-						<tr class="font _16 w300">
+						<tr class="br-text-16 w300">
 							<td class="text-center">
 								<div class="icon-group">
 									<?php if($o['image']) { ?>
-										<span class="button-icon font _24 sq-40 " style="background-image: url(<?=  $o['image']; ?>);"></span>
+										<span class="br-icon-btn" style="background-image: url(<?=  $o['image']; ?>);"></span>
 									<?php } ?>
 									<span class="icon-content">
 										<span class="line"><?=  $o['text']; ?></span>

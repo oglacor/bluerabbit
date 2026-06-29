@@ -57,11 +57,11 @@
 			<div class="active tab max-w-1200 padding-10" id="active-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="tutorial-players">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-200">
+						<span class="br-icon-btn br-icon-btn-orange-light">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
-							<span class="line font _24 w300"><?= __("Active players","bluerabbit"); ?></span>
+							<span class="line br-text-24 w300"><?= __("Active players","bluerabbit"); ?></span>
 						</span>
 					</div>
 					<div class="highlight-cell pull-right">
@@ -121,15 +121,15 @@
 													<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 														<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
 															<span class="icon-group">
-																<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+																<span class="br-icon-btn br-icon-btn-red-dark">
 																	<span class="icon icon-cancel white-color"></span>
 																</span>
 																<span class="icon-content">
-																	<span class="line red-A400 font _18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
+																	<span class="line red-A400 br-text-18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
 																</span>
 															</span>
 														</button>
-														<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+														<button class="br-close-btn" onClick="hideAllOverlay();">
 															<span class="icon icon-cancel white-color"></span>
 														</button>
 													</div>
@@ -155,11 +155,11 @@
 			<div class="tab max-w-1200 padding-10" id="inactive-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-200">
+						<span class="br-icon-btn br-icon-btn-orange-light">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
-							<span class="line font _24 w300"><?= __("Inactive players","bluerabbit"); ?></span>
+							<span class="line br-text-24 w300"><?= __("Inactive players","bluerabbit"); ?></span>
 						</span>
 					</div>
 					<div class="highlight-cell pull-right">
@@ -213,15 +213,15 @@
 												<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 													<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'in'"; ?>);">
 														<span class="icon-group">
-															<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+															<span class="br-icon-btn br-icon-btn-red-dark">
 																<span class="icon icon-cancel white-color"></span>
 															</span>
 															<span class="icon-content">
-																<span class="line red-A400 font _18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
+																<span class="line red-A400 br-text-18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
 															</span>
 														</span>
 													</button>
-													<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+													<button class="br-close-btn" onClick="hideAllOverlay();">
 														<span class="icon icon-cancel white-color"></span>
 													</button>
 												</div>
@@ -237,17 +237,17 @@
 			<div class="tab max-w-1200 padding-10" id="add-manually-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-200">
+						<span class="br-icon-btn br-icon-btn-orange-light">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
-							<span class="line font _24 w300"><?= __("Add players","bluerabbit"); ?></span>
+							<span class="line br-text-24 w300"><?= __("Add players","bluerabbit"); ?></span>
 						</span>
 					</div>
 				</div>
 				<div class="content">
 					<div class="highlight">
-						<div class="form-ui font _14">
+						<div class="form-ui br-text-14">
 							<form id="upload_bulk_users_form" class="form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 
 								<table>
@@ -289,11 +289,11 @@
 					</div>
 					<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 						<div class="icon-group">
-							<span class="button-icon font _24 sq-40  orange-bg-200">
+							<span class="br-icon-btn br-icon-btn-orange-light">
 								<span class="icon icon-players white-color"></span>
 							</span>
 							<span class="icon-content font w500 _26">
-								<span class="line font _24 w300"><?= __("Add single player","bluerabbit"); ?></span>
+								<span class="line br-text-24 w300"><?= __("Add single player","bluerabbit"); ?></span>
 							</span>
 						</div>
 					</div>

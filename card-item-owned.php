@@ -15,15 +15,15 @@
 		<div class="background border rounded-max" <?= br_color_attr($color) ?>></div>
 		<div class="highlight text-center padding-5 margin-0">
 			<div class="icon-group">
-				<span class="button-icon font _24 sq-40  transparent-bg icon-sm"><span class="icon icon-<?=$icon; ?>"></span></span>
+				<span class="br-icon-btn br-icon-btn-transparent"><span class="icon icon-<?=$icon; ?>"></span></span>
 				<span class="icon-content text-center white-color">
-					<span class="line font _14 w600 kerning-3 uppercase"><?= __("Item","bluerabbit"); ?></span>
+					<span class="line br-text-14 w600 kerning-3 uppercase"><?= __("Item","bluerabbit"); ?></span>
 				</span>
 				<?php if($isGM || $isNPC || $isAdmin){ ?>
-					<a class="button-icon font _24 sq-40  icon-sm green-bg-400" href="<?php echo get_bloginfo("url")."/new-item/?item_id=$item->item_id&adventure_id=$item->adventure_id"; ?>">
+					<a class="br-icon-btn br-icon-btn-green" href="<?php echo get_bloginfo("url")."/new-item/?item_id=$item->item_id&adventure_id=$item->adventure_id"; ?>">
 						<span class="icon icon-edit"></span>
 					</a>
-					<a class="button-icon font _24 sq-40  icon-sm blue-grey-bg-700 foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$item->item_id"; ?>">
+					<a class="br-icon-btn br-icon-btn-grey foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$item->item_id"; ?>">
 						<span class="icon icon-transactions"></span>
 					</a>
 				<?php } ?>
@@ -36,19 +36,19 @@
 			</div>
 		</div>
 		<div class="body-ui w-full foreground">
-			<button class="absolute top right button-icon font _24 sq-40  transparent-bg icon-xs" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
+			<button class="absolute top right br-icon-btn br-icon-btn-transparent br-icon-btn-sm" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
 			<div class="highlight text-center padding-20 white-color">
-				<h1 class="font _36 w300 kerning-1"><?= $item->item_name; ?></h1>
-				<h3 class="text-center font _14 opacity-70">
+				<h1 class="br-text-30 w300 kerning-1"><?= $item->item_name; ?></h1>
+				<h3 class="text-center br-text-14 opacity-70">
 					<?= __("bought","bluerabbit")." ".BR_Utils::instance()->get_time_ago(strtotime($item->trnx_date), $adventure->adventure_id); ?>
 				</h3>
 			</div>
-			<div class="highlight text-center padding-0 white-color font _18">
+			<div class="highlight text-center padding-0 white-color br-text-18">
 				<div class="book-container">
 					<img src="<?= $item->item_badge; ?>" class="br-invisible">
 					<div class="background">
 						<div class="table padding-10"><div class="table-cell text-center bottom">
-							<button class="button-icon font _24 sq-40  transparent-bg icon-lg opacity-70" onClick="changeSide();">
+							<button class="br-icon-btn br-icon-btn-transparent opacity-70" onClick="changeSide();">
 								<span class="background grey-gradient-800"></span>
 								<span class="foreground icon icon-rotate"></span>
 							</button>
@@ -67,7 +67,7 @@
 							<div class="book-face right" <?= br_color_attr($color) ?>>
 								<div class="background <?= $color; ?>-gradient-900"></div>
 								<div class="foreground padding-20">
-									<span class="button-icon font _24 sq-40  white-bg">
+									<span class="br-icon-btn br-icon-btn-white">
 										<span class="icon icon-<?=$icon; ?> <?= $color; ?>-400"></span>
 									</span>
 								</div>
@@ -87,11 +87,11 @@
 					<?php if($item->item_type == 'consumable'){ ?>
 						<?php if(($item->bought)>0){?>
 							<?php if($use_items){ ?>
-								<button class="form-ui indigo-bg-400 pull-right font _18 w700" onClick="showOverlay('#confirm-use-item-<?php echo $item->item_id; ?>');">
+								<button class="form-ui indigo-bg-400 pull-right br-text-18 w700" onClick="showOverlay('#confirm-use-item-<?php echo $item->item_id; ?>');">
 									<?php _e("Pick up","bluerabbit"); ?> <span class="icon icon-use"></span>
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-use-item-<?php echo $item->item_id; ?>">
-									<button class="form-ui orange-bg-400 grey-800 font _18" onClick="useItem(<?php echo "$item->trnx_id, '', 1"; ?>);">
+									<button class="form-ui orange-bg-400 grey-800 br-text-18" onClick="useItem(<?php echo "$item->trnx_id, '', 1"; ?>);">
 										<span class="icon icon-warning"></span><?php _e("Have you picked up your item?","bluerabbit"); ?>
 									</button>
 								</div>
@@ -110,13 +110,13 @@
 </div>
 <div class="layer overlay top left overlay-layer fixed sq-full" id="item-description-<?= $item->item_id; ?>">
 	<div class="layer sq-full padding-20 text-right top left background fixed black-bg opacity-90" onClick="hideAllOverlay();">
-		<span class="icon icon-cancel white-color font _36"></span>
+		<span class="icon icon-cancel white-color br-text-30"></span>
 	</div>
 	<div class="perfect-center absolute layer base">
 		<div class="background" onClick="hideAllOverlay();"></div>
 		<div class="container boxed max-w-1200 foreground text-center wrap w-full">
-			<h3 class="text-center font _18 uppercase w900 <?=$color;?>-A400 w-full opacity-80"> <?= __("Description","bluerabbit") ; ?> </h3>
-			<h1 class="text-center font _48 <?=$color;?>-400 w-full"><?= $item->item_name ; ?></h1>
+			<h3 class="text-center br-text-18 uppercase w900 <?=$color;?>-A400 w-full opacity-80"> <?= __("Description","bluerabbit") ; ?> </h3>
+			<h1 class="text-center br-text-40 <?=$color;?>-400 w-full"><?= $item->item_name ; ?></h1>
 			<div class="padding-10 white-color">
 				<?= apply_filters('the_content',$item->item_description); ?>
 			</div>

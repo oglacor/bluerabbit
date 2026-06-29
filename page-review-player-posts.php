@@ -15,18 +15,18 @@
 			<table class="table compact">
 				<thead>
 					<tr>
-						<td width="10%" class="font _14 w900 white-color">
+						<td width="10%" class="br-text-14 w900 white-color">
 							<a href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id";?>"><span class="icon icon-arrow-left"></span><?= __("Manage Adventure","bluerabbit"); ?></a>
 						</td>
 						<td width="80%" class="text-center">
-							<h3 class="white-color font _18 uppercase">
+							<h3 class="white-color br-text-18 uppercase">
 								<?= __("Milestone Review","bluerabbit"); ?>
 							</h3>
-							<h1 class="white-color font _30 w900" id="quest-review-title">
+							<h1 class="white-color br-text-30 w900" id="quest-review-title">
 								<?= $q->quest_title;?>
 							</h1>
 						</td>
-						<td width="10%" class="font _14 w900 white-color">
+						<td width="10%" class="br-text-14 w900 white-color">
 							<a href="<?= get_bloginfo('url')."/quest/?adventure_id=$adventure->adventure_id&questID=$q->quest_id";?>"><?= __("View Milestone","bluerabbit"); ?><span class="icon icon-arrow-right"></span></a>
 						</td>
 					</tr>
@@ -36,14 +36,14 @@
 
 			<?php if($player_posts){ ?>
 				<div class="boxed max-w-1200 white-color layer base relative" id="player-submissions">
-					<h4 class="font _24 white-color w900 uppercase padding-5 text-center"><?= __("Player Entries","bluerabbit"); ?></h4>
+					<h4 class="br-text-24 white-color w900 uppercase padding-5 text-center"><?= __("Player Entries","bluerabbit"); ?></h4>
 					<?php foreach($player_posts as $pp){ ?>
 						<div class="w-full layer base relative margin-10">
 							<div class="layer background sq-full absolute top left blue-bg-400 opacity-50"></div>
 							<div class="layer base w-full relative flex padding-20">
 								<div class="grow-1">
-									<h2 class="font _30 padding-10 text-center layer base w700 "><?= $isAdmin ? $pp->player_id." | " : ""; ?><span class="player-name"><?= $pp->player_display_name; ?></span></h2>
-									<h3 class="font _18 text-center layer base w300 grey-300"><span class="player-email"><?= $pp->player_email; ?></span></h3>
+									<h2 class="br-text-30 padding-10 text-center layer base w700 "><?= $isAdmin ? $pp->player_id." | " : ""; ?><span class="player-name"><?= $pp->player_display_name; ?></span></h2>
+									<h3 class="br-text-18 text-center layer base w300 grey-300"><span class="player-email"><?= $pp->player_email; ?></span></h3>
 								</div>
 								<?php if($config['rate_quests']['value']>0){ ?>
 									<div class="grow-1">
@@ -98,10 +98,10 @@
 							<div class="layer base w-full relative flex">
 								<div class="padding-20 player-entry-data w-full">
 									<div class=" padding-5">
-										<h4 class="font _14 pull-right text-right">
+										<h4 class="br-text-14 pull-right text-right">
 											<?= __("Published","bluerabbit");?> <span class="font w900"><?=$pp->pp_date; ?></span> / <?= __("Modified","bluerabbit");?> <span class="font w900"><?=$pp->pp_modified; ?></span><h4>
 										</h4>
-										<h2 class="font _18 yellow-400 w900 uppercase"><?= __("Player Entry","bluerabbit"); ?>:</h2>
+										<h2 class="br-text-18 yellow-400 w900 uppercase"><?= __("Player Entry","bluerabbit"); ?>:</h2>
 									</div>
 									<div class="padding-5 player-entry-content">
 										<?= apply_filters('the_content',$pp->pp_content); ?>
@@ -111,14 +111,14 @@
 						</div>
 					<?php } ?>
 					<div class="highlight padding-10">
-						<h2 class="font _20 w900 uppercase padding-10"><?= __("Milestone Data","bluerabbit"); ?></h2>
-						<h4 class="font _14 white-color w900 uppercase padding-5 text-center"><?= __("Total Entries","bluerabbit")." <strong>".count($player_posts)."</strong>"; ?></h4>
+						<h2 class="br-text-20 w900 uppercase padding-10"><?= __("Milestone Data","bluerabbit"); ?></h2>
+						<h4 class="br-text-14 white-color w900 uppercase padding-5 text-center"><?= __("Total Entries","bluerabbit")." <strong>".count($player_posts)."</strong>"; ?></h4>
 						<span class="icon-group">
-							<span class="button-icon font _18 sq-30  amber-bg-400">
+							<span class="br-icon-btn br-icon-btn-sm  amber-bg-400">
 								<span class="icon icon-star"></span>
 							</span>
 							<span class="icon-content">
-								<span class="line font _24"><?= __("Milestone Rating","bluerabbit")." <strong>".$rating/count($player_posts)."</strong>"; ?></span>
+								<span class="line br-text-24"><?= __("Milestone Rating","bluerabbit")." <strong>".$rating/count($player_posts)."</strong>"; ?></span>
 							</span>
 						</span>
 						<input type="hidden" id="file_prefix" value="<?= $q->quest_type.'-'.$q->quest_id.'-'; ?>">
@@ -136,10 +136,10 @@
 				<br class="clear">
 				<input type="hidden" id="grade_nonce" value="<?= wp_create_nonce('br_grade_nonce'); ?>"/>
 			<?php }else{ ?>
-				- <h2 class="white-color font _30 text-center padding-20"><?= __("No player posts to display","bluerabbit"); ?></h2> -
+				- <h2 class="white-color br-text-30 text-center padding-20"><?= __("No player posts to display","bluerabbit"); ?></h2> -
 			<?php } ?>
 		<?php }else{ ?>
-			- <h2 class="white-color font _24 text-center padding-20"><?= __("This milestone doesn't exist","bluerabbit"); ?></h2> -
+			- <h2 class="white-color br-text-24 text-center padding-20"><?= __("This milestone doesn't exist","bluerabbit"); ?></h2> -
 		<?php } ?>
 	<?php }else{ ?>
 		<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
