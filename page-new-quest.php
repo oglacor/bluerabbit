@@ -133,16 +133,16 @@ if ($has_qr) {
 						<?php $thumb_id = 'the_quest_badge'; $file = $is_edit ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
 						
 						
-<?php if ($has_qr) { ?>
-<div class="br-gallery-item" id="qr-code-<?= $quest->quest_id; ?>_wrap">
-	<div class="br-gallery-thumb" style="background-image:url(<?= $qr_file_url; ?>);">
-		<span class="br-gallery-placeholder">&nbsp;</span>
-	</div>
-	<a class="br-btn br-btn-sm" href="<?= $qr_file_url; ?>" target="_blank" download>
-		<span class="icon icon-image"></span> <?= __("Download QR", "bluerabbit"); ?>
-	</a>
-</div>
-<?php } ?>						
+                        <?php if ($has_qr) { ?>
+                        <div class="br-gallery-item" id="qr-code-<?= $quest->quest_id; ?>_wrap">
+                            <div class="br-gallery-thumb" style="background-image:url(<?= $qr_file_url; ?>);">
+                                <span class="br-gallery-placeholder">&nbsp;</span>
+                            </div>
+                            <a class="br-btn br-btn-sm" href="<?= $qr_file_url; ?>" target="_blank" download>
+                                <span class="icon icon-image"></span> <?= __("Download QR", "bluerabbit"); ?>
+                            </a>
+                        </div>
+                        <?php } ?>						
 
 
 				</div>

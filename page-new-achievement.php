@@ -69,21 +69,23 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						<div class="br-gallery br-gallery-single">
 							<?php $thumb_id = 'the_achievement_badge'; $file = isset($a) ? $a->achievement_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
 						</div>
+
+                        
 					</div>
 				</div>
 				<?php if ($is_edit && !empty($a->achievement_qrcode)) { ?>
-				<div class="br-form-group">
-					<label class="br-form-label"><?= __("QR Code", "bluerabbit"); ?></label>
-					<div class="br-form-component">
-						<div class="br-gallery br-gallery-single">
-							<div class="br-gallery-item" id="achievement-qr-code-<?= $a->achievement_id; ?>">
-								<div class="br-gallery-thumb">
-									<img src="<?= esc_url($a->achievement_qrcode); ?>" class="br-qr-preview" title="<?= __('QR Code', 'bluerabbit'); ?>">
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                    <div class="br-form-group">
+                        <label class="br-form-label"><?= __("QR Code", "bluerabbit"); ?></label>
+                        <div class="br-form-component">
+                            <div class="br-gallery br-gallery-single">
+                                <div class="br-gallery-item" id="achievement-qr-code-<?= $a->achievement_id; ?>">
+                                    <div class="br-gallery-thumb">
+                                        <img src="<?= esc_url($a->achievement_qrcode); ?>" class="br-qr-preview" title="<?= __('QR Code', 'bluerabbit'); ?>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 				<?php } ?>
 			</div>
 

@@ -1,0 +1,14 @@
+# Source maps (we compile with --no-source-map)
+*.css.map
+
+# Accidental Windows NUL device files
+nul
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+node_modules/
