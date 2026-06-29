@@ -29,6 +29,22 @@ if ($adventure && ($isGM || $isAdmin)) {
 	$is_edit = (isset($quest) && $quest);
 	$adventures = $adventures ?? $wpdb->get_results("SELECT adventure_id, adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_status='publish'");
 ?>
+<?php
+$has_qr = ($is_edit && isset($quest->quest_qr_token) && $quest->quest_qr_token);
+if ($has_qr) {
+	$qr_url = get_bloginfo('url') . "/quest-qr/?token=" . $quest->quest_qr_token;
+	$qr_dir = WP_CONTENT_DIR . '/uploads/br-quest-qr/';
+	$qr_url_base = content_url('uploads/br-quest-qr/');
+	if (!file_exists($qr_dir)) wp_mkdir_p($qr_dir);
+	$qr_filename = 'quest-' . $quest->quest_id . '.png';
+	$qr_file_path = $qr_dir . $qr_filename;
+	$qr_file_url = $qr_url_base . $qr_filename;
+	if (!file_exists($qr_file_path)) {
+		require_once(get_template_directory() . "/libs/phpqrcode/qrlib.php");
+		QRcode::png($qr_url, $qr_file_path, QR_ECLEVEL_M, 6);
+	}
+}
+?>
 
 <div class="br-page br-has-bottom-bar">
 
@@ -113,9 +129,22 @@ if ($adventure && ($isGM || $isAdmin)) {
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 				<div class="br-form-component">
-					<div class="br-gallery br-gallery-single">
+					<div class="br-gallery br-gallery-multiple">
 						<?php $thumb_id = 'the_quest_badge'; $file = $is_edit ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
-					</div>
+						
+						
+<?php if ($has_qr) { ?>
+<div class="br-gallery-item" id="qr-code-<?= $quest->quest_id; ?>_wrap">
+	<div class="br-gallery-thumb" style="background-image:url(<?= $qr_file_url; ?>);">
+		<span class="br-gallery-placeholder">&nbsp;</span>
+	</div>
+	<a class="br-btn br-btn-sm" href="<?= $qr_file_url; ?>" target="_blank" download>
+		<span class="icon icon-image"></span> <?= __("Download QR", "bluerabbit"); ?>
+	</a>
+</div>
+<?php } ?>						
+
+
 				</div>
 			</div>
 		</div>
@@ -237,7 +266,7 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<?php if ($is_edit) { ?>
 		<button class="br-btn" onClick="showOverlay('#list-of-adventures');"><span class="icon icon-infinite"></span> <?= __("Duplicate", "bluerabbit"); ?></button>
 		<div class="confirm-action overlay-layer red-bg-400" id="list-of-adventures">
-			<span class="line font _14 w900 white-color"><?= __("Select destination", "bluerabbit"); ?></span>
+			<span class="line br-text-14 w900 white-color"><?= __("Select destination", "bluerabbit"); ?></span>
 			<select class="form-ui" id="adventure_target">
 				<?php foreach ($adventures as $c) { ?>
 				<option value="<?= $c->adventure_id; ?>"><?= $c->adventure_id == $adventure->adventure_id ? __("Same adventure", "bluerabbit") : esc_html($c->adventure_title); ?></option>
@@ -250,23 +279,6 @@ if ($adventure && ($isGM || $isAdmin)) {
 		<?php } ?>
 	</div>
 </div>
-
-<?php if ($is_edit && isset($quest->quest_qr_token) && $quest->quest_qr_token) { ?>
-<style>.br-form-bottom-bar::after{content:'';display:none}</style>
-<?php
-$qr_url = get_bloginfo('url') . "/quest-qr/?token=" . $quest->quest_qr_token;
-$qr_dir = WP_CONTENT_DIR . '/uploads/br-quest-qr/';
-$qr_url_base = content_url('uploads/br-quest-qr/');
-if (!file_exists($qr_dir)) wp_mkdir_p($qr_dir);
-$qr_filename = 'quest-' . $quest->quest_id . '.png';
-$qr_file_path = $qr_dir . $qr_filename;
-$qr_file_url = $qr_url_base . $qr_filename;
-if (!file_exists($qr_file_path)) {
-	require_once(get_template_directory() . "/libs/phpqrcode/qrlib.php");
-	QRcode::png($qr_url, $qr_file_path, QR_ECLEVEL_M, 6);
-}
-?>
-<?php } ?>
 
 <?php
 $steps_json = [];
