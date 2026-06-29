@@ -42,29 +42,29 @@
 			<div class="active tab max-w-900 padding-10" id="general">
 				<div class="highlight padding-10 grey-bg-200 sticky top left layer base">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  indigo-bg-400">
+						<span class="br-icon-btn br-icon-btn-indigo">
 							<span class="icon icon-adventure white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
 							<span class="line"><?= __('General Settings',"bluerabbit"); ?></span>
-							<span class="line font _14 w300 grey-500"><?= __('Basic settings','bluerabbit'); ?></span>
+							<span class="line br-text-14 w300 grey-500"><?= __('Basic settings','bluerabbit'); ?></span>
 						</span>
 					</span>
 				</div>
 				<table class="table w-full" cellpadding="0">
 					<thead>
-						<tr class="font _12 grey-600">
+						<tr class="br-text-12 grey-600">
 							<td class="text-right w-150"><?= __('Setting','bluerabbit'); ?></td>
 							<td><?= __('Value','bluerabbit'); ?></td>
 						</tr>
 					</thead>
-					<tbody class="font _16">
+					<tbody class="br-text-16">
 						<tr>
 							<td class="text-right w-150"><?= __('Name','bluerabbit'); ?></td>
 							<td>
 								<div class="input-group w-full">
-									<label class="light-blue-bg-800 font _24"><span class="icon icon-quest"></span></label>
-									<input class="form-ui font _30 w-full" placeholder="Organization Name" maxlength="50" type="text" value="<?= $org->org_name; ?>" id="the-org-name">
+									<label class="light-blue-bg-800 br-text-24"><span class="icon icon-quest"></span></label>
+									<input class="form-ui br-text-30 w-full" placeholder="Organization Name" maxlength="50" type="text" value="<?= $org->org_name; ?>" id="the-org-name">
 								</div>
 							</td>
 						</tr>
@@ -105,12 +105,12 @@
 				?>
 				<div class="highlight padding-10 grey-bg-200" id="org-players">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-200">
+						<span class="br-icon-btn br-icon-btn-orange-light">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
-							<span class="line font _24 w300"><?= __("Player","bluerabbit"); ?></span>
-							<span class="line font _14 w900"><?= __("Total","bluerabbit")." ".$total_org_players; ?></span>
+							<span class="line br-text-24 w300"><?= __("Player","bluerabbit"); ?></span>
+							<span class="line br-text-14 w900"><?= __("Total","bluerabbit")." ".$total_org_players; ?></span>
 						</span>
 					</div>
 				</div>
@@ -128,12 +128,12 @@
 				</div>
 				<div class="highlight padding-10 grey-bg-200" id="org-players">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-200">
+						<span class="br-icon-btn br-icon-btn-orange-light">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
-							<span class="line font _24 w300"><?= __("Player","bluerabbit"); ?></span>
-							<span class="line font _14 w900"><?= __("Total","bluerabbit")." ".$total_org_players; ?></span>
+							<span class="line br-text-24 w300"><?= __("Player","bluerabbit"); ?></span>
+							<span class="line br-text-14 w900"><?= __("Total","bluerabbit")." ".$total_org_players; ?></span>
 						</span>
 					</div>
 					<div class="highlight-cell pull-right">
@@ -190,12 +190,12 @@
 				?>
 				<div class="highlight padding-10 grey-bg-200" id="org-adventures">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-200">
+						<span class="br-icon-btn br-icon-btn-orange-light">
 							<span class="icon icon-players white-color"></span>
 						</span>
 						<span class="icon-content font w500 _26">
-							<span class="line font _24 w300"><?= __("Adventure","bluerabbit"); ?></span>
-							<span class="line font _14 w900"><?= __("Total","bluerabbit")." ".$total_org_adventures; ?></span>
+							<span class="line br-text-24 w300"><?= __("Adventure","bluerabbit"); ?></span>
+							<span class="line br-text-14 w900"><?= __("Total","bluerabbit")." ".$total_org_adventures; ?></span>
 						</span>
 					</div>
 					<div class="highlight-cell pull-right">
@@ -252,11 +252,11 @@
 <div class="hidden" id="msg-player-added-to-org">
 	<li class='border green-bg-400 green-border-800'>
 		<span class='icon-group'>
-			<span class='button-icon font _24 sq-40'>
+			<span class='br-icon-btn'>
 				<span class='icon white-color'></span>
 			</span>
 			<span class='icon-content white-color'>
-				<span class='line font _16'><?= __("Player added to Org!","bluerabbit"); ?></span>
+				<span class='line br-text-16'><?= __("Player added to Org!","bluerabbit"); ?></span>
 			</span>
 		</span>
 	</li>
@@ -264,11 +264,11 @@
 <div class="hidden" id="msg-player-not-added-to-org">
 	<li class='border red-bg-400 red-border-800'>
 		<span class='icon-group'>
-			<span class='button-icon font _24 sq-40'>
+			<span class='br-icon-btn'>
 				<span class='icon white-color'></span>
 			</span>
 			<span class='icon-content white-color'>
-				<span class='line font _16'><?= __("Error!","bluerabbit"); ?></span>
+				<span class='line br-text-16'><?= __("Error!","bluerabbit"); ?></span>
 			</span>
 		</span>
 	</li>
