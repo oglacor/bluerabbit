@@ -69,7 +69,7 @@
 
 <div class="tabs boxed max-w-900">
 	<div class="tab-header text-center" id="post-tabs-buttons">
-		<h1 class="font _40 w400 margin-20 white-color"><?= $q->quest_title; ?></h1>
+		<h1 class="br-text-40 w400 margin-20 white-color"><?= $q->quest_title; ?></h1>
 		<button id="summary-tab-button" class="tab-button transparent-bg button form-ui relative white-color active" onClick="switchTabs('#post-tabs','#summary')">
 			<span class="layer base relative"><?= __("Summary","bluerabbit"); ?></span>
 			<span class="background absolute sq-full layer inactive-content grey-bg-800"></span>
@@ -104,25 +104,25 @@
 				<img src="<?= $q->mech_badge; ?>" class="w-full max-w-300">
 				<div class="absolute layer base w-full padding-10 bottom left text-center">
 					
-					<span class="relative layer base icon icon-check font _40 lime-500"></span>
+					<span class="relative layer base icon icon-check br-text-40 lime-500"></span>
 					<div class="layer background grey-gradient-900"></div>
 				</div>
 			</div>
 			<div class="text-center padding-10">
 				<span class="icon-group inline-table">
-					<span class="button-icon font _24 sq-40  amber-bg-400 font _28">
+					<span class="br-icon-btn br-icon-btn-amber">
 						<span class="icon icon-star white-color "></span>
 					</span>
 					<span class="icon-content">
-						<span class="line font _24 w600 amber-800"><?= BR_Utils::instance()->toMoney($q->mech_xp,""); ?></span>
-						<span class="line font _14 grey-500"><?= $xp_label; ?></span>
+						<span class="line br-text-24 w600 amber-800"><?= BR_Utils::instance()->toMoney($q->mech_xp,""); ?></span>
+						<span class="line br-text-14 grey-500"><?= $xp_label; ?></span>
 					</span>
-					<span class="button-icon font _24 sq-40  green-bg-400 font _28">
+					<span class="br-icon-btn br-icon-btn-green">
 						<span class="icon icon-bloo white-color "></span>
 					</span>
 					<span class="icon-content">
-						<span class="line font _24 w600 green-800"><?= BR_Utils::instance()->toMoney($q->mech_bloo,""); ?></span>
-						<span class="line font _14 grey-500"><?= $bloo_label; ?></span>
+						<span class="line br-text-24 w600 green-800"><?= BR_Utils::instance()->toMoney($q->mech_bloo,""); ?></span>
+						<span class="line br-text-14 grey-500"><?= $bloo_label; ?></span>
 					</span>
 				</span>
 			</div>
@@ -131,12 +131,12 @@
 					<div class="background layer absolute sq-full purple-gradient-400 opacity-50"></div>
 					<img src="<?= $achievement_reward->achievement_badge;?>" class="w-150 margin-5 grey-bg-50 overflow-hidden border rounded-max layer relative base cursor-pointer" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
 					<div class="icon-group inline-table layer relative base">
-						<button class="button-icon font _24 sq-40  purple-bg-400 font _28" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
+						<button class="br-icon-btn br-icon-btn-purple" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
 							<span class="icon icon-achievement white-color"></span>
 						</button>
 						<span class="icon-content">
-							<span class="line white-color font w100 _12 opacity-80"><?php _e("You earned an achievement","bluerabbit");?></span>
-							<span class="line white-color font w900 _18"><?= $achievement_reward->achievement_name;?></span>
+							<span class="line white-color br-text-12 w100 opacity-80"><?php _e("You earned an achievement","bluerabbit");?></span>
+							<span class="line white-color br-text-18 w900"><?= $achievement_reward->achievement_name;?></span>
 						</span>
 					</div>
 				</div>
@@ -146,12 +146,12 @@
 					<div class="background layer absolute sq-full teal-gradient-400 opacity-50"></div>
 					<img src="<?= $item_reward->item_badge;?>" class="w-150 margin-5 grey-bg-50 overflow-hidden border rounded-max layer relative base">
 					<div class="icon-group inline-table layer relative base">
-						<a class="button-icon font _24 sq-40 teal-bg-400 font _28" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id";?>">
+						<a class="br-icon-btn br-icon-btn-teal" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id";?>">
 							<span class="icon icon-backpack white-color"></span>
 						</a>
 						<span class="icon-content">
-							<span class="line white-color font w100 _12 opacity-80"><?php _e("You found an item","bluerabbit");?></span>
-							<span class="line white-color font w900 _18"><?= $item_reward->item_name;?></span>
+							<span class="line white-color br-text-12 w100 opacity-80"><?php _e("You found an item","bluerabbit");?></span>
+							<span class="line white-color br-text-18 w900"><?= $item_reward->item_name;?></span>
 						</span>
 					</div>
 				</div>
@@ -167,7 +167,7 @@
 						$my_quests = BR_Quest::instance()->getMyQuests($adventure->adventure_id);
 						$my_achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id); 
 					?>
-					<h4 class="font _24 white-color w900 uppercase padding-20 text-center"><?php _e("Requirements","bluerabbit"); ?>: </h4>
+					<h4 class="br-text-24 white-color w900 uppercase padding-20 text-center"><?php _e("Requirements","bluerabbit"); ?>: </h4>
 					<div class="highlight padding-10">
 						<div class="card-deck">
 							<?php foreach($reqs as $r){
@@ -194,24 +194,24 @@
 
 					<div class="icon-group inline-table">
 						<span class="icon-content">
-							<span class="line font _24 amber-800"><?php _e("Rating","bluerabbit"); ?></span>
-							<span class="line font _14 grey-400"><?php _e("Rate this quest please!","bluerabbit"); ?></span>
+							<span class="line br-text-24 amber-800"><?php _e("Rating","bluerabbit"); ?></span>
+							<span class="line br-text-14 grey-400"><?php _e("Rate this quest please!","bluerabbit"); ?></span>
 						</span>
 					</div>
 					<div class="icon-group rating inline-table">
-						<button id="rating-star-1" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 1 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,1);">
+						<button id="rating-star-1" class="br-icon-btn button <?= $q->pp_quest_rating >= 1 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,1);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-2" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 2 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,2);">
+						<button id="rating-star-2" class="br-icon-btn button <?= $q->pp_quest_rating >= 2 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,2);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-3" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 3 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,3);">
+						<button id="rating-star-3" class="br-icon-btn button <?= $q->pp_quest_rating >= 3 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,3);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-4" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 4 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,4);">
+						<button id="rating-star-4" class="br-icon-btn button <?= $q->pp_quest_rating >= 4 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,4);">
 							<span class="icon icon-star"></span>
 						</button>
-						<button id="rating-star-5" class="button-icon button font _24 sq-40  <?= $q->pp_quest_rating >= 5 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,5);">
+						<button id="rating-star-5" class="br-icon-btn button <?= $q->pp_quest_rating >= 5 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,5);">
 							<span class="icon icon-star"></span>
 						</button>
 					</div>
@@ -221,9 +221,9 @@
 		<div class="tab" id="quest-answer">
 			<?php if($q->quest_type == 'challenge'){  ?>
 				<div class="highlight padding-10 brown-bg-50">
-					<h3 class="font _18 w700 brown-400 text-center condensed uppercase"><?php _e("Challenge","bluerabbit");?></h3>
+					<h3 class="br-text-18 w700 brown-400 text-center condensed uppercase"><?php _e("Challenge","bluerabbit");?></h3>
 					<table width="100%" align="center">
-						<tr class="font w900 _40 condensed brown-400">
+						<tr class="br-text-40 w900 condensed brown-400">
 							<td class="text-center"><?= $q->mech_answers_to_win; ?></td>
 							<td class="text-center">
 								<?php if($q->mech_max_attempts > 0){ ?>
@@ -242,7 +242,7 @@
 								?>
 							</td>
 						</tr>
-						<tr class="font w100 _12 grey-600">
+						<tr class="br-text-12 w100 grey-600">
 							<td class="text-center"><?php _e("Answers"); ?></td>
 							<td class="text-center"><?php _e("Max Attempts"); ?></td>
 							<td class="text-center"><?php _e("Time Limit"); ?></td>
@@ -251,13 +251,13 @@
 				</div>
 				<div class="highlight padding-10 grey-bg-50">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  brown-bg-400">
+						<span class="br-icon-btn br-icon-btn-brown">
 							<span class="icon icon-challenge"></span>
 						</span>
-						<span class="icon-content font _18 w700 brown-400">
+						<span class="icon-content br-text-18 w700 brown-400">
 							<?php _e("Your attempts","bluerabbit");?>
 						</span>
-						<span class="icon-content text-right font _24 w300 grey-800">
+						<span class="icon-content text-right br-text-24 w300 grey-800">
 							<?= __("Your best grade","bluerabbit").": <strong class='green-400 font w900'>".$best_grade."</strong>"; ?>
 						</span>
 					</span>
@@ -294,11 +294,11 @@
 										<td>
 											<?php if($att->attempt_status=='success'){ ?>
 												<?php $att_success=true; ?>
-												<span class="button-icon font _24 sq-40  icon-sm green-bg-400">
+												<span class="br-icon-btn br-icon-btn-green">
 													<span class="icon icon-check"></span>
 												</span>
 											<?php }else{ ?>
-												<span class="button-icon font _24 sq-40  icon-sm red-bg-400">
+												<span class="br-icon-btn br-icon-btn-red">
 													<span class="icon icon-cancel"></span>
 												</span>
 											<?php } ?>
@@ -310,11 +310,11 @@
 					<?php } ?>
 				</div>
 			<?php }else{ ?>
-					<h2 class="font _24"><?php _e("Your answer","bluerabbit");?></h2>
+					<h2 class="br-text-24"><?php _e("Your answer","bluerabbit");?></h2>
 					<?php if($q->pp_date == $q->pp_modified){ ?>
-						<h4 class="font _14 grey-500"><?= __("Published","bluerabbit").":<em> $q->pp_date </em>"; ?></h4>
+						<h4 class="br-text-14 grey-500"><?= __("Published","bluerabbit").":<em> $q->pp_date </em>"; ?></h4>
 					<?php }else{ ?>
-						<h4 class="font _14 red-500"><?= __("Modified","bluerabbit").":<em> $q->pp_modified </em>"; ?></h4>
+						<h4 class="br-text-14 red-500"><?= __("Modified","bluerabbit").":<em> $q->pp_modified </em>"; ?></h4>
 					<?php } ?>
 					<?php if($isGM && $adventure->adventure_grade_scale != 'none'){ ?>
 						<?php $the_grade = $q->pp_grade; ?>
@@ -356,7 +356,7 @@
 		</div>
 		<?php if($q->quest_success_message){ ?>
 			<div class="tab" id="success-message">
-				<h2 class="font _24 grey-500"><?php _e("This information should help you on your journey!","bluerabbit");?></h2>
+				<h2 class="br-text-24 grey-500"><?php _e("This information should help you on your journey!","bluerabbit");?></h2>
 				<div class="content">
 					<?= apply_filters('the_content',$q->quest_success_message); ?>
 				</div>
@@ -364,7 +364,7 @@
 		<?php } ?>
 		<?php if($q->quest_type == 'quest'){ ?>
 			<div class="tab" id="instructions">
-				<h2 class="font _24 grey-500 margin-20"><?php _e("Quest instructions","bluerabbit");?></h2>
+				<h2 class="br-text-24 grey-500 margin-20"><?php _e("Quest instructions","bluerabbit");?></h2>
 				<div class="content">
 					<?= apply_filters('the_content',$q->quest_content); ?>
 				</div>
