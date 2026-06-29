@@ -9,9 +9,9 @@
 <div class="boxed w-full max-w-900 padding-10 white-bg">
 	<div class="w-full padding-10 cyan-bg-50 relative">
 		<div class="icon-group">
-			<div class="button-icon font _24 sq-40 cyan-bg-A400 grey-900"><span class="icon icon-run"></span></div >
+			<div class="br-icon-btn br-icon-btn-cyan grey-900"><span class="icon icon-run"></span></div >
 			<div class="icon-content">
-				<div class="line font _24 grey-800">
+				<div class="line br-text-24 grey-800">
 					<?= ($adventure && isset($encounter)) ? __("Edit Encounter","bluerabbit") : __("New Encounter","bluerabbit"); ?>
 				</div>
 				<input type="hidden" id="the_enc_id" value="<?= isset($encounter) ? $encounter->enc_id : ""; ?>">
@@ -23,12 +23,12 @@
 	</div>
 	<table class="table w-full" cellpadding="0">
 		<thead>
-			<tr class="font _12 grey-600">
+			<tr class="br-text-12 grey-600">
 				<td class="text-right w-150"><?= __('Setting','bluerabbit'); ?></td>
 				<td><?= __('Value','bluerabbit'); ?></td>
 			</tr>
 		</thead>
-		<tbody class="font _16">
+		<tbody class="br-text-16">
 			<tr>
 				<td class="text-right w-150"><?= __('Encounter Level','bluerabbit'); ?></td>
 				<td>
@@ -54,7 +54,7 @@
 				<td class="text-right w-150"><?= __('Question','bluerabbit'); ?></td>
 				<td>
 					<div class="input-group w-full">
-						<textarea class="form-ui font _24 foreground grey-bg-100" placeholder="<?= __("Type your question","bluerabbit"); ?>" rows="4" value="<?= isset($encounter->enc_question) ? $encounter->enc_question : ""; ?>" id="the_enc_question"><?= isset($encounter->enc_question) ? $encounter->enc_question : ""; ?></textarea>
+						<textarea class="form-ui br-text-24 foreground grey-bg-100" placeholder="<?= __("Type your question","bluerabbit"); ?>" rows="4" value="<?= isset($encounter->enc_question) ? $encounter->enc_question : ""; ?>" id="the_enc_question"><?= isset($encounter->enc_question) ? $encounter->enc_question : ""; ?></textarea>
 					</div>
 				</td>
 			</tr>
@@ -63,7 +63,7 @@
 					<?= __('Correct Option','bluerabbit'); ?>
 				</td>
 				<td>
-					<textarea class="form-ui font _18" placeholder="<?= __("Correct option","bluerabbit"); ?>" rows="3"  value="<?= isset($encounter->enc_right_option) ? $encounter->enc_right_option : ""; ?>" id="the_enc_correct"><?= isset($encounter->enc_right_option) ? $encounter->enc_right_option : ""; ?></textarea>
+					<textarea class="form-ui br-text-18" placeholder="<?= __("Correct option","bluerabbit"); ?>" rows="3"  value="<?= isset($encounter->enc_right_option) ? $encounter->enc_right_option : ""; ?>" id="the_enc_correct"><?= isset($encounter->enc_right_option) ? $encounter->enc_right_option : ""; ?></textarea>
 				</td>
 			</tr>
 			<tr>
@@ -71,7 +71,7 @@
 					<?= __('Decoy Option 1','bluerabbit'); ?>
 				</td>
 				<td>
-					<textarea class="form-ui font _18" placeholder="<?= __("Decoy option","bluerabbit"); ?>" rows="3"  value="<?= isset($encounter->enc_decoy_option1) ? $encounter->enc_decoy_option1 : ""; ?>" id="the_enc_decoy1"><?= isset($encounter->enc_decoy_option1) ? $encounter->enc_decoy_option1 : ""; ?></textarea>
+					<textarea class="form-ui br-text-18" placeholder="<?= __("Decoy option","bluerabbit"); ?>" rows="3"  value="<?= isset($encounter->enc_decoy_option1) ? $encounter->enc_decoy_option1 : ""; ?>" id="the_enc_decoy1"><?= isset($encounter->enc_decoy_option1) ? $encounter->enc_decoy_option1 : ""; ?></textarea>
 				</td>
 			</tr>
 			<tr>
@@ -79,7 +79,7 @@
 					<?= __('Decoy Option 2','bluerabbit'); ?>
 				</td>
 				<td>
-					<textarea class="form-ui font _18" placeholder="<?= __("Decoy option","bluerabbit"); ?>" rows="3"  value="<?= isset($encounter->enc_decoy_option2) ? $encounter->enc_decoy_option2 : ""; ?>" id="the_enc_decoy2"><?= isset($encounter->enc_decoy_option2) ? $encounter->enc_decoy_option2 : ""; ?></textarea>
+					<textarea class="form-ui br-text-18" placeholder="<?= __("Decoy option","bluerabbit"); ?>" rows="3"  value="<?= isset($encounter->enc_decoy_option2) ? $encounter->enc_decoy_option2 : ""; ?>" id="the_enc_decoy2"><?= isset($encounter->enc_decoy_option2) ? $encounter->enc_decoy_option2 : ""; ?></textarea>
 				</td>
 			</tr>
 			<tr>
@@ -89,8 +89,8 @@
 						<div class="gallery-item setting">
 							<div class="background" style="background-image: url(<?= isset($encounter->enc_badge) ? $encounter->enc_badge : "" ; ?>);" onClick="showWPUpload('the_enc_badge');" id="the_enc_badge_thumb"></div>
 							<div class="gallery-item-options relative">
-								<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_enc_badge');"><span class="icon icon-image"></span></button>
-								<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_enc_badge');"> <span class="icon icon-trash"></span> </button>
+								<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_enc_badge');"><span class="icon icon-image"></span></button>
+								<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_enc_badge');"> <span class="icon icon-trash"></span> </button>
 								<input type="hidden" id="the_enc_badge" value="<?= isset($encounter->enc_badge) ? $encounter->enc_badge : "" ; ?>"/>
 							</div>
 						</div>

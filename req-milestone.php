@@ -20,54 +20,54 @@
 		<div class="background blue-grey-gradient-900 border rounded-8 "></div>
 		<div class="layer base relative text-center padding-10 border rounded-8">
 			<?php if($isFinished){ ?>
-				<h3 class="font _24 w900 white-color"><?= $mi->quest_title; ?></h3>
+				<h3 class="br-text-24 w900 white-color"><?= $mi->quest_title; ?></h3>
 				<div class="sq-100 relative border rounded-max text-center inline-block background text-center margin-10 overflow-hidden"  style="background-image: url(<?= $mi->mech_badge; ?>);">
 				</div>
-				<span class="button-icon absolute font _36 lime-bg-400 layer overlay req-status">
+				<span class="br-icon-btn absolute br-text-30 lime-bg-400 layer overlay req-status">
 					<span class="icon-check lime-900 perfect-center"></span>
 				</span>
 				<br>
 				<?php
 				if($mi->quest_achievement_id > 0){
 					if(!in_array($mi->quest_achievement_id, $player_achievements)){ ?>
-						<button class="form-ui font _18 grey-bg-800 lime-400" disabled>
+						<button class="form-ui br-text-18 grey-bg-800 lime-400" disabled>
 							<?= __("Finished by","bluerabbit"); ?>
 							<?= $work_authors[$mi->quest_id]; ?>
 							
 						</button>
 					<?php }else{ ?>
-						<button class="form-ui font _18 green-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
+						<button class="form-ui br-text-18 green-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
 							<?= __("View","bluerabbit"); ?>
 						</button>
 					<?php }
 				} else{?>
-					<button class="form-ui font _18 green-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
+					<button class="form-ui br-text-18 green-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
 						<?= __("View","bluerabbit"); ?>
 					</button>
 				<?php }?>
 			
 			
 			<?php }else{?>
-				<h3 class="font _24 w900 white-color"><?= $mi->quest_title; ?></h3>
+				<h3 class="br-text-24 w900 white-color"><?= $mi->quest_title; ?></h3>
 				<div class="sq-100 relative border rounded-max text-center inline-block background text-center margin-10 overflow-hidden"  style="background-image: url(<?= $mi->mech_badge; ?>);">
 				</div>
-				<span class="button-icon perfect-center absolute font _36 red-bg-400 layer overlay  req-status">
+				<span class="br-icon-btn perfect-center absolute br-text-30 red-bg-400 layer overlay  req-status">
 					<span class="icon-cancel perfect-center"></span>
 				</span>
 				<br>
 				<?php
 				if($mi->quest_achievement_id > 0){
 					if(!in_array($mi->quest_achievement_id, $player_achievements)){ ?>
-						<button class="form-ui font _18" disabled>
+						<button class="form-ui br-text-18" disabled>
 							<?= __("Ask a guild member for help!","bluerabbit"); ?>
 						</button>
 					<?php }else{ ?>
-						<button class="form-ui font _18 blue-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
+						<button class="form-ui br-text-18 blue-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
 							<?= __("Attempt now!","bluerabbit"); ?>
 						</button>
 					<?php }
 				} else{?>
-					<button class="form-ui font _18 blue-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
+					<button class="form-ui br-text-18 blue-bg-400" onClick="loadQuestCard(<?= $mi->quest_id; ?>);">
 						<?= __("Attempt now!","bluerabbit"); ?>
 					</button>
 
