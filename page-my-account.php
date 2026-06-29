@@ -38,18 +38,18 @@
 					<div class="active tab max-w-900 padding-10" id="general">
 						<table class="table w-full" cellpadding="0">
 							<thead>
-								<tr class="font _12 grey-600">
+								<tr class="br-text-12 grey-600">
 									<td class="text-right w-150"><?= __('Setting','bluerabbit'); ?></td>
 									<td><?= __('Value','bluerabbit'); ?></td>
 								</tr>
 							</thead>
-							<tbody class="font _16">
+							<tbody class="br-text-16">
 								<tr>
 									<td class="text-right w-150"><?= __('Profile Picture','bluerabbit'); ?></td>
 									<td>
                                         <div class="status" style="background-image: url(<?= $picture; ?>);" id="the_player_picture_thumb">
                                             <img class="rotate-R-120" src="<?= get_bloginfo('template_directory')."/images/1.png";?>">
-                                            <button class="button-icon absolute perfect-center green-bg-400 layer foreground font _18 padding-5" onClick="showWPUpload('the_player_picture','profile-autosave');">
+                                            <button class="button-icon absolute perfect-center green-bg-400 layer foreground br-text-18 padding-5" onClick="showWPUpload('the_player_picture','profile-autosave');">
                                                 <span class="icon icon-edit"></span>
                                             </button>
                                             <input type="hidden" id="the_player_picture" value="<?= $picture; ?>"/>
@@ -71,8 +71,8 @@
 								<tr>
 									<td class="text-right w-150"><?= __('Player Level','bluerabbit'); ?></td>
 									<td>
-                                        <h2 class="font _36 w900"><?= $player_account->player_absolute_level; ?></h2>
-                                        <p class="font _14 w500 opacity-50"><?= __("This level reflects the average between all registered adventures","bluerabbit"); ?></p>
+                                        <h2 class="br-text-30 w900"><?= $player_account->player_absolute_level; ?></h2>
+                                        <p class="br-text-14 w500 opacity-50"><?= __("This level reflects the average between all registered adventures","bluerabbit"); ?></p>
 									</td>
 								</tr>
 								<tr>
@@ -150,7 +150,7 @@
 									<td class="text-right w-150">&nbsp;</td>
 									<td class="text-right">
                                         <input type="hidden" id="profile_nonce" value='<?= wp_create_nonce('br_profile_post_nonce') ?>'>
-                                        <button class="form-ui font _18 green-bg-400" onClick="updateProfile();"><?php _e('Save','bluerabbit'); ?></button>
+                                        <button class="form-ui br-text-18 green-bg-400" onClick="updateProfile();"><?php _e('Save','bluerabbit'); ?></button>
 									</td>
 								</tr>
                             </tbody>
@@ -159,18 +159,18 @@
 		
 		<?php if($config['use_hexad']['value']>0){ ?>
 			<div class="tab padding-10" id="hexad">
-				<h3 class="white-color font _24 w300"><?php _e('My Player Type','bluerabbit'); ?></h3>
-				<h5 class="font _12 w300 opacity-50 lime-500">
+				<h3 class="white-color br-text-24 w300"><?php _e('My Player Type','bluerabbit'); ?></h3>
+				<h5 class="br-text-12 w300 opacity-50 lime-500">
 					<a href="http://gamified.uk" target="_blank"><?php _e("Read all about Marczewski's player types",'bluerabbit'); ?></a>
 				</h5>
 				<div class="text-center padding-10">
 					<?php if($player_account->hexad_date){ ?>
-						<h3 class="padding-10 font _18 w300 white-color opacity-80"><?= __('Last Tested','bluerabbit')." ".(date('M jS, Y', strtotime($player_account->hexad_date))); ?> </h3>
+						<h3 class="padding-10 br-text-18 w300 white-color opacity-80"><?= __('Last Tested','bluerabbit')." ".(date('M jS, Y', strtotime($player_account->hexad_date))); ?> </h3>
 						<a href="<?= get_bloginfo('url')."/new-hexad"; ?>" class="form-ui green-bg-400">
 							<?php _e("Test again","bluerabbit"); ?> <span class="icon icon-hexad"></span>
 						</a>
 					<?php }else{ ?>
-						<h3 class="padding-10 font _18 w300 white-color opacity-80"><?= __('Never tested','bluerabbit'); ?> </h3>
+						<h3 class="padding-10 br-text-18 w300 white-color opacity-80"><?= __('Never tested','bluerabbit'); ?> </h3>
 						<a href="<?= get_bloginfo('url')."/new-hexad"; ?>" class="form-ui green-bg-400">
 							<?php _e("Test now","bluerabbit"); ?> <span class="icon icon-hexad"></span>
 						</a>
@@ -188,12 +188,12 @@
 					<div class="w-full <?= $player_account->player_hexad_slug; ?> white-color">
 						<div class="text-center">
 							<div class="icon-group inline-table">
-								<span class="button-icon font _36" <?= br_color_attr($color[$player_account->player_hexad_slug]) ?>>
+								<span class="br-icon-btn br-text-30" <?= br_color_attr($color[$player_account->player_hexad_slug]) ?>>
 									<span class="icon icon-<?= $player_account->player_hexad_slug; ?>"></span>
 								</span>
 								<div class="icon-content">
-									<span class="line font _36 w900 <?= $color[$player_account->player_hexad_slug]; ?>-400"><?= $player_account->player_hexad; ?></span>
-									<span class="line font _16 w300"><?php _e("Dominant Player Type","bluerabbit"); ?></span>
+									<span class="line br-text-30 w900 <?= $color[$player_account->player_hexad_slug]; ?>-400"><?= $player_account->player_hexad; ?></span>
+									<span class="line br-text-16 w300"><?php _e("Dominant Player Type","bluerabbit"); ?></span>
 								</div>
 							</div>
 						</div>
@@ -235,7 +235,7 @@
 						</a>
 					</div>
 				<?php }else{ ?>
-					<div class="w-full text-center font _18 white-color padding-10">
+					<div class="w-full text-center br-text-18 white-color padding-10">
 						<?= __("No data available","bluerabbit"); ?>
 					</div>
 				<?php } ?>
@@ -254,8 +254,8 @@
 						<?php $subscription = 'free'; ?>
 						<div class="current-plan text-center">
 							<div class="col-6 ">
-								<h1 class="font _36 condensed padding-10 w900 uppercase"> <?php _e('Subscription','bluerabbit'); ?> </h1>
-								<a href="<?= get_bloginfo('url')."/subscribe/"; ?>" class="button-icon font _24 sq-40  icon-xxl blue-grey"><span class="icon icon-logo"></span></a>
+								<h1 class="br-text-30 condensed padding-10 w900 uppercase"> <?php _e('Subscription','bluerabbit'); ?> </h1>
+								<a href="<?= get_bloginfo('url')."/subscribe/"; ?>" class="br-icon-btn blue-grey"><span class="icon icon-logo"></span></a>
 							</div>
 							<div class="col-6">
 
@@ -290,43 +290,43 @@
                     <?php if($config['show_anonimize_button']['value']>0){ ?>
                             <div class="text-center">
                                 <div class="icon-group padding-10 inline-table white-color">
-                                    <div class="button-icon font _24 sq-40 red-bg-A400">
+                                    <div class="br-icon-btn br-icon-btn-red-dark">
                                         <span class="icon icon-warning"></span>
                                     </div>
                                     <div class="icon-content text-left">
-                                        <span class="line font _24 w100"><?= __("Anonimizer","bluerabbit"); ?></span>
-                                        <span class="line font _14 w900 red-A700"><?= __("This button deletes all your personal data","bluerabbit"); ?></span>
+                                        <span class="line br-text-24 w100"><?= __("Anonimizer","bluerabbit"); ?></span>
+                                        <span class="line br-text-14 w900 red-A700"><?= __("This button deletes all your personal data","bluerabbit"); ?></span>
                                     </div>
                                 </div>
-                                <div class="padding-10 font _16 amber-bg-400 black-color">
+                                <div class="padding-10 br-text-16 amber-bg-400 black-color">
                                     <?= __("When you use the anonimizer, all your personal data converts to random names, pictures and email. Although you can still update your data back to normal, you will lose access to your account on logout. This is done with the sole purpose of keeping the demographic data of your account while protecting your privacy.","bluerabbit"); ?>
                                 </div>
                                 <div class="icon-group padding-10 inline-table relative">
                                     <div class="icon-content">
-                                        <button class="form-ui red-bg-A400 white-color font _30 condensed w900 uppercase " onClick="showOverlay('#confirm-anonimize-1');">
+                                        <button class="form-ui red-bg-A400 white-color br-text-30 condensed w900 uppercase " onClick="showOverlay('#confirm-anonimize-1');">
                                             <?= __("Anonimize Me","bluerabbit"); ?>
                                         </button>
                                         <div class="confirm-action overlay-layer" id="confirm-anonimize-1">
                                             <button class="form-ui amber-bg-400 black-color" onClick="showOverlay('#confirm-anonimize-2');">
                                                 <span class="icon-group">
-                                                    <span class="button-icon font _24 sq-40  icon-sm orange-bg-400">
+                                                    <span class="br-icon-btn br-icon-btn-orange">
                                                         <span class="icon icon-warning white-color"></span>
                                                     </span>
                                                     <span class="icon-content">
-                                                        <span class="line font _24 w900"><?= __("Are you sure about this?","bluerabbit"); ?></span>
+                                                        <span class="line br-text-24 w900"><?= __("Are you sure about this?","bluerabbit"); ?></span>
                                                     </span>
                                                 </span>
                                             </button>
                                         </div>
                                         <div class="confirm-action overlay-layer" id="confirm-anonimize-2">
                                             <button class="form-ui orange-bg-800" onClick="randomPlayerData();updateProfile();">
-                                                <h3 class="text-center white-color font _18 condensed w100"><?= __("You can still update your profile, just don't close the session","bluerabbit"); ?></h3>
+                                                <h3 class="text-center white-color br-text-18 condensed w100"><?= __("You can still update your profile, just don't close the session","bluerabbit"); ?></h3>
                                                 <span class="icon-group">
-                                                    <span class="button-icon font _24 sq-40  icon-sm orange-bg-400">
+                                                    <span class="br-icon-btn br-icon-btn-orange">
                                                         <span class="icon icon-warning white-color"></span>
                                                     </span>
                                                     <span class="icon-content">
-                                                        <span class="line white-color font _24 w900"><?= __("Double confirm for security","bluerabbit"); ?></span>
+                                                        <span class="line white-color br-text-24 w900"><?= __("Double confirm for security","bluerabbit"); ?></span>
                                                     </span>
                                                 </span>
                                             </button>

@@ -89,18 +89,18 @@
 		<div class="highlight text-center">
 			<div class="theme-headline amber-400 opacity-50 relative">
 				<span class="icon icon-mission foreground"></span>
-				<span class="headline-text amber-400 font _12 kerning-3 condensed w100 uppercase relative padding-5 foreground ">
+				<span class="headline-text amber-400 br-text-12 kerning-3 condensed w100 uppercase relative padding-5 foreground ">
 					<?= __("Mission","bluerabbit"); ?>
 				</span>
 				<?php if($isGM){ ?>
-					<a class="form-ui font _12 green-bg-400 padding-5" href="<?= get_bloginfo('url')."/new-mission/?adventure_id=$adv_parent_id&questID=$m->quest_id";?>">
-						<span class="icon icon-edit font _10"></span><?= __("Edit","bluerabbit"); ?>
+					<a class="form-ui br-text-12 green-bg-400 padding-5" href="<?= get_bloginfo('url')."/new-mission/?adventure_id=$adv_parent_id&questID=$m->quest_id";?>">
+						<span class="icon icon-edit br-text-12"></span><?= __("Edit","bluerabbit"); ?>
 					</a>
 				<?php } ?>
 			</div>
 			<div class="icon-group padding-0 inline-table">
 				<span class="icon-content">
-					<h1 class="line font _26 w300 amber-400 uppercase">
+					<h1 class="line br-text-24 w300 amber-400 uppercase">
 						<?= $m->quest_title; ?>
 					</h1>
 					<input type="hidden" id="the_quest_id" value="<?= $m->quest_id; ?>">
@@ -109,7 +109,7 @@
 		</div>
 		<div class="tabs" id="tab-group">
 			<div class="tabs-header white-color padding-0 margin-0">
-				<div class="tabs-buttons text-center font _14" id="tab-group-buttons">
+				<div class="tabs-buttons text-center br-text-14" id="tab-group-buttons">
 					<button onClick="switchTabs('#tab-group','#mission-status');" class="tab-button amber-border-400 white-color active" id="mission-status-tab-button">
 						<?= __("Mission Status","bluerabbit");?>
 					</button>
@@ -122,34 +122,34 @@
 				<?php if($m->mech_xp > 0 || $m->mech_bloo > 0 ){ ?>
 					<div class="highlight padding-10 text-center" id="tutorial-rewards">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  transparent-bg font _28 border-all border amber-400">
+							<span class="br-icon-btn br-icon-btn-transparent border-all border amber-400">
 								<span class="halo rotate-L-40"></span>
 								<span class="icon icon-star "></span>
 							</span>
 							<span class="icon-content white-color">
-								<span class="line font _24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_xp,""); ?></span>
-								<span class="line font _14 w300"><?= $xp_label; ?></span>
+								<span class="line br-text-24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_xp,""); ?></span>
+								<span class="line br-text-14 w300"><?= $xp_label; ?></span>
 							</span>
 						</span>
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  transparent-bg font _28 border-all border green-400">
+							<span class="br-icon-btn br-icon-btn-transparent border-all border green-400">
 								<span class="halo rotate-R-20"></span>
 								<span class="icon icon-bloo "></span>
 							</span>
 							<span class="icon-content white-color">
-								<span class="line font _24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_bloo,""); ?></span>
-								<span class="line font _14 w300"><?= $bloo_label; ?></span>
+								<span class="line br-text-24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_bloo,""); ?></span>
+								<span class="line br-text-14 w300"><?= $bloo_label; ?></span>
 							</span>
 						</span>
 						<?php if($use_encounters){ ?>
 							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  transparent-bg font _28 border-all border green-400">
+								<span class="br-icon-btn br-icon-btn-transparent border-all border green-400">
 									<span class="halo rotate-R-20"></span>
 									<span class="icon icon-activity "></span>
 								</span>
 								<span class="icon-content white-color">
-									<span class="line font _24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_ep,""); ?></span>
-									<span class="line font _14 w300"><?= $ep_label; ?></span>
+									<span class="line br-text-24 w100 condensed"><?= BR_Utils::instance()->toMoney($m->mech_ep,""); ?></span>
+									<span class="line br-text-14 w300"><?= $ep_label; ?></span>
 								</span>
 							</span>
 						<?php } ?>
@@ -162,7 +162,7 @@
 					<div class="canvas-container">
 						<canvas id="mission-status-chart" width="290" height="290"></canvas>
 					</div>
-					<span class="button-icon font _24 sq-40  grey-bg-900 icon-lg">
+					<span class="br-icon-btn br-icon-btn-dark">
 						<span class="icon icon-mission"></span>
 						<span class="halo rotate-L-40" style="background-image: url(<?= get_bloginfo('template_directory');?>/images/cyber-button-bg.png);"></span>
 						<span class="halo halo-10 rotate-L-10" style="background-image: url(<?= get_bloginfo('template_directory');?>/images/cyber-button-bg.png);"></span>
@@ -182,9 +182,9 @@
 				<?php if($m->quest_content){ ?>
 					<?php $textcolor = ($m->quest_color == 'yellow' || $m->quest_color == 'lime') ? 'grey-900' : '';?>
 					<div class="w-full text-center" id="mission-brief">
-						<h3 class="font _24 w900 uppercase amber-400 padding-10"><?php _e("Mission Brief","bluerabbit");?></h3>
+						<h3 class="br-text-24 w900 uppercase amber-400 padding-10"><?php _e("Mission Brief","bluerabbit");?></h3>
 						<?php if($req_ep > 0){ ?>
-							<span class="inline-block padding-10 border rounded-max teal-bg-A400 blue-grey-800 font _18 w300">
+							<span class="inline-block padding-10 border rounded-max teal-bg-A400 blue-grey-800 br-text-18 w300">
 								<span class="icon icon-warning"></span><?= __("EP","bluerabbit"); ?> <strong class="teal-900 font w900"><?= $req_ep; ?></strong>
 							</span>
 							<?php if($req_ep > $current_player->player_ep){ ?>
@@ -198,7 +198,7 @@
 							<?php } ?>
 						<?php } ?>
 
-						<div class="font _20 w300 padding-10 white-color quest-instructions">
+						<div class="br-text-20 w300 padding-10 white-color quest-instructions">
 							<?= apply_filters('the_content',$m->quest_content); ?>
 						</div>
 						<div class="text-center padding-10">
@@ -210,8 +210,8 @@
 				<?php } ?>
 				<?php if($progress >=100 && $m->quest_success_message){ ?>
 					<div class="w-full" id="mission-report">
-						<h3 class="font _24 w900 uppercase amber-400"><?php _e("Mission Report","bluerabbit");?></h3>
-						<div class="font _20 w300 white-color quest-instructions">
+						<h3 class="br-text-24 w900 uppercase amber-400"><?php _e("Mission Report","bluerabbit");?></h3>
+						<div class="br-text-20 w300 white-color quest-instructions">
 							<?= apply_filters('the_content',$m->quest_success_message); ?>
 						</div>
 					</div>
