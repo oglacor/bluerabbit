@@ -80,33 +80,22 @@ npx sass css/style-framework.scss css/style-framework.css --no-source-map --styl
 - **Plans Accordion** — Config page plans as accordion with auto-save
 
 ## Ongoing: Utility Class Cleanup (Phase 4 tail)
-~142 PHP files still have old utility class combos like `font _24 w700 white-color`. These work fine (framework still generates them) but should be migrated to semantic `br-*` classes file by file.
+~120 PHP files still have old utility class combos (404 occurrences). These work fine (framework still generates them) but should be migrated to semantic `br-*` classes file by file.
 
-### Files completed this session (2026-06-29):
-- footer.php (44 combos)
-- page-duplicator.php (41)
-- page-post.php (29)
-- page-challenges-report.php (29)
-- page-schedule.php (27)
-- card-quest.php (24)
-- icon-select.php (34)
-- item-reward.php (18)
-- completed-challenge.php (13)
-- completed-quest.php (12)
-- completed-survey.php (13)
-**Total: ~284 combos replaced across 11 files**
+### Files completed (2026-06-29):
+footer.php (44), page-duplicator.php (41), icon-select.php (34), page-post.php (29), page-challenges-report.php (29), page-new-adventure.php (28), page-manage-adventures.php (27), page-schedule.php (27), page-my-account.php (26), card-quest.php (24), page-items.php (22), page-mission.php (20), page-organization.php (19), page-challenge.php (18), item-reward.php (18), page-bulk.php (17), survey-question-result.php (16), survey-question-form.php (16), BR-Quest.php (16), page-review-player-posts.php (15), page-manage-players.php (15), card-item-owned.php (15), page-enroll.php (13), completed-challenge.php (13), completed-survey.php (13), page-quest-qr.php (12), completed-quest.php (12), lore-item.php (12), page-assign-achievement.php (11), page-item.php (11), req-milestone.php (10), page-new-survey.php (10), new-encounter.php (10), tabi-row.php (9)
+**Total: ~597 combos replaced across 34 files**
 
 ### Next priority files (by combo count):
-- page-new-adventure.php (28)
-- page-manage-adventures.php (27)
-- page-my-account.php (26)
-- page-items.php (22)
-- page-mission.php (20)
-- page-organization.php (19)
-- page-challenge.php (18)
-- page-bulk.php (17)
-- survey-question-result.php (16)
-- survey-question-form.php (16)
+- survey-question.php (9)
+- page-speaker.php (9)
+- component-date-countdown.php (9)
+- update-player-password.php (8)
+- page-players.php (8)
+- page-guild-enroll.php (8)
+- journey.php (8)
+- card-item.php (8)
+- Then ~112 files with 1-7 combos each
 
 ### When editing ANY PHP file:
 1. Make the primary change first
