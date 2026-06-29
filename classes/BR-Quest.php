@@ -278,7 +278,7 @@ class BR_Quest {
 		$sql = $wpdb->query( $wpdb->prepare($sql, $rating, $current_user->ID, $quest_id));
 		$stars = "";
 		for($i=0;$i<$rating;$i++){
-			$stars .='<span class="button-icon font _24 sq-40  amber-bg-400"><span class="icon icon-star"></span></span>';
+			$stars .='<span class="br-icon-btn br-icon-btn-amber"><span class="icon icon-star"></span></span>';
 		}
 		BR_Activity::instance()->logActivity($adventure_id,'rated','quest','',$quest_id);
 		$data['message'] = '<h1><strong>'.__("Rating updated!","bluerabbit").'</strong></h1>'.$stars.'<h5>'.__("click to close","bluerabbit").'</h5>';
@@ -1148,7 +1148,7 @@ class BR_Quest {
 		if(wp_verify_nonce($nonce, 'duplicate_nonce')){
 			$total = 0;
 			if(!empty($duplicates) || !empty($achievement_duplicates) || !empty($item_duplicates) || !empty($tabi_duplicates) || !empty($enc_duplicates)){
-				$data['message'] .='<div class="boxed max-w-600 padding-20 white-color"><h1 class="font _30 w900">'.__("Duplicating","bluerabbit").'</h1> <ul class="margin-0 padding-0">';
+				$data['message'] .='<div class="boxed max-w-600 padding-20 white-color"><h1 class="br-text-30 w900">'.__("Duplicating","bluerabbit").'</h1> <ul class="margin-0 padding-0">';
 				if(!empty($duplicates)){
 					///////////////// QUESTS
 					foreach($duplicates as $d){
@@ -1156,7 +1156,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 blue-500'>
+								<li class='br-text-20 block padding-5 blue-500'>
 									<span class='icon icon-$clone->quest_type'></span> $clone->quest_title
 								</li>
 							";
@@ -1173,7 +1173,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 purple-500'>
+								<li class='br-text-20 block padding-5 purple-500'>
 									<span class='icon icon-achievement'></span> $clone->achievement_name
 								</li>
 							";
@@ -1190,7 +1190,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 pink-500'>
+								<li class='br-text-20 block padding-5 pink-500'>
 									<span class='icon icon-shop'></span> $clone->item_name
 								</li>
 							";
@@ -1207,7 +1207,7 @@ class BR_Quest {
 						if($clone->tabi_id){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 teal-500'>
+								<li class='br-text-20 block padding-5 teal-500'>
 									<span class='icon icon-activity'></span> $clone->tabi_name
 								</li>
 							";
@@ -1224,7 +1224,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 teal-500'>
+								<li class='br-text-20 block padding-5 teal-500'>
 									<span class='icon icon-activity'></span> $clone->enc_question
 								</li>
 							";
@@ -1241,7 +1241,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 teal-500'>
+								<li class='br-text-20 block padding-5 teal-500'>
 									<span class='icon icon-activity'></span> $clone->speaker_first_name $clone->speaker_last_name
 								</li>
 							";
@@ -1252,7 +1252,7 @@ class BR_Quest {
 					}
 				}
 				$data['message'] .='</ul>
-				<h1 class="font _20">'.__("Successfully duplicated")." <strong class='font _30'>$total</strong> ".__("elements").'</h1>
+				<h1 class="br-text-20">'.__("Successfully duplicated")." <strong class='br-text-30'>$total</strong> ".__("elements").'</h1>
 				</div>';
 				$data['success'] = true;
 			}else{
@@ -1285,7 +1285,7 @@ class BR_Quest {
 		if(wp_verify_nonce($nonce, 'duplicate_nonce')){
 			$total = 0;
 			if(!empty($duplicates) || !empty($achievement_duplicates) || !empty($item_duplicates) || !empty($enc_duplicates)){
-				$data['message'] .='<div class="boxed max-w-600 padding-20 white-color"><h1 class="font _30 w900">'.__("Duplicating","bluerabbit").'</h1> <ul class="margin-0 padding-0">';
+				$data['message'] .='<div class="boxed max-w-600 padding-20 white-color"><h1 class="br-text-30 w900">'.__("Duplicating","bluerabbit").'</h1> <ul class="margin-0 padding-0">';
 				if(!empty($duplicates)){
 					///////////////// QUESTS
 					foreach($duplicates as $d){
@@ -1293,7 +1293,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 blue-500'>
+								<li class='br-text-20 block padding-5 blue-500'>
 									<span class='icon icon-$clone->quest_type'></span> $clone->quest_title
 								</li>
 							";
@@ -1310,7 +1310,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 purple-500'>
+								<li class='br-text-20 block padding-5 purple-500'>
 									<span class='icon icon-achievement'></span> $clone->achievement_name
 								</li>
 							";
@@ -1327,7 +1327,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 pink-500'>
+								<li class='br-text-20 block padding-5 pink-500'>
 									<span class='icon icon-shop'></span> $clone->item_name
 								</li>
 							";
@@ -1344,7 +1344,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 teal-500'>
+								<li class='br-text-20 block padding-5 teal-500'>
 									<span class='icon icon-activity'></span> $clone->enc_question
 								</li>
 							";
@@ -1361,7 +1361,7 @@ class BR_Quest {
 						if($clone){
 							$total++;
 							$data['message'] .= "
-								<li class='font _20 block padding-5 teal-500'>
+								<li class='br-text-20 block padding-5 teal-500'>
 									<span class='icon icon-activity'></span> $clone->speaker_first_name $clone->speaker_last_name
 								</li>
 							";
@@ -1372,7 +1372,7 @@ class BR_Quest {
 					}
 				}
 				$data['message'] .='</ul>
-				<h1 class="font _20">'.__("Successfully duplicated")." <strong class='font _30'>$total</strong> ".__("elements").'</h1>
+				<h1 class="br-text-20">'.__("Successfully duplicated")." <strong class='br-text-30'>$total</strong> ".__("elements").'</h1>
 				</div>';
 
 				$data['success'] = true;

@@ -21,13 +21,13 @@
 
 				if ($adventure->adventure_owner == $current_user->ID) {
 					$e['location'] = get_bloginfo('url') . "/adventure/?adventure_id=$adventure->adventure_id";
-					$e['message'] = '<h1 class="font _48 w300">' . __("Welcome back! You are the owner of this adventure", 'bluerabbit') . '</h1>';
+					$e['message'] = '<h1 class="br-text-40 w300">' . __("Welcome back! You are the owner of this adventure", 'bluerabbit') . '</h1>';
 					$e['success'] = true;
 
 				} elseif ($adventure_max > 0 && $enrolled_count >= $adventure_max) {
 					$e['message'] = '<span class="icon icon-cancel icon-xxl"></span>';
-					$e['message'] .= '<h1 class="font _48 w900">' . __('Adventure Full', 'bluerabbit') . '</h1>';
-					$e['message'] .= '<h4 class="font _24 w300">' . __("This adventure doesn't have any more space. The Game Master must remove some players before you can join.", 'bluerabbit') . '.</h4>';
+					$e['message'] .= '<h1 class="br-text-40 w900">' . __('Adventure Full', 'bluerabbit') . '</h1>';
+					$e['message'] .= '<h4 class="br-text-24 w300">' . __("This adventure doesn't have any more space. The Game Master must remove some players before you can join.", 'bluerabbit') . '.</h4>';
 					$e['location'] = get_bloginfo('url');
 
 				} else {
@@ -37,16 +37,16 @@
 					));
 
 					if ($already_enrolled) {
-						$e['message'] = '<h4 class="font _16 w300">' . __("You already are enrolled in", 'bluerabbit') . '</h4>';
-						$e['message'] .= '<h1 class="font _48 w900">' . $adventure->adventure_title . '</h1>';
+						$e['message'] = '<h4 class="br-text-16 w300">' . __("You already are enrolled in", 'bluerabbit') . '</h4>';
+						$e['message'] .= '<h1 class="br-text-40 w900">' . $adventure->adventure_title . '</h1>';
 					} else {
 						$wpdb->query($wpdb->prepare(
 							"INSERT INTO {$wpdb->prefix}br_player_adventure (adventure_id, player_id) VALUES (%d, %d) ON DUPLICATE KEY UPDATE player_adventure_status = 'in'",
 							$adventure->adventure_id, $current_user->ID
 						));
-						$e['message'] = '<h1 class="font _48 w300">' . __("Welcome!", 'bluerabbit') . '</h1>';
-						$e['message'] .= '<h4 class="font _16 w300">' . __("you are now enrolled in", 'bluerabbit') . '</h4>';
-						$e['message'] .= '<h2 class="font _30 w900">' . $adventure->adventure_title . '</h2>';
+						$e['message'] = '<h1 class="br-text-40 w300">' . __("Welcome!", 'bluerabbit') . '</h1>';
+						$e['message'] .= '<h4 class="br-text-16 w300">' . __("you are now enrolled in", 'bluerabbit') . '</h4>';
+						$e['message'] .= '<h2 class="br-text-30 w900">' . $adventure->adventure_title . '</h2>';
 						BR_Activity::instance()->logActivity($adventure->adventure_id, 'enroll', 'player', '', $current_user->ID);
 					}
 					$e['location'] = get_bloginfo('url') . "/adventure/?adventure_id=$adventure->adventure_id";
@@ -54,12 +54,12 @@
 				}
 			} else {
 				$e['message'] = '<h1>' . __('This adventure is a template', 'bluerabbit') . '</h1>';
-				$e['message'] .= '<h4 class="font _24 w300">' . __("Players can't enroll in template adventures", 'bluerabbit') . '.</h4>';
+				$e['message'] .= '<h4 class="br-text-24 w300">' . __("Players can't enroll in template adventures", 'bluerabbit') . '.</h4>';
 			}
 		} else {
 			$e['message'] = '<span class="icon icon-cancel icon-xxl"></span>';
-			$e['message'] .= '<h1 class="font _48 w900">' . __('Wrong Code', 'bluerabbit') . '</h1>';
-			$e['message'] .= '<h4 class="font _24 w300">' . __("Adventure doesn't exist", 'bluerabbit') . '.</h4>';
+			$e['message'] .= '<h1 class="br-text-40 w900">' . __('Wrong Code', 'bluerabbit') . '</h1>';
+			$e['message'] .= '<h4 class="br-text-24 w300">' . __("Adventure doesn't exist", 'bluerabbit') . '.</h4>';
 		}
 	} else {
 		$e['message'] = '<h1>' . __('No code provided', 'bluerabbit') . '</h1>';
@@ -73,7 +73,7 @@
 	<div class="layer base fixed perfect-center text-center white-color">
 		<?= $e['message']; ?>
 		<br>
-		<a href="<?= $e['location']; ?>" class="form-ui blue-bg-700 font _30">
+		<a href="<?= $e['location']; ?>" class="form-ui blue-bg-700 br-text-30">
 			<span class="icon icon-adventure"></span>
 			<?php _e("Start the journey!", 'bluerabbit'); ?>
 		</a>
@@ -99,7 +99,7 @@
 	<div class="layer base fixed perfect-center text-center">
 		<?= $e['message']; ?>
 		<br>
-		<a href="<?= get_bloginfo('url'); ?>" class="form-ui blue-bg-700 font _30">
+		<a href="<?= get_bloginfo('url'); ?>" class="form-ui blue-bg-700 br-text-30">
 			<span class="icon icon-home"></span>
 			<?php _e("Back to home", 'bluerabbit'); ?>
 		</a>
