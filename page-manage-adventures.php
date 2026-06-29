@@ -55,10 +55,10 @@
 	<div class="body-ui">
 		<div class="highlight padding-10 grey-bg-800">
 			<span class="icon-group">
-				<span class="button-icon font _24 sq-40  orange-bg-400"><span class="icon icon-tools"></span></span>
+				<span class="br-icon-btn br-icon-btn-orange"><span class="icon icon-tools"></span></span>
 				<span class="icon-content">
-					<span class="line font _24 orange-400"><?php _e('Manage Adventures','bluerabbit'); ?></span>
-					<span class="line font _14 orange-100"><?php echo __('Edit, delete & restore your adventures','bluerabbit'); ?> </span>
+					<span class="line br-text-24 orange-400"><?php _e('Manage Adventures','bluerabbit'); ?></span>
+					<span class="line br-text-14 orange-100"><?php echo __('Edit, delete & restore your adventures','bluerabbit'); ?> </span>
 				</span>
 			</span>
 			<div class="pull-right paddding-5">
@@ -97,12 +97,12 @@
 							}
 						?>
 						<tr class="<?=$row_color; ?>" >
-							<td class="text-center font _16 light-blue-bg-200 blue-800 w500"><?php echo $a->adventure_id; ?></td>
+							<td class="text-center br-text-16 light-blue-bg-200 blue-800 w500"><?php echo $a->adventure_id; ?></td>
 							<td>
 								<span class="icon-group">
-									<span class="button-icon font _24 sq-40 " style="background-image: url(<?php echo $a->adventure_badge; ?>)"></span>
+									<span class="br-icon-btn" style="background-image: url(<?php echo $a->adventure_badge; ?>)"></span>
 									<span class="icon-content">
-										<span class="line font _24">
+										<span class="line br-text-24">
 											<?php if($a->adventure_status=='publish'){ ?>
 												<a href="<?php echo get_bloginfo('url')."/adventure/?adventure_id=$a->adventure_id"; ?>"><?php echo $a->adventure_title; ?></a>
 											<?php }elseif($a->adventure_status=='trash' || $a->adventure_status=='draft'){ ?>
@@ -112,7 +112,7 @@
 											<?php } ?>
 										</span>
 										<br>
-										<span class="line font _14">
+										<span class="line br-text-14">
 											<?php
 											if($a->adventure_status!='delete'){ ?>
 											<a href="<?= get_bloginfo('url')."/enroll/?enroll_code=$a->adventure_code"; ?>"><?= get_bloginfo('url')."/enroll/?enroll_code=$a->adventure_code"; ?></a>
@@ -126,7 +126,7 @@
 							</td>
 								
 							<td>
-								<h3 class="font _18 w300">
+								<h3 class="br-text-18 w300">
 									<a href="<?php echo get_bloginfo('url')."/manage-adventures/?player_id=$a->adventure_owner";?>" title="<?= __("Show adventures from this user","bluerabbit");?>">
 										<?php 
 										if($a->player_first != ''){
@@ -137,81 +137,81 @@
 										?>
 									</a>
 								</h3>
-								<p class="font _14 w600 padding-5">
+								<p class="br-text-14 w600 padding-5">
 								<?= $a->player_email;?>
 								</p>
 							</td>
-							<td class="font _14 uppercase w300">
+							<td class="br-text-14 uppercase w300">
 								<?= $a->adventure_status; ?>
 							</td>
 							<td class="text-center">
 								<?php if($a->adventure_status !='delete' && ($isAdmin || $a->player_adventure_role=='gm')){ ?>
-									<a class="button-icon font _16 sq-30  icon-sm green-bg-400" href="<?php echo get_bloginfo('url')."/new-adventure/?adventure_id=$a->adventure_id"; ?>"><span class="icon icon-edit"></span></a>
+									<a class="br-icon-btn br-icon-btn-sm br-icon-btn-green" href="<?php echo get_bloginfo('url')."/new-adventure/?adventure_id=$a->adventure_id"; ?>"><span class="icon icon-edit"></span></a>
 								<?php } ?>
 								<?php if($a->adventure_status =='publish'){ ?>
-								<button class="button-icon font _16 sq-30  icon-sm red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $a->adventure_id; ?>');">
+								<button class="br-icon-btn br-icon-btn-sm br-icon-btn-red white-color trash-button" onClick="showOverlay('#confirm-trash-<?php echo $a->adventure_id; ?>');">
 									<span class="icon icon-trash"></span>
 									<span class="tool-tip bottom">
-										<span class="tool-tip-text font _12"><?php _e("Send to trash","bluerabbit"); ?></span>
+										<span class="tool-tip-text br-text-12"><?php _e("Send to trash","bluerabbit"); ?></span>
 									</span>
 								</button>
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-trash-<?php echo $a->adventure_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->adventure_id; ?>,'adventure','trash');">
 										<span class="icon-group">
-											<span class="button-icon font _16 sq-30  icon-sm red-bg-A400 icon-sm">
+											<span class="br-icon-btn br-icon-btn-sm br-icon-btn-red-dark">
 												<span class="icon icon-trash white-color"></span>
 											</span>
 											<span class="icon-content">
-												<span class="line red-A400 font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+												<span class="line red-A400 br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm button-icon font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="br-close-btn br-icon-btn-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
 								<?php } ?>
 								<?php if($a->adventure_status =='trash'){ ?>
-								<button class="button-icon font _16 sq-30  icon-sm blue-bg-400 white-color trash-button" onClick="showOverlay('#confirm-restore-<?php echo $a->adventure_id; ?>');">
+								<button class="br-icon-btn br-icon-btn-sm br-icon-btn-blue white-color trash-button" onClick="showOverlay('#confirm-restore-<?php echo $a->adventure_id; ?>');">
 									<span class="icon icon-restore"></span>
 									<span class="tool-tip bottom">
-										<span class="tool-tip-text font _12"><?php _e("Restore","bluerabbit"); ?></span>
+										<span class="tool-tip-text br-text-12"><?php _e("Restore","bluerabbit"); ?></span>
 									</span>
 								</button>
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-restore-<?php echo $a->adventure_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->adventure_id; ?>,'adventure','publish');">
 										<span class="icon-group">
-											<span class="button-icon font _16 sq-30  icon-sm blue-bg-A400 icon-sm">
+											<span class="br-icon-btn br-icon-btn-sm br-icon-btn-blue">
 												<span class="icon icon-restore white-color"></span>
 											</span>
 											<span class="icon-content">
-												<span class="line red-A400 font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+												<span class="line red-A400 br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm button-icon font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="br-close-btn br-icon-btn-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
-								<button class="button-icon font _16 sq-30  icon-sm red-bg-800 white-color delete-button" onClick="showOverlay('#confirm-delete-<?php echo $a->adventure_id; ?>');">
+								<button class="br-icon-btn br-icon-btn-sm br-icon-btn-red-dark white-color delete-button" onClick="showOverlay('#confirm-delete-<?php echo $a->adventure_id; ?>');">
 									<span class="icon icon-delete"></span>
 									<span class="tool-tip bottom">
-										<span class="tool-tip-text font _12"><?php _e("Delete Forever","bluerabbit"); ?></span>
+										<span class="tool-tip-text br-text-12"><?php _e("Delete Forever","bluerabbit"); ?></span>
 									</span>
 								</button>
 								<div class="confirm-action overlay-layer trash-confirm" id="confirm-delete-<?php echo $a->adventure_id; ?>">
 									<button class="form-ui white-bg trash-confirm-button" onClick="confirmStatus(<?php echo $a->adventure_id; ?>,'adventure','delete');">
 										<span class="icon-group">
-											<span class="button-icon font _16 sq-30  icon-sm red-bg-A400 icon-sm">
+											<span class="br-icon-btn br-icon-btn-sm br-icon-btn-red-dark">
 												<span class="icon icon-delete white-color"></span>
 											</span>
 											<span class="icon-content">
-												<span class="line red-A400 font _18 w500"><?php _e("You really want to delete the adventure?","bluerabbit"); ?></span>
-												<span class="line grey-600 font _14 w900"><?php _e("You can't undo this","bluerabbit"); ?></span>
+												<span class="line red-A400 br-text-18 w500"><?php _e("You really want to delete the adventure?","bluerabbit"); ?></span>
+												<span class="line grey-600 br-text-14 w900"><?php _e("You can't undo this","bluerabbit"); ?></span>
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm button-icon font _16 sq-30  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="br-close-btn br-icon-btn-sm" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>

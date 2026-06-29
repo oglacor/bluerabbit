@@ -260,8 +260,8 @@ $image_types = array(
 					<div class="gallery-item setting">
 						<div class="background" style="background-image: url(<?= $adventure->adventure_badge; ?>);" onClick="showWPUpload('the_adventure_badge');" id="the_adventure_badge_thumb"></div>
 						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_badge');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_badge');"> <span class="icon icon-trash"></span> </button>
+							<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_adventure_badge');"><span class="icon icon-image"></span></button>
+							<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_adventure_badge');"> <span class="icon icon-trash"></span> </button>
 							<input type="hidden" id="the_adventure_badge" value="<?php echo $adventure->adventure_badge; ?>"/>
 						</div>
 					</div>
@@ -554,8 +554,8 @@ $image_types = array(
 					<div class="gallery-item setting">
 						<div class="background" style="background-image: url(<?= $adventure->adventure_logo; ?>);" onClick="showWPUpload('the_adventure_logo');" id="the_adventure_logo_thumb"></div>
 						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_logo');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_logo');"> <span class="icon icon-trash"></span> </button>
+							<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_adventure_logo');"><span class="icon icon-image"></span></button>
+							<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_adventure_logo');"> <span class="icon icon-trash"></span> </button>
 							<input type="hidden" id="the_adventure_logo" value="<?php echo $adventure->adventure_logo ?? ''; ?>"/>
 						</div>
 					</div>
@@ -567,8 +567,8 @@ $image_types = array(
 					<div class="gallery-item setting">
 						<div class="background" style="background-image: url(<?= $adventure->adventure_certificate_signature; ?>);" onClick="showWPUpload('the_adventure_certificate_signature');" id="the_adventure_certificate_signature_thumb"></div>
 						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_adventure_certificate_signature');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_adventure_certificate_signature');"> <span class="icon icon-trash"></span> </button>
+							<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_adventure_certificate_signature');"><span class="icon icon-image"></span></button>
+							<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_adventure_certificate_signature');"> <span class="icon icon-trash"></span> </button>
 							<input type="hidden" id="the_adventure_certificate_signature" value="<?php echo $adventure->adventure_certificate_signature; ?>"/>
 						</div>
 					</div>
@@ -601,16 +601,16 @@ $image_types = array(
 				<div class="layer background absolute sq-full grey-bg-900 opacity-80"></div>
 				<button class="form-ui white-bg layer relative base" onClick="resetGuilds();">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+						<span class="br-icon-btn br-icon-btn-red-dark">
 							<span class="icon icon-warning white-color"></span>
 						</span>
 						<span class="icon-content">
-							<span class="line red-A400 font _20 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
-							<span class="line red-400 font _16 w900"><?= __("This will be an issue if players are already competing","bluerabbit"); ?></span>
+							<span class="line red-A400 br-text-20 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
+							<span class="line red-400 br-text-16 w900"><?= __("This will be an issue if players are already competing","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm button-icon font _24 sq-40 layer base  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+				<button class="br-close-btn layer base" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>
@@ -779,15 +779,15 @@ $image_types = array(
 									<div class="confirm-action overlay-layer" id="confirm-gm-<?= $play->player_id; ?>">
 										<button class="form-ui white-bg" onClick="setPlayerAdventureRole(<?= "$adventure->adventure_id, $play->player_id, 'gm'"; ?>);">
 											<span class="icon-group">
-												<span class="button-icon font _24 sq-40  icon-sm teal-bg-400 icon-sm">
+												<span class="br-icon-btn br-icon-btn-teal">
 													<span class="icon icon-activity white-color"></span>
 												</span>
 												<span class="icon-content">
-													<span class="line teal-400 font _18 w900"><?= __("Grant superpowers?","bluerabbit"); ?></span>
+													<span class="line teal-400 br-text-18 w900"><?= __("Grant superpowers?","bluerabbit"); ?></span>
 												</span>
 											</span>
 										</button>
-										<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+										<button class="br-close-btn" onClick="hideAllOverlay();">
 											<span class="icon icon-cancel white-color"></span>
 										</button>
 									</div>
@@ -808,15 +808,15 @@ $image_types = array(
 								<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
 									<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
 										<span class="icon-group">
-											<span class="button-icon font _24 sq-40  icon-sm red-bg-A400 icon-sm">
+											<span class="br-icon-btn br-icon-btn-red-dark">
 												<span class="icon icon-cancel white-color"></span>
 											</span>
 											<span class="icon-content">
-												<span class="line red-A400 font _18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
+												<span class="line red-A400 br-text-18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
 											</span>
 										</span>
 									</button>
-									<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+									<button class="br-close-btn" onClick="hideAllOverlay();">
 										<span class="icon icon-cancel white-color"></span>
 									</button>
 								</div>
@@ -997,13 +997,13 @@ $image_types = array(
 						<?php if($s['type'] != 'number') { ?>
 							<tr id="<?=$sKey; ?>" class="setting">
 								<td>
-									<span class="font _16 block white-color w600">
+									<span class="br-text-16 block white-color w600">
 										<?php if(isset($s['icon'])) { ?>
 											<span class="icon icon-<?= $s['icon']; ?>"></span>
 										<?php } ?>
 									<?= $s['label']; ?></span>
 									<?php if(isset($s['desc'])) { ?>
-										<span class="font _12 block grey-500"><?= $s['desc']; ?></span>
+										<span class="br-text-12 block grey-500"><?= $s['desc']; ?></span>
 									<?php } ?>
 								</td>
 								<td>
@@ -1032,18 +1032,18 @@ $image_types = array(
 							<?php if($sKey == 'max_players' || $sKey == 'max_adventures' ) { ?>
 								<tr id="<?=$sKey; ?>" class="setting">
 									<td>
-										<span class="font _16 block white-color w600">
+										<span class="br-text-16 block white-color w600">
 											<?php if(isset($s['icon'])) { ?>
 												<span class="icon icon-<?= $s['icon']; ?>"></span>
 											<?php } ?>
 										<?= $s['label']; ?></span>
 										<?php if($s['desc']) { ?>
-											<span class="font _12 block grey-500"><?= $s['desc']; ?></span>
+											<span class="br-text-12 block grey-500"><?= $s['desc']; ?></span>
 										<?php } ?>
 									</td>
 									<td>
 										<?php $num_limit = isset($s[$f_role]) ? intval($s[$f_role]) : 0; ?>
-									<span class="font _16"><?= $num_limit > 0 ? $num_limit : __('No limit','bluerabbit'); ?></span>
+									<span class="br-text-16"><?= $num_limit > 0 ? $num_limit : __('No limit','bluerabbit'); ?></span>
 										<input class="setting-value" type="hidden" readonly disabled value="<?= $num_limit; ?>" >
 										<input class="setting-id" type="hidden" value="<?= isset($adv_settings[$sKey]['id']) ? $adv_settings[$sKey]['id'] : ""; ?>" >
 										<input class="setting-name" type="hidden" value="<?=$sKey; ?>" >
@@ -1053,13 +1053,13 @@ $image_types = array(
 							<?php }else{ ?>
 								<tr id="<?=$sKey; ?>" class="setting">
 									<td>
-										<span class="font _16 block white-color w600">
+										<span class="br-text-16 block white-color w600">
 											<?php if(isset($s['icon'])) { ?>
 												<span class="icon icon-<?= $s['icon']; ?>"></span>
 											<?php } ?>
 										<?= $s['label']; ?></span>
 										<?php if($s['desc']) { ?>
-											<span class="font _12 block grey-500"><?= $s['desc']; ?></span>
+											<span class="br-text-12 block grey-500"><?= $s['desc']; ?></span>
 										<?php } ?>
 									</td>
 									<td>
@@ -1328,17 +1328,17 @@ $image_types = array(
 				<div class="gallery-item setting">
 					<div class="gallery-image-thumb" style="background-image: url(<?= $img_url; ?>);" id="<?=$iKey;?>_thumb"></div>
 					<div class="gallery-item-options">
-						<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
-						<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
+						<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
+						<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
 					</div>
 					<div class="gallery-item-description white-color foreground">
 						<div class="background black-bg opacity-50"></div>
-						<h3 class="foreground font _18 w600 padding-10"><?=$img['label']; ?></h3>
+						<h3 class="foreground br-text-18 w600 padding-10"><?=$img['label']; ?></h3>
 						<?php if(isset($img['desc'])){ ?>
-							<h5 class="foreground font _12 w600 padding-10"><?=$img['desc']; ?></h5>
+							<h5 class="foreground br-text-12 w600 padding-10"><?=$img['desc']; ?></h5>
 						<?php } ?>
 						<?php if(isset($desc_warning) && $desc_warning){ ?>
-							<h5 class="foreground font _12 w500 amber-500 padding-10">
+							<h5 class="foreground br-text-12 w500 amber-500 padding-10">
 								<span class="icon icon-warning"></span>
 								<?=$desc_warning ?>
 							</h5>
