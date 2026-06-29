@@ -131,8 +131,6 @@ if ($has_qr) {
 				<div class="br-form-component">
 					<div class="br-gallery br-gallery-multiple">
 						<?php $thumb_id = 'the_quest_badge'; $file = $is_edit ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
-						
-						
                         <?php if ($has_qr) { ?>
                         <div class="br-gallery-item" id="qr-code-<?= $quest->quest_id; ?>_wrap">
                             <div class="br-gallery-thumb" style="background-image:url(<?= $qr_file_url; ?>);">
@@ -143,11 +141,9 @@ if ($has_qr) {
                             </a>
                         </div>
                         <?php } ?>						
-
-
-				</div>
-			</div>
-		</div>
+                    </div>
+                </div>
+            </div>
 		</div>
 
 		<!-- ═══ MECHANICS ═══ -->

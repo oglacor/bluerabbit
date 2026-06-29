@@ -75,7 +75,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 				</div>
 				<?php if ($is_edit && !empty($a->achievement_qrcode)) { ?>
                     <div class="br-form-group">
-                        <label class="br-form-label"><?= __("QR Code", "bluerabbit"); ?></label>
+                        <label class="br-form-label"><?= __("QR Code check", "bluerabbit"); ?></label>
                         <div class="br-form-component">
                             <div class="br-gallery br-gallery-single">
                                 <div class="br-gallery-item" id="achievement-qr-code-<?= $a->achievement_id; ?>">
