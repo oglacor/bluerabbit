@@ -1,0 +1,760 @@
+@import 'variables';
+
+/***************************************************************/
+/************************** BR FORM ****************************/
+/***************************************************************/
+input.form-ui{
+	font-size: 1em;
+	font-weight: 300;
+	padding: 0.5em;
+	border: solid 1px #e0e0e0;
+	color: #607d8b ;
+	background-color: #E3E3E3;
+	display: block;
+	&::-webkit-input-placeholder { color: #BDBDBD; font-family: $condensed-font; font-weight: 900; text-transform: uppercase; font-style: italic; letter-spacing: 2px; }
+	&:-moz-placeholder { color: #BDBDBD; font-family: $condensed-font; font-weight: 900; text-transform: uppercase; font-style: italic; letter-spacing: 2px; }
+	&:-ms-input-placeholder { color: #BDBDBD; font-family: $condensed-font; font-weight: 900; text-transform: uppercase; font-style: italic; letter-spacing: 2px;  }
+	&[disabled]{
+		cursor: no-drop;
+		background-color: #e0e0e0;
+		color: #757575;
+	}
+	&:focus{
+		border: solid 1px #333;
+	}
+	&.editable-on-click{
+		color: #FFF ;
+		background-color: rgba(0,0,0,0.10);
+		padding: 0.1em 15px;
+		&:focus{
+			background-color: rgba(255,255,255,0.2);
+			border: none;
+		}
+	}
+}
+select.form-ui{
+	cursor: pointer;
+	padding: 0.5em;
+	border: none;
+	font-size: 1em;
+	font-weight: 300;
+	display: block;
+	width: 100%;
+	background-color: whitesmoke;
+	&.xl{
+	font-size: 2.5em;
+	font-weight: 900;
+		option{
+		font-size: 0.5em;
+		font-weight: 300;
+		}
+	}
+	option{
+		font-size: 0.75em;
+		font-weight: 300;
+	}
+}
+button.form-ui, a.form-ui, span.button-form-ui, input[type="submit"]{
+	font-family:$condensed-font;
+	display: inline-block;
+	padding: 0.5em;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	position: relative;
+	color: #FFF;
+	background-color: #1976D2;
+	&[disabled]{
+		cursor: no-drop;
+		background-color: #e0e0e0;
+		color: #757575;
+		span.enabled-text{display: none;}
+		span.disabled-text{ display: inline;}
+	}
+	span.disabled-text{
+		display: none;
+	}
+	.button-icon.badge-icon{
+		position: absolute;
+		top: 50%; right: 100%;
+		transform: translateY(-50%);
+	}
+	.background-badge{
+		width: 125%; left: -20%;
+		border-radius: 8px;
+	}
+
+	&.item-shop{
+		border: solid 1px #EC407A;
+		color: #EC407A;
+		background-color: #263238;
+	}
+	&.buy-item{
+		cursor: pointer;
+		display: inline-block;
+		border: solid 2px $new-colors-blue;
+		background-color: $new-colors-dark-blue;
+		color: $new-colors-blue;
+		font-family: $condensed-font;
+		padding: 5px 10px;
+		border-radius: 0;
+		transition: all 0.3s ease-out	;
+		&:hover{
+			border: solid 2px $white;
+			background-color: $new-colors-blue;
+			color: $new-colors-dark-blue;
+		}
+	}
+
+}
+button.action-button, a.action-button{
+	font-family:$condensed-font;
+	font-weight: 600;
+	text-transform: uppercase;
+	display: inline-block;
+	padding: 0.5em;
+	border: none;
+	border-radius: 0px;
+	cursor: pointer;
+	position: relative;
+	color: #FFF;
+	background-color: $new-colors-dark-blue;
+	transition: all 0.3s ease-out;
+	&:hover{
+		color: #FFF;
+		background-color: $new-colors-dark-blue-400;
+		&.confirm, &.success, &.danger, &.warning{
+			color: #FFF;
+			background-color: $new-colors-dark-blue-400;
+		}
+	}
+	&[disabled]{
+		cursor: no-drop;
+		background-color: $new-colors-grey !important;
+		color: $new-colors-light-grey !important;
+	}
+	&.confirm{
+		background-color: $new-colors-blue;
+		color: $new-colors-dark-blue;
+	}
+	&.success{
+		background-color: $new-colors-green;
+		color: $new-colors-dark-blue;
+	}
+	&.danger{
+		background-color: $new-colors-red;
+		color: $white;
+	}
+	&.warning{
+		background-color: $new-colors-yellow;
+		color: $new-colors-dark-blue;
+	}
+
+}
+button.button-icon, a.button-icon, span.button-icon, .button-icon{
+	position: relative;
+	border: none;
+	border-width: 0;
+	display: inline-flex;
+    align-items: center;
+    justify-content: center;
+	padding: 0; margin: 0;
+	color: #FFF;
+	border-radius: 100em;
+	background-position: center center;
+	background-size: cover;
+	background-repeat: no-repeat;
+	min-width: 10px; min-height: 10px;
+	.icon{
+		z-index: 1;
+		width: 90%;
+		&.perfect-center{ position: absolute;}
+	}
+    img{
+        display: block;
+        max-width: 90%;
+        height: 60%;
+    }
+    &.square{ border-radius: 0 !important; }
+}
+
+button.hex-button, a.hex-button, span.hex-button, .hex-button{
+	position: relative;
+	border: none;
+	border-width: 0;
+	display: inline-block;
+	padding: 0; margin: 0;
+	object-fit: cover;
+	min-width: 33px; min-height: 38px;
+	background-color: transparent;
+	&:nth-child(even){
+		.hex.half-hex{
+			clip-path: polygon(0% 25%, 100% 0%, 100% 100%, 0% 75%);
+		}
+	}
+	&.flat{
+		min-width: 38px; min-height: 33px;
+		.hex{
+			clip-path: polygon(25% 100%, 75% 100%, 100% 50%, 75% 0%, 25% 0%, 0px 50%);
+			clip-path: url("#hex-clip-flat-svg");
+		}
+	}
+	&.long-flat{
+		min-width: 45px; min-height: 28px;
+		.hex{
+			clip-path: polygon(12.5% 0, 87.5% 0, 100% 50%, 87.5% 0%, 12.5% 0%, 0 50%);
+			clip-path: url("#hex-clip-long-flat-svg");
+		}
+	}
+	&.longer-flat{
+		min-width: 60px; min-height: 26px;
+		.hex{
+			clip-path: polygon(12.5% 0, 87.5% 0, 100% 50%, 87.5% 0%, 12.5% 0%, 0 50%);
+			clip-path: url("#hex-clip-longer-flat-svg");
+		}
+	}
+	.icon{
+		position: relative;
+		z-index: 10;
+	}
+	.hex{
+		display: block;
+		position: absolute;
+		clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+		clip-path: url("#hex-clip-svg");
+		width: 100%; height: 100%;
+		background-position: center center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		transition: all 0.5s ease-out;
+		&.half-hex{
+			top: 0; left: 0; transform: translate(0,0);
+			width: 100%; height: 100%;
+			z-index: 6;
+			clip-path: polygon(0% 0%, 100% 25%, 100% 75%, 0% 100%);
+		}
+	}
+	.hex-text{
+		position: absolute;
+		top: 100%;
+		width: 100%;
+		font-family: $condensed-font;
+		font-weight: 400;
+		text-align: center;
+		display: block;
+	}
+}
+
+.toggle-button{
+	transition: all .3s ease-out;
+	border: none;
+	border-radius: 1000em;
+	background-color: transparent;
+	background-image: url("images/toggle-button.png");
+	background-repeat: no-repeat;
+	background-position: 101% center;
+	background-size: auto 100%;
+	background-color: #757575;
+	width: 75px; height: 30px;
+	&.question{
+		width: 92px; height: 30px;
+		background-image: url("images/toggle-button-question.png");
+		background-color: #EF5350;
+	}
+	&.active{
+		background-position: -1% center;
+		background-color: #DCE775;
+	}
+}
+
+textarea.form-ui{
+	padding: 0.5em;
+	border: solid 1px $new-colors-dark-blue;
+	display: block;
+	min-width: 100%;
+	max-width: 100%;
+	&::-webkit-input-placeholder { color: #CCC; font-family: $condensed-font; font-weight: 900; text-transform: uppercase; font-style: italic; letter-spacing: 2px; }
+	&:-moz-placeholder {  color: #CCC; font-family: $condensed-font; font-weight: 900; text-transform: uppercase; font-style: italic;  letter-spacing: 2px;  }
+	&:-ms-input-placeholder {  color: #CCC; font-family: $condensed-font; font-weight: 900; text-transform: uppercase; font-style: italic;  letter-spacing: 2px;   }
+
+}
+#loginform, #registration-form{
+	position: relative;
+	display: table;
+	border-collapse: separate;
+	margin: 0 0 10px 0;
+	width: 100%;
+	p, .aiowps-captcha-equation{
+		width: 100%;
+		margin: 0;
+	}
+
+
+	p.login-username, p.login-password, p.form-group{
+		position: relative;
+		margin-bottom: 20px;
+		display: block;
+		input, select{
+			width: 100%; font-size: 20px;
+			background-color: transparent;
+			color: #FFF;
+			border-left: none;
+			border-top: none;
+			border-right: none;
+			border-bottom: solid 1px #FFF;
+		}
+		label{
+			background-color: transparent;
+			display: block;
+			color: #FFF;
+			position: absolute;
+			top: 100%; left: 0;
+			opacity:.5;
+			font-size: 12px;
+		}
+	}
+	p.login-remember{
+		position: relative;
+		width: 100%;
+		height: 30px; padding: 10px 0 0;
+		margin-bottom: 20px;
+		label{
+			width: 100%;
+			display: block;
+			cursor: pointer;
+			color: #FFF;
+			font-size: 12px;
+		}
+	}
+	p.login-submit input.button, button.register-submit{
+		border: none;
+		color: white;
+		font-family: $main-font;
+		display: block;
+		cursor: pointer;
+		width: 100%;
+		padding: 10px;
+		border-radius: 8px;
+		background: linear-gradient(90deg, rgba(156,39,176,1.00) 0%, rgba(63,81,181,1.00) 100%) !important;
+	}
+}
+
+.input-group{
+	position: relative;
+	display: table;
+	border-collapse: separate;
+	margin: 0 0 10px 0;
+	label{
+		padding: 0px 12px;
+		line-height: 1;
+		text-align: center;
+		white-space: nowrap;
+		vertical-align: middle;
+		display: table-cell;
+		font-size: 16px;
+		font-weight: 500;
+		color: #FFF;
+		background-color: #607d8b;
+		span.instructions{
+			display:block;
+			padding: 5px;
+			width: 90%;
+			max-width: 300px;
+			clear: both;
+			font-size: 12px;
+			font-weight: 300;
+			text-transform: none;
+		}
+		a.form-ui, button.form-ui{
+			margin: 0;
+			box-shadow: none;
+		}
+	}
+	textarea.form-ui, input.form-ui, select.form-ui{
+		width: 100%;
+	}
+	&.w-full{
+		label{
+			width: 1%;
+		}
+	}
+	&:hover{
+		.tool-tip{
+			display: block;
+		}
+	}
+}
+
+ul.form-ui{
+	margin: 0;
+	padding: 0;
+	li{
+		position: relative;
+		display: block;
+	}
+
+}
+.icon-group{
+	display: table;
+	position: relative;
+	padding:0 10px;
+	vertical-align: middle;
+	z-index: 3;
+	.icon-content{
+		padding: 0 10px;
+		display: table-cell;
+		vertical-align: middle;
+		position: relative;
+		line-height: 1;
+		z-index: 1;
+		span.line{
+			display: block;
+			clear: both;
+		}
+		&.top{
+			vertical-align: top;
+		}
+	}
+	.button-icon{
+		display: table-cell;
+		vertical-align: middle;
+		position: relative;
+		line-height: 1;
+		z-index: 3;
+		&.top{
+			vertical-align: top;
+		}
+	}
+	&.labeled{
+		.icon-content{
+			span.line{
+				position: relative;
+				left: -20px;
+				padding: 5px 10px 5px 30px;
+			}
+		}
+	}
+}
+.halo{
+	position: absolute;
+	width: calc(100% + 10px);
+	height: calc(100% + 10px);
+	top: -5px; left: -5px;
+	background-size: cover;
+	background-repeat: no-repeat;
+	z-index: 8;
+	&.halo-2{
+		width: calc(100% + 16px);
+		height: calc(100% + 16px);
+		top: -8px; left: -8px;
+		z-index: 7;
+	}
+	&.halo-3{
+		width: calc(100% + 20px);
+		height: calc(100% + 20px);
+		top: -10px; left: -10px;
+		z-index: 6;
+	}
+	&.halo-4{
+		width: calc(100% + 26px);
+		height: calc(100% + 26px);
+		top: -13px; left: -13px;
+		z-index: 5;
+	}
+	&.halo-5{
+		width: calc(100% + 30px);
+		height: calc(100% + 30px);
+		top: -15px; left: -15px;
+		z-index: 4;
+	}
+	&.halo-7{
+		width: calc(100% + 70px);
+		height: calc(100% + 70px);
+		top: -35px; left: -35px;
+		z-index: 4;
+	}
+	&.halo-10{
+		width: calc(100% + 100px);
+		height: calc(100% + 100px);
+		top: -50px; left: -50px;
+		z-index: 4;
+	}
+	&.floor-halo{
+		z-index: 1;
+		top: 50%;
+	}
+}
+.legend{
+	display: none;
+	position: absolute;
+	bottom: 105%;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	&.active{
+		display: block;
+	}
+	&.bottom{
+		bottom: auto;
+		top: 105%;
+	}
+}
+.divider{
+	border-bottom: solid 1px #DDD;
+	margin:0 auto 45px ;
+	padding:0 0 45px;
+	width: 80%;
+	height: 1px;
+	clear: both;
+	&.long{
+		width: 100%;
+	}
+	&.short{
+		width: 50%;
+	}
+	&.thin{
+		margin:0 auto 15px ;
+		padding:0 0 15px;
+	}
+}
+span.divider{
+	display: block;
+}
+.ui-datepicker{
+	z-index: 150 !important;
+}
+
+// ── Icon Button Shortcuts ───────────────────────────────
+// Replaces: button-icon font _24 sq-40 {color}-bg-{shade}
+.br-icon-btn {
+  @extend .button-icon;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+
+  &.br-icon-btn-sm { font-size: 16px; width: 30px; height: 30px; }
+  &.br-icon-btn-red { background-color: #EF5350; color: $white; }
+  &.br-icon-btn-red-dark { background-color: #FF1744; color: $white; }
+  &.br-icon-btn-green { background-color: #66BB6A; color: $white; }
+  &.br-icon-btn-green-dark { background-color: #43A047; color: $white; }
+  &.br-icon-btn-amber { background-color: #FFCA28; color: $black; }
+  &.br-icon-btn-orange { background-color: #FFA726; color: $white; }
+  &.br-icon-btn-orange-light { background-color: #FFCC80; color: $black; }
+  &.br-icon-btn-blue { background-color: #42A5F5; color: $white; }
+  &.br-icon-btn-teal { background-color: #26A69A; color: $white; }
+  &.br-icon-btn-purple { background-color: #AB47BC; color: $white; }
+  &.br-icon-btn-deep-purple { background-color: #7E57C2; color: $white; }
+  &.br-icon-btn-indigo { background-color: #5C6BC0; color: $white; }
+  &.br-icon-btn-pink { background-color: #EC407A; color: $white; }
+  &.br-icon-btn-brown { background-color: #8D6E63; color: $white; }
+  &.br-icon-btn-grey { background-color: #78909C; color: $white; }
+  &.br-icon-btn-dark { background-color: #37474F; color: $white; }
+  &.br-icon-btn-white { background-color: $white; color: $black; }
+  &.br-icon-btn-transparent { background-color: transparent; }
+  &.br-icon-btn-cyan { background-color: #00E5FF; color: #263238; }
+}
+
+// ── Close/Confirm Button ────────────────────────────────
+// Replaces: close-confirm button-icon font _24 sq-40 blue-grey-bg-800 white-color icon-sm
+.br-close-btn {
+  @extend .button-icon;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  background-color: #37474F;
+  color: $white;
+}
+
+// ── Icon Button Toggle States ───────────────────────────
+// Replaces: background blue-bg-700 on / background grey-bg-500 off
+.br-icon-bg-on {
+  position: absolute;
+  width: 100%; height: 100%;
+  top: 0; left: 0;
+  z-index: 1;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-clip: padding-box;
+  background-color: #1976D2;
+}
+.br-icon-bg-off {
+  @extend .br-icon-bg-on;
+  background-color: #9E9E9E;
+}
+
+// ── Cancel Icons ────────────────────────────────────────
+// Replaces: icon icon-cancel white-color
+.br-icon-cancel { color: $white; }
+// Replaces: icon icon-cancel solid-red
+.br-icon-cancel-red { color: #F44336; }
+
+// ── Container ───────────────────────────────────────────
+// Replaces: container boxed max-w-1200
+.br-container {
+  margin: 0 auto;
+  width: 100%;
+  padding-left: 20px;
+  padding-right: 20px;
+  max-width: 1200px;
+}
+
+// ── Milestone Overlay Text ──────────────────────────────
+// Replaces: perfect-center layer absolute base font condensed _12 w100 white-color w-full text-center
+.br-milestone-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  font-family: $condensed-font;
+  font-size: 12px;
+  font-weight: 100;
+  color: $white;
+  width: 100%;
+  text-align: center;
+}
+
+// ── Line (separator) text variants ──────────────────────
+// Replaces: line red-A400 font _18 w900
+.br-line-error {
+  color: #FF1744;
+  font-size: 18px;
+  font-weight: 900;
+}
+// Replaces: line white-color font _10 w300 kerning-3
+.br-line-subtitle {
+  color: $white;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 3px;
+}
+// Replaces: line font _24 grey-800
+.br-line-title-muted {
+  font-size: 24px;
+  color: #424242;
+}
+// Replaces: line font _24
+.br-line-title {
+  font-size: 24px;
+}
+// Replaces: line white-color font w900 _18
+.br-line-heading {
+  color: $white;
+  font-size: 18px;
+  font-weight: 900;
+}
+// Replaces: line white-color font w100 _12 opacity-80
+.br-line-caption {
+  color: $white;
+  font-size: 12px;
+  font-weight: 100;
+  opacity: 0.8;
+}
+// Replaces: line font _24 w300
+.br-line-title-light {
+  font-size: 24px;
+  font-weight: 300;
+}
+// Replaces: line font _24 w900
+.br-line-title-bold {
+  font-size: 24px;
+  font-weight: 900;
+}
+
+// ── Icon Content ────────────────────────────────────────
+// Replaces: icon-content font w500 _26
+.br-icon-label {
+  font-size: 26px;
+  font-weight: 500;
+}
+
+// ── Tooltip Text ────────────────────────────────────────
+// Replaces: tool-tip-text font _12
+.br-tooltip-text {
+  font-size: 12px;
+}
+
+// ── Legend Label ─────────────────────────────────────────
+// Replaces: legend active bottom font _10 text-center lowercase main
+.br-legend-label {
+  font-size: 10px;
+  text-align: center;
+  text-transform: lowercase;
+  font-family: $main-font;
+}
+
+// ── Font shortcuts ──────────────────────────────────────
+.br-text-18 { font-size: 18px; }
+.br-text-16 { font-size: 16px; }
+.br-text-14 { font-size: 14px; }
+.br-text-12 { font-size: 12px; }
+.br-text-16-light { font-size: 16px; font-weight: 300; }
+.br-text-12-muted { font-size: 12px; color: #757575; }
+.br-text-center-bold { text-align: center; font-weight: 900; }
+.br-text-muted-18 { color: #757575; font-size: 18px; font-weight: 500; }
+.br-text-condensed-k1 { font-family: $condensed-font; letter-spacing: 1px; }
+.br-text-24-bold-white { font-size: 24px; font-weight: 900; color: $white; }
+
+// ── Form button color variants ──────────────────────────
+.br-form-btn-red { background-color: #EF5350 !important; color: $white; font-size: 16px; }
+.br-form-btn-green { background-color: #66BB6A !important; color: $white; font-size: 16px; }
+.br-form-btn-green-18 { background-color: #66BB6A !important; color: $white; font-size: 18px; }
+.br-form-btn-blue { background-color: #1976D2 !important; color: $white; }
+.br-form-btn-30 { font-size: 30px; width: 100%; }
+
+// ── Action button shortcut ──────────────────────────────
+.br-action-icon-green {
+  @extend .button-icon;
+  background-color: #66BB6A;
+  color: $white;
+  font-size: 18px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+// ── Delete mini-button ──────────────────────────────────
+.br-delete-mini {
+  @extend .button-icon;
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #EF5350;
+}
+
+// ── Centered title overlay ──────────────────────────────
+.br-overlay-title {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: $white;
+  z-index: 20;
+}
+
+// ── Line color variants ─────────────────────────────────
+.br-line-teal { color: #26A69A; font-size: 18px; font-weight: 900; }
+.br-line-number { font-size: 18px; font-weight: 900; }
+
+// ── Stat/legend labels ──────────────────────────────────
+.br-stat-legend { font-size: 14px; padding: 5px; }
+.br-left-legend {
+  width: 50%;
+  text-align: left;
+  float: left;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+// ── Dashboard cell patterns ─────────────────────────────
+.br-cell-inactive { text-align: center; font-size: 18px; }
+.br-cell-active-green {
+  color: $white;
+  font-size: 18px;
+  background-color: #66BB6A;
+}
+.br-cell-content { padding: 10px; text-align: left; color: #66BB6A; font-weight: 700; }

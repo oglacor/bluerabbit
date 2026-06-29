@@ -1,0 +1,192 @@
+@import 'variables';
+
+header.super-header{
+	z-index: 51;
+	width: 100%; height: 50px;
+	padding: 10px;
+	background-color: rgba(4,22,30,0.75);
+	position: sticky;
+	top: 0;
+	.tools{
+		float: right;
+	}
+	.nav-content{
+		text-align: center;
+		position: sticky;
+		top: 20px;
+	}
+	&.profile{
+		order: 4;
+	}
+	button.button-icon, a.button-icon{
+		width: 32px; height: 32px;
+		border-radius: 0;
+		margin: 0;
+	}
+	a.current-quest-torch{
+		border-radius: 100px;
+		background-color: rgba(255,231,188,1.00);
+		@include br-animation(torch, 1s, alternate , forwards, linear, infinite);
+	}
+	.nav-opener{
+		display: inline-block;
+		padding: 0 7px 0 0;
+		margin: 0 7px 0 0;
+		color: #FFF;
+		font-size: 24px;
+		position: relative;
+		width: 18px;
+		overflow: hidden;
+		cursor: pointer;
+		span.icon{
+			position: relative;
+			left: -12px;
+		}
+	}
+	.logo{
+		display: inline-block;
+		padding: 0 7px 0 0;
+		margin: 0 7px 0 0;
+		position: relative;
+		top: -4px;
+	}
+	.adventure-title{
+		display: inline-block;
+		position: relative;
+		top: -4px;
+		.adventure-title-logo{
+			display: inline-block;
+			position: relative;
+			z-index: 10;
+		}
+		a.adventure-title-text{
+			display: inline-block;
+			font-size: 18px;
+			font-weight: 300;
+			position: relative;
+			border-radius: 4px;
+			padding: 5px 12px 5px 30px;
+			background-color: rgba(0,0,0,0.85);
+			left: -24px;
+			top: -10px;
+			color: #FFF;
+		}
+	}
+}
+footer.taskbar{
+	z-index: 51;
+	width: 100%; height: 50px;
+	padding: 10px;
+	background-color: rgba(4,22,30,0.75);
+	position: fixed;
+	bottom: 0;
+	text-align: center;
+	.show-on-start{
+		visibility: hidden;
+		opacity: 0;
+		transition: all 0.5s ease-out;
+		position: absolute;
+		bottom: 55px;
+		left:50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap:5px;
+	}
+	&.start-active{
+		.show-on-start{
+			visibility: visible;
+			opacity: 1;
+		}
+	}
+	button.button-icon, a.button-icon{
+		width: 64px; height: 64px;
+		border-radius: 4px;
+		margin: 0;
+		font-size: 34px;
+		position: relative;
+	}
+	button.start-button{
+		font-size: 14px;
+		transition: all 0.3s ease-out;
+		font-family: $condensed-font;
+		display: inline-block;
+		width: 135px;
+		height: 32px;
+		background-color: #F7CB15;
+		text-align: center;
+		//background-image: url("images/start-button-sprite.png");
+		color: #2A3C43;
+		border-radius: 4px;
+		border: none;
+		background-position: center -2px;
+		background-size: 100%;
+		.idle-text{ display: inline;}
+		.active-text{ display: none;}
+		&.close{
+			color: #FFF;
+			background-position: center 27px;
+			background-color: #2A3C43;
+			.idle-text{ display: none;}
+			.active-text{ display: inline;}
+		}
+	}
+}
+
+.main-content{
+	display: flex;
+	position: relative;
+	width: 100%;
+	min-height: calc(100% - 140px);
+	background-position: center center;
+	background-size: cover;
+	z-index: 3;
+	.main-container{
+		width: 100%;
+		flex-grow: 1;
+		order: 5;
+		padding: 0 0 50px;
+	}
+}
+.main-loader{
+	visibility: hidden;
+	opacity: 0;
+	order: 6;
+	transition: opacity 0.5s 0.2s ease-out;
+	position: fixed;
+	top: 0; right: 0;
+	width: 0;
+	height: 100%;
+	z-index: 40;
+	overflow-y: scroll;
+	&.active{
+		visibility: visible;
+		opacity: 1;
+		width: 50%;
+	}
+}
+.page-header{
+	max-width: 1245px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 20px 10px;
+	h1{
+		display: inline-block;
+		margin: 0;
+		padding: 0;
+		font: 300 26px $main-font;
+	}
+	.actions{
+		height: 38px;
+		padding: 5px;
+		float: right;
+		text-align: right;
+	}
+}
+//// Instructions icon glowing choice
+.glowing-choice{
+	box-shadow:none !important;
+	animation-iteration-count: 6;
+	@include br-animation(br-glowing-choice, 1s, alternate , backwards);
+}

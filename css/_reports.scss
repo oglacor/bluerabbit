@@ -1,0 +1,154 @@
+@import 'variables';
+
+.report{
+	h1,h2,h3,h4,h5,h6{
+		font-size: 20px;
+	}
+	blockquote{
+		margin: 0; padding: 0;
+	}
+	.report-header{
+		padding: 10px 0;
+		position: fixed;
+		width:100%; height: 50px;
+		top: 0; left:0;
+		border-bottom: solid 2px;
+		z-index: 10;
+		.report-logo{
+			width: 40%;
+			position: absolute;
+			top: 0;
+			right: 0;
+			text-align: right;
+			padding: 0 0 10px;
+			img{
+				height: 40px;
+			}
+		}
+	}
+	.report-footer{
+		padding: 10px 0;
+		position: fixed;
+		width:100%; height: 50px;
+		bottom: 0; left:0;
+		border-top: solid 2px;
+		z-index: 10;
+		.report-br-logo{
+			width: 40%;
+			position: absolute;
+			top: 0;
+			right: 0;
+			text-align: right;
+			padding: 10px 0 0;
+			img{
+				height: 40px;
+			}
+		}
+	}
+	.header-space, .footer-space{
+		height: 0px;;
+		display: none;
+	}
+	.report-cover{
+		position: relative;
+		width: 100%;
+		height: 100%;
+		padding: 80px 15px;
+		text-align: right;
+		.report-logo{
+			img{
+				max-width: 50%;
+				max-height: 250px; 
+			}
+		}
+		h5{
+			border-bottom: solid 2px;
+		}
+		h1{
+			text-transform: uppercase;
+			font-weight: 900;
+			font-size: 70px;
+		}
+	}
+	.report-quest-headline{
+		border-bottom: solid 2px;
+		padding: 40px 0 10px;
+	}
+	.report-quest-instructions{
+		padding: 10px 10px 10px 150px;
+		text-align: right;
+	}
+	.report-quest-charts{
+		width: 100%;
+		.report-quest-chart{
+			position: relative;
+			float: left;
+			width: 250px;
+			height: 160px;
+			canvas{
+				position: relative;
+				top: 35px;
+				z-index: 1;
+			}
+			.chart-title{
+				width: 100%;
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 2;
+				text-align: center;
+				margin: 0;
+			}
+			.bg-icon{ 
+				position: absolute;
+				top: 100%;
+				left: 50%;
+				width: 100px; height: 50px;
+				overflow: hidden;
+				margin: -50px 0  0 -50px;
+				opacity: 0.25;
+				span.button-icon{
+					width: 100px; height: 100px;
+					text-align: center; 
+					span.icon{
+						font-size:50px;
+					}
+				}
+			}
+		}
+	}
+	table{
+		tbody{
+			tr{
+				td{
+					vertical-align: top;
+					margin: 5px 0;
+					.report-post{
+						display: inline-block;
+						border-radius: 8px;
+						padding: 8px;
+						.report-entry{
+							font-size: 12pt;
+							p{
+								font-weight:500;
+								margin: 0;
+								padding: 0;
+							}
+							img{
+								display: inline-block;
+								margin: 5px;
+								max-width: 45%;
+							}
+						}
+						h6.author{
+							letter-spacing: normal;
+							text-align: right;
+							font-size: 12pt;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+

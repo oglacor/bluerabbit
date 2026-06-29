@@ -1,0 +1,172 @@
+// ═══════════════════════════════════════════════════════════
+// BlueRabbit — Shared Variables & Mixins
+// Single source of truth for all SCSS files
+// ═══════════════════════════════════════════════════════════
+
+// ── Fonts ───────────────────────────────────────────────
+$main-font:      "proxima-nova", sans-serif;
+$condensed-font: "proxima-nova-extra-condensed", sans-serif;
+$condensed:      $condensed-font;
+$preospe-font:   "Preospe", sans-serif;
+
+// ── Core Palette ────────────────────────────────────────
+$br-primary:   #1cc2eb;
+$br-accent:    #f7cb15;
+$br-purple:    #9f40e2;
+$br-green:     #24da98;
+$br-red:       #f44336;
+$br-amber:     #ffc107;
+$br-teal:      #00bcd4;
+$br-orange:    #ff9800;
+$br-bg:        #04161e;
+$br-panel-bg:  rgba(11, 61, 79, 0.6);
+$br-border:    rgba(28, 194, 235, 0.2);
+$br-white:     #ffffff;
+
+// ── Base Colors (used in style.scss) ────────────────────
+$white:     #ffffff;
+$black:     #141d23;
+$text:      #284354;
+$highlight: #42708c;
+
+$success: #3cd380;
+$error:   #d83636;
+$info:    #23518c;
+$warning: #f2d027;
+
+// ── Game Palette (gradients/accents) ────────────────────
+$game-red:    #f97a7a;
+$game-pink:   #d952aa;
+$game-violet: #c892f7;
+$game-purple: #7759d8;
+$game-blue:   #4b8af9;
+$game-cyan:   #90f3fe;
+$game-teal:   #91f9b9;
+$game-green:  #b0fc90;
+$game-yellow: #ffd67b;
+$game-orange: #ffa780;
+
+// ── Named Colors (new-colors aliases) ───────────────────
+$nc-blue:         #1cc2eb;
+$nc-yellow:       #f7cb15;
+$nc-green:        #24da98;
+$nc-red:          #e24040;
+$nc-pink:         #ef5a9d;
+$nc-purple:       #9f40e2;
+$nc-dark-grey:    #1d2d34;
+$nc-grey:         #7d7f7f;
+$nc-light-grey:   #bebfbf;
+$nc-dark-blue:    #04161e;
+$nc-dark-blue-400:#0b3d4f;
+
+// ── Legacy Aliases (used throughout partials, will migrate in Phase 4)
+$base-font: $main-font;
+$red: $game-red; $pink: $game-pink; $violet: $game-violet; $purple: $game-purple;
+$blue: $game-blue; $cyan: $game-cyan; $teal: $game-teal; $green: $game-green;
+$yellow: $game-yellow; $orange: $game-orange;
+$new-colors-blue: $nc-blue; $new-colors-yellow: $nc-yellow; $new-colors-green: $nc-green;
+$new-colors-red: $nc-red; $new-colors-pink: $nc-pink; $new-colors-purple: $nc-purple;
+$new-colors-dark-grey: $nc-dark-grey; $new-colors-grey: $nc-grey;
+$new-colors-light-grey: $nc-light-grey; $new-colors-dark-blue: $nc-dark-blue;
+$new-colors-dark-blue-400: $nc-dark-blue-400;
+
+// ── Color Scales (100-900) ──────────────────────────────
+$red100: #f9d9d9; $red200: #f3b3b3; $red300: #ee8c8c; $red400: #e86666; $red500: #e24040;
+$red600: #b53333; $red700: #882626; $red800: #5a1a1a; $red900: #2d0d0d;
+
+$orange100: #fbe2d6; $orange200: #f6c5ad; $orange300: #f2a884; $orange400: #ed8b5b; $orange500: #e96e32;
+$orange600: #ba5828; $orange700: #8c421e; $orange800: #5d2c14; $orange900: #2f160a;
+
+$yellow100: #fdf5d0; $yellow200: #fceaa1; $yellow300: #fae073; $yellow400: #f9d544; $yellow500: #f7cb15;
+$yellow600: #c6a211; $yellow700: #947a0d; $yellow800: #635108; $yellow900: #312904;
+
+$green100: #d3f8ea; $green200: #a7f0d6; $green300: #7ce9c1; $green400: #50e1ad; $green500: #24da98;
+$green600: #1dae7a; $green700: #16835b; $green800: #0e573d; $green900: #072c1e;
+
+$mint100: #d2f8f9; $mint200: #a5f2f3; $mint300: #78ebee; $mint400: #4be5e8; $mint500: #1edee2;
+$mint600: #18b2b5; $mint700: #128588; $mint800: #0c595a; $mint900: #062c2d;
+
+$lightblue100: #d4f3fa; $lightblue200: #a9e6f5; $lightblue300: #7ddaf0; $lightblue400: #52cdeb; $lightblue500: #27c1e6;
+$lightblue600: #1f9ab8; $lightblue700: #17748a; $lightblue800: #104d5c; $lightblue900: #08272e;
+
+$blue100: #d9d8f8; $blue200: #b3b2f1; $blue300: #8e8beb; $blue400: #6865e4; $blue500: #423edd;
+$blue600: #3532b1; $blue700: #282585; $blue800: #1a1958; $blue900: #0d0c2c;
+
+$purple100: #e3d5f9; $purple200: #c7abf3; $purple300: #aa81ec; $purple400: #8e57e6; $purple500: #722de0;
+$purple600: #5b24b3; $purple700: #441b86; $purple800: #2e125a; $purple900: #17092d;
+
+$lavender100: #ecd9f9; $lavender200: #d9b3f3; $lavender300: #c58cee; $lavender400: #b266e8; $lavender500: #9f40e2;
+$lavender600: #7f33b5; $lavender700: #5f2688; $lavender800: #401a5a; $lavender900: #200d2d;
+
+$pink100: #f6d1eb; $pink200: #eda3d7; $pink300: #e576c2; $pink400: #dc48ae; $pink500: #d31a9a;
+$pink600: #a9157b; $pink700: #7f105c; $pink800: #540a3e; $pink900: #2a051f;
+
+$lime100: #e9f3d7; $lime200: #d2e6af; $lime300: #bcda88; $lime400: #a5cd60; $lime500: #8fc138;
+$lime600: #729a2d; $lime700: #567422; $lime800: #394d16; $lime900: #1d270b;
+
+$darkblue100: #cdd0d2; $darkblue200: #9ba2a5; $darkblue300: #687378; $darkblue400: #36454b; $darkblue500: #04161e;
+$darkblue600: #031218; $darkblue700: #020d12; $darkblue800: #02090c; $darkblue900: #010406;
+
+// ── HUD Design Tokens ───────────────────────────────────
+$hud-bg:          #04161e;
+$hud-surface:     #030f18;
+$hud-surface-2:   #0b3d4f;
+$hud-border:      rgba(28, 194, 235, 0.2);
+$hud-border-mid:  rgba(28, 194, 235, 0.4);
+$hud-border-hi:   rgba(28, 194, 235, 0.7);
+$hud-cyan:        #1cc2eb;
+$hud-cyan-dim:    rgba(28, 194, 235, 0.55);
+$hud-text:        #90f3fe;
+$hud-text-muted:  rgba(144, 243, 254, 0.6);
+$hud-text-dim:    rgba(28, 194, 235, 0.45);
+$hud-purple:      #9f40e2;
+$hud-violet:      #c892f7;
+$hud-green:       #24da98;
+$hud-yellow:      #f7cb15;
+$hud-red:         #e24040;
+$hud-orange:      #ffa780;
+
+// ── Radius & Spacing ────────────────────────────────────
+$radius:      12px;
+$radius-sm:   6px;
+$radius-pill: 20px;
+
+// ── Mixins ──────────────────────────────────────────────
+@mixin condensed-heading($size: 18px, $weight: 700) {
+  font-family: $condensed;
+  font-size: $size;
+  font-weight: $weight;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+@mixin color-variant($color) {
+  border-color: rgba($color, 0.25);
+  background: rgba($color, 0.08);
+  color: $color;
+
+  &:hover {
+    background: rgba($color, 0.18);
+    border-color: rgba($color, 0.4);
+    color: $br-white;
+  }
+}
+
+@mixin badge-color($color) {
+  background: rgba($color, 0.15);
+  color: $color;
+}
+
+@mixin font($fontSize, $fontWeight) {
+  font-size: $fontSize;
+  font-weight: $fontWeight;
+}
+
+@mixin br-animation($name, $duration: 0.3s, $direction: normal, $fill: forwards, $timing: ease-out, $count: 1) {
+  animation-duration: $duration;
+  animation-direction: $direction;
+  animation-fill-mode: $fill;
+  animation-timing-function: $timing;
+  animation-name: $name;
+  animation-iteration-count: $count;
+}
