@@ -44,11 +44,11 @@
 	<div class="card-content">
 		<div class="card-face frontface">
 			<?php if($isGM || $isNPC || $isAdmin){ ?>
-				<a class="layer foreground button-icon font _14 sq-20 absolute top-10 left-10 green-bg-400" href="<?= get_bloginfo("url")."/new-$quest->quest_type/?questID=$quest->quest_id&adventure_id=$adv_child_id"; ?>">
+				<a class="layer foreground br-icon-btn br-icon-btn-sm br-text-14 absolute top-10 left-10 green-bg-400" href="<?= get_bloginfo("url")."/new-$quest->quest_type/?questID=$quest->quest_id&adventure_id=$adv_child_id"; ?>">
 					<span class="icon icon-edit"></span>
 				</a>
 			<?php } ?>
-			<button class="layer foreground absolute button-icon font _14 sq-20  top-10 right-10 red-bg-400" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
+			<button class="layer foreground absolute br-icon-btn br-icon-btn-sm br-text-14  top-10 right-10 red-bg-400" onClick="unloadCard();"><span class="icon icon-cancel"></span></button>
 
 			<div class="layer background absolute sq-full top left blend-luminosity grey-bg-900 opacity-80" style="background-image: url(<?= $quest->mech_badge; ?>);"></div>
 			<div class="layer background absolute sq-full top left grey-bg-900 opacity-80"></div>
@@ -85,30 +85,30 @@
 						<img class="rotate-R-60 mix-blend-overlay halo " src="<?= get_bloginfo('template_directory')."/images/a4.png";?>">
 						<img class="rotate-L-90 mix-blend-overlay halo opacity-20" src="<?= get_bloginfo('template_directory')."/images/a5.png";?>">
 					</div>
-					<h1 class="font _30 w600 condensed kerning-1 padding-10 text-center w-full"><?= $quest->quest_title; ?></h1>
+					<h1 class="br-text-30 w600 condensed kerning-1 padding-10 text-center w-full"><?= $quest->quest_title; ?></h1>
 					<?php if($quest->quest_secondary_headline){ ?>
-						<p class="padding-5 font _14 w300 opacity-80"><?= $quest->quest_secondary_headline; ?></p>
+						<p class="padding-5 br-text-14 w300 opacity-80"><?= $quest->quest_secondary_headline; ?></p>
 					<?php } ?>
 
 					<div class="mechanics">
 						<?php if($quest->quest_type =='challenge'){?>
 							<div class="highlight text-center padding-0">
 								<div class="icon-group inline-table padding-10">
-									<span class="button-icon font _24 sq-40  light-green-bg-400">
+									<span class="br-icon-btn br-icon-btn-green">
 										<span class="background opacity-20 black-color overflow-hidden border rounded-max"><span class="icon icon-check icon-md"></span></span>
 										<span class="foreground"><?= $quest->mech_answers_to_win; ?></span>
-										<span class="legend active font _12"><?= __("Answers","bluerabbit"); ?></span>
+										<span class="legend active br-text-12"><?= __("Answers","bluerabbit"); ?></span>
 									</span>
-									<span class="button-icon font _24 sq-40  red-bg-400">
+									<span class="br-icon-btn br-icon-btn-red">
 										<span class="background opacity-20 black-color overflow-hidden border rounded-max"><span class="icon icon-objectives icon-lg"></span></span>
 										<?php if($quest->mech_max_attempts > 0){ ?>
 											<?= $quest->mech_max_attempts; ?>
 										<?php }else{ ?>
 											<span class="icon icon-infinite"></span>
 										<?php } ?>
-										<span class="legend active bottom font _12"><?= __("Attempts","bluerabbit"); ?></span>
+										<span class="legend active bottom br-text-12"><?= __("Attempts","bluerabbit"); ?></span>
 									</span>
-									<span class="button-icon font _24 sq-40  pink-bg-400">
+									<span class="br-icon-btn br-icon-btn-pink">
 										<span class="background opacity-20 black-color overflow-hidden border rounded-max"><span class="icon icon-time"></span></span>
 										<?php 
 										if($quest->mech_time_limit > 0){
@@ -117,7 +117,7 @@
 											echo "<span class='icon icon-infinite'></span>";
 										}
 										?>
-										<span class="legend active font _12"><?= __("Time","bluerabbit"); ?></span>
+										<span class="legend active br-text-12"><?= __("Time","bluerabbit"); ?></span>
 									</span>
 								</div>
 							</div>
@@ -132,37 +132,37 @@
 							?>
 							<div class="highlight text-center padding-0">
 								<span class="icon-group inline-table padding-10 white-color">
-									<span class="button-icon font _24 sq-40  teal-bg-400 font w900 _24"><span class="icon icon-question"></span></span>
+									<span class="br-icon-btn br-icon-btn-teal br-text-24 w900"><span class="icon icon-question"></span></span>
 									<span class="icon-content">
-										<span class="line font _24 w700"><?= "{$survey_qs[0]->total_answers} / {$survey_qs[0]->total_questions}"; ?></span>
-										<span class="line font _14"><?= __("Answered / Questions","bluerabbit"); ?></span>
+										<span class="line br-text-24 w700"><?= "{$survey_qs[0]->total_answers} / {$survey_qs[0]->total_questions}"; ?></span>
+										<span class="line br-text-14"><?= __("Answered / Questions","bluerabbit"); ?></span>
 									</span>
 								</span>
 							</div>
 						<?php } ?>
 						<?php if($quest->mech_deadline != '0000-00-00 00:00:00'){ ?>
-							<div class="highlight text-center padding-0 white-color font _20">
+							<div class="highlight text-center padding-0 white-color br-text-20">
 								<h3 class="font uppercase _18 w300 kerning-2 padding-10 foreground"><?= __("Time left","bluerabbit"); ?></h3>
 								<span class="icon-group font special padding-20  white-color border rounded-max" id="deadline-countdown">
 									<div class="background black-bg opacity-60  border rounded-max"></div>
-									<span class="font special button-icon font _20 sq-40  orange-300 transparent-bg" id="deadline-days">
+									<span class="font special br-icon-btn br-text-20 orange-300 transparent-bg" id="deadline-days">
 										<span class="number"></span>
-										<span class="legend active bottom font _10 text-center lowercase main"><?= __("Days","bluerabbit"); ?></span>
+										<span class="legend active bottom br-text-12 text-center lowercase main"><?= __("Days","bluerabbit"); ?></span>
 										<span class="halo rotate-L-30" style="background-image: url(<?= get_bloginfo('template_directory')."/images/countdown-halo.png"; ?>)"></span>
 									</span>
-									<span class="font special button-icon font _20 sq-40  cyan-600 transparent-bg" id="deadline-hours">
+									<span class="font special br-icon-btn br-text-20 cyan-600 transparent-bg" id="deadline-hours">
 										<span class="number"></span>
-										<span class="legend active bottom font _10 text-center lowercase main"><?= __("Hours","bluerabbit"); ?></span>
+										<span class="legend active bottom br-text-12 text-center lowercase main"><?= __("Hours","bluerabbit"); ?></span>
 										<span class="halo rotate-R-30" style="background-image: url(<?= get_bloginfo('template_directory')."/images/countdown-halo.png"; ?>)"></span>
 									</span>
-									<span class="font special button-icon font _20 sq-40  cyan-600 transparent-bg" id="deadline-minutes">
+									<span class="font special br-icon-btn br-text-20 cyan-600 transparent-bg" id="deadline-minutes">
 										<span class="number"></span>
-										<span class="legend active bottom font _10 text-center lowercase main"><?= __("Minutes","bluerabbit"); ?></span>
+										<span class="legend active bottom br-text-12 text-center lowercase main"><?= __("Minutes","bluerabbit"); ?></span>
 										<span class="halo rotate-L-30" style="background-image: url(<?= get_bloginfo('template_directory')."/images/countdown-halo.png"; ?>)"></span>
 									</span>
-									<span class="font special button-icon font _20 sq-40  blue-grey-200 transparent-bg" id="deadline-seconds">
+									<span class="font special br-icon-btn br-text-20 blue-grey-200 transparent-bg" id="deadline-seconds">
 										<span class="number"></span>
-										<span class="legend active bottom font _10 text-center lowercase main"><?= __("Seconds","bluerabbit"); ?></span>
+										<span class="legend active bottom br-text-12 text-center lowercase main"><?= __("Seconds","bluerabbit"); ?></span>
 										<span class="halo rotate-R-30" style="background-image: url(<?= get_bloginfo('template_directory')."/images/countdown-halo.png"; ?>)"></span>
 									</span>
 								</span>
@@ -173,7 +173,7 @@
 						<?php } ?>
 					</div>
 					
-					<a href="<?php echo $mi_link; ?>" class="form-ui font _20 padding-10 margin-10" <?= br_color_attr($mi_color) ?>>
+					<a href="<?php echo $mi_link; ?>" class="form-ui br-text-20 padding-10 margin-10" <?= br_color_attr($mi_color) ?>>
 						<?=$legend;?>
 					</a>
 					<?php if(($isGM || $isNPC || $isAdmin) && $quest->quest_type=='survey'){ ?>
@@ -192,7 +192,7 @@
 			<div class="layer base absolute sq-full <?=$quest->quest_color; ?>-gradient-500"></div>
 				<div class="layer foreground absolute perfect-center mix-blend-overlay">
 					<span class="relative block border border-all rounded-max border-10 white-color sq-200 padding-20">
-						<span class="icon icon-<?=$quest->quest_type;?> perfect-center font _100"></span>
+						<span class="icon icon-<?=$quest->quest_type;?> perfect-center br-text-40"></span>
 					</span>
 				</div>
 		</div>

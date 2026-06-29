@@ -66,11 +66,11 @@ $speakers = $wpdb->get_results("
 							<div class="layer background absolute sq-full blend-luminosity opacity-70 black-bg"></div>
 							<div class="icon-group padding-10 inline-table white-color layer base relative">
 								<div class="icon-content text-center top">
-									<span class="line font _36 w900"><?= $date_values[2]; ?></span>
+									<span class="line br-text-30 w900"><?= $date_values[2]; ?></span>
 								</div>
 								<div class="icon-content text-left">
-									<span class="line font _10 w300"><?= $date_values[3]; ?></span>
-									<span class="line font _20 w300"><?= $date_values[4]; ?></span>
+									<span class="line br-text-12 w300"><?= $date_values[3]; ?></span>
+									<span class="line br-text-20 w300"><?= $date_values[4]; ?></span>
 								</div>
 							</div>
 						</div>
@@ -90,11 +90,11 @@ $speakers = $wpdb->get_results("
 								<div class="layer background absolute sq-full blend-luminosity opacity-70 black-bg"></div>
 								<div class="icon-group padding-10 inline-table white-color layer base relative">
 									<div class="icon-content text-center top">
-										<span class="line font _36 w900"><?= $date_values[2]; ?></span>
+										<span class="line br-text-30 w900"><?= $date_values[2]; ?></span>
 									</div>
 									<div class="icon-content text-left">
-										<span class="line font _10 w300"><?= $date_values[3]; ?></span>
-										<span class="line font _20 w300"><?= $date_values[4]; ?></span>
+										<span class="line br-text-12 w300"><?= $date_values[3]; ?></span>
+										<span class="line br-text-20 w300"><?= $date_values[4]; ?></span>
 									</div>
 								</div>
 							</div>
@@ -105,7 +105,7 @@ $speakers = $wpdb->get_results("
 						<div class="overflow-hidden relative layer base schedule-session" id="milestone-session-<?= $key; ?>">
 							<?php if($isGM){ ?>
 								<div class="corner circle small green-bg-400 top right layer foreground absolute">
-									<a class="font _14 white-color" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span class="icon icon-edit"></span> </a>
+									<a class="br-text-14 white-color" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span class="icon icon-edit"></span> </a>
 								</div>
 							<?php } ?>
 							<?php $date_values = explode(",",date('Y,m,d,l,F', strtotime($session->session_start))); ?>
@@ -116,10 +116,10 @@ $speakers = $wpdb->get_results("
 										<div class="button-icon sq-100 border border-2 border-all blue-grey-border-700 pull-left" style="background-image: url(<?= $session_image;?>);"></div>
 									</div>
 									<div class="icon-content text-left cursor-pointer padding-10">
-										<h2 class="font _30 w600">
+										<h2 class="br-text-30 w600">
 											<?= $session->session_title; ?>
 										</h2>
-										<p class="padding-10 font _16 w600 opacity-60 mix-blend-overlay">
+										<p class="padding-10 br-text-16 w600 opacity-60 mix-blend-overlay">
                                             <?php if($session->speaker_ids){ ?>
                                                 <?php $the_speakers = explode(",",$session->speaker_ids); ?>
                                                 <?php foreach($speakers as $sp){ ?>
@@ -130,11 +130,11 @@ $speakers = $wpdb->get_results("
                                             <?php } ?>
 
 											<?php if($session->achievement_id){ ?>
-												<button class="button-icon font _24 sq-40  border border-all border-1 <?= $achievements[$session->achievement_id];?>-400 white-bg" style="background-image: url(<?= $achievement_badge[$session->achievement_id]; ?>);">
+												<button class="br-icon-btn border border-all border-1 <?= $achievements[$session->achievement_id];?>-400 white-bg" style="background-image: url(<?= $achievement_badge[$session->achievement_id]; ?>);">
 												</button>
 											<?php } ?>
 											<?php if($session->guild_id){ ?>
-												<button class="button-icon font _24 sq-40  border border-all border-1 <?= $guilds[$session->guild_id];?>-400 white-bg" style="background-image: url(<?= $guild_logos[$session->guild_id]; ?>);">
+												<button class="br-icon-btn border border-all border-1 <?= $guilds[$session->guild_id];?>-400 white-bg" style="background-image: url(<?= $guild_logos[$session->guild_id]; ?>);">
 												</button>
 											<?php } ?>
 											<span class="icon icon-time"></span> <?= date('H:i', strtotime($session->session_start)); ?> - 
@@ -142,7 +142,7 @@ $speakers = $wpdb->get_results("
 											<?= $session->session_room ? " | <strong class='amber-400'>$session->session_room</strong>" : ''; ?>
 
 										</p>
-										<p class="font _18 w300 line-150">
+										<p class="br-text-18 w300 line-150">
 											<?= wp_trim_words($session->session_description, 50);?>
 										</p>
 									</div>
@@ -168,22 +168,22 @@ $speakers = $wpdb->get_results("
 							<div class="background black-bg opacity-40 blend-luminosity fixed cursor-pointer" style="background-image: url(<?= $bg_image; ?>);" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"></div>
 							<div class="session-detail-content white-color">
 								<div class="layer absolute top right foreground">
-									<button class="button-icon font _24 sq-40  red-bg-400 icon-xs" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"><span class="icon icon-cancel"></span></button>
+									<button class="br-icon-btn br-icon-btn-red" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"><span class="icon icon-cancel"></span></button>
 								</div>
 								<?php if($isGM){ ?>
 									<div class="layer absolute top left foreground">
-										<a class="button-icon font _24 sq-40  icon-xs font _14 green-bg-400" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span  class="icon icon-edit"></span> </a>
+										<a class="br-icon-btn br-icon-btn-green br-text-14" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span  class="icon icon-edit"></span> </a>
 									</div>
 								<?php } ?>
 								<div class="highlight text-center padding-10 margin-0">
-									<h1 class="font _30 w600"><?= $session->session_title; ?></h1>
+									<h1 class="br-text-30 w600"><?= $session->session_title; ?></h1>
 								</div>
 								<div class="highlight text-center padding-10 margin-0">
 									<div class="background <?=$adventure->adventure_color; ?>-bg-300 opacity-20"></div>
 									<div class="icon-group foreground">
 										<div class="icon-content">
-											<span class="line font _24 w500"><?= date('D M jS, Y', strtotime($session->session_start)); ?></span>
-											<span class="line font _18 w500">
+											<span class="line br-text-24 w500"><?= date('D M jS, Y', strtotime($session->session_start)); ?></span>
+											<span class="line br-text-18 w500">
 												<?php 
 													echo date('H:i', strtotime($session->session_start))." - ".date('H:i', strtotime($session->session_end));
 													if($session->session_room){
@@ -200,14 +200,14 @@ $speakers = $wpdb->get_results("
                                         <?php foreach($speakers as $sp){ ?>
                                             <?php if(in_array($sp->speaker_id, $the_speakers)){ ?>
                                                 <div class="icon-group">
-                                                    <div class="button-icon font _24 sq-40  border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $sp->player_picture ? $sp->player_picture : $sp->speaker_picture; ?>);" >
+                                                    <div class="br-icon-btn border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $sp->player_picture ? $sp->player_picture : $sp->speaker_picture; ?>);" >
                                                     </div>
                                                     <div class="icon-content text-left">
-                                                        <span class="line font _24 w500">
+                                                        <span class="line br-text-24 w500">
                                                             <?= "$sp->speaker_first_name $sp->speaker_last_name"; ?>
                                                         </span>
                                                         <?php if($sp->speaker_company){ ?>
-                                                            <span class="line font _14 w100">
+                                                            <span class="line br-text-14 w100">
                                                                 <?= "$sp->speaker_company"; ?>
                                                             </span>
                                                         <?php } ?>
@@ -234,16 +234,16 @@ $speakers = $wpdb->get_results("
 								</div>
 								<?php if($session->speaker_bio){ ?>
 									<div class="highlight padding-10 text-center">
-										<button class="form-ui red-bg-300 font _14" target="_blank"  onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');"><span class="icon icon-language"></span> <?php _e("Speaker Bio","bluerabbit"); ?></button>
+										<button class="form-ui red-bg-300 br-text-14" target="_blank"  onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');"><span class="icon icon-language"></span> <?php _e("Speaker Bio","bluerabbit"); ?></button>
 									</div>
 									<div class="speaker-bio " id="speaker-bio-<?= $key; ?>">
 										<div class="background black-bg opacity-50"></div>
-										<div class="line-150 font _14 padding-10 text-center foreground">
-											<span class="button-icon font _24 sq-40  icon-xl" style="background-image: url(<?= $session->speaker_picture; ?>);"></span>
+										<div class="line-150 br-text-14 padding-10 text-center foreground">
+											<span class="br-icon-btn" style="background-image: url(<?= $session->speaker_picture; ?>);"></span>
 											<br>
-											<span class="font _24 w300"><?= "$session->speaker_first_name $session->speaker_last_name"; ?></span><br>
+											<span class="br-text-24 w300"><?= "$session->speaker_first_name $session->speaker_last_name"; ?></span><br>
 											<?= apply_filters('the_content', $session->speaker_bio); ?>
-											<button class="button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');">
+											<button class="br-close-btn" onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');">
 												<span class="icon icon-arrow-up white-color"></span>
 											</button>
 										</div>
@@ -256,11 +256,11 @@ $speakers = $wpdb->get_results("
 				<?php }else{ ?>
 					<div class="highlight padding-10 text-center red-bg-50 red-600">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  icon-50 white-bg red-400">
+							<span class="br-icon-btn br-icon-btn-white red-400">
 								<span class="icon icon-warning"></span>
 							</span>
 							<span class="icon-content">
-								<span class="line font _40 w500">
+								<span class="line br-text-40 w500">
 									<?php _e("No Sessions Available","bluerabbit"); ?>
 								</span>
 							</span>
