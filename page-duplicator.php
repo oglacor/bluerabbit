@@ -36,9 +36,9 @@ if($adventure){
 	<div class="boxed max-w-1200">
 			<div class="text-center padding-20">
 				<span class="icon-group inline-table">
-					<span class="button-icon font _24 sq-40  icon-lg purple-bg-400"><span class="icon icon-duplicate"></span></span>
+					<span class="br-icon-btn br-icon-btn-purple"><span class="icon icon-duplicate"></span></span>
 					<span class="icon-content">
-						<span class="line font _48 white-color">
+						<span class="line br-text-40 white-color">
 							<?php _e("Duplicator","bluerabbit"); ?>
 						</span>
 					</span>
@@ -47,18 +47,18 @@ if($adventure){
 			<div class="body-ui w-full white-bg">
 				<div class="highlight padding-20 blue-bg-100">
 					<div class="icon-group">
-						<div class="button-icon font _24 sq-40  blue-bg-400"><span class="icon icon-quest"></span></div>
+						<div class="br-icon-btn br-icon-btn-blue"><span class="icon icon-quest"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Milestones","bluerabbit");?></div>
+							<div class="line br-text-24"><?= __("Milestones","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
 						<div class="icon-content">
-							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#quests-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 green-bg-400" onClick="activateAll('#quests-to-duplicate li.to-duplicate');">
 								<span class="icon icon-check"></span>
 								<?php _e("Select All","bluerabbit"); ?>
 							</button>
-							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#quests-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 red-bg-400" onClick="deactivateAll('#quests-to-duplicate li.to-duplicate');">
 								<span class="icon icon-cancel"></span>
 								<?php _e("Clear Selection","bluerabbit"); ?>
 							</button>
@@ -71,15 +71,15 @@ if($adventure){
 						<?php foreach ($adventure_quests as $key=>$q){ ?>
 							<?php if($block != $q->quest_type){ ?>
 								<?php $block = $q->quest_type; ?>
-								<li class="grey-bg-900 white-color text-center font _30 w900 kerning-1 uppercase"><?=$block;?></li>
+								<li class="grey-bg-900 white-color text-center br-text-30 w900 kerning-1 uppercase"><?=$block;?></li>
 							<?php } ?>
 							<li id="req-<?= $q->quest_id; ?>" class="<?= $q->quest_type; ?> white-bg level-<?= $q->mech_level; ?> to-duplicate" onClick="toggleReq('#req-<?= $q->quest_id; ?>');">
-								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+								<span class="li-cell inactive-content grey-bg-300 text-center br-text-18">
 									<span class="icon icon-<?= $q->quest_icon ? $q->quest_icon : 'document'; ?>"></span>
 								</span>
 								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= $q->quest_title; ?></span>
 
-								<span class="li-cell active-content green-bg-400 white-color font _18">
+								<span class="li-cell active-content green-bg-400 white-color br-text-18">
 									<span class="icon icon-check white-color"></span>
 								</span>
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $q->quest_title; ?></span>
@@ -103,18 +103,18 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 purple-bg-100">
 					<div class="icon-group">
-						<div class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></div>
+						<div class="br-icon-btn br-icon-btn-purple"><span class="icon icon-achievement"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Achievements","bluerabbit");?></div>
+							<div class="line br-text-24"><?= __("Achievements","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
 						<div class="icon-content">
-							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#achievements-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 green-bg-400" onClick="activateAll('#achievements-to-duplicate li.to-duplicate');">
 								<span class="icon icon-check"></span>
 								<?php _e("Select All","bluerabbit"); ?>
 							</button>
-							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#achievements-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 red-bg-400" onClick="deactivateAll('#achievements-to-duplicate li.to-duplicate');">
 								<span class="icon icon-cancel"></span>
 								<?php _e("Clear Selection","bluerabbit"); ?>
 							</button>
@@ -126,12 +126,12 @@ if($adventure){
 						<?php foreach ($adventure_achievements as $key=>$a){ ?>
 						
 							<li id="req-achievement-<?= $a->achievement_id; ?>" class="achievement white-bg to-duplicate" onClick="toggleReq('#req-achievement-<?= $a->achievement_id; ?>');">
-								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+								<span class="li-cell inactive-content grey-bg-300 text-center br-text-18">
 									<span class="icon icon-achievement"></span>
 								</span>
 								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= $a->achievement_name; ?></span>
 
-								<span class="li-cell active-content green-bg-400 white-color font _18">
+								<span class="li-cell active-content green-bg-400 white-color br-text-18">
 									<span class="icon icon-check white-color"></span>
 								</span>
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $a->achievement_name; ?></span>
@@ -153,18 +153,18 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 purple-bg-100">
 					<div class="icon-group">
-						<div class="button-icon font _24 sq-40  green-bg-400"><span class="icon icon-carrot"></span></div>
+						<div class="br-icon-btn br-icon-btn-green"><span class="icon icon-carrot"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Tabis","bluerabbit");?></div>
+							<div class="line br-text-24"><?= __("Tabis","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
 						<div class="icon-content">
-							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#tabis-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 green-bg-400" onClick="activateAll('#tabis-to-duplicate li.to-duplicate');">
 								<span class="icon icon-check"></span>
 								<?php _e("Select All","bluerabbit"); ?>
 							</button>
-							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#tabis-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 red-bg-400" onClick="deactivateAll('#tabis-to-duplicate li.to-duplicate');">
 								<span class="icon icon-cancel"></span>
 								<?php _e("Clear Selection","bluerabbit"); ?>
 							</button>
@@ -176,12 +176,12 @@ if($adventure){
 						<?php foreach ($adventure_tabis as $key=>$a){ ?>
 						
 							<li id="req-tabi-<?= $a->tabi_id; ?>" class="achievement white-bg to-duplicate" onClick="toggleReq('#req-tabi-<?= $a->tabi_id; ?>');">
-								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+								<span class="li-cell inactive-content grey-bg-300 text-center br-text-18">
 									<span class="icon icon-carrot"></span>
 								</span>
 								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= $a->tabi_name; ?></span>
 
-								<span class="li-cell active-content green-bg-400 white-color font _18">
+								<span class="li-cell active-content green-bg-400 white-color br-text-18">
 									<span class="icon icon-check white-color"></span>
 								</span>
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $a->tabi_name; ?></span>
@@ -194,18 +194,18 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 pink-bg-100">
 					<div class="icon-group">
-						<div class="button-icon font _24 sq-40  pink-bg-400"><span class="icon icon-basket"></span></div>
+						<div class="br-icon-btn br-icon-btn-pink"><span class="icon icon-basket"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Items","bluerabbit");?></div>
+							<div class="line br-text-24"><?= __("Items","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
 						<div class="icon-content">
-							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#items-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 green-bg-400" onClick="activateAll('#items-to-duplicate li.to-duplicate');">
 								<span class="icon icon-check"></span>
 								<?php _e("Select All","bluerabbit"); ?>
 							</button>
-							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#items-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 red-bg-400" onClick="deactivateAll('#items-to-duplicate li.to-duplicate');">
 								<span class="icon icon-cancel"></span>
 								<?php _e("Clear Selection","bluerabbit"); ?>
 							</button>
@@ -232,12 +232,12 @@ if($adventure){
 							?>
 						
 							<li id="req-item-<?= $i->item_id; ?>" class="item-to-duplicate white-bg level-<?= $i->item_level; ?> to-duplicate" onClick="toggleReq('#req-item-<?= $i->item_id; ?>');">
-								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+								<span class="li-cell inactive-content grey-bg-300 text-center br-text-18">
 									<span class="icon icon-<?=$icon_type;?>"></span>
 								</span>
 								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= $i->item_name; ?></span>
 
-								<span class="li-cell active-content green-bg-400 white-color font _18">
+								<span class="li-cell active-content green-bg-400 white-color br-text-18">
 									<span class="icon icon-check white-color"></span>
 								</span>
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $i->item_name; ?></span>
@@ -255,18 +255,18 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 cyan-bg-100">
 					<div class="icon-group">
-						<div class="button-icon font _24 sq-40  cyan-bg-A400 blue-grey-900"><span class="icon icon-activity"></span></div>
+						<div class="br-icon-btn br-icon-btn-cyan"><span class="icon icon-activity"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Encounters","bluerabbit");?></div>
+							<div class="line br-text-24"><?= __("Encounters","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
 						<div class="icon-content">
-							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#encounters-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 green-bg-400" onClick="activateAll('#encounters-to-duplicate li.to-duplicate');">
 								<span class="icon icon-check"></span>
 								<?php _e("Select All","bluerabbit"); ?>
 							</button>
-							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#encounters-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 red-bg-400" onClick="deactivateAll('#encounters-to-duplicate li.to-duplicate');">
 								<span class="icon icon-cancel"></span>
 								<?php _e("Clear Selection","bluerabbit"); ?>
 							</button>
@@ -277,12 +277,12 @@ if($adventure){
 					<ul class="selectable-list select-multiple" id="encounters-to-duplicate">
 						<?php foreach ($adventure_encounters as $key=>$e){ ?>
 							<li id="req-enc-<?= $e->enc_id; ?>" class="item white-bg level-<?= $e->enc_level; ?> to-duplicate" onClick="toggleReq('#req-enc-<?= $e->enc_id; ?>');">
-								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+								<span class="li-cell inactive-content grey-bg-300 text-center br-text-18">
 									<span class="icon icon-socialiser"></span>
 								</span>
 								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= $e->enc_question; ?></span>
 
-								<span class="li-cell active-content green-bg-400 white-color font _18">
+								<span class="li-cell active-content green-bg-400 white-color br-text-18">
 									<span class="icon icon-check white-color"></span>
 								</span>
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= $e->enc_question; ?></span>
@@ -307,18 +307,18 @@ if($adventure){
 				</div>
 				<div class="highlight padding-20 orange-bg-100">
 					<div class="icon-group">
-						<div class="button-icon font _24 sq-40  orange-bg-A400 blue-grey-900"><span class="icon icon-socialiser"></span></div>
+						<div class="br-icon-btn br-icon-btn-orange"><span class="icon icon-socialiser"></span></div>
 						<div class="icon-content">
-							<div class="line font _24"><?= __("Speakers","bluerabbit");?></div>
+							<div class="line br-text-24"><?= __("Speakers","bluerabbit");?></div>
 						</div>
 					</div>
 					<div class="icon-group pull-right">
 						<div class="icon-content">
-							<button class="form-ui font _16 green-bg-400" onClick="activateAll('#speakers-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 green-bg-400" onClick="activateAll('#speakers-to-duplicate li.to-duplicate');">
 								<span class="icon icon-check"></span>
 								<?php _e("Select All","bluerabbit"); ?>
 							</button>
-							<button class="form-ui font _16 red-bg-400" onClick="deactivateAll('#speakers-to-duplicate li.to-duplicate');">
+							<button class="form-ui br-text-16 red-bg-400" onClick="deactivateAll('#speakers-to-duplicate li.to-duplicate');">
 								<span class="icon icon-cancel"></span>
 								<?php _e("Clear Selection","bluerabbit"); ?>
 							</button>
@@ -329,12 +329,12 @@ if($adventure){
 					<ul class="selectable-list select-multiple" id="speakers-to-duplicate">
 						<?php foreach ($adventure_speakers as $key=>$e){ ?>
 							<li id="req-speaker-<?= $e->speaker_id; ?>" class="item white-bg to-duplicate" onClick="toggleReq('#req-speaker-<?= $e->speaker_id; ?>');">
-								<span class="li-cell inactive-content grey-bg-300 text-center font _18">
+								<span class="li-cell inactive-content grey-bg-300 text-center br-text-18">
 									<span class="icon icon-activity"></span>
 								</span>
 								<span class="li-cell cell-content inactive-content padding-10 text-left"><?= "$e->speaker_first_name $e->speaker_last_name"; ?></span>
 
-								<span class="li-cell active-content green-bg-400 white-color font _18">
+								<span class="li-cell active-content green-bg-400 white-color br-text-18">
 									<span class="icon icon-check white-color"></span>
 								</span>
 								<span class="li-cell cell-content active-content padding-10 text-left green-400 font w700"><?= "$e->speaker_first_name $e->speaker_last_name"; ?></span>
@@ -347,7 +347,7 @@ if($adventure){
 			<div class="footer-ui text-center padding-10 white-color deep-purple-bg-800">
 				<div class="input-group w-full relative">
 				<label class="font w900 amber-bg-400 grey-900"><?php _e('Adventure target','bluerabbit'); ?></label>
-					<select class="form-ui font _18 padding-10" id="adventure_target">
+					<select class="form-ui br-text-18 padding-10" id="adventure_target">
 						<?php foreach($adventures as $c){ ?>
 							<option value="<?= $c->adventure_id;?>">
 								<?= $c->adventure_title;?>
@@ -360,7 +360,7 @@ if($adventure){
 						</button>
 					</label>
 					<div class="overlay-layer confirm-action" id="duplicate-confirm">
-						<button class="form-ui red-bg-400 white-color font _30" onClick="duplicateQuests();">
+						<button class="form-ui red-bg-400 white-color br-text-30" onClick="duplicateQuests();">
 							<span class="icon icon-infinite"></span> <strong><?php _e('Are you sure?','bluerabbit'); ?></strong><br>
 						</button>
 					</div>
