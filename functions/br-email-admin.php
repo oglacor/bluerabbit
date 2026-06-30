@@ -714,6 +714,16 @@ function br_email_log_page(): void {
 			</a>
 		</div>
 		<?php endif; ?>
+		<?php if ( $status === 'sent' && $count_sent > 0 ) : ?>
+		<div style="float:right;margin-top:4px">
+			<a href="<?php echo esc_url( wp_nonce_url(
+				add_query_arg( 'br_email_csv_all_sent', '1', admin_url( 'admin.php' ) ),
+				'br_csv_all_sent'
+			) ); ?>" class="button">
+				&#128196; <?php esc_html_e( 'Download All Sent CSV', 'bluerabbit' ); ?>
+			</a>
+		</div>
+		<?php endif; ?>
 
 		<table class="widefat striped" style="margin-top:6px">
 			<thead>
@@ -911,6 +921,21 @@ function br_email_handle_csv_download(): void {
 		);
 
 		br_email_output_csv( 'all-failed-emails.csv', $rows );
+	}
+	if ( ! empty( $_GET['br_email_csv_all_sent'] ) ) {
+		check_admin_referer( 'br_csv_all_sent' );
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
+
+		$rows = $wpdb->get_results(
+			"SELECT u.user_email, u.display_name, l.subject, l.detail, l.sent_at, a.adventure_title
+			   FROM {$wpdb->prefix}br_email_log l
+			   JOIN {$wpdb->users} u ON u.ID = l.user_id
+			   LEFT JOIN {$wpdb->prefix}br_adventures a ON a.adventure_id = l.adventure_id
+			  WHERE l.status = 'sent'
+			  ORDER BY l.sent_at DESC"
+		);
+
+		br_email_output_csv( 'all-sent-emails.csv', $rows );
 	}
 }
 
