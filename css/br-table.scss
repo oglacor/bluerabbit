@@ -4007,6 +4007,180 @@ select.br-input {
   color: rgba($br-white, 0.3);
 }
 
+// ── Email notifications — view tabs + send log ────────────────
+
+.br-notif-view-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+  margin-bottom: 16px;
+}
+
+.br-notif-view-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba($br-white, 0.4);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: rgba($br-white, 0.75); }
+
+  &.active {
+    color: $br-primary;
+    border-bottom-color: $br-primary;
+  }
+}
+
+.br-notif-badge {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  margin-left: 5px;
+  vertical-align: middle;
+
+  &.green { background: rgba($br-green, 0.9); color: #fff; }
+  &.red   { background: rgba($br-red,   0.9); color: #fff; }
+  &.amber { background: #f0b429;              color: #fff; }
+  &.muted { background: rgba($br-white, 0.12); color: rgba($br-white, 0.45); }
+}
+
+.br-notif-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: rgba($br-white, 0.75);
+
+  th {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.3);
+    border-bottom: 1px solid rgba($br-primary, 0.12);
+    font-weight: 600;
+  }
+
+  td {
+    padding: 10px;
+    border-bottom: 1px solid rgba($br-primary, 0.06);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td      { background: rgba($br-primary, 0.04); }
+}
+
+.br-notif-log-num {
+  color: rgba($br-white, 0.2);
+  font-size: 11px;
+  width: 28px;
+}
+
+.br-notif-log-count {
+  text-align: center;
+  font-weight: 700;
+  font-family: $condensed;
+  font-size: 16px;
+  min-width: 48px;
+
+  &.green { color: $br-green; }
+  &.red   { color: $br-red; }
+  &.amber { color: #f0b429; }
+  &.muted { color: rgba($br-white, 0.22); }
+}
+
+.br-notif-log-date {
+  font-size: 11px;
+  color: rgba($br-white, 0.3);
+  white-space: nowrap;
+}
+
+.br-notif-log-error {
+  font-size: 11px;
+  color: $br-red;
+  max-width: 260px;
+  word-break: break-all;
+}
+
+.br-notif-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: $br-primary;
+  text-decoration: none;
+  opacity: 0.75;
+  margin-bottom: 8px;
+
+  &:hover { opacity: 1; }
+}
+
+.br-notif-campaign-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 20px;
+  row-gap: 3px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.br-notif-campaign-info-key { color: rgba($br-white, 0.35); }
+
+.br-notif-campaign-info-val {
+  color: rgba($br-white, 0.75);
+  font-weight: 500;
+}
+
+.br-notif-inner-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+  margin-bottom: 14px;
+}
+
+.br-notif-inner-tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba($br-white, 0.4);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: rgba($br-white, 0.7); }
+
+  &.active {
+    color: $br-white;
+    border-bottom-color: $br-primary;
+  }
+}
+
+.br-notif-log-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.br-notif-log-hint {
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-notif-status-link {
+  color: inherit;
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
 // ── page-stats.php ───────────────────────────────────────────
 
 .br-stats-filter-row {

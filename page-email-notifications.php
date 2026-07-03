@@ -35,7 +35,6 @@ global $wpdb;
 $sender = wp_get_current_user();
 $owner  = get_userdata( (int) $adventure->adventure_owner );
 
-// Use same query pattern as player-select-achievement.php (which works)
 $enrolled_players = $wpdb->get_results(
 	"SELECT a.player_id, a.player_level,
 	        b.player_display_name, b.player_picture,
@@ -49,6 +48,17 @@ $enrolled_players = $wpdb->get_results(
 );
 $recipient_count  = count( $enrolled_players );
 $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
+
+$view         = sanitize_key( $_GET['view'] ?? 'compose' );
+$log_base_url = add_query_arg( 'adventure_id', $adv_parent_id, get_permalink() );
+
+$log_campaign_count = (int) $wpdb->get_var( $wpdb->prepare(
+	"SELECT COUNT(*) FROM {$wpdb->prefix}br_email_campaigns WHERE adventure_id = %d",
+	$adv_parent_id
+) );
+
+$compose_url = add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'compose' ], get_permalink() );
+$log_url     = add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log' ],     get_permalink() );
 ?>
 
 <div class="br-page br-page-narrow">
@@ -67,6 +77,25 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 			<span class="br-notif-eligible-count"><?php echo (int) $recipient_count; ?></span>
 		</div>
 	</div>
+
+	<!-- View tabs: Compose / Send Log -->
+	<div class="br-notif-view-tabs">
+		<a href="<?php echo esc_url( $compose_url ); ?>"
+		   class="br-notif-view-tab <?php echo $view !== 'log' ? 'active' : ''; ?>">
+			<span class="icon icon-document"></span> <?php esc_html_e( 'Compose', 'bluerabbit' ); ?>
+		</a>
+		<a href="<?php echo esc_url( $log_url ); ?>"
+		   class="br-notif-view-tab <?php echo $view === 'log' ? 'active' : ''; ?>">
+			<span class="icon icon-list"></span> <?php esc_html_e( 'Send Log', 'bluerabbit' ); ?>
+			<?php if ( $log_campaign_count ) : ?>
+			<span class="br-notif-badge muted"><?php echo $log_campaign_count; ?></span>
+			<?php endif; ?>
+		</a>
+	</div>
+
+	<?php if ( $view === 'log' ) :
+		br_email_frontend_log( $adv_parent_id, $log_base_url );
+	else : ?>
 
 	<!-- Status Banner -->
 	<div id="br-notif-status" class="br-notif-status"></div>
@@ -217,8 +246,6 @@ $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );
 			<span id="br-notif-send-summary" class="br-notif-send-summary"></span>
 		</div>
 	</div>
-
-</div>
 
 <script>
 jQuery(function($){
@@ -386,7 +413,8 @@ jQuery(function($){
 		},function(r){
 			$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
 			if(r.success){
-				showStatus('<span class="icon icon-check"></span> '+r.data.message,'green');
+				var logUrl='<?php echo esc_js( add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log' ], get_permalink() ) ); ?>';
+				showStatus('<span class="icon icon-check"></span> '+r.data.message+' &mdash; <a href="'+logUrl+'" class="br-notif-status-link">View Send Log</a>','green');
 				if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
 				else $('#br_notif_body').val('');
 				$('#br-notif-subject').val('');
@@ -402,5 +430,9 @@ jQuery(function($){
 });
 </script>
 
-<?php endif; ?>
+<?php endif; // end view=log / compose ?>
+
+</div><?php // .br-page.br-page-narrow ?>
+
+<?php endif; // end can_send check ?>
 <?php include ( get_stylesheet_directory() . '/footer.php' ); ?>
