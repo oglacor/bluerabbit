@@ -107,13 +107,13 @@ $rating = 0;
 				<?php if ( $q->mech_validate ) { ?>
 				<?php $validated = ($pp->pp_grade > 0); ?>
 				<div class="br-flex br-flex-center br-gap-sm">
-					<button class="<?= $validated ? 'br-btn' : 'br-form-btn-green'; ?>"
+					<button class="<?= $validated ? 'br-btn' : 'br-btn br-form-btn-green'; ?>"
 							<?= $validated ? 'disabled' : ''; ?>
 							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'validate');"
 							id="validate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
 						<span class="icon icon-check"></span> <?= __("Validate","bluerabbit"); ?>
 					</button>
-					<button class="<?= ! $validated ? 'br-btn' : 'br-form-btn-red'; ?>"
+					<button class="<?= ! $validated ? 'br-btn' : 'br-btn br-form-btn-red'; ?>"
 							<?= ! $validated ? 'disabled' : ''; ?>
 							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'invalidate');"
 							id="invalidate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">

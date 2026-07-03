@@ -61,9 +61,12 @@ if ($has_qr) {
 		<input type="hidden" id="the_quest_id" value="<?= $is_edit ? $quest->quest_id : ''; ?>">
 		<input type="hidden" id="the_quest_order" value="<?= $is_edit ? $quest->quest_order : count($quests ?? []); ?>">
 		<?php if ($is_edit) { ?>
-		<a class="br-btn br-ml-auto" href="<?= get_bloginfo('url') . "/quest/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank">
-			<span class="icon icon-view"></span> <?= __("View Milestone", "bluerabbit"); ?>
-		</a>
+            <a class="br-btn br-ml-auto" href="<?= get_bloginfo('url') . "/quest/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank">
+                <span class="icon icon-view"></span> <?= __("View Milestone", "bluerabbit"); ?>
+            </a>
+            <a class="br-btn br-ml-auto" href="<?= get_bloginfo('url') . "/review-player-posts/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank">
+                <span class="icon icon-view"></span> <?= __("Review Content", "bluerabbit"); ?>
+            </a>
 		<?php } ?>
 	</div>
 
