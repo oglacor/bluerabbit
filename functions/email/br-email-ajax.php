@@ -105,25 +105,10 @@ function br_email_ajax_missing_recipients(): void {
 	// Step 3: Subtract — these are players who never received an attempt.
 	$missing_ids = array_values( array_diff( $enrolled, $reached ) );
 
-	// Step 4: Get opted-out IDs so we can label them in the list.
-	$optout_ids = [];
-	if ( ! empty( $missing_ids ) ) {
-		$placeholders = implode( ',', array_fill( 0, count( $missing_ids ), '%d' ) );
-		$optout_ids = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT user_id FROM {$wpdb->usermeta}
-				  WHERE meta_key = 'br_email_optout' AND meta_value = '1'
-				    AND user_id IN ( {$placeholders} )",
-				...$missing_ids
-			)
-		);
-	}
-	$optout_set = array_flip( $optout_ids );
-
 	$users = [];
 	if ( ! empty( $missing_ids ) ) {
 		$placeholders = implode( ',', array_fill( 0, count( $missing_ids ), '%d' ) );
-		$rows = $wpdb->get_results(
+		$users = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT ID AS player_id, user_email, display_name
 				   FROM {$wpdb->users}
@@ -132,10 +117,6 @@ function br_email_ajax_missing_recipients(): void {
 				...$missing_ids
 			), ARRAY_A
 		);
-		foreach ( $rows as $row ) {
-			$row['optout'] = isset( $optout_set[ $row['player_id'] ] );
-			$users[] = $row;
-		}
 	}
 
 	$csv_url = wp_nonce_url(

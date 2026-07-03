@@ -155,7 +155,7 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 	}
 
 	$adv_id   = (int) $campaign->adventure_id;
-	$valid_tabs = [ 'sent', 'failed', 'missing', 'unsubscribed' ];
+	$valid_tabs = [ 'sent', 'failed', 'missing' ];
 	$tab      = in_array( $_GET['tab'] ?? 'sent', $valid_tabs, true ) ? ( $_GET['tab'] ?? 'sent' ) : 'sent';
 	$paged    = max( 1, (int) ( $_GET['paged'] ?? 1 ) );
 	$per_page = 50;
@@ -187,15 +187,6 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 	) );
 	$missing_ids   = array_values( array_diff( $enrolled_ids, $reached_ids ) );
 	$missing_count = count( $missing_ids );
-
-	// Unsubscribed: enrolled players with optout = 1
-	$unsub_count = (int) $wpdb->get_var( $wpdb->prepare(
-		"SELECT COUNT(*) FROM {$wpdb->usermeta} m
-		   JOIN {$wpdb->prefix}br_player_adventure pa
-		     ON pa.player_id = m.user_id AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
-		  WHERE m.meta_key = 'br_email_optout' AND m.meta_value = '1'",
-		$adv_id
-	) );
 
 	// ── Tab data ────────────────────────────────────────────────────────────
 
@@ -234,55 +225,16 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 		$tab_pages = max( 1, (int) ceil( $tab_total / $per_page ) );
 		$page_ids  = array_slice( $missing_ids, $offset, $per_page );
 
-		$optout_set = [];
-		if ( ! empty( $missing_ids ) ) {
-			$ph         = implode( ',', array_fill( 0, count( $missing_ids ), '%d' ) );
-			$optout_raw = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT user_id FROM {$wpdb->usermeta}
-					  WHERE meta_key = 'br_email_optout' AND meta_value = '1'
-					    AND user_id IN ( {$ph} )",
-					...$missing_ids
-				)
-			);
-			$optout_set = array_flip( $optout_raw );
-		}
-
 		if ( ! empty( $page_ids ) ) {
 			$ph  = implode( ',', array_fill( 0, count( $page_ids ), '%d' ) );
-			$raw = $wpdb->get_results(
+			$tab_rows = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT ID, display_name, user_email FROM {$wpdb->users}
+					"SELECT display_name, user_email FROM {$wpdb->users}
 					  WHERE ID IN ( {$ph} ) ORDER BY display_name",
 					...$page_ids
 				)
 			);
-			foreach ( $raw as $u ) {
-				$tab_rows[] = (object) [
-					'display_name' => $u->display_name,
-					'user_email'   => $u->user_email,
-					'optout'       => isset( $optout_set[ $u->ID ] ),
-				];
-			}
 		}
-
-	} elseif ( $tab === 'unsubscribed' ) {
-		$tab_total = $unsub_count;
-		$tab_pages = max( 1, (int) ceil( $tab_total / $per_page ) );
-		$tab_rows  = $wpdb->get_results( $wpdb->prepare(
-			"SELECT u.display_name, u.user_email,
-			        CASE WHEN l.log_id IS NOT NULL THEN 'Yes' ELSE 'No' END AS was_sent
-			   FROM {$wpdb->usermeta} m
-			   JOIN {$wpdb->users} u ON u.ID = m.user_id
-			   JOIN {$wpdb->prefix}br_player_adventure pa
-			     ON pa.player_id = m.user_id AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
-			   LEFT JOIN {$log_table} l
-			     ON l.user_id = m.user_id AND l.campaign_id = %d AND l.status = 'sent'
-			  WHERE m.meta_key = 'br_email_optout' AND m.meta_value = '1'
-			  ORDER BY u.display_name
-			  LIMIT %d OFFSET %d",
-			$adv_id, $campaign_id, $per_page, $offset
-		) );
 	}
 
 	// ── Render ──────────────────────────────────────────────────────────────
@@ -337,10 +289,6 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 			<a href="<?php echo esc_url( $tab_url( 'missing' ) ); ?>" style="<?php echo $tab_cls( 'missing' ); ?>">
 				&#9888; <?php esc_html_e( 'Missing', 'bluerabbit' ); ?>
 				<span style="background:<?php echo $missing_count > 0 ? '#f0b429' : '#999'; ?>;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"><?php echo $missing_count; ?></span>
-			</a>
-			<a href="<?php echo esc_url( $tab_url( 'unsubscribed' ) ); ?>" style="<?php echo $tab_cls( 'unsubscribed' ); ?>">
-				&#8856; <?php esc_html_e( 'Unsubscribed', 'bluerabbit' ); ?>
-				<span style="background:<?php echo $unsub_count > 0 ? '#dc3232' : '#999'; ?>;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px"><?php echo $unsub_count; ?></span>
 			</a>
 		</div>
 
@@ -469,65 +417,12 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 					<thead><tr>
 						<th><?php esc_html_e( 'Name', 'bluerabbit' ); ?></th>
 						<th><?php esc_html_e( 'Email', 'bluerabbit' ); ?></th>
-						<th><?php esc_html_e( 'Status', 'bluerabbit' ); ?></th>
 					</tr></thead>
 					<tbody>
 						<?php foreach ( $tab_rows as $r ) : ?>
 						<tr>
 							<td><?php echo esc_html( $r->display_name ); ?></td>
 							<td><?php echo esc_html( $r->user_email ); ?></td>
-							<td>
-								<?php if ( $r->optout ) : ?>
-									<span style="color:#dc3232;font-weight:600">&#8856; <?php esc_html_e( 'Unsubscribed', 'bluerabbit' ); ?></span>
-								<?php else : ?>
-									<span style="color:#999"><?php esc_html_e( 'Not reached', 'bluerabbit' ); ?></span>
-								<?php endif; ?>
-							</td>
-						</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-				<?php endif; ?>
-
-			<?php elseif ( $tab === 'unsubscribed' ) : ?>
-
-				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-					<span style="color:#666">
-						<?php printf(
-							esc_html__( '%d enrolled player(s) have opted out of emails.', 'bluerabbit' ),
-							$unsub_count
-						); ?>
-					</span>
-					<?php if ( $unsub_count ) : ?>
-					<a href="<?php echo esc_url( wp_nonce_url(
-						add_query_arg( [ 'br_email_csv_optout' => 1, 'adv_filter' => $adv_id ], admin_url( 'admin.php' ) ),
-						'br_csv_optout'
-					) ); ?>" class="button button-small">
-						&#128196; <?php esc_html_e( 'Download CSV', 'bluerabbit' ); ?>
-					</a>
-					<?php endif; ?>
-				</div>
-				<?php if ( empty( $tab_rows ) ) : ?>
-					<p style="color:#999"><?php esc_html_e( 'No players have opted out.', 'bluerabbit' ); ?></p>
-				<?php else : ?>
-				<table class="widefat striped">
-					<thead><tr>
-						<th><?php esc_html_e( 'Name', 'bluerabbit' ); ?></th>
-						<th><?php esc_html_e( 'Email', 'bluerabbit' ); ?></th>
-						<th><?php esc_html_e( 'Received this campaign?', 'bluerabbit' ); ?></th>
-					</tr></thead>
-					<tbody>
-						<?php foreach ( $tab_rows as $r ) : ?>
-						<tr>
-							<td><?php echo esc_html( $r->display_name ); ?></td>
-							<td><?php echo esc_html( $r->user_email ); ?></td>
-							<td>
-								<?php if ( $r->was_sent === 'Yes' ) : ?>
-									<span style="color:#46b450;font-weight:600">&#10003; <?php esc_html_e( 'Yes', 'bluerabbit' ); ?></span>
-								<?php else : ?>
-									<span style="color:#999"><?php esc_html_e( 'No', 'bluerabbit' ); ?></span>
-								<?php endif; ?>
-							</td>
 						</tr>
 						<?php endforeach; ?>
 					</tbody>

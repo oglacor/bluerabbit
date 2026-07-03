@@ -93,13 +93,7 @@ class BR_Mailer {
 				   FROM {$wpdb->prefix}br_player_adventure pa
 				   JOIN {$wpdb->users} u ON u.ID = pa.player_id
 				  WHERE pa.adventure_id             = %d
-				    AND pa.player_adventure_status  = 'in'
-				    AND NOT EXISTS (
-				        SELECT 1 FROM {$wpdb->usermeta} m
-				         WHERE m.user_id   = pa.player_id
-				           AND m.meta_key  = 'br_email_optout'
-				           AND m.meta_value = '1'
-				    )",
+				    AND pa.player_adventure_status  = 'in'",
 				$adventure_id
 			),
 			ARRAY_A
@@ -115,13 +109,7 @@ class BR_Mailer {
 				   FROM {$wpdb->prefix}br_player_adventure pa
 				   JOIN {$wpdb->users} u ON u.ID = pa.player_id
 				  WHERE pa.adventure_id            = %d
-				    AND pa.player_adventure_status = 'in'
-				    AND NOT EXISTS (
-				        SELECT 1 FROM {$wpdb->usermeta} m
-				         WHERE m.user_id   = pa.player_id
-				           AND m.meta_key  = 'br_email_optout'
-				           AND m.meta_value = '1'
-				    )",
+				    AND pa.player_adventure_status = 'in'",
 				$adventure_id
 			)
 		);
@@ -138,12 +126,6 @@ class BR_Mailer {
 		$display_name  = esc_html( $user['display_name'] ?? '' );
 		$user_id       = (int) ( $user['player_id'] ?? 0 );
 		$user_email    = $user['user_email'] ?? '';
-
-		$unsub_token = wp_hash( $user_id . ':' . $user_email . ':optout' );
-		$unsub_url   = esc_url( add_query_arg( [
-			'br_email_unsub' => $unsub_token,
-			'uid'            => $user_id,
-		], home_url( '/' ) ) );
 
 		$merge_tags = [
 			'name'           => $display_name,
@@ -182,7 +164,7 @@ class BR_Mailer {
       <tr><td style="background-color:#ffffff;padding:0 36px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-top:1px solid #e8e8e8;"></td></tr></table></td></tr>
       <tr><td style="background-color:#ffffff;padding:24px 36px 32px;text-align:center;border-radius:0 0 8px 8px;">
         <p style="margin:0 0 8px;font-size:13px;color:#999999;">{$site_name}</p>
-        <p style="margin:0;font-size:12px;color:#bbbbbb;">You are receiving this because you are enrolled in <strong>{$adventure}</strong>.<br><a href="{$unsub_url}" style="color:{$accent};text-decoration:underline;font-size:12px;">Unsubscribe</a></p>
+        <p style="margin:0;font-size:12px;color:#bbbbbb;">You are receiving this because you are enrolled in <strong>{$adventure}</strong>.</p>
       </td></tr>
     </table>
   </td></tr>

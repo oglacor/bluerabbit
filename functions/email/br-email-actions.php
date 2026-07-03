@@ -1,37 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// ── Unsubscribe handler ───────────────────────────────────────────────────────
-
-add_action( 'init', 'br_email_handle_unsubscribe' );
-function br_email_handle_unsubscribe(): void {
-	if ( empty( $_GET['br_email_unsub'] ) || empty( $_GET['uid'] ) ) return;
-
-	$user_id = (int) $_GET['uid'];
-	$token   = sanitize_text_field( $_GET['br_email_unsub'] );
-	$user    = get_userdata( $user_id );
-
-	if ( ! $user ) {
-		wp_die( esc_html__( 'Invalid unsubscribe link.', 'bluerabbit' ), '', [ 'response' => 400 ] );
-	}
-
-	$expected = BR_Mailer::unsub_token( $user_id, $user->user_email );
-
-	if ( ! hash_equals( $expected, $token ) ) {
-		wp_die( esc_html__( 'Invalid unsubscribe token.', 'bluerabbit' ), '', [ 'response' => 403 ] );
-	}
-
-	update_user_meta( $user_id, 'br_email_optout', 1 );
-
-	wp_die(
-		'<p style="font-family:sans-serif;text-align:center;margin-top:60px;">'
-		. esc_html__( 'You have been unsubscribed from BlueRabbit email notifications.', 'bluerabbit' )
-		. '</p>',
-		esc_html__( 'Unsubscribed', 'bluerabbit' ),
-		[ 'response' => 200 ]
-	);
-}
-
 // ── Retry campaign handler ────────────────────────────────────────────────────
 
 add_action( 'admin_init', 'br_email_handle_retry' );
@@ -116,34 +85,18 @@ function br_email_handle_csv_download(): void {
 
 		$rows = [];
 		if ( ! empty( $missing_csv ) ) {
-			// Get opted-out IDs to add a column in the CSV.
 			$ph        = implode( ',', array_fill( 0, count( $missing_csv ), '%d' ) );
-			$optout_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT user_id FROM {$wpdb->usermeta}
-					  WHERE meta_key = 'br_email_optout' AND meta_value = '1'
-					    AND user_id IN ( {$ph} )",
-					...$missing_csv
-				)
-			);
-			$optout_set = array_flip( $optout_ids );
-
 			$user_rows = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT ID, display_name, user_email
+					"SELECT display_name, user_email
 					   FROM {$wpdb->users}
 					  WHERE ID IN ( {$ph} )
 					  ORDER BY display_name",
 					...$missing_csv
 				)
 			);
-
 			foreach ( $user_rows as $u ) {
-				$rows[] = [
-					'display_name' => $u->display_name,
-					'user_email'   => $u->user_email,
-					'unsubscribed' => isset( $optout_set[ $u->ID ] ) ? 'Yes' : 'No',
-				];
+				$rows[] = [ 'display_name' => $u->display_name, 'user_email' => $u->user_email ];
 			}
 		}
 
@@ -182,37 +135,6 @@ function br_email_handle_csv_download(): void {
 		) );
 
 		br_email_output_csv( "failed-campaign-{$cid}.csv", $rows );
-	}
-
-	if ( ! empty( $_GET['br_email_csv_optout'] ) ) {
-		check_admin_referer( 'br_csv_optout' );
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
-
-		$adv_id = (int) ( $_GET['adv_filter'] ?? 0 );
-
-		if ( $adv_id ) {
-			$rows = $wpdb->get_results( $wpdb->prepare(
-				"SELECT u.display_name, u.user_email
-				   FROM {$wpdb->usermeta} m
-				   JOIN {$wpdb->users} u ON u.ID = m.user_id
-				   JOIN {$wpdb->prefix}br_player_adventure pa ON pa.player_id = m.user_id AND pa.adventure_id = %d
-				  WHERE m.meta_key = 'br_email_optout' AND m.meta_value = '1'
-				  ORDER BY u.display_name",
-				$adv_id
-			) );
-			$filename = "unsubscribed-adventure-{$adv_id}.csv";
-		} else {
-			$rows = $wpdb->get_results(
-				"SELECT u.display_name, u.user_email
-				   FROM {$wpdb->usermeta} m
-				   JOIN {$wpdb->users} u ON u.ID = m.user_id
-				  WHERE m.meta_key = 'br_email_optout' AND m.meta_value = '1'
-				  ORDER BY u.display_name"
-			);
-			$filename = 'unsubscribed-all.csv';
-		}
-
-		br_email_output_csv( $filename, $rows );
 	}
 
 	if ( ! empty( $_GET['br_email_csv_all_failed'] ) ) {
