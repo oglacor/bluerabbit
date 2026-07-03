@@ -6256,6 +6256,13 @@ function downloadQuestCSV() {
 
 //////////////////  VALIDATE QUEST (sets grade + pp_status) ////////////////
 // validate_action: 'validate' (grade=100, publish) or 'invalidate' (grade=0, draft)
+// Toggle visual active state for br-mech-checkbox-btn labels on change
+$(document).on('change', '.br-mech-checkbox-btn input[type="checkbox"]', function() {
+    var $label = $(this).closest('.br-mech-checkbox-btn');
+    var cls = $label.data('checked-class') || 'is-checked';
+    $label.toggleClass(cls, this.checked);
+});
+
 function validateQuest(quest_id, player_id, validate_action) {
     let nonce = $("#grade_nonce").val();
     let adventure_id = $("#the_adventure_id").val();
@@ -6275,11 +6282,11 @@ function validateQuest(quest_id, player_id, validate_action) {
             displayAjaxResponse(data_received);
             let grade = validate_action == 'validate' ? 100 : 0;
             if (grade > 0) {
-                $("#validate-btn-" + player_id + "-" + quest_id).addClass('grey-bg-500').removeClass('green-bg-600').prop('disabled', true);
-                $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('grey-bg-500').addClass('red-bg-800').prop('disabled', false);
+                $("#validate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-green').prop('disabled', true);
+                $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-red').prop('disabled', false);
             } else {
-                $("#validate-btn-" + player_id + "-" + quest_id).removeClass('grey-bg-500').addClass('green-bg-600').prop('disabled', false);
-                $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('grey-bg-500').removeClass('red-bg-800').prop('disabled', true);
+                $("#validate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-green').prop('disabled', false);
+                $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-red').prop('disabled', true);
             }
             $("#the_post_grade_" + quest_id + "_" + player_id).val(grade);
         }

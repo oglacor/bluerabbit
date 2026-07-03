@@ -64,14 +64,14 @@
 				<div class="br-form-grid">
 					<div class="br-form-group">
 						<label class="br-form-label"><?= __("Optional", "bluerabbit"); ?></label>
-						<label class="br-btn br-mech-checkbox-btn <?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'is-checked' : ''; ?>">
+						<label class="br-btn br-mech-checkbox-btn <?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'is-checked' : ''; ?>" data-checked-class="is-checked">
 							<input type="checkbox" id="the_quest_optional" <?= (isset($quest->mech_optional) && $quest->mech_optional) ? 'checked' : ''; ?>>
 							<?= __("Doesn't count toward Tabi unlock", "bluerabbit"); ?>
 						</label>
 					</div>
 					<div class="br-form-group">
 						<label class="br-form-label"><?= __("Validate", "bluerabbit"); ?></label>
-						<label class="br-btn br-mech-checkbox-btn <?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'is-checked-green' : ''; ?>">
+						<label class="br-btn br-mech-checkbox-btn <?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'is-checked-green' : ''; ?>" data-checked-class="is-checked-green">
 							<input type="checkbox" id="the_quest_validate" <?= (isset($quest->mech_validate) && $quest->mech_validate) ? 'checked' : ''; ?>>
 							<?= __("Require validation before awarding", "bluerabbit"); ?>
 						</label>

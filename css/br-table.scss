@@ -3657,6 +3657,15 @@ select.br-input {
 }
 
 // ── Flex row utilities ─────────────────────────────────
+.br-flex {
+  display: flex;
+}
+
+.br-flex-center {
+  display: flex;
+  align-items: center;
+}
+
 .br-flex-row {
   display: flex;
   gap: 8px;
@@ -3669,6 +3678,11 @@ select.br-input {
   align-items: center;
   flex-wrap: wrap;
 }
+
+.br-flex-wrap { flex-wrap: wrap; }
+.br-gap-sm    { gap: 8px; }
+.br-gap-md    { gap: 16px; }
+.br-mr-sm     { margin-right: 8px; }
 
 // ── Confirm reset button padding ───────────────────────
 .br-btn-confirm {
