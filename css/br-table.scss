@@ -2580,14 +2580,14 @@ select.br-input {
 .br-name {
   min-width: 0;
 
-  input[type="text"] {
-    width: 100%;
+  input[type="text"] { 
+    width: 100%; 
     background: transparent;
     border: 1px solid transparent;
     border-radius: $radius-sm;
     color: $br-white;
     padding: 5px 8px;
-    font-size: 13px;
+    font-size: 26px;
     font-weight: 600;
     transition: border-color 0.2s, background 0.2s;
 
@@ -2838,6 +2838,15 @@ select.br-input {
   }
   .row-container {
     cursor: default;
+    margin: 10px 0;
+    background: rgba($br-white,0.1);
+    // Zebra striping — specificity (.br-panel.br-tabi-row-panel) beats the base
+    // .br-panel background without needing !important.
+    &:nth-of-type(even) {
+        background: rgba($br-bg,1);
+    }
+
+
   }
 }
 
@@ -4816,6 +4825,12 @@ select.br-input {
 .br-tabi-input-bold {
   font-weight: 600;
 }
+// Zebra striping — specificity (.br-panel.br-tabi-row-panel) beats the base
+// .br-panel background without needing !important.
+.br-panel.br-tabi-row-panel:nth-of-type(even) {
+  background: rgba($br-panel-bg, 0.3);
+}
+
 
 .br-tabi-check-label {
   display: inline-flex;
