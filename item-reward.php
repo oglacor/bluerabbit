@@ -14,11 +14,11 @@
 				<div class="table-cell">
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  hidden-mobile" <?php echo br_color_attr($i_color); ?>>
+							<span class="br-icon-btn hidden-mobile" <?php echo br_color_attr($i_color); ?>>
 								<span class="icon icon-<?php echo $icon_type; ?>"></span>
 							</span>
 							<span class="icon-content">
-								<span class="line font _24 w300 condensed white-color"><?php echo $i->item_name; ?></span>
+								<span class="line br-text-24 w300 condensed white-color"><?php echo $i->item_name; ?></span>
 							</span>
 						</span>
 					</div>
@@ -35,18 +35,18 @@
 				<div class="spacer text-center padding-10">
 					<div class="background" onClick="flipMilestone('item-<?php echo $i->item_id; ?>');"></div>
 					<?php if($isGM){ ?>
-						<a class="button-icon font _24 sq-40  green-bg-400 foreground" href="<?php echo get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>"><span class="icon icon-edit"></span></a>
-						<button type="button" class="button-icon font _24 sq-40  red-bg-400 foreground" onClick="br_confirm_trd('trash',<?php echo $i->item_id; ?>,'item');" ><span class="icon icon-trash"></span></button>
+						<a class="br-icon-btn br-icon-btn-green foreground" href="<?php echo get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>"><span class="icon icon-edit"></span></a>
+						<button type="button" class="br-icon-btn br-icon-btn-red foreground" onClick="br_confirm_trd('trash',<?php echo $i->item_id; ?>,'item');" ><span class="icon icon-trash"></span></button>
 					<?php } ?>
 					<?php if($isGM || $isNPC){ ?>
-						<a class="button-icon font _24 sq-40  pink-bg-300 foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>">
+						<a class="br-icon-btn br-icon-btn-pink foreground" href="<?php echo bloginfo('url')."/item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id"; ?>">
 							<span class="icon icon-transactions"></span>
 						</a>
 					<?php } ?>
-					<button class="button-icon font _24 sq-40  blue-grey-bg-500 white-color foreground" onClick="flipMilestone('item-<?php echo $i->item_id; ?>');"><span class="icon icon-cancel"></span></button>
+					<button class="br-icon-btn br-icon-btn-grey white-color foreground" onClick="flipMilestone('item-<?php echo $i->item_id; ?>');"><span class="icon icon-cancel"></span></button>
 				</div>
 
-				<div class="corner circle upper-right deep-purple-bg-400 white-color font _20 w900 foreground">
+				<div class="corner circle upper-right deep-purple-bg-400 white-color br-text-20 w900 foreground">
 					<?php echo $i->item_level; ?>
 					<span class="tool-tip left">
 						<span class="tool-tip-text"><?php _e("Required level","bluerabbit"); ?></span>
@@ -66,13 +66,13 @@
 								</button>
 								<div class="confirm-action overlay-layer" id="confirm-buy-item-<?php echo $i->item_id; ?>">
 									<button class="form-ui grey-bg-800" onClick="buyItem(<?php echo $i->item_id; ?>);">
-										<h3 class="text-center white-color font _18 condensed w100"><?php _e("Confirm","bluerabbit"); ?></h3>
+										<h3 class="text-center white-color br-text-18 condensed w100"><?php _e("Confirm","bluerabbit"); ?></h3>
 										<span class="icon-group">
-											<span class="button-icon font _24 sq-40  icon-sm green-bg-400">
+											<span class="br-icon-btn br-icon-btn-green">
 												<span class="icon icon-bloo white-color"></span>
 											</span>
 											<span class="icon-content">
-												<span class="line white-color font _24 w900"><?php echo BR_Utils::instance()->toMoney($i->item_cost,""); ?></span>
+												<span class="line white-color br-text-24 w900"><?php echo BR_Utils::instance()->toMoney($i->item_cost,""); ?></span>
 											</span>
 										</span>
 									</button>
@@ -85,7 +85,7 @@
 							<?php } ?>
 						<?php } ?>
 					<?php } ?>
-					<div class="spacer fluid bottom white-color text-center font _28 w300 condensed padding-10 foreground" <?php echo br_color_attr($i_color); ?>>
+					<div class="spacer fluid bottom white-color text-center br-text-24 w300 condensed padding-10 foreground" <?php echo br_color_attr($i_color); ?>>
 					<?php echo $i->item_name; ?></div>
 				</div>
 			</div>
@@ -100,32 +100,32 @@
 	<?php }else{ ?>
 		<figure class="back white-color text-center opacity-70"> 
 			<div class="background" style="background-image: url(<?php echo $badgeImage; ?>);"></div>
-			<div class="background purple-bg-900 opacity-80"><span class="icon icon-lock font _200 white-color opacity-20"></span></div>
+			<div class="background purple-bg-900 opacity-80"><span class="icon icon-lock br-text-40 white-color opacity-20"></span></div>
 			<div class="table foreground text-center">
 				<div class="table-cell">
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  hidden-mobile" <?php echo br_color_attr($i_color); ?>>
+							<span class="br-icon-btn hidden-mobile" <?php echo br_color_attr($i_color); ?>>
 								<span class="icon icon-<?php echo $icon_type; ?>"></span>
 							</span>
 							<span class="icon-content">
-								<span class="line font _24 w300 condensed white-color"><?php echo $i->item_name; ?></span>
+								<span class="line br-text-24 w300 condensed white-color"><?php echo $i->item_name; ?></span>
 							</span>
 						</span>
 					</div>
 					<div class="highlight">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  white-bg purple-400 hidden-mobile">
+							<span class="br-icon-btn br-icon-btn-white purple-400 hidden-mobile">
 								<span class="icon icon-lock"></span>
 							</span>
 							<span class="icon-content">
-								<span class="line font _14 w300 condensed"><?php echo __("Level","bluerabbit"); ?></span>
-								<span class="line font _24 w900"><?php echo $i->item_level; ?></span>
+								<span class="line br-text-14 w300 condensed"><?php echo __("Level","bluerabbit"); ?></span>
+								<span class="line br-text-24 w900"><?php echo $i->item_level; ?></span>
 							</span>
 
 						</span>
 					</div>
-					<span class="font _14 w300 condensed lime-400"><span class="icon icon-bloo"></span><?php echo __("Cost","bluerabbit")." ".BR_Utils::instance()->toMoney($i->item_cost,""); ?>
+					<span class="br-text-14 w300 condensed lime-400"><span class="icon icon-bloo"></span><?php echo __("Cost","bluerabbit")." ".BR_Utils::instance()->toMoney($i->item_cost,""); ?>
 					</span>
 				</div>
 			</div>

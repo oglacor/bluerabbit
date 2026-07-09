@@ -148,10 +148,8 @@ $base_url = get_bloginfo('url');
                 <h2><?php _e('Journey Manager', 'bluerabbit'); ?></h2>
                 <div class="br-header-counts">
                     <span class="br-count-badge"><span class="br-cnt"><?= $count_publish; ?></span> <?php _e('Total', 'bluerabbit'); ?></span>
-                    <?php if ($counts['quest'] > 0) { ?><span class="br-count-badge type-quest"><span class="br-cnt"><?= $counts['quest']; ?></span> <?php _e('Quests', 'bluerabbit'); ?></span><?php } ?>
-                    <?php if ($counts['mission'] > 0) { ?><span class="br-count-badge type-mission"><span class="br-cnt"><?= $counts['mission']; ?></span> <?php _e('Missions', 'bluerabbit'); ?></span><?php } ?>
+                    <?php if ($counts['quest'] > 0) { ?><span class="br-count-badge type-quest"><span class="br-cnt"><?= $counts['quest']; ?></span> <?php _e('Milestones', 'bluerabbit'); ?></span><?php } ?>
                     <?php if ($counts['challenge'] > 0) { ?><span class="br-count-badge type-challenge"><span class="br-cnt"><?= $counts['challenge']; ?></span> <?php _e('Challenges', 'bluerabbit'); ?></span><?php } ?>
-                    <?php if ($counts['survey'] > 0) { ?><span class="br-count-badge type-survey"><span class="br-cnt"><?= $counts['survey']; ?></span> <?php _e('Surveys', 'bluerabbit'); ?></span><?php } ?>
                 </div>
             </div>
         </div>
@@ -176,10 +174,8 @@ $base_url = get_bloginfo('url');
         <!-- Type Filter Buttons -->
         <div class="br-type-filters">
             <button class="br-type-btn t-all active" data-filter="all" title="All"><span class="icon icon-infinite"></span></button>
-            <button class="br-type-btn t-quest" data-filter="quest" title="Quests"><span class="icon icon-quest"></span></button>
-            <button class="br-type-btn t-mission" data-filter="mission" title="Missions"><span class="icon icon-mission"></span></button>
+            <button class="br-type-btn t-quest" data-filter="quest" title="Milestones"><span class="icon icon-quest"></span></button>
             <button class="br-type-btn t-challenge" data-filter="challenge" title="Challenges"><span class="icon icon-challenge"></span></button>
-            <button class="br-type-btn t-survey" data-filter="survey" title="Surveys"><span class="icon icon-survey"></span></button>
         </div>
 
         <!-- Path dropdown -->
@@ -245,13 +241,13 @@ $base_url = get_bloginfo('url');
             <div>&nbsp;</div><!-- type -->
             <div>&nbsp;</div><!-- thumb -->
             <div><?= __('Name', 'bluerabbit'); ?></div>
-            <div style="text-align:center;"><?= __('Lv', 'bluerabbit'); ?></div>
-            <div style="text-align:center;"><?= $xp_label; ?></div>
-            <div style="text-align:center;"><?= $bloo_label; ?></div>
+            <div class="br-text-center"><?= __('Lv', 'bluerabbit'); ?></div>
+            <div class="br-text-center"><?= $xp_label; ?></div>
+            <div class="br-text-center"><?= $bloo_label; ?></div>
             <?php if ($use_encounters) { ?>
-                <div style="text-align:center;"><?= $ep_label; ?></div>
+                <div class="br-text-center"><?= $ep_label; ?></div>
             <?php } ?>
-            <div style="text-align:center;"><?= __('Status', 'bluerabbit'); ?></div>
+            <div class="br-text-center"><?= __('Status', 'bluerabbit'); ?></div>
         </div>
 
         <!-- Sortable container — JS renders rows here -->
@@ -273,7 +269,7 @@ $base_url = get_bloginfo('url');
     <div class="br-section" id="br-drafts-section">
         <div class="br-section-header" id="br-drafts-toggle">
             <h3>
-                <span class="icon icon-document" style="color: #f7cb15;"></span>
+                <span class="icon icon-document br-icon-accent"></span>
                 <?php _e('Journey Drafts', 'bluerabbit'); ?>
                 <span class="br-count-badge" id="br-draft-count"><?= count($draft_items); ?></span>
             </h3>
@@ -288,7 +284,7 @@ $base_url = get_bloginfo('url');
     <div class="br-section" id="br-trash-section">
         <div class="br-section-header collapsed" id="br-trash-toggle">
             <h3>
-                <span class="icon icon-trash" style="color: #f44336;"></span>
+                <span class="icon icon-trash br-icon-red"></span>
                 <?php _e('Journey Trash', 'bluerabbit'); ?>
                 <span class="br-count-badge" id="br-trash-count"><?= count($trash_items); ?></span>
             </h3>
@@ -307,21 +303,21 @@ $base_url = get_bloginfo('url');
 <!-- ════════════ STICKY SUMMARY BAR ════════════ -->
 <div class="br-summary-bar" id="br-summary-bar">
     <div class="br-summary-stat">
-        <span class="icon icon-quest" style="color: #1cc2eb;"></span>
+        <span class="icon icon-quest br-icon-primary"></span>
         <div>
             <span class="br-stat-val" id="br-total-count"><?= $count_publish; ?></span>
             <span class="br-stat-label"><?= __('Milestones', 'bluerabbit'); ?></span>
         </div>
     </div>
     <div class="br-summary-stat">
-        <span class="icon icon-star" style="color: #f7cb15;"></span>
+        <span class="icon icon-star br-icon-accent"></span>
         <div>
             <span class="br-stat-val" id="br-total-xp"><?= $total_xp; ?></span>
             <span class="br-stat-label"><?= __('Total', 'bluerabbit') . ' ' . $xp_label; ?></span>
         </div>
     </div>
     <div class="br-summary-stat">
-        <span class="icon icon-bloo" style="color: #24da98;"></span>
+        <span class="icon icon-bloo br-icon-green"></span>
         <div>
             <span class="br-stat-val" id="br-total-bloo"><?= $total_bloo; ?></span>
             <span class="br-stat-label"><?= __('Total', 'bluerabbit') . ' ' . $bloo_label; ?></span>
@@ -402,7 +398,7 @@ $base_url = get_bloginfo('url');
         } else if (item.type === 'survey') {
             reportLink = '<a href="' + baseUrl + '/survey-results/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-chart"></span> Survey Results</a>';
         } else if (item.type === 'quest') {
-            reportLink = '<a href="' + baseUrl + '/review-player-posts/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-document"></span> Quest Review</a>';
+            reportLink = '<a href="' + baseUrl + '/review-player-posts/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-document"></span> Review</a>';
         }
 
         var thumbStyle = item.badge ? 'background-image:url(' + item.badge + ')' : '';

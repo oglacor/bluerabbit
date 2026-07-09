@@ -1,0 +1,349 @@
+@import 'variables';
+
+.conversation{
+	ul{
+		margin: 0; padding: 0;
+		position: relative;
+		li.message{
+			position: relative;
+			display: block;
+			padding: 5px; 
+			margin: 10px 0;
+			width: 70%;
+			float: left;
+			clear: both;
+			&.mine{
+				float: right;
+				.message-profile-picture, .message-content{
+					float: right;
+					text-align: right;
+				}
+			}
+			.message-profile-picture{
+				position: relative;
+				float: left;
+				.button-icon{
+					margin: 0 5px;
+					float: left;
+					&.player-picture{
+						background-position: center center;
+						background-size: cover;
+						border: solid 2px #444;
+						&.mine{
+							float: right;
+						}
+					}
+				}
+			}
+			.message-content{
+				width: calc(100% - 50px); 
+				float: left;
+				font-size: 14px;
+				font-weight: 500;
+				border-radius:10px;
+				padding: 5px 10px;
+				background-color: #FFF;
+				background-attachment: fixed;
+				background-image: linear-gradient(to bottom, rgba(121,134,203,1.00), rgba(255,255,255,1.00), rgba(255,255,255,1.00)) !important ;
+				
+				a{
+					font-size: 1em;
+					font-weight: 600;
+				}
+				h4.author{
+					font-size: 16px;
+					font-weight: 500;
+				}
+				h6.date{
+					display: block;
+					clear: both;
+					padding: 5px 0 0;
+					font-size: 11px;
+					font-weight: 500;
+					opacity:0.5;
+				}
+			}
+			.message-settings{
+				position: absolute;
+				top: 0;
+				right: 0;
+				.button-icon{
+					font-size: 12px;
+					width: 20px;
+					height: 20px;
+					padding: 3px;
+				}
+			}
+			&.mine{
+				.message-content{
+					background-color: rgba(255,255,255,1.00) !important;
+					background-attachment: fixed;
+					background-image: linear-gradient(to bottom, rgba(121,134,203,1.00), rgba(255,255,255,1.00), rgba(129,212,250,1.00)) !important ;
+				}
+			}
+			&.announcement{
+				.message-content{
+					color: #FFF !important;
+					border-left: solid 20px #AD1457;
+					background-color: rgba(236,64,122,1.00) !important;
+					background-attachment: fixed;
+					background-image: linear-gradient(to bottom, rgba(142,36,170,1.00), rgba(236,64,122,1.00), rgba(136,14,79,1.00) ) !important ;
+				}
+			}
+			&.public, &.teacher, &.guild{
+				.message-meta{
+					.button-icon.pink{
+						display: none;
+					}
+				}
+			}
+			&.system{ 
+				width: 100%;
+				.message-content{
+					border: solid 1px;
+				}
+			}
+		}
+	}
+}
+.reply-box{
+	left: 0;
+	bottom: 0;
+	padding: 10px 10px 40px 10px;
+	.text-box{
+		width: 80%;
+		min-width: 0;
+		max-width: 800px;
+		float: left;
+	}
+	.buttons{
+		width: 20%;
+		padding: 5px 10px;
+		min-width: 100px;
+		float: right;
+		button.form-ui{
+			margin: 0;
+			width: 100%; 
+			text-align: center;
+			
+		}
+	}
+	textarea{
+		height: 56px;
+		background-color: rgba(255,255,255,0.10);
+		width: 100%;
+		height: 80px; max-height: 80px; min-height: 80px;
+		min-width: 0;
+		max-width: 800px;
+		color: #FFF;
+		transition: all 0.3s ease-out;
+		&:focus{
+			color: #262626;
+			background-color: rgba(255,255,255,1);
+		}
+	}
+}
+
+
+
+ul.chat-players{
+	margin: 0;
+	padding: 20px 10px 20px 0;
+	border-right: solid 1px #DDD;
+	li{
+		cursor: pointer;
+		position: relative;
+		display: block;
+		clear: both;
+		height: 60px;
+		padding: 10px 10px 10px 60px;
+		border-bottom:solid 1px #DDD;
+		&:first-child{
+			border-top:solid 1px #DDD;
+		}
+		img.profile-pic{
+			position: absolute;
+			top: 5px;
+			left: 5px;
+			display: block;
+			
+			border-radius: 1000em;
+			border: solid 1px #CCC;
+			width: 50px;
+			height: 50px;
+		}
+		h3{
+			margin: 0;
+			padding: 0;
+			font-size: 18px;
+			font-weight: 900;
+		}
+		h5{
+			margin: 0;
+			padding: 0;
+			font-size: 12px;
+			font-weight: 300;
+		}
+	}
+}
+
+/* PAGINATION */
+ul.pagination{
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	li{
+		display: inline-block;
+		padding: 5px;
+		border: solid 1px;
+		text-align: center;
+	}
+}
+
+
+
+
+/// PROFILE BOX
+.profile-box{
+	visibility: hidden;
+	opacity: 0;
+	transition: all 0.3s ease-out;
+	overflow: hidden;
+	position: fixed;
+	width: 100vw; height: 100vh;
+	top: 0; left: 0;
+	z-index: 61;
+	.profile-box-container{
+		position: relative;
+		margin: 30px auto;
+		padding: 0 20px 20px !important;
+		max-width: 500px;
+		min-width: 340px;
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0px 20px 30px -10px rgba(0, 0, 0, 0.8);
+	}
+	.progress-bar{
+		&.gradient-xp-bar{
+			.progress{ left: auto; right: 0;}
+		}
+	}
+	&.active{
+		visibility: visible;
+		opacity: 1;
+	}
+}
+.status{
+	display: block;
+	position: relative;
+	width: 256px;
+	height: 256px;
+	border-radius: 5000px;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	margin: 0 auto;
+	background-image: url("images/profile-placeholder.png");
+	img{
+		transition: all .3s ease-out;
+		width: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 3;
+		border-radius: 5000px;
+	}
+}
+.status-stats{
+	position: relative;
+	z-index: 5;
+	.stat{
+		margin: 0 0 5px 0;
+	}
+}
+.micro-status{
+	width: 100%;
+	height: 12px;
+	min-width: 340px;
+	transition: all 0.6s ease-out;
+	overflow: hidden;
+	background-color: rgba(0,0,0,0.45);
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	.progress-bar{
+		height: 4px;
+		transition: all 0.3s 0.2s ease-out;
+		&.gradient-xp-bar{
+			.progress{ left: auto; right: 0;}
+		}
+		.progress{
+			max-width: 100%;
+		}
+	}
+	.status-stats{
+		.stat{
+			margin: 0;
+			.stat-legend{
+				max-height: 0; overflow: hidden;
+			}
+		}
+	}
+	.collapsable{ max-height: 0; overflow: hidden; }
+	&.active{
+		border-bottom-left-radius: 8px;
+		border-bottom-right-radius: 8px;
+		height: 216px;
+		.collapsable{ max-height: 100vh; }
+		.progress-bar{
+			height: 12px;
+		}
+		.status-stats{
+			.stat{
+				margin: 0;
+				.stat-legend{
+					padding: 5px;
+					max-height: 100px;
+				}
+			}
+		}
+	}
+}
+.progress-bar{
+    display: block;
+    height: 12px;
+    position: relative;
+    z-index: 2;
+	overflow: hidden;
+	&.active{
+		.progress{
+			max-width: 100vw;
+		}
+	}
+    .progress{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 100%;
+		max-width: 0;
+		transition: all 1s ease-out;
+		transition-delay: 0.5s;
+		&.centered{
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		&.animated{
+			background-image: url("images/progress-bar.png");
+			background-repeat: repeat-x;
+			border-radius: 100px;
+			transition: all 2s ease-out;
+			box-shadow: 10px 0 20px -10px rgba(0,0,0,0.8);
+			@include br-animation(progress-bar-animation, 3s, normal, forwards, linear, infinite);
+		}
+    }
+}
+.adventure-status-bars{
+	transform: rotate(-90deg);
+	transform-origin: left center;
+	bottom: 29px; left: 20px;
+}

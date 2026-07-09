@@ -251,15 +251,17 @@ class BR_Config {
 
     public function saveSettingsProcess($settings_data, $adventure_id=0){
         global $wpdb; $current_user = wp_get_current_user();
+        if (empty($settings_data) || !is_array($settings_data)) return;
         $sql = "INSERT INTO {$wpdb->prefix}br_settings (`setting_id`, `setting_name`, `setting_label`, `setting_value`, `adventure_id`) VALUES";
         $values = array();
         $ph= array();
         foreach($settings_data as $key=>$s){
+            if (!is_array($s) || !isset($s['name'])) continue;
             $name = $s['name'] ? sanitize_title_with_dashes($s['name']) : sanitize_title_with_dashes($key);
-            $setting_value = ($s['value'] > 0) ? $s['value'] : "NULL";
-            array_push($values, $s['id'], $name, $s['label'], $s['value'], $adventure_id);
+            $setting_value = (isset($s['value']) && $s['value'] > 0) ? $s['value'] : "NULL";
+            array_push($values, $s['id'] ?? 0, $name, $s['label'] ?? '', $s['value'] ?? '', $adventure_id);
             $ph[] = " (%d, %s, %s, %s, %d) ";
-            if($s['name']=='default_adventure' && $s['value']){
+            if(($s['name'] ?? '') == 'default_adventure' && !empty($s['value'])){
                 update_option('page_on_front', $page_check->ID, 'yes');
                 update_option('show_on_front', 'page','yes');
             }else{
@@ -267,6 +269,7 @@ class BR_Config {
                 update_option('show_on_front', 'posts','yes');
             }
         }
+        if (empty($ph)) return;
 
         $sql .= implode(', ',$ph);
         $sql .= "ON DUPLICATE KEY UPDATE setting_name=VALUES(setting_name), setting_label=VALUES(setting_label),  setting_value=VALUES(setting_value),  adventure_id=VALUES(adventure_id)";

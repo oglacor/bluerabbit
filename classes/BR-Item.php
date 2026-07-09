@@ -405,11 +405,15 @@ class BR_Item {
         $data['success'] = false;
 
         $adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-        if ($adventure->adventure_gmt){ date_default_timezone_set($adventure->adventure_gmt); }
+        if (!empty($adventure->adventure_gmt) && in_array($adventure->adventure_gmt, timezone_identifiers_list())) {
+            date_default_timezone_set($adventure->adventure_gmt);
+        } else {
+            date_default_timezone_set('America/Mexico_City');
+        }
         $today = date('Y-m-d H:i:s');
 
         $item = $wpdb->get_row("SELECT items.*, trnx.trnx_id FROM {$wpdb->prefix}br_items items
-        LEFT JOIN {$wpdb->prefix}br_transactions trnx ON items.item_id=trnx.object_id AND (trnx.trnx_type='key' || trnx.trnx_type='tabi-piece') AND trnx.player_id=$current_user->ID
+        LEFT JOIN {$wpdb->prefix}br_transactions trnx ON items.item_id=trnx.object_id AND (trnx.trnx_type='key' || trnx.trnx_type='tabi-piece' || trnx.trnx_type='consumable') AND trnx.player_id=$current_user->ID AND trnx.trnx_status='publish'
         WHERE items.item_id=$item_id");
         $notification = new Notification();
         if(wp_verify_nonce($nonce, 'pickup_item'.$current_user->ID.date('Ymd')) && !$item->trnx_id){

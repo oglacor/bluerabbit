@@ -43,13 +43,13 @@
 			<div class="challenge-title">
 				<h1><?= $c->quest_title; ?></h1>
 				<?php if($finished){ ?>
-					<h1 class="font _20 w900 text-center w-full padding-10 lime-bg-400 blue-grey-900"><?= __("Finished!","bluerabbit"); ?></h1>
+					<h1 class="br-text-20 w900 text-center w-full padding-10 lime-bg-400 blue-grey-900"><?= __("Finished!","bluerabbit"); ?></h1>
 				<?php } ?>
 			</div>
 			<?php if($c->mech_time_limit){ ?>
 			<div class="challenge-timer" id="challenge-timer">
 				<input type="hidden" id="the_time_limit" value="<?= $c->mech_time_limit; ?>">
-				<span class="button-icon timer-icon pink-bg-400 white-color sq-40 font _26"><span class="icon icon-stopwatch"></span></span>
+				<span class="button-icon timer-icon pink-bg-400 white-color sq-40 br-text-24"><span class="icon icon-stopwatch"></span></span>
 				<div class="progress" style="width:100%;"></div>
 				<span class="timer-container"><span id="timer" class="timer"><?= $c->mech_time_limit; ?></span>s</span>
 			</div>
@@ -74,22 +74,22 @@
 					</tbody>
 				</table>
 				<div class="challenge-complete-actions relative text-center padding-20">
-					<button class="form-ui font _18 green-bg-400 blue-grey-900 white-color" onClick="showOverlay('#confirm-challenge-complete');">
+					<button class="form-ui br-text-18 green-bg-400 blue-grey-900 white-color" onClick="showOverlay('#confirm-challenge-complete');">
 						<span class="icon icon-goal "></span>
 						<?= __("Submit answers!","bluerabbit"); ?>
 					</button>
 					<div class="confirm-action overlay-layer" id="confirm-challenge-complete">
 						<button class="form-ui red-bg-A400" onClick="gradeChallenge();">
 							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  icon-sm white-bg icon-sm">
+								<span class="br-icon-btn br-icon-btn-white">
 									<span class="icon icon-goal blue-grey-800"></span>
 								</span>
 								<span class="icon-content">
-									<span class="line red-bg-A400 white-color font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+									<span class="line red-bg-A400 white-color br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
 								</span>
 							</span>
 						</button>
-						<button class="close-confirm button-icon font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
+						<button class="br-close-btn br-icon-btn-sm red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
 							<span class="icon icon-cancel white-color"></span>
 						</button>
 					</div>
@@ -177,14 +177,14 @@
 							</span>
 							<?php if($challenge_data['locks']['deadline_cost']){ ?>
 								<div class="deadline-cost-confirm-button">
-									<button class="form-ui w-200 red-bg-400 font _24" onClick="showOverlay('#confirm-deadline-quest-<?= $c->quest_id; ?>');">
+									<button class="form-ui w-200 red-bg-400 br-text-24" onClick="showOverlay('#confirm-deadline-quest-<?= $c->quest_id; ?>');">
 										<span class="icon icon-bloo"></span><?= __("Purchase deadline","bluerabbit"); ?>
 									</button>
 									<div class="overlay-layer confirm-action bottom" id="confirm-deadline-quest-<?= $c->quest_id; ?>">
 
 										<button class="form-ui blue-bg-400" onClick="payment(<?=$c->quest_id;?>,'deadline');">
-											<span class="font _24 w700"><?= __("Are you sure?","bluerabbit"); ?></span><br>
-											<span class="font _18 w300">
+											<span class="br-text-24 w700"><?= __("Are you sure?","bluerabbit"); ?></span><br>
+											<span class="br-text-18 w300">
 												<span class="icon icon-bloo"></span>
 												<?= __("Pay","bluerabbit")." ".BR_Utils::instance()->toMoney($c->mech_deadline_cost,""); ?>
 											</span>
@@ -226,22 +226,22 @@
 			?>
 		</div>
 		<div class="challenge-complete-actions-bottom-page relative layer overlay text-center padding-20">
-			<button class="form-ui font _18 green-bg-400 blue-grey-900 white-color" onClick="showOverlay('#confirm-challenge-bottom-page');">
+			<button class="form-ui br-text-18 green-bg-400 blue-grey-900 white-color" onClick="showOverlay('#confirm-challenge-bottom-page');">
 				<span class="icon icon-goal "></span>
 				<?= __("Submit answers!","bluerabbit"); ?>
 			</button>
 			<div class="confirm-action overlay-layer" id="confirm-challenge-bottom-page">
 				<button class="form-ui red-bg-A400" onClick="gradeChallenge();">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  icon-sm white-bg icon-sm">
+						<span class="br-icon-btn br-icon-btn-white">
 							<span class="icon icon-goal blue-grey-800"></span>
 						</span>
 						<span class="icon-content">
-							<span class="line red-bg-A400 white-color font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+							<span class="line red-bg-A400 white-color br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm button-icon font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
+				<button class="br-close-btn br-icon-btn-sm red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>
@@ -253,27 +253,27 @@
 			<div class="layer absolute sq-full background black-bg opacity-80"></div>
 			<div class="absolute base perfect-center layer white-color">
 				<img src="<?= get_bloginfo('template_directory'); ?>/images/timesup.png" width="300" alt=""/>
-				<h1 class="font _48"><strong><?php _e("Time's up!","bluerabbit"); ?></strong></h1>
+				<h1 class="br-text-40"><strong><?php _e("Time's up!","bluerabbit"); ?></strong></h1>
 			</div>
 		</div>
 	<?php } ?>
 	<div class="challenge-complete-actions-mobile relative text-center padding-20">
-		<button class="form-ui font _18 green-bg-400 blue-grey-900 white-color" onClick="showOverlay('#confirm-challenge-complete-mobile');">
+		<button class="form-ui br-text-18 green-bg-400 blue-grey-900 white-color" onClick="showOverlay('#confirm-challenge-complete-mobile');">
 			<span class="icon icon-goal "></span>
 			<?= __("Submit answers!","bluerabbit"); ?>
 		</button>
 		<div class="confirm-action overlay-layer" id="confirm-challenge-complete-mobile">
 			<button class="form-ui red-bg-A400" onClick="gradeChallenge();">
 				<span class="icon-group">
-					<span class="button-icon font _24 sq-40  icon-sm white-bg icon-sm">
+					<span class="br-icon-btn br-icon-btn-white">
 						<span class="icon icon-goal blue-grey-800"></span>
 					</span>
 					<span class="icon-content">
-						<span class="line red-bg-A400 white-color font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+						<span class="line red-bg-A400 white-color br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
 					</span>
 				</span>
 			</button>
-			<button class="close-confirm button-icon font _16 sq-30 red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
+			<button class="br-close-btn br-icon-btn-sm red-bg-400 white-color padding-5" onClick="hideAllOverlay();">
 				<span class="icon icon-cancel white-color"></span>
 			</button>
 		</div>

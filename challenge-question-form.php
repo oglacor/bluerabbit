@@ -44,22 +44,22 @@
 					}
 					?>
 				</div>
-				<div style="padding:8px 0">
-					<button class="br-btn br-btn-sm" style="border-color:rgba(36,218,152,0.4);color:#24da98" onClick="addOption('challenge',<?= $qKey; ?>);">
+				<div class="br-add-option-wrap">
+					<button class="br-btn br-btn-sm br-btn-green" onClick="addOption('challenge',<?= $qKey; ?>);">
 						<span class="icon icon-add"></span> <?= __('Add Option','bluerabbit'); ?>
 					</button>
 				</div>
 			</div>
 
 			<div class="br-question-actions">
-				<div class="relative" style="display:inline-block">
+				<div class="relative br-inline-block">
 					<button class="br-btn br-btn-sm br-btn-red" onClick="showOverlay('#confirm-question-<?= $qKey; ?>');">
 						<span class="icon icon-trash"></span> <?= __("Remove", "bluerabbit"); ?>
 					</button>
-					<div class="confirm-action overlay-layer" id="confirm-question-<?= $qKey; ?>" style="background:rgba(30,30,30,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;white-space:nowrap">
-						<span style="display:block;font-size:13px;font-weight:700;color:#f44336;margin-bottom:8px"><?= __("Are you sure?", "bluerabbit"); ?></span>
-						<span style="display:block;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:10px"><?= __("You can't undo this", "bluerabbit"); ?></span>
-						<div style="display:flex;gap:6px">
+					<div class="confirm-action overlay-layer br-confirm-popup" id="confirm-question-<?= $qKey; ?>">
+						<span class="br-confirm-title br-confirm-title-red"><?= __("Are you sure?", "bluerabbit"); ?></span>
+						<span class="br-confirm-subtitle"><?= __("You can't undo this", "bluerabbit"); ?></span>
+						<div class="br-confirm-buttons">
 							<button class="br-btn br-btn-sm br-btn-red" onClick="removeQuestion(<?= $qKey; ?>,'challenge');">
 								<span class="icon icon-trash"></span> <?= __("Delete", "bluerabbit"); ?>
 							</button>
@@ -69,14 +69,14 @@
 						</div>
 					</div>
 				</div>
-				<div class="relative" style="display:inline-block">
-					<button class="br-btn br-btn-sm" style="border-color:rgba(255,152,0,0.4);color:#ff9800" onClick="showOverlay('#confirm-duplicate-<?= $qKey; ?>');">
+				<div class="relative br-inline-block">
+					<button class="br-btn br-btn-sm br-btn-amber" onClick="showOverlay('#confirm-duplicate-<?= $qKey; ?>');">
 						<span class="icon icon-duplicate"></span> <?= __("Duplicate", "bluerabbit"); ?>
 					</button>
-					<div class="confirm-action overlay-layer" id="confirm-duplicate-<?= $qKey; ?>" style="background:rgba(30,30,30,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;white-space:nowrap">
-						<span style="display:block;font-size:13px;font-weight:700;color:#ff9800;margin-bottom:8px"><?= __("Duplicate this question?", "bluerabbit"); ?></span>
-						<div style="display:flex;gap:6px">
-							<button class="br-btn br-btn-sm" style="border-color:rgba(255,152,0,0.4);color:#ff9800" onClick="duplicateQuestion(<?= $qKey; ?>,'challenge');">
+					<div class="confirm-action overlay-layer br-confirm-popup" id="confirm-duplicate-<?= $qKey; ?>">
+						<span class="br-confirm-title br-confirm-title-amber"><?= __("Duplicate this question?", "bluerabbit"); ?></span>
+						<div class="br-confirm-buttons">
+							<button class="br-btn br-btn-sm br-btn-amber" onClick="duplicateQuestion(<?= $qKey; ?>,'challenge');">
 								<span class="icon icon-duplicate"></span> <?= __("Duplicate", "bluerabbit"); ?>
 							</button>
 							<button class="br-btn br-btn-sm" onClick="hideAllOverlay();">

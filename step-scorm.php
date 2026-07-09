@@ -57,6 +57,12 @@ $scorm_done      = ( $lesson_status === 'completed' || $lesson_status === 'passe
 			</div>
 		<?php endif; ?>
 
+		<?php if ($scorm_done) { ?>
+		<div class="br-step-feedback br-step-feedback-success">
+			<span class="icon icon-check"></span> <?= __("You have completed this content", "bluerabbit"); ?>
+		</div>
+		<?php } ?>
+
 		<?php include( TEMPLATEPATH . '/step-nav-button-back.php' ); ?>
 
 		<div id="scorm-next-<?= $step->step_id ?>" class="scorm-next-wrapper<?= $scorm_done ? ' active' : '' ?>">

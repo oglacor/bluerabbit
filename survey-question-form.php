@@ -33,7 +33,7 @@ switch ($style){
 			<div class="question-image">
 				<img id="question-<?= $qKey; ?>-img" src="<?= $question['survey_question_image']; ?>" onClick="showWPUpload('question-<?= $qKey; ?>-img','q','survey',<?= $qKey; ?>);">
 				<div class="actions">
-					<button class="button-icon font _24 sq-40  pink-bg-400 white-color" onClick="clearImage('#question-<?= $qKey; ?>-img','survey',<?= $qKey; ?>);">
+					<button class="br-icon-btn br-icon-btn-pink white-color" onClick="clearImage('#question-<?= $qKey; ?>-img','survey',<?= $qKey; ?>);">
 						<span class="icon icon-trash"></span>
 						<span class="tool-tip bottom">
 							<span class="tool-tip-text"><?php _e("Remove image","bluerabbit"); ?></span>
@@ -44,17 +44,17 @@ switch ($style){
 			</div>
 			<div class="question-content">
 				<div class="question-itself">
-					<h4 class="grey-600 font _18 w500"><?= __("Question","bluerabbit"); ?>:</h4>
+					<h4 class="grey-600 br-text-18 w500"><?= __("Question","bluerabbit"); ?>:</h4>
 					<textarea id="question-text-<?= $qKey; ?>" rows="3" type="text" placeholder="<?php _e('Question','bluerabbit'); ?>" class="form-ui question-title white-bg" onChange="updateQuestion('survey',<?= $qKey; ?>);"><?= $question['survey_question_text']; ?></textarea>
 				</div>
 				<div class="question-description">
-					<h4 class="grey-600 font _18 w500"><?= __("Description (optional)","bluerabbit"); ?>:</h4>
+					<h4 class="grey-600 br-text-18 w500"><?= __("Description (optional)","bluerabbit"); ?>:</h4>
 					<textarea rows="3" id="question-description-<?= $qKey; ?>" placeholder="<?php _e('Describe the question','bluerabbit'); ?>" class="form-ui question-description  white-bg" onChange="updateQuestion('survey',<?= $qKey; ?>);"><?= $question['survey_question_description']; ?></textarea>
 				</div>
 				<div class="question-config">
 				<?php if($style=='rating' ){ ?>
 					<?php $range = $question['survey_question_range']  ? $question['survey_question_range'] : 5; ?>
-					<h4 class="grey-600 font _18 w500"><?= __("Number of stars","bluerabbit"); ?>:</h4>
+					<h4 class="grey-600 br-text-18 w500"><?= __("Number of stars","bluerabbit"); ?>:</h4>
 					<select onChange="updateQuestion('survey',<?= $qKey; ?>);" class="form-ui" id="question-range-<?= $qKey; ?>">
 						<?php for($i=3; $i<=10; $i++){ ?>
 							<option value="<?= $i; ?>" <?php if($i == $range) { echo "selected"; } ?> > <?= $i; ?> </option>
@@ -62,18 +62,18 @@ switch ($style){
 					</select>
 				<?php }elseif($style=='number'){ ?>
 					<?php $range = $question['survey_question_range'] !== NULL ? $question['survey_question_range'] : 5; ?>
-					<h4 class="grey-600 font _18 w500"><?= __("Max Value","bluerabbit"); ?>:</h4>
+					<h4 class="grey-600 br-text-18 w500"><?= __("Max Value","bluerabbit"); ?>:</h4>
 					<input type="number" value="<?= $range; ?>" id="question-range-<?= $qKey; ?>" class="form-ui  text-center" onChange="updateQuestion('survey',<?= $qKey; ?>);">
-					<h4 class="grey-600 font _18 w500"><?= __("Display as","bluerabbit"); ?>:</h4>
+					<h4 class="grey-600 br-text-18 w500"><?= __("Display as","bluerabbit"); ?>:</h4>
 					<select onChange="updateQuestion('survey',<?= $qKey; ?>);" class="form-ui" id="question-display-<?= $qKey; ?>">
 						<option value="field" <?php if($question['survey_question_display'] == 'field') { echo "selected"; } ?> > <?= __('Field',"bluerabbit"); ?> </option>
 						<option value="dropdown" <?php if($question['survey_question_display'] == 'dropdown') { echo "selected"; } ?> > <?= __('Dropdown',"bluerabbit"); ?> </option>
 						<option value="spinner" <?php if($question['survey_question_display'] == 'spinner') { echo "selected"; } ?> > <?= __('Spinner',"bluerabbit"); ?> </option>
 					</select>
 				<?php }elseif($style=='guild-vote'){ ?>
-					<h4 class="grey-600 font _18 w500"><?= __("Players will have to choose one guild to vote for (not theirs)","bluerabbit"); ?></h4>
+					<h4 class="grey-600 br-text-18 w500"><?= __("Players will have to choose one guild to vote for (not theirs)","bluerabbit"); ?></h4>
 					<?php if($guild_groups){ ?>
-						<div class="input-group w-full font _18">
+						<div class="input-group w-full br-text-18">
 							<label class="<?= $color; ?>-bg-700 white-color"><?= __("ID","bluerabbit").": $qKey"; ?></label>
 							<select onChange="updateQuestion('survey',<?= $qKey; ?>);" class="form-ui" id="question-display-<?= $qKey; ?>">
 								<option value="">-<?php _e("Please choose a Guild Group"); ?>-</option>
@@ -84,7 +84,7 @@ switch ($style){
 						</div>
 					<?php } ?>
 				<?php }elseif($style=='multi-choice' || $style=='closed'){ ?>
-					<h4 class="grey-600 font _18 w500"><?= __("Question options","bluerabbit"); ?></h4>	
+					<h4 class="grey-600 br-text-18 w500"><?= __("Question options","bluerabbit"); ?></h4>	
 					<ul class="question-options">
 						<?php
 						$oCount = 0;
@@ -121,16 +121,16 @@ switch ($style){
 			<div class="confirm-action overlay-layer" id="confirm-question-<?= $qKey; ?>">
 				<button class="form-ui white-bg" onClick="removeQuestion(<?= $qKey; ?>,'survey');">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
+						<span class="br-icon-btn br-icon-btn-red-dark">
 							<span class="icon icon-trash white-color"></span>
 						</span>
 						<span class="icon-content">
-							<span class="line red-A400 font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
-							<span class="line font _14 grey-400"><?php _e("You can't undo this","bluerabbit"); ?></span>
+							<span class="line red-A400 br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+							<span class="line br-text-14 grey-400"><?php _e("You can't undo this","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+				<button class="br-close-btn" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>
@@ -140,15 +140,15 @@ switch ($style){
 			<div class="confirm-action overlay-layer" id="confirm-duplicate-<?= $qKey; ?>">
 				<button class="form-ui white-bg" onClick="duplicateQuestion(<?= $qKey; ?>,'survey');">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  orange-bg-400 icon-sm">
+						<span class="br-icon-btn br-icon-btn-orange">
 							<span class="icon icon-duplicate white-color"></span>
 						</span>
 						<span class="icon-content">
-							<span class="line orange-400 font _18 w900"><?php _e("Duplicate Question?","bluerabbit"); ?></span>
+							<span class="line orange-400 br-text-18 w900"><?php _e("Duplicate Question?","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</button>
-				<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+				<button class="br-close-btn" onClick="hideAllOverlay();">
 					<span class="icon icon-cancel white-color"></span>
 				</button>
 			</div>

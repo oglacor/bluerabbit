@@ -84,10 +84,16 @@
         if (state.completionFired) return;
         state.completionFired = true;
 
-        // Reveal the fallback next button immediately so the user can always continue
-        // even if they navigate back before the auto-jump fires.
         var nextBtn = document.getElementById('scorm-next-' + state.stepId);
         if (nextBtn) nextBtn.classList.add('active');
+
+        var wrapper = nextBtn ? nextBtn.closest('.step-content-container') : null;
+        if (wrapper && !wrapper.querySelector('.br-step-feedback-success')) {
+            var fb = document.createElement('div');
+            fb.className = 'br-step-feedback br-step-feedback-success';
+            fb.innerHTML = '<span class="icon icon-check"></span> You have completed this content';
+            wrapper.insertBefore(fb, nextBtn);
+        }
 
         setTimeout(function () {
             if (state.nextStep > 0) {
@@ -214,12 +220,11 @@
                 if (data && data.success && data.launch_url) {
                     var info = document.getElementById('scorm-info-' + stepId);
                     if (info) {
-                        info.className = 'font _12 green-color padding-5-0';
-                        info.innerHTML = '<span class="icon icon-check"></span> ' +
-                            '<span class="grey-400">' + data.launch_url + '</span>';
+                        info.className = 'br-scorm-status br-scorm-ready';
+                        info.innerHTML = '<span class="icon icon-check"></span> ' + data.launch_url;
                     }
-                    var btn = document.getElementById('scorm-upload-btn-' + stepId);
-                    if (btn) btn.innerHTML = '<span class="icon icon-upload"></span> Replace Package';
+                    var urlInput = document.getElementById('scorm-launch-url-' + stepId);
+                    if (urlInput) urlInput.value = data.launch_url;
                 }
             }
         });

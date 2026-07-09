@@ -309,48 +309,6 @@ max-width: 1440px;
   margin-top: 4px;
 }
 
-// ── Accordion ────────────────────────────────────────────
-
-.br-accordion-header {
-  cursor: pointer;
-  user-select: none;
-
-  &:hover {
-    background: rgba($br-primary, 0.06);
-  }
-}
-
-.br-accordion-arrow {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 6px solid rgba($br-white, 0.3);
-  margin-right: 10px;
-  transition: transform 0.2s;
-  vertical-align: middle;
-
-  .br-accordion-open & {
-    transform: rotate(90deg);
-    border-left-color: $br-primary;
-  }
-}
-
-.br-accordion-body {
-  display: none;
-
-  > td {
-    padding: 14px 20px 18px !important;
-    background: rgba($br-bg, 0.35);
-    border-bottom: 1px solid rgba($br-primary, 0.08);
-  }
-
-  &:hover {
-    background: none !important;
-  }
-}
-
 // ── Tabs ─────────────────────────────────────────────────
 
 .br-tabs {
@@ -493,10 +451,14 @@ select.br-input {
   padding-right: 36px;
   cursor: pointer;
 
-  option {
-    background: #0b3d4f;
-    color: $br-white;
-  }
+    option {
+        background: rgb(11, 61, 79, 0.5);
+        color: $br-white;
+        &:hover{
+            background: rgb(11, 61, 79, 0.75);
+            color: $br-white;
+        }
+    }
 }
 
 .br-input-row {
@@ -527,7 +489,6 @@ select.br-input {
     position: fixed;
     bottom: 50px;
     left: 50%;
-    right: 0;
     z-index: 200;
     background: rgba(4, 22, 30, 0.97);
     backdrop-filter: blur(12px);
@@ -1149,6 +1110,25 @@ select.br-input {
   border-radius: 0;
 }
 
+.br-step-form-icon {
+  font-size: 18px;
+  color: var(--step-color, $br-primary);
+}
+
+.br-step-form-header-info {
+  flex: 1;
+}
+
+.br-step-form-meta {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+  margin-left: 8px;
+}
+
+.br-step-form-body {
+  padding: 20px;
+}
+
 // Step button form sections (avatar, jump, item-grab, etc.)
 .br-step-buttons-header {
   padding: 14px 20px;
@@ -1186,6 +1166,1038 @@ select.br-input {
 
 .br-step-buttons-container {
   border-top: 1px solid rgba($br-primary, 0.12);
+}
+
+// ── Step form skin panels ───────────────────────────────
+.br-skin-panel {
+  display: none;
+  padding: 12px 0;
+  border-top: 1px solid rgba($br-white, 0.04);
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.br-skin-panel-inline {
+  display: none;
+}
+
+.br-option-row {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: $radius-sm;
+  padding: 6px 10px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .mc-correct {
+    width: 18px;
+    height: 18px;
+    accent-color: $br-green;
+    flex-shrink: 0;
+  }
+}
+
+.br-gallery-thumb {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+// ── Branch selector buttons ─────────────────────────────
+
+.br-branch-ach-card {
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($br-white, 0.08);
+  }
+}
+
+// ── Page-level avatar colors ────────────────────────────
+.br-avatar-purple {
+  background: rgba(159, 64, 226, 0.2);
+  border-color: rgba(159, 64, 226, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-icon-purple { color: #9f40e2; }
+.br-icon-lg { font-size: 28px; }
+
+// ── Required asterisk ───────────────────────────────────
+.br-required {
+  color: #f44336;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+// ── QR preview ──────────────────────────────────────────
+.br-qr-preview {
+  height: 198px;
+  width: 198px;
+}
+
+// ── Section description (below panel-title) ─────────────
+.br-section-desc {
+  display: block;
+  margin: -12px 0 16px;
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+// ── Section title (condensed heading) ───────────────────
+.br-section-title {
+  @include condensed-heading(22px, 900);
+  color: rgba($br-white, 0.9);
+}
+
+.br-section-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+// ── Readonly inputs ─────────────────────────────────────
+.br-input-readonly {
+  color: rgba($br-white, 0.5);
+}
+
+.br-input-auto {
+  width: auto;
+}
+
+// ── Button sizes ────────────────────────────────────────
+.br-btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.br-btn-submit {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+// ── Spacing utilities ───────────────────────────────────
+.br-mt-lg { margin-top: 24px; }
+.br-ml-auto { margin-left: auto; }
+
+// ── Tabs inline (no margin, border-bottom) ──────────────
+.br-tabs-inline {
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba($br-primary, 0.08);
+  padding-bottom: 12px;
+}
+
+// ── Tab content spacing ─────────────────────────────────
+.br-tab-content {
+  padding-top: 12px;
+}
+
+.br-tab-content-flush {
+  padding-top: 4px;
+}
+
+// ── Tab count pill ──────────────────────────────────────
+.br-tab-count {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.br-tab-count-purple {
+  background: rgba(159, 64, 226, 0.25);
+  color: #9f40e2;
+}
+
+// ── Table column sizing ─────────────────────────────────
+.br-th-narrow {
+  width: 50px;
+}
+
+.br-th-actions {
+  width: 120px;
+  text-align: right;
+}
+
+.br-td-actions {
+  text-align: right;
+}
+
+.br-td-meta {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+}
+
+// ── Code values ─────────────────────────────────────────
+.br-code-value {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.br-code-expired {
+  opacity: 0.5;
+}
+
+// ── Details / links panel ───────────────────────────────
+.br-details-links {
+  margin-top: 12px;
+
+  summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: rgba($br-white, 0.35);
+  }
+}
+
+.br-links-panel {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: $radius-sm;
+  padding: 10px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba($br-white, 0.4);
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.br-link-line {
+  padding: 2px 0;
+}
+
+// ── Empty state sizes ───────────────────────────────────
+.br-empty-sm {
+  padding: 20px;
+}
+
+.br-empty-md {
+  padding: 24px;
+}
+
+// ── Search bar ──────────────────────────────────────────
+.br-search-bar {
+  margin-bottom: 10px;
+}
+
+.br-search-input {
+  max-width: 300px;
+}
+
+// ── Form grid variants ──────────────────────────────────
+.br-form-grid-2 { grid-template-columns: 1fr 1fr; }
+.br-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+// ── Label variants ──────────────────────────────────────
+.br-label-optional {
+  color: rgba($br-white, 0.3);
+}
+
+.br-form-label-sm {
+  font-size: 11px;
+}
+
+// ── Input variants ──────────────────────────────────────
+.br-input-narrow {
+  width: 120px;
+}
+
+.br-input-file {
+  padding: 7px 14px;
+}
+
+// ── Flex utilities ──────────────────────────────────────
+.br-flex-1 { flex: 1; }
+
+// ── Upload row (button + label inline) ──────────────────
+.br-upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.br-file-label {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+}
+
+// ── Thumb preview ───────────────────────────────────────
+.br-thumb-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-sm;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba($br-white, 0.1);
+}
+
+// ── Gallery grid (step form) ────────────────────────────
+.br-gallery-grid {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.br-gallery-thumb-img {
+  width: 100%;
+  height: 100%;
+  border-radius: $radius-sm;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba($br-white, 0.1);
+}
+
+// ── Button extra-small ──────────────────────────────────
+.br-btn-xs {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+// ── SCORM status line ───────────────────────────────────
+.br-scorm-status {
+  font-size: 12px;
+  color: rgba($br-white, 0.35);
+  padding: 6px 0;
+
+  &.br-scorm-ready {
+    color: $br-green;
+  }
+}
+
+// ── Skin panel centered (choose nickname/avatar) ────────
+.br-skin-panel-centered {
+  text-align: center;
+  padding: 16px;
+}
+
+// ── Muted text ──────────────────────────────────────────
+.br-muted {
+  color: rgba($br-white, 0.5);
+}
+
+// ── Warning inline ──────────────────────────────────────
+.br-warning-inline {
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+  padding: 4px 0;
+}
+
+.br-icon-warning {
+  color: $br-amber;
+}
+
+// ── Rewards section ─────────────────────────────────────
+.br-rewards-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba($br-white, 0.06);
+}
+
+.br-rewards-title {
+  margin-bottom: 10px;
+}
+
+// ── Player step components ──────────────────────────────
+.br-text-center { text-align: center; }
+
+.br-step-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.br-step-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: $radius;
+  background: rgba($br-white, 0.06);
+  border: 1px solid rgba($br-white, 0.1);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    background: rgba($br-primary, 0.1);
+    border-color: rgba($br-primary, 0.3);
+  }
+
+  &.disabled {
+    cursor: default;
+    opacity: 0.7;
+    &:hover { background: rgba($br-white, 0.06); border-color: rgba($br-white, 0.1); }
+  }
+
+  &.br-option-correct {
+    background: rgba($br-green, 0.15);
+    border-color: rgba($br-green, 0.4);
+  }
+}
+
+.br-step-option-text { font-size: 15px; position: relative; z-index: 1; }
+
+.br-step-option-image {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-sm;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.br-step-question-image {
+  max-width: 100%;
+  border-radius: $radius;
+  margin: 8px 0;
+}
+
+.br-step-feedback {
+  display: none;
+  padding: 10px;
+  border-radius: $radius;
+  margin-bottom: 12px;
+  font-weight: 700;
+  text-align: center;
+
+  &.br-step-feedback-success {
+    display: block;
+    padding: 12px;
+    background: rgba($br-green, 0.15);
+    border: 1px solid rgba($br-green, 0.3);
+    color: $br-green;
+    margin: 12px 0;
+  }
+
+  &.br-step-feedback-error {
+    display: block;
+    padding: 12px;
+    background: rgba($br-red, 0.15);
+    border: 1px solid rgba($br-red, 0.3);
+    color: $br-red;
+    margin: 12px 0;
+  }
+}
+
+.br-step-prompt {
+  margin: 16px 0 8px;
+}
+
+.br-step-mc-hint {
+  font-size: 13px;
+  color: rgba($br-primary, 0.7);
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.br-option-check-icon {
+  margin-left: auto;
+  color: $br-green;
+  font-size: 16px;
+}
+
+.br-step-recorded {
+  padding: 8px;
+  color: rgba($br-white, 0.4);
+  font-size: 12px;
+  text-align: center;
+}
+
+.br-step-input-wrap {
+  margin: 16px 0;
+}
+
+.br-step-keyphrase-input {
+  text-align: center;
+  font-size: 18px;
+  padding: 12px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.br-step-answered-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: $br-green;
+  letter-spacing: 1px;
+  margin: 12px 0 4px;
+}
+
+// ── Cryptex wheels ──────────────────────────────────────
+.br-cryptex-wheels {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.cryptex-wheel {
+  width: 42px;
+  height: 52px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0;
+  border-radius: $radius-sm;
+}
+
+// ── Rating scale ────────────────────────────────────────
+.br-rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.br-rating-label {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.br-rating-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.sr-rating-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: $radius;
+  border: 2px solid rgba($br-primary, 0.3);
+  background: rgba($br-white, 0.06);
+  color: $br-white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: rgba($br-primary, 0.5);
+    background: rgba($br-primary, 0.15);
+  }
+}
+
+.br-rating-active {
+  background: rgba($br-primary, 0.3) !important;
+  border-color: rgba($br-primary, 0.6) !important;
+}
+
+// ── Poll bar ────────────────────────────────────────────
+.br-poll-option { position: relative; }
+
+.br-poll-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--poll-w, 0%);
+  background: rgba($br-primary, 0.12);
+  transition: width 0.3s;
+}
+
+.br-poll-pct {
+  position: relative;
+  z-index: 1;
+  font-weight: 700;
+  color: $br-primary;
+  margin-left: auto;
+}
+
+// ── Backpack item display ───────────────────────────────
+.br-step-item-display {
+  margin: 16px auto;
+  display: inline-block;
+
+  &.br-step-item-locked { opacity: 0.4; }
+}
+
+.br-step-item-badge {
+  max-width: 100px;
+  border-radius: $radius;
+}
+
+.br-step-item-name {
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+// ── Upload area ─────────────────────────────────────────
+.br-step-upload-area {
+  margin: 16px 0;
+}
+
+.br-step-upload-hint {
+  font-size: 11px;
+  opacity: 0.4;
+  margin-top: 6px;
+}
+
+.br-step-uploaded-preview {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: $radius;
+  margin: 12px 0;
+}
+
+.br-step-uploaded-video {
+  max-width: 100%;
+  border-radius: $radius;
+  margin: 12px 0;
+}
+
+// ── Gallery grid (player) ───────────────────────────────
+.br-step-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.br-step-gallery-item {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: $radius;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// ── Puzzle ──────────────────────────────────────────────
+.br-puzzle-prompt {
+  color: rgba($br-white, 0.85);
+  font-size: 15px;
+  padding: 16px 20px;
+  max-width: 800px;
+}
+
+.br-puzzle-done {
+  padding: 20px;
+  text-align: center;
+}
+
+.br-puzzle-complete-image {
+  max-width: 400px;
+  width: 100%;
+  border-radius: $radius;
+  margin-bottom: 12px;
+}
+
+// ── Puzzle ──────────────────────────────────────────────
+.br-puzzle-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  margin: 20px auto;
+}
+
+.br-puzzle-board {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba($br-primary, 0.2);
+  border-radius: $radius-sm;
+
+  &.br-puzzle-solved {
+    border-color: $br-green;
+    box-shadow: 0 0 20px rgba($br-green, 0.3);
+  }
+}
+
+.br-puzzle-slot {
+  position: absolute;
+  border: 1px dashed rgba($br-white, 0.12);
+  box-sizing: border-box;
+}
+
+.br-puzzle-piece {
+  position: absolute;
+  cursor: grab;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  overflow: hidden;
+  z-index: 5;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    z-index: 10;
+
+    .br-puzzle-rotate-btn { opacity: 1; }
+  }
+
+  &.br-puzzle-dragging {
+    cursor: grabbing;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    transition: none;
+    z-index: 100;
+  }
+
+  &.br-puzzle-piece-correct {
+    box-shadow: 0 0 0 2px $br-green;
+    cursor: default;
+    z-index: 4;
+
+    .br-puzzle-rotate-btn { display: none; }
+  }
+}
+
+.br-puzzle-piece-inner {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.br-puzzle-rotate-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: $br-white;
+  font-size: 15px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  z-index: 6;
+  padding: 0;
+
+  &:hover {
+    background: rgba($br-primary, 0.8);
+  }
+}
+
+.br-puzzle-hint {
+  text-align: center;
+  font-size: 11px;
+  color: rgba($br-white, 0.3);
+  margin: 8px 0 0;
+}
+
+// ── Open Text answer display ────────────────────────────
+.br-ot-answer-display {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba($br-white, 0.05);
+  border: 1px solid rgba($br-white, 0.1);
+  border-radius: $radius-sm;
+}
+
+.br-ot-answer-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.4);
+  margin-bottom: 8px;
+}
+
+.br-ot-answer-text {
+  font-size: 14px;
+  color: rgba($br-white, 0.85);
+  line-height: 1.6;
+  margin-bottom: 12px;
+
+  p { margin: 0 0 8px; }
+}
+
+// ── AI help accordion (adventure settings) ──────────────
+.br-ai-help {
+  margin-top: 16px;
+
+  summary {
+    cursor: pointer;
+    color: rgba($br-white, 0.6);
+
+    &:hover { color: $br-white; }
+  }
+}
+
+.br-ai-help-content {
+  padding: 12px 0 0 8px;
+  font-size: 13px;
+  color: rgba($br-white, 0.7);
+
+  ol {
+    padding-left: 20px;
+    margin: 8px 0;
+
+    li { margin-bottom: 6px; }
+  }
+
+  a {
+    color: $br-primary;
+    text-decoration: underline;
+  }
+
+  code {
+    background: rgba($br-white, 0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+}
+
+// ── Accordion component ─────────────────────────────────
+.br-accordion {
+  border: 1px solid rgba($br-white, 0.08);
+  border-radius: $radius-sm;
+  margin-bottom: 6px;
+  background: rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s, background 0.2s;
+
+  &[open] {
+    border-color: rgba($br-primary, 0.4);
+    background: rgba($br-primary, 0.04);
+
+    .br-accordion-header {
+      border-bottom: 1px solid rgba($br-primary, 0.15);
+      background: rgba($br-primary, 0.08);
+    }
+
+    .br-accordion-arrow {
+      transform: rotate(-90deg);
+    }
+    .br-accordion-body{ 
+        display: block;
+    }
+  }
+}
+
+.br-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: $radius-sm;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($br-white, 0.04);
+  }
+
+  &::-webkit-details-marker { display: none; }
+  &::marker { display: none; content: ''; }
+}
+
+.br-accordion-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: $br-white;
+}
+
+.br-accordion-key {
+  font-size: 11px;
+  color: $br-primary;
+  background: rgba($br-primary, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.br-accordion-meta {
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+  margin-left: auto;
+}
+
+.br-accordion-arrow {
+  font-size: 12px;
+  color: rgba($br-white, 0.3);
+  transition: transform 0.2s;
+  transform: rotate(180deg);
+  flex-shrink: 0;
+}
+
+.br-accordion-action {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.br-accordion-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.br-accordion-new-plan {
+  display: none;
+  background: rgba(4, 22, 30, 0.5);
+  border: 1px solid rgba($br-primary, 0.15);
+  border-radius: $radius;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .br-puzzle-wrap {
+    max-width: 100%;
+  }
+}
+
+// ── Branch choice cards (player) ────────────────────────
+.br-branch-cards {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.br-path-choice-card {
+  flex: 1;
+  min-width: 140px;
+  max-width: 200px;
+  padding: 20px 16px;
+  border-radius: $radius;
+  background: rgba($br-white, 0.06);
+  border: 2px solid rgba($br-white, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  color: $br-white;
+
+  &:hover {
+    border-color: rgba($br-primary, 0.5);
+    background: rgba($br-primary, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+.br-path-card-badge {
+  max-width: 70px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.br-path-card-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.br-path-card-desc {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+  margin-top: 4px;
+}
+
+.br-branch-chosen {
+  padding: 16px;
+  border-radius: $radius;
+  background: rgba($br-primary, 0.1);
+  border: 1px solid rgba($br-primary, 0.25);
+  margin: 16px 0;
+}
+
+.br-branch-chosen-badge {
+  max-width: 80px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.br-branch-chosen-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: $br-primary;
+}
+
+.br-branch-chosen-label {
+  font-size: 12px;
+  opacity: 0.5;
+  margin-top: 4px;
+}
+
+.br-branch-warning {
+  font-size: 11px;
+  opacity: 0.35;
+}
+
+// ── Branch selector ─────────────────────────────────────
+.br-branch-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.br-branch-opt {
+  padding: 8px 16px;
+  border-radius: $radius;
+  border: 2px solid rgba($br-white, 0.1);
+  background: rgba($br-white, 0.04);
+  color: $br-white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: rgba($br-primary, 0.4);
+    background: rgba($br-primary, 0.08);
+  }
+
+  &.active {
+    border-color: rgba(159, 64, 226, 0.6);
+    background: rgba(159, 64, 226, 0.15);
+
+    &:first-child {
+      border-color: rgba($br-primary, 0.6);
+      background: rgba($br-primary, 0.12);
+    }
+  }
+}
+
+.br-branch-add {
+  border-style: dashed;
+  border-color: rgba($br-primary, 0.3);
+  background: transparent;
+  color: rgba($br-primary, 0.7);
+}
+
+.br-branch-count {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: 4px;
+}
+
+.br-branch-inline-form {
+  display: none;
+  margin-top: 10px;
+  align-items: center;
+  gap: 8px;
+
+  .br-input {
+    flex: 1;
+    max-width: 250px;
+  }
 }
 
 // Drag state
@@ -1568,14 +2580,14 @@ select.br-input {
 .br-name {
   min-width: 0;
 
-  input[type="text"] {
-    width: 100%;
+  input[type="text"] { 
+    width: 100%; 
     background: transparent;
     border: 1px solid transparent;
     border-radius: $radius-sm;
     color: $br-white;
     padding: 5px 8px;
-    font-size: 13px;
+    font-size: 26px;
     font-weight: 600;
     transition: border-color 0.2s, background 0.2s;
 
@@ -1826,6 +2838,15 @@ select.br-input {
   }
   .row-container {
     cursor: default;
+    margin: 10px 0;
+    background: rgba($br-white,0.1);
+    // Zebra striping — specificity (.br-panel.br-tabi-row-panel) beats the base
+    // .br-panel background without needing !important.
+    &:nth-of-type(even) {
+        background: rgba($br-bg,1);
+    }
+
+
   }
 }
 
@@ -2186,13 +3207,6 @@ select.br-input {
   border-radius: $radius;
 }
 
-// ── Small Button Variant ──────────────────────────────────
-
-.br-btn-sm {
-  font-size: 11px !important;
-  padding: 5px 10px !important;
-  gap: 4px !important;
-}
 
 // ── Challenge Question Components ─────────────────────────
 
@@ -2384,10 +3398,1091 @@ select.br-input {
   }
 }
 
-// ── Shared small utilities (ported from the CI4 rewrite's br-table.scss) ──
+// ── Utility classes (common inline-style replacements) ───
+.br-initially-hidden {
+  display: none;
+}
+
+.svg-clip-definitions {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.br-page-narrow {
+  max-width: 900px;
+}
+
+.br-btn-submit {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+.br-select-auto {
+  width: auto;
+}
+
+.br-required-marker {
+  color: $br-red;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.br-confirm-overlay {
+  display: none;
+  background: rgba($br-bg, 0.95);
+  border: 1px solid rgba($br-red, 0.3);
+  border-radius: $radius;
+  padding: 20px;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.br-form-hint-block {
+  display: block;
+  margin-top: -12px;
+  margin-bottom: 16px;
+}
+
+// ── Page-level avatar color variants ────────────────────
+.br-avatar-red {
+  background: rgba($br-red, 0.2);
+  border-color: rgba($br-red, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-teal {
+  background: rgba($br-teal, 0.2);
+  border-color: rgba($br-teal, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-green {
+  background: rgba($br-green, 0.2);
+  border-color: rgba($br-green, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-amber {
+  background: rgba($br-amber, 0.2);
+  border-color: rgba($br-amber, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-blue {
+  background: rgba(#2196f3, 0.2);
+  border-color: rgba(#2196f3, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-brown {
+  background: rgba(#795548, 0.25);
+  border-color: rgba(#795548, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-orange {
+  background: rgba($br-orange, 0.2);
+  border-color: rgba($br-orange, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-avatar-survey {
+  background: rgba(#009688, 0.2);
+  border-color: rgba(#009688, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ── Icon color variants ────────────────────────────────
+.br-icon-red { color: $br-red; }
+.br-icon-teal { color: $br-teal; }
+.br-icon-green { color: $br-green; }
+.br-icon-amber { color: $br-amber; }
+.br-icon-blue { color: #2196f3; }
+.br-icon-brown { color: #8d6e63; }
+.br-icon-orange { color: $br-orange; }
+.br-icon-survey { color: #009688; }
+.br-icon-md { font-size: 24px; }
+
+// ── Panel narrow (inner content cap) ───────────────────
+.br-panel-narrow {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+// ── Max-width 1000px variant ───────────────────────────
+.br-page-mid {
+  max-width: 1000px;
+}
+
+// ── Form label color variants (encounter correct/decoy)
+.br-form-label-green {
+  color: $br-green;
+}
+
+.br-form-label-red {
+  color: $br-red;
+}
+
+// ── Input border color variants ────────────────────────
+.br-input-green {
+  border-color: rgba($br-green, 0.25);
+}
+
+.br-input-red {
+  border-color: rgba($br-red, 0.2);
+}
+
+// ── Text muted small (email/meta columns) ──────────────
+.br-text-muted-sm {
+  color: rgba($br-white, 0.45);
+  font-size: 13px;
+}
+
+// ── Guild member avatar (table cell) ───────────────────
+.br-member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba($br-primary, 0.2);
+}
+
+// ── Search input with icon ─────────────────────────────
+.br-search-inline {
+  position: relative;
+
+  .icon {
+    color: rgba($br-white, 0.3);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .br-input {
+    padding-left: 34px;
+  }
+}
+
+// ── Helper text block (panel subtitle) ─────────────────
+.br-helper-text {
+  font-size: 12px;
+  color: rgba($br-white, 0.35);
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 8px;
+}
+
+// ── Confirm dialog overlay (dark styled) ───────────────
+.br-confirm-dialog {
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid rgba($br-white, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.br-confirm-dialog-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba($br-white, 0.7);
+  margin-bottom: 8px;
+}
+
+.br-confirm-dialog-actions {
+  display: flex;
+  gap: 6px;
+}
+
+// ── Empty centered text ────────────────────────────────
+.br-empty-text {
+  text-align: center;
+  color: rgba($br-white, 0.35);
+  padding: 16px;
+}
+
+// ── Badge margin-left (inline after title) ─────────────
+.br-badge-ml {
+  margin-left: 8px;
+}
+
+// ── Spacing utilities ──────────────────────────────────
+.br-mt-sm { margin-top: 16px; }
+.br-mt-md { margin-top: 24px; }
+.br-mb-sm { margin-bottom: 8px; }
+.br-mb-md { margin-bottom: 16px; }
+.br-mb-14 { margin-bottom: 14px; }
+
+// ── Button padding compact ─────────────────────────────
+.br-btn-compact {
+  padding: 4px 10px;
+}
+
+// ── Speaker flex wrap container ────────────────────────
+.br-speaker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// ── Speaker checkbox label ─────────────────────────────
+.br-speaker-label {
+  cursor: pointer;
+
+  &.active {
+    background: rgba($br-primary, 0.18);
+    border-color: rgba($br-primary, 0.4);
+  }
+}
+
+// ── New objective menu overlay ─────────────────────────
+.br-objective-menu {
+  background: rgba($br-bg, 0.95);
+  border: 1px solid rgba($br-primary, 0.2);
+  border-radius: 8px;
+}
+
+// ── Flex row utilities ─────────────────────────────────
+.br-flex {
+  display: flex;
+}
+
+.br-flex-center {
+  display: flex;
+  align-items: center;
+}
+
+.br-flex-row {
+  display: flex;
+  gap: 8px;
+}
+
+.br-flex-between {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.br-flex-wrap { flex-wrap: wrap; }
+.br-gap-sm    { gap: 8px; }
+.br-gap-md    { gap: 16px; }
+.br-mr-sm     { margin-right: 8px; }
+
+// ── Confirm reset button padding ───────────────────────
+.br-btn-confirm {
+  padding: 10px 20px;
+}
+
+// ── Badge small font ───────────────────────────────────
+.br-badge-sm {
+  font-size: 9px;
+}
+
+// ── Steps flex-mt ──────────────────────────────────────
+.br-flex-mt-sm {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+// ── Input suffix small ─────────────────────────────────
+.br-input-suffix-sm {
+  font-size: 10px;
+}
+
+// ── Badge margin-left small (inline tabs) ──────────────
+.br-badge-ml-sm {
+  margin-left: 4px;
+  font-size: 10px;
+}
+
+// ══════════════════════════════════════════════════════════════
+// Admin Page Inline-Style Replacements
+// ══════════════════════════════════════════════════════════════
+
+// ── page-config.php ──────────────────────────────────────────
+
+.br-config-header-icon {
+  background: rgba($br-primary, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: rgba($br-primary, 0.4);
+
+  .icon {
+    font-size: 28px;
+    color: $br-primary;
+  }
+}
+
+.br-config-section-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.br-config-setting-row {
+  border-left: 3px solid rgba($br-primary, 0.3);
+  cursor: default;
+  align-items: flex-start;
+  padding: 10px 14px;
+}
+
+.br-config-setting-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-config-setting-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba($br-white, 0.9);
+  display: block;
+}
+
+.br-config-setting-desc {
+  font-size: 11px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-config-setting-control {
+  flex-shrink: 0;
+  min-width: 180px;
+}
+
+.br-config-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.br-config-code-name {
+  color: $br-primary;
+  font-size: 12px;
+}
+
+.br-config-upload-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.br-config-feature-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.br-config-feature-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.br-config-feature-form {
+  display: none;
+  background: rgba($br-bg, 0.5);
+  border: 1px solid rgba($br-primary, 0.15);
+  border-radius: $radius-sm + 2px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.br-config-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.br-config-section-divider {
+  border-top: 1px solid rgba($br-primary, 0.1);
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.br-config-id-cell {
+  opacity: 0.4;
+}
+
+.br-config-name-cell {
+  font-weight: 600;
+}
+
+.br-config-feature-desc-cell {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.br-config-add-row {
+  margin-top: 12px;
+}
+
+.br-config-org-logo {
+  height: 40px;
+  border-radius: $radius-sm;
+}
+
+.br-config-org-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.br-config-icon-hint {
+  opacity: 0.5;
+}
+
+.br-config-save-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+// ── page-email-notifications.php ─────────────────────────────
+
+.br-notif-empty {
+  max-width: 800px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 40px;
+}
+
+.br-notif-empty-icon {
+  font-size: 48px;
+  color: rgba($br-primary, 0.4);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.br-notif-empty-title {
+  @include condensed-heading(28px, 900);
+  color: rgba($br-white, 0.9);
+  margin: 0 0 8px;
+}
+
+.br-notif-empty-text {
+  color: rgba($br-white, 0.4);
+  font-size: 14px;
+}
+
+.br-notif-denied {
+  max-width: 800px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 40px;
+  border-color: rgba($br-red, 0.3);
+}
+
+.br-notif-denied-icon {
+  font-size: 48px;
+  color: rgba($br-red, 0.5);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.br-notif-denied-title {
+  @include condensed-heading(28px, 900);
+  color: $br-red;
+  margin: 0 0 8px;
+}
+
+.br-notif-header-stats {
+  margin-left: auto;
+  text-align: right;
+}
+
+.br-notif-eligible-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.35);
+  display: block;
+}
+
+.br-notif-eligible-count {
+  font-family: $condensed;
+  font-size: 28px;
+  font-weight: 900;
+  color: $br-primary;
+}
+
+.br-notif-status {
+  display: none;
+  border-radius: $radius-sm + 2px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.br-notif-compose-panel {
+  padding: 20px;
+}
+
+.br-notif-code-hint {
+  background: rgba($br-primary, 0.1);
+  color: $br-primary;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.br-notif-player-level {
+  color: $br-purple;
+  font-weight: 700;
+}
+
+.br-notif-actions-panel {
+  padding: 16px 20px;
+}
+
+.br-notif-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.br-notif-spinner {
+  display: none;
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+
+  .icon {
+    animation: spin 1s linear infinite;
+  }
+}
+
+.br-notif-send-summary {
+  margin-left: auto;
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-notif-csv-section {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba($br-primary, 0.08);
+}
+
+.br-notif-csv-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.br-notif-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  flex-wrap: wrap;
+}
+
+.br-notif-meta-text {
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-notif-selected-count {
+  color: $br-green;
+  font-weight: 700;
+}
+
+.br-notif-pagination-dots {
+  color: rgba($br-white, 0.3);
+}
+
+// ── Email notifications — view tabs + send log ────────────────
+
+.br-notif-view-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+  margin-bottom: 16px;
+}
+
+.br-notif-view-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba($br-white, 0.4);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: rgba($br-white, 0.75); }
+
+  &.active {
+    color: $br-primary;
+    border-bottom-color: $br-primary;
+  }
+}
+
+.br-notif-badge {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  margin-left: 5px;
+  vertical-align: middle;
+
+  &.green { background: rgba($br-green, 0.9); color: #fff; }
+  &.red   { background: rgba($br-red,   0.9); color: #fff; }
+  &.amber { background: #f0b429;              color: #fff; }
+  &.muted { background: rgba($br-white, 0.12); color: rgba($br-white, 0.45); }
+}
+
+.br-notif-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: rgba($br-white, 0.75);
+
+  th {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.3);
+    border-bottom: 1px solid rgba($br-primary, 0.12);
+    font-weight: 600;
+  }
+
+  td {
+    padding: 10px;
+    border-bottom: 1px solid rgba($br-primary, 0.06);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td      { background: rgba($br-primary, 0.04); }
+}
+
+.br-notif-log-num {
+  color: rgba($br-white, 0.2);
+  font-size: 11px;
+  width: 28px;
+}
+
+.br-notif-log-count {
+  text-align: center;
+  font-weight: 700;
+  font-family: $condensed;
+  font-size: 16px;
+  min-width: 48px;
+
+  &.green { color: $br-green; }
+  &.red   { color: $br-red; }
+  &.amber { color: #f0b429; }
+  &.muted { color: rgba($br-white, 0.22); }
+}
+
+.br-notif-log-date {
+  font-size: 11px;
+  color: rgba($br-white, 0.3);
+  white-space: nowrap;
+}
+
+.br-notif-log-error {
+  font-size: 11px;
+  color: $br-red;
+  max-width: 260px;
+  word-break: break-all;
+}
+
+.br-notif-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: $br-primary;
+  text-decoration: none;
+  opacity: 0.75;
+  margin-bottom: 8px;
+
+  &:hover { opacity: 1; }
+}
+
+.br-notif-campaign-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 20px;
+  row-gap: 3px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.br-notif-campaign-info-key { color: rgba($br-white, 0.35); }
+
+.br-notif-campaign-info-val {
+  color: rgba($br-white, 0.75);
+  font-weight: 500;
+}
+
+.br-notif-inner-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+  margin-bottom: 14px;
+}
+
+.br-notif-inner-tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba($br-white, 0.4);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: rgba($br-white, 0.7); }
+
+  &.active {
+    color: $br-white;
+    border-bottom-color: $br-primary;
+  }
+}
+
+.br-notif-log-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.br-notif-log-hint {
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-notif-status-link {
+  color: inherit;
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+// ── page-stats.php ───────────────────────────────────────────
+
+.br-stats-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.br-stats-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.br-stats-date-input {
+  padding: 4px 8px;
+  font-size: 12px;
+  width: auto;
+}
+
+.br-stats-date-sep {
+  color: rgba($br-white, 0.3);
+  font-size: 12px;
+}
+
+.br-stats-btn-sm {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.br-stats-btn-reset {
+  padding: 4px 10px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.br-stats-sortable {
+  cursor: pointer;
+}
+
+.br-stats-kpi-small {
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+.br-stats-kpi-label-note {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.br-stats-breakdown-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.br-stats-breakdown-note {
+  font-size: 11px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-stats-info-icon {
+  cursor: help;
+  opacity: 0.4;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+.br-stats-section-gap {
+  margin-top: 8px;
+}
+
+.br-stats-search-wrap {
+  margin-bottom: 12px;
+}
+
+.br-stats-funnel-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-stats-funnel-btn {
+  min-width: 24px;
+  height: 24px;
+  font-size: 11px;
+}
+
+// ── page-transactions.php ────────────────────────────────────
+
+.br-trnx-id {
+  color: rgba($br-white, 0.35);
+  font-size: 12px;
+}
+
+.br-trnx-email {
+  color: rgba($br-white, 0.45);
+  font-size: 13px;
+}
+
+.br-trnx-date {
+  font-size: 13px;
+}
+
+.br-trnx-time {
+  font-size: 11px;
+  color: rgba($br-white, 0.3);
+  display: block;
+}
+
+.br-trnx-search-icon {
+  color: rgba($br-white, 0.3);
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+.br-trnx-search-input {
+  padding-left: 34px;
+}
+
+.br-trnx-total {
+  text-align: right;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba($br-primary, 0.1);
+}
+
+.br-trnx-total-label {
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.br-trnx-total-value {
+  font-family: $condensed;
+  font-size: 28px;
+  font-weight: 900;
+  color: $br-accent;
+  margin-left: 10px;
+}
+
+.br-trnx-total-unit {
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+  margin-left: 4px;
+}
+
+.br-trnx-btn-action {
+  padding: 4px 8px;
+}
+
+.br-trnx-new-badge {
+  font-size: 9px;
+}
+
+// ── page-leaderboard.php ─────────────────────────────────────
+
+.br-leaderboard-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.br-leaderboard-title {
+  font-size: 40px;
+}
+
+.br-leaderboard-highlight {
+  background: rgba($br-primary, 0.1);
+}
+
+.br-leaderboard-xp {
+  color: $br-primary;
+  font-weight: 700;
+}
+
+.br-leaderboard-bloo {
+  color: $br-accent;
+  font-weight: 700;
+}
+
+// ── page-my-requests.php ─────────────────────────────────────
+
+.br-requests-header {
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+}
+
+.br-requests-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.br-requests-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.br-requests-icon-box {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(#2196f3, 0.15);
+  border-radius: 10px;
+  font-size: 22px;
+  color: #2196f3;
+}
+
+.br-requests-subtitle {
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+.br-requests-filters {
+  border-radius: 0;
+  margin-bottom: 0;
+  padding: 12px 24px;
+}
+
+.br-requests-list {
+  border-radius: 0 0 12px 12px;
+}
+
+// ── page-secrets-and-clues.php ───────────────────────────────
+
+.br-secrets-title {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.br-secrets-message-header {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+// ── page-wall.php ────────────────────────────────────────────
+
+.br-wall-type-btn-login {
+  background: rgba($br-primary, 0.25);
+  color: $br-primary;
+}
+
+.br-wall-type-btn-complete {
+  background: rgba($br-green, 0.25);
+  color: $br-green;
+}
+
+.br-wall-type-btn-purchase {
+  background: rgba($br-amber, 0.25);
+  color: $br-amber;
+}
+
+.br-wall-type-btn-attempt {
+  background: rgba($br-orange, 0.25);
+  color: $br-orange;
+}
+
+.br-wall-type-btn-failed {
+  background: rgba($br-red, 0.25);
+  color: $br-red;
+}
+
+.br-wall-log-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+// ── Shared small utilities ───────────────────────────────────
+
+.br-m0 {
+  margin: 0;
+}
 
 .br-w-full {
   width: 100%;
+}
+
+.br-flex-1 {
+  flex: 1;
 }
 
 .br-btn-mini {
@@ -2395,29 +4490,1085 @@ select.br-input {
   font-size: 11px;
 }
 
+.br-btn-sm-action {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.br-btn-icon-sm {
+  width: 26px;
+  height: 26px;
+}
+
+.br-btn-preview {
+  padding: 10px 20px;
+}
+
+.br-btn-send {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+.br-input-csv {
+  padding: 7px 14px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.br-input-search-flex {
+  flex: 1;
+  min-width: 180px;
+}
+
+.br-hint-block-spacer {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.br-max-w-400 {
+  max-width: 400px;
+}
+
+.br-max-w-300 {
+  max-width: 300px;
+}
+
 .br-gap-6 {
   gap: 6px;
 }
 
-.br-icon-primary {
+// ── Flex justify-end ───────────────────────────────────
+.br-flex-end {
+  justify-content: flex-end;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ── Inline-style replacement utilities ─────────────────
+
+// JS-toggled containers: hidden on load, shown by JS
+.br-initially-hidden { display: none; }
+
+// Visibility hidden (element still takes space)
+.br-invisible { visibility: hidden; }
+
+// Inline-block helper
+.br-inline-block { display: inline-block; }
+
+// Actions column layout
+.br-actions-col { flex-direction: column; }
+
+// Form group spacing variants
+.br-form-group-tight { margin-bottom: 8px; }
+.br-form-group-flush { margin-bottom: 0; }
+
+// Table column widths
+.br-th-image { width: 200px; }
+.br-th-actions-sm { width: 100px; }
+
+// Add-option wrapper
+.br-add-option-wrap { padding: 8px 0; }
+
+// Media flush (no margin/border-radius)
+.br-media-flush { margin: 0; border-radius: 0; }
+
+// Confirm popup overlay
+.br-confirm-popup {
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid rgba($br-white, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  white-space: nowrap;
+}
+
+.br-confirm-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.br-confirm-title-red { color: $br-red; }
+.br-confirm-title-amber { color: $br-orange; }
+
+.br-confirm-subtitle {
+  display: block;
+  font-size: 11px;
+  color: rgba($br-white, 0.5);
+  margin-bottom: 10px;
+}
+
+.br-confirm-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+// Success message background
+.br-success-bg { background-color: rgba($br-white, 0.15); }
+
+// ── Item page grid positions ───────────────────────────
+.br-item-col-image    { grid-column: 1 / span 5;  grid-row: 1 / span 5; }
+.br-item-col-name     { grid-column: 6 / span 7;  grid-row: 1 / span 2; }
+.br-item-col-type     { grid-column: 6 / span 7;  grid-row: 3 / span 3; }
+.br-item-col-options  { grid-column: 13 / span 5; grid-row: 1 / span 10; }
+.br-item-col-tabi     { grid-column: 18 / span 6; grid-row: 1 / span 10; }
+.br-item-col-desc     { grid-column: 1 / span 12; grid-row: 6 / span 4; }
+.br-item-col-save     { grid-column: 15 / span 9; grid-row: 10 / span 4; }
+
+// ═══════════════════════════════════════════════════════════
+// Quick Links (page-new-adventure.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-ql-hint {
+  display: block;
+  margin: -12px 0 16px;
+}
+
+.br-ql-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.br-ql-row {
+  border-left: 3px solid var(--ql-color, $br-primary);
+  cursor: default;
+}
+
+.br-ql-icon {
+  font-size: 20px;
+  color: var(--ql-color, $br-primary);
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.br-ql-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-ql-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba($br-white, 0.9);
+  display: block;
+}
+
+.br-ql-desc {
+  font-size: 11px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-ql-setting-wide {
+  min-width: 180px;
+}
+
+.br-ql-custom-card {
+  background: rgba($br-bg, 0.4);
+  border: 1px solid rgba($br-primary, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.br-ql-custom-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.br-ql-custom-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba($br-primary, 0.1);
+  color: $br-primary;
+  font-family: $condensed;
+  font-size: 16px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.br-ql-custom-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba($br-white, 0.85);
+  flex: 1;
+}
+
+.br-ql-grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.br-ql-icon-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.br-ql-icon-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.br-ql-icon-preview {
+  height: 30px;
+  border-radius: 4px;
+}
+
+.br-ql-custom-links-title {
+  margin-top: 24px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Manage pages — shared header pattern
+// ═══════════════════════════════════════════════════════════
+
+.br-manage-header-panel {
+  margin-bottom: 0;
+  border-radius: 12px 12px 0 0;
+}
+
+.br-manage-header-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.br-manage-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.br-manage-icon-box {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba($br-purple, 0.15);
+  border-radius: 10px;
+  font-size: 22px;
+  color: $br-purple;
+}
+
+.br-manage-subtitle {
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+.br-manage-panel-title {
+  margin: 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Manage Tabis (manage-tabis.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-manage-col-header-panel {
+  margin-bottom: 0;
+  margin-top: 2px;
+  border-radius: 0;
+  padding: 10px 16px;
+}
+
+.br-tabi-grid {
+  display: grid;
+  grid-template-columns: 40px 1fr 50px 50px 70px 70px 70px 80px 80px;
+  gap: 8px;
+}
+
+.br-tabi-col-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.3);
+  font-weight: 700;
+}
+
+.br-tabi-row-panel {
+  margin-bottom: 2px;
+  border-radius: 0;
+  padding: 0;
+}
+
+.br-tabi-data-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 50px 50px 70px 70px 70px 80px 80px;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.br-tabi-num {
+  font-size: 13px;
+  color: rgba($br-white, 0.3);
+  text-align: center;
+}
+
+.br-tabi-input-center {
+  text-align: center;
+  padding: 6px;
+}
+
+.br-tabi-input-bold {
+  font-weight: 600;
+}
+// Zebra striping — specificity (.br-panel.br-tabi-row-panel) beats the base
+// .br-panel background without needing !important.
+.br-panel.br-tabi-row-panel:nth-of-type(even) {
+  background: rgba($br-panel-bg, 0.3);
+}
+
+
+.br-tabi-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: rgba($br-white, 0.6);
+}
+
+.br-tabi-color-btn {
+  background: rgba($br-white, 0.08);
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.br-tabi-color-swatch {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.br-tabi-color-select-row {
+  display: none;
+  padding: 8px 16px;
+  background: rgba($br-bg, 0.5);
+}
+
+.br-tabi-prereq-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.br-tabi-prereq-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba($br-white, 0.06);
+  border: 1px solid rgba($br-white, 0.1);
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba($br-white, 0.7);
+  transition: all 0.15s;
+}
+
+.br-tabi-no-others {
+  font-size: 12px;
+  color: rgba($br-white, 0.3);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Manage Branches (manage-branches.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-branch-warning-panel {
+  margin-top: 2px;
+  border-radius: 0;
+  padding: 16px;
+  text-align: center;
+}
+
+.br-branch-warning-text {
+  color: rgba($br-white, 0.5);
+  font-size: 14px;
+}
+
+.br-branch-form {
+  display: none;
+  margin-top: 2px;
+}
+
+.br-branch-form-panel {
+  border-radius: 0;
+}
+
+.br-branch-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.br-branch-form-input-wrap {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+}
+
+.br-branch-form-actions {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 2px;
+}
+
+.br-branch-list {
+  border-radius: 0 0 12px 12px;
+}
+
+.br-branch-group-panel {
+  margin-bottom: 2px;
+  border-radius: 0;
+  padding: 16px;
+}
+
+.br-branch-group-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.br-branch-group-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.br-branch-group-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: $br-white;
+}
+
+.br-branch-badge {
+  font-size: 10px;
+  background: rgba($br-purple, 0.15);
+  color: $br-purple;
+}
+
+.br-branch-delete-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.br-branch-ach-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.br-branch-ach-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba($br-white, 0.05);
+  border: 1px solid rgba($br-white, 0.08);
+}
+
+.br-branch-ach-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.br-branch-ach-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: rgba($br-purple, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.br-branch-ach-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: $br-white;
+}
+
+.br-branch-ach-type {
+  display: block;
+  font-size: 11px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-branch-remove-btn {
+  padding: 2px 6px;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.br-branch-empty-text {
+  font-size: 13px;
+  color: rgba($br-white, 0.3);
+  padding: 4px 0;
+}
+
+.br-branch-add-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.br-branch-add-select {
+  flex: 1;
+  max-width: 300px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.br-branch-add-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Player Select Achievement (player-select-achievement.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-psa-bulk-section {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba($br-primary, 0.08);
+}
+
+.br-psa-bulk-label {
+  margin-bottom: 8px;
+}
+
+.br-psa-bulk-hint {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.br-psa-bulk-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.br-psa-file-input {
+  padding: 7px 14px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.br-psa-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+
+.br-psa-search {
+  flex: 1;
+  min-width: 180px;
+}
+
+.br-psa-count {
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-psa-actions {
+  gap: 6px;
+}
+
+.br-psa-action-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+.br-psa-player-meta-level {
+  color: $br-purple;
+  font-weight: 700;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Request Row (request-row.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-req-card {
+  margin-bottom: 8px;
+  padding: 16px;
+}
+
+.br-req-layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.br-req-avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.br-req-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-req-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.br-req-subject {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba($br-white, 0.9);
+}
+
+.br-req-time {
+  font-size: 12px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-req-sender {
+  font-size: 13px;
+  color: rgba($br-white, 0.5);
+  margin-top: 4px;
+}
+
+.br-req-sender-name {
+  color: rgba($br-white, 0.7);
+}
+
+.br-req-sender-email {
+  opacity: 0.6;
+}
+
+.br-req-content {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: rgba($br-white, 0.8);
+}
+
+.br-req-admin-note {
+  font-size: 13px;
+  color: rgba($br-primary, 0.7);
+  padding: 6px 0;
+  margin-top: 6px;
+}
+
+.br-req-actions-wrap {
+  margin-top: 10px;
+}
+
+.br-req-actions-bar {
+  margin-top: 8px;
+  gap: 6px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// My Request Row (my-request-row.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-myreq-card {
+  padding: 16px;
+  margin-bottom: 4px;
+  border-radius: 0;
+}
+
+.br-myreq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.br-myreq-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-myreq-subject {
+  font-size: 16px;
+  font-weight: 700;
+  color: $br-white;
+}
+
+.br-myreq-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.br-myreq-time {
+  font-size: 11px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-myreq-content {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: rgba($br-white, 0.75);
+}
+
+.br-myreq-admin-response {
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba($br-primary, 0.08);
+  border: 1px solid rgba($br-primary, 0.15);
+  border-radius: 8px;
+}
+
+.br-myreq-admin-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   color: $br-primary;
 }
 
-// ── page-players.php roster spreadsheet (ported from CI4 rewrite 2026-07) ──
+.br-myreq-admin-text {
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba($br-white, 0.85);
+  white-space: pre-wrap;
+}
+
+.br-myreq-updated {
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba($br-white, 0.3);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Manage Items (manage-items.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-items-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.br-items-icon-dim {
+  opacity: 0.3;
+}
+
+.br-items-bloo-icon {
+  color: $br-green;
+}
+
+.br-items-draft-icon {
+  color: #ffc107;
+}
+
+.br-items-trash-icon {
+  color: $br-red;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Achievement Unique Code (achievement-unique-code.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-auc-copy-cell {
+  width: 50px;
+}
+
+.br-auc-copy-btn {
+  width: 36px;
+  height: 36px;
+}
+
+.br-auc-copy-icon {
+  font-size: 18px;
+}
+
+.br-auc-code-cell {
+  position: relative;
+}
+
+.br-auc-code-value {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: rgba($br-white, 0.85);
+}
+
+.br-auc-copied-legend {
+  background: $br-green;
+  color: $br-white;
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.br-auc-actions-cell {
+  width: 120px;
+}
+
+.br-auc-actions-row {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.br-auc-action-copy {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.br-auc-action-delete {
+  width: 30px;
+  height: 30px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Objective Forms (objective-form-true-false.php, objective-form-keyword-input.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-obj-form {
+  background: rgba(11, 61, 79, 0.95);
+  border: 1px solid rgba($br-primary, 0.2);
+  border-radius: $radius;
+  color: $br-white;
+}
+
+.br-obj-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba($br-primary, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.br-obj-header-icon {
+  font-size: 20px;
+  color: $br-primary;
+}
+
+.br-obj-header-title {
+  font-family: $condensed;
+  font-size: 22px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  flex: 1;
+}
+
+.br-obj-close-btn {
+  padding: 6px 10px;
+}
+
+.br-obj-body {
+  padding: 20px;
+}
+
+.br-obj-hint-warning {
+  color: $br-red;
+}
+
+.br-obj-submit-wrap {
+  text-align: center;
+  padding-top: 12px;
+}
+
+.br-obj-submit-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Footer SVG clip definitions
+// ═══════════════════════════════════════════════════════════
+
+.svg-clip-definitions {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Manage Encounters (manage-encounters.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-enc-input-narrow {
+  width: 70px;
+  text-align: center;
+}
+
+.br-enc-select-path {
+  width: 150px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Component: quest base mechs (component-quest-base-mechs.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-mech-checkbox-btn {
+  cursor: pointer;
+
+  &.is-checked {
+    background: rgba($br-primary, 0.18);
+    border-color: rgba($br-primary, 0.4);
+  }
+
+  &.is-checked-green {
+    background: rgba($br-green, 0.18);
+    border-color: rgba($br-green, 0.4);
+  }
+
+  input[type="checkbox"] { display: none; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Journey Manager inline style replacements (manage-journey.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-text-center {
+  text-align: center;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Schedule page (page-schedule.php) — dynamic bg-image allowed
+// ═══════════════════════════════════════════════════════════
+
+.br-sched-view-btn {
+  &.type-quest { background-color: #2196f3; }
+  &.type-challenge { background-color: #795548; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Pagination ellipsis (player-select-achievement.php JS)
+// ═══════════════════════════════════════════════════════════
+
+.br-pagination-ellipsis {
+  color: rgba($br-white, 0.3);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Journey leaderboard widget (journey.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-lb-rank-cell {
+  width: 28px;
+}
+
+.br-lb-name-cell {
+  padding: 2px 6px;
+}
+
+.br-lb-avatar-inline {
+  display: inline-block;
+  background-size: cover;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.br-lb-level-cell {
+  width: 32px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Page New Adventure — extra inline style replacements
+// ═══════════════════════════════════════════════════════════
+
+.br-adv-header-avatar {
+  background: rgba(255, 152, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: rgba(255, 152, 0, 0.4);
+}
+
+.br-adv-header-icon {
+  font-size: 28px;
+  color: $br-orange;
+}
+
+.br-adv-enrolled-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.br-adv-enrolled-search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.br-adv-enrolled-count {
+  font-size: 13px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-adv-features-actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 6px;
+}
+
+// ── Icon color utilities ────────────────────────────────
+.br-icon-accent   { color: $br-accent; }    // #f7cb15
+.br-icon-red      { color: $br-red; }       // #f44336
+.br-icon-primary  { color: $br-primary; }   // #1cc2eb
+.br-icon-green    { color: $br-green; }     // #24da98
+.br-icon-purple   { color: $br-purple; }    // #9f40e2
+
+// ── page-players.php roster spreadsheet (added 2026-07-08, WP-side) ──
 
 .br-table-scroll {
   overflow-x: auto;
   width: 100%;
 }
 
-// overflow-x:auto on .br-table-scroll forces overflow-y to compute to
-// auto too (per spec, an axis can't stay "visible" while its sibling
-// axis isn't) - that silently makes it a scrolling container of its
-// own, so a plain sticky thead would stick to ITS scrollport, which
-// never actually scrolls internally (the page scrolls instead). Giving
-// it a bounded height turns it into a real self-scrolling grid so the
-// sticky header has something to stick within - top:0 of this box,
-// not top:50px of the page.
+// overflow-x:auto above forces overflow-y to compute to auto too (per
+// spec, an axis can't stay "visible" while its sibling axis isn't) -
+// that silently makes it a scrolling container of its own, so a plain
+// sticky thead would stick to ITS scrollport, which never actually
+// scrolls internally (the page scrolls instead). Giving it a bounded
+// height turns it into a real self-scrolling grid so the sticky header
+// has something to stick within - top:0 of this box, not top:50px of
+// the page.
 .br-roster-scroll {
   max-height: calc(100vh - 260px);
   overflow-y: auto;

@@ -261,8 +261,8 @@
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(28,194,235,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(28,194,235,0.4)">
-			<span class="icon icon-logo" style="font-size:28px;color:#1cc2eb"></span>
+		<div class="br-page-header-avatar br-config-header-icon">
+			<span class="icon icon-logo"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= __("System Settings","bluerabbit"); ?></h1>
@@ -289,42 +289,42 @@
 	<?php foreach($settings_array as $sgKey=>$sg){ ?>
 	<div class="br-scroll-section" id="<?= $sgKey; ?>">
 	<div class="br-panel">
-		<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-			<h3 class="br-panel-title" style="margin:0"><span class="icon icon-<?= $sg['icon']; ?>"></span> <?= $sg['label']; ?></h3>
-			<div class="br-actions" style="gap:6px">
-				<button class="br-btn" style="padding:4px 10px;font-size:11px" onClick="allToggleButtonsOn('#<?= $sgKey; ?>');"><?= __("All On","bluerabbit"); ?></button>
-				<button class="br-btn br-btn-red" style="padding:4px 10px;font-size:11px" onClick="allToggleButtonsOff('#<?= $sgKey; ?>');"><?= __("All Off","bluerabbit"); ?></button>
+		<div class="br-config-section-bar">
+			<h3 class="br-panel-title br-m0"><span class="icon icon-<?= $sg['icon']; ?>"></span> <?= $sg['label']; ?></h3>
+			<div class="br-actions br-gap-6">
+				<button class="br-btn br-btn-mini" onClick="allToggleButtonsOn('#<?= $sgKey; ?>');"><?= __("All On","bluerabbit"); ?></button>
+				<button class="br-btn br-btn-red br-btn-mini" onClick="allToggleButtonsOff('#<?= $sgKey; ?>');"><?= __("All Off","bluerabbit"); ?></button>
 			</div>
 		</div>
 
-		<div style="display:flex;flex-direction:column;gap:4px">
+		<div class="br-config-settings-list">
 		<?php foreach($sg['settings'] as $sKey=>$s){ ?>
-			<div class="br-step-row" style="border-left:3px solid rgba(28,194,235,0.3);cursor:default;align-items:flex-start;padding:10px 14px" id="<?= $sKey; ?>">
-				<div style="flex:1;min-width:0" class="config">
-					<span style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);display:block">
-						<?php if(isset($s['icon'])){ ?><span class="icon icon-<?= $s['icon']; ?>" style="opacity:0.5"></span> <?php } ?>
+			<div class="br-step-row br-config-setting-row" id="<?= $sKey; ?>">
+				<div class="br-config-setting-body config">
+					<span class="br-config-setting-label">
+						<?php if(isset($s['icon'])){ ?><span class="icon icon-<?= $s['icon']; ?> br-config-icon-hint"></span> <?php } ?>
 						<?= $s['label']; ?>
 					</span>
 					<?php if(isset($s['desc'])){ ?>
-					<span style="font-size:11px;color:rgba(255,255,255,0.35)"><?= $s['desc']; ?></span>
+					<span class="br-config-setting-desc"><?= $s['desc']; ?></span>
 					<?php } ?>
 				</div>
-				<div style="flex-shrink:0;min-width:180px" class="config">
+				<div class="br-config-setting-control config">
 					<?php if($s['type']=='radio'){ ?>
 						<button class="toggle-button <?= ($config[$sKey]['value']!=0) ? 'active' : ''; ?>" onClick="toggleSetting('#<?= $sKey; ?>');">&nbsp;</button>
 						<input class="form-ui setting-value radio-setting-value" type="hidden" value="<?= $config[$sKey]['value']; ?>">
 					<?php }elseif($s['type']=='text'){ ?>
-						<input class="br-input setting-value" type="text" value="<?= $config[$sKey]['value']; ?>" placeholder="<?= isset($s['placeholder']) ? $s['placeholder'] : ''; ?>" style="width:100%">
+						<input class="br-input setting-value br-w-full" type="text" value="<?= $config[$sKey]['value']; ?>" placeholder="<?= isset($s['placeholder']) ? $s['placeholder'] : ''; ?>">
 					<?php }elseif($s['type']=='number'){ ?>
-						<input class="br-input setting-value" type="number" value="<?= $config[$sKey]['value']; ?>" style="width:100%">
+						<input class="br-input setting-value br-w-full" type="number" value="<?= $config[$sKey]['value']; ?>">
 					<?php }elseif($s['type']=='select'){ ?>
-						<select class="br-input setting-value" style="width:100%">
+						<select class="br-input setting-value br-w-full">
 							<?php foreach($s['options'] as $opt){ ?>
 							<option <?= isset($config[$sKey]['value']) && $config[$sKey]['value'] == $opt[0] ? 'selected' : ''; ?> value="<?= $opt[0]; ?>"><?= $opt[1]; ?></option>
 							<?php } ?>
 						</select>
 					<?php }elseif($s['type']=='select-adventure'){ ?>
-						<select class="br-input setting-value" style="width:100%">
+						<select class="br-input setting-value br-w-full">
 							<option <?= !$config['default_adventure']['value'] ? 'selected' : ''; ?> value="0"><?= __('None','bluerabbit'); ?></option>
 							<?php foreach($adventures as $key=>$adv){ ?>
 							<option <?= $config['default_adventure']['value']==$adv->adventure_id ? 'selected' : ''; ?> value="<?= $adv->adventure_id; ?>">
@@ -333,9 +333,9 @@
 							<?php } ?>
 						</select>
 					<?php }elseif($s['type']=='upload'){ ?>
-						<div style="display:flex;gap:6px;align-items:center">
-							<input class="br-input setting-value" id="<?= $sKey; ?>_upload_field" type="text" readonly placeholder="<?= __("File upload","bluerabbit"); ?>" value="<?= $config[$sKey]['value']; ?>" style="flex:1">
-							<button class="br-btn br-btn-amber" style="padding:4px 10px" onClick="showWPUpload('<?= $sKey; ?>_upload_field');"><?= __("Upload","bluerabbit"); ?></button>
+						<div class="br-config-upload-row">
+							<input class="br-input setting-value br-flex-1" id="<?= $sKey; ?>_upload_field" type="text" readonly placeholder="<?= __("File upload","bluerabbit"); ?>" value="<?= $config[$sKey]['value']; ?>">
+							<button class="br-btn br-btn-amber br-btn-mini" onClick="showWPUpload('<?= $sKey; ?>_upload_field');"><?= __("Upload","bluerabbit"); ?></button>
 						</div>
 					<?php }elseif($s['type']=='image'){ ?>
 						<div class="br-gallery br-gallery-single">
@@ -359,33 +359,33 @@
 	<div class="br-scroll-section" id="features">
 	<div class="br-panel">
 		<h3 class="br-panel-title"><span class="icon icon-teamwork"></span> <?= __("Features","bluerabbit"); ?></h3>
-		<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("Manage the system features available to plans. Add or remove features as your platform grows.","bluerabbit"); ?></span>
+		<span class="br-form-hint br-form-hint-block"><?= __("Manage the system features available to plans. Add or remove features as your platform grows.","bluerabbit"); ?></span>
 
 		<table class="br-table">
 			<thead>
 				<tr>
-					<th style="width:50px"><?= __("ID","bluerabbit"); ?></th>
+					<th class="br-th-narrow"><?= __("ID","bluerabbit"); ?></th>
 					<th><?= __("Name","bluerabbit"); ?></th>
 					<th><?= __("Label","bluerabbit"); ?></th>
-					<th style="width:90px"><?= __("Type","bluerabbit"); ?></th>
+					<th class="br-th-narrow"><?= __("Type","bluerabbit"); ?></th>
 					<th><?= __("Description","bluerabbit"); ?></th>
-					<th style="width:90px"><?= __("Actions","bluerabbit"); ?></th>
+					<th class="br-th-narrow"><?= __("Actions","bluerabbit"); ?></th>
 				</tr>
 			</thead>
 			<tbody id="features-list">
 				<?php foreach($dbFeatures as $f){ ?>
 				<tr id="feature-row-<?= $f->feature_id; ?>">
-					<td style="opacity:0.4"><?= $f->feature_id; ?></td>
-					<td><code style="color:#1cc2eb;font-size:12px"><?= $f->feature_name; ?></code></td>
-					<td style="font-weight:600"><?= $f->feature_label; ?></td>
+					<td class="br-config-id-cell"><?= $f->feature_id; ?></td>
+					<td><code class="br-config-code-name"><?= $f->feature_name; ?></code></td>
+					<td class="br-config-name-cell"><?= $f->feature_label; ?></td>
 					<td><span class="br-badge <?= $f->feature_type == 'number' ? 'br-badge-teal' : 'br-badge-blue'; ?>"><?= $f->feature_type; ?></span></td>
-					<td style="font-size:12px;opacity:0.5"><?= $f->feature_desc; ?></td>
+					<td class="br-config-feature-desc-cell"><?= $f->feature_desc; ?></td>
 					<td>
-						<div style="display:flex;gap:4px">
-							<button class="br-step-btn br-step-btn-green" style="width:28px;height:28px" onClick="editFeature(<?= $f->feature_id; ?>, '<?= esc_attr($f->feature_name); ?>', '<?= esc_attr($f->feature_label); ?>', '<?= esc_attr($f->feature_type); ?>', '<?= esc_attr($f->feature_desc); ?>');">
+						<div class="br-config-feature-actions">
+							<button class="br-step-btn br-step-btn-green br-config-feature-btn" onClick="editFeature(<?= $f->feature_id; ?>, '<?= esc_attr($f->feature_name); ?>', '<?= esc_attr($f->feature_label); ?>', '<?= esc_attr($f->feature_type); ?>', '<?= esc_attr($f->feature_desc); ?>');">
 								<span class="icon icon-edit"></span>
 							</button>
-							<button class="br-step-btn br-step-btn-red" style="width:28px;height:28px" onClick="deleteFeatureConfirm(<?= $f->feature_id; ?>, '<?= esc_attr($f->feature_name); ?>');">
+							<button class="br-step-btn br-step-btn-red br-config-feature-btn" onClick="deleteFeatureConfirm(<?= $f->feature_id; ?>, '<?= esc_attr($f->feature_name); ?>');">
 								<span class="icon icon-trash"></span>
 							</button>
 						</div>
@@ -395,17 +395,17 @@
 			</tbody>
 		</table>
 
-		<div style="margin-top:12px">
+		<div class="br-config-add-row">
 			<button class="br-btn br-btn-amber" onClick="showAddFeatureForm();">
 				<span class="icon icon-add"></span> <?= __("Add Feature","bluerabbit"); ?>
 			</button>
 		</div>
 
 		<!-- Add/Edit Feature Form -->
-		<div id="feature-form" style="display:none;background:rgba(4,22,30,0.5);border:1px solid rgba(28,194,235,0.15);border-radius:8px;padding:16px;margin-top:12px">
+		<div id="feature-form" class="br-config-feature-form">
 			<h3 class="br-panel-title" id="feature-form-title"><?= __("Add Feature","bluerabbit"); ?></h3>
 			<input type="hidden" id="feature-form-id" value="0">
-			<div class="br-form-grid" style="grid-template-columns:1fr 1fr">
+			<div class="br-form-grid br-form-grid-2">
 				<div class="br-form-group">
 					<label class="br-form-label"><?= __("Feature Name","bluerabbit"); ?></label>
 					<input type="text" id="feature-form-name" class="br-input" placeholder="<?= __('e.g. use_custom_module','bluerabbit'); ?>">
@@ -415,7 +415,7 @@
 					<input type="text" id="feature-form-label" class="br-input" placeholder="<?= __('e.g. Use Custom Module','bluerabbit'); ?>">
 				</div>
 			</div>
-			<div class="br-form-grid" style="grid-template-columns:1fr 1fr">
+			<div class="br-form-grid br-form-grid-2">
 				<div class="br-form-group">
 					<label class="br-form-label"><?= __("Type","bluerabbit"); ?></label>
 					<select id="feature-form-type" class="br-input">
@@ -429,7 +429,7 @@
 					<input type="text" id="feature-form-desc" class="br-input" placeholder="<?= __('Optional description','bluerabbit'); ?>">
 				</div>
 			</div>
-			<div style="display:flex;gap:8px;margin-top:8px">
+			<div class="br-config-form-actions">
 				<button class="br-btn br-btn-green" onClick="saveFeatureAction();"><span class="icon icon-config"></span> <?= __("Save Feature","bluerabbit"); ?></button>
 				<button class="br-btn br-btn-red" onClick="$('#feature-form').hide();"><span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit"); ?></button>
 			</div>
@@ -442,53 +442,41 @@
 	<div class="br-panel">
 		<h3 class="br-panel-title"><span class="icon icon-rank"></span> <?= __("Plans","bluerabbit"); ?></h3>
 
-		<div id="plans-list-view">
-			<table class="br-table">
-				<thead>
-					<tr>
-						<th><?= __("Plan","bluerabbit"); ?></th>
-						<th style="width:100px"><?= __("Key","bluerabbit"); ?></th>
-						<th style="width:90px"><?= __("Type","bluerabbit"); ?></th>
-						<th style="width:80px"><?= __("Status","bluerabbit"); ?></th>
-						<th style="width:70px"><?= __("Users","bluerabbit"); ?></th>
-						<th style="width:140px"><?= __("Actions","bluerabbit"); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach($allPlansAll as $plan){
-						$user_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}br_players WHERE user_plan_id = %d", $plan->plan_id));
-						$type_badge = $plan->plan_type == 'system' ? 'br-badge-red' : ($plan->plan_type == 'standard' ? 'br-badge-blue' : 'br-badge-amber');
-					?>
-					<tr>
-						<td style="font-weight:600"><?= $plan->plan_label; ?></td>
-						<td><code style="color:#1cc2eb;font-size:12px"><?= $plan->plan_key; ?></code></td>
-						<td><span class="br-badge <?= $type_badge; ?>"><?= ucfirst($plan->plan_type); ?></span></td>
-						<td><?= $plan->plan_status; ?></td>
-						<td class="text-center"><?= $user_count; ?></td>
-						<td>
-							<div style="display:flex;gap:4px">
-								<button class="br-btn" style="padding:3px 8px;font-size:11px" onClick="editPlanFeatures(<?= $plan->plan_id; ?>, '<?= esc_attr($plan->plan_label); ?>');">
-									<span class="icon icon-config"></span> <?= __("Features","bluerabbit"); ?>
-								</button>
-								<?php if($plan->plan_type == 'custom'){ ?>
-								<button class="br-step-btn br-step-btn-red" style="width:26px;height:26px" onClick="deletePlanConfirm(<?= $plan->plan_id; ?>, '<?= esc_attr($plan->plan_label); ?>');">
-									<span class="icon icon-trash"></span>
-								</button>
-								<?php } ?>
-							</div>
-						</td>
-					</tr>
+		<div id="plans-accordion-view">
+			<?php foreach ($allPlansAll as $plan) {
+				$user_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}br_players WHERE user_plan_id = %d", $plan->plan_id));
+				$type_badge = $plan->plan_type == 'system' ? 'br-badge-red' : ($plan->plan_type == 'standard' ? 'br-badge-blue' : 'br-badge-amber');
+			?>
+			<details class="br-accordion" data-plan-id="<?= $plan->plan_id; ?>">
+				<summary class="br-accordion-header">
+					<span class="br-accordion-title"><?= esc_html($plan->plan_label); ?></span>
+					<code class="br-accordion-key"><?= $plan->plan_key; ?></code>
+					<span class="br-badge <?= $type_badge; ?>"><?= ucfirst($plan->plan_type); ?></span>
+					<span class="br-accordion-meta"><?= $user_count; ?> <?= __("users","bluerabbit"); ?></span>
+					<?php if ($plan->plan_type == 'custom') { ?>
+					<button class="br-step-btn br-step-btn-red br-accordion-action" onClick="event.stopPropagation(); deletePlanConfirm(<?= $plan->plan_id; ?>, '<?= esc_attr($plan->plan_label); ?>');">
+						<span class="icon icon-trash"></span>
+					</button>
 					<?php } ?>
-				</tbody>
-			</table>
+					<span class="br-accordion-arrow icon icon-back"></span>
+				</summary>
+				<div class="br-accordion-body">
+					<table class="br-table">
+						<thead><tr><th><?= __("Feature","bluerabbit"); ?></th><th class="br-th-narrow text-center"><?= __("Value","bluerabbit"); ?></th></tr></thead>
+						<tbody class="plan-features-body" data-plan-id="<?= $plan->plan_id; ?>">
+						</tbody>
+					</table>
+				</div>
+			</details>
+			<?php } ?>
 
-			<div style="margin-top:12px">
+			<div class="br-accordion-actions">
 				<button class="br-btn br-btn-amber" onClick="showNewPlanForm();"><span class="icon icon-add"></span> <?= __("New Custom Plan","bluerabbit"); ?></button>
 			</div>
 
-			<div id="new-plan-form" style="display:none;background:rgba(4,22,30,0.5);border:1px solid rgba(28,194,235,0.15);border-radius:8px;padding:16px;margin-top:12px">
+			<div id="new-plan-form" class="br-accordion-new-plan">
 				<h3 class="br-panel-title"><?= __("Create New Plan","bluerabbit"); ?></h3>
-				<div class="br-form-grid" style="grid-template-columns:1fr 1fr 1fr">
+				<div class="br-form-grid br-form-grid-3">
 					<div class="br-form-group">
 						<label class="br-form-label"><?= __("Plan Name","bluerabbit"); ?></label>
 						<input type="text" id="new-plan-label" class="br-input" placeholder="<?= __('e.g. Enterprise','bluerabbit'); ?>">
@@ -507,44 +495,19 @@
 						</select>
 					</div>
 				</div>
-				<div style="display:flex;gap:8px;margin-top:8px">
+				<div class="br-accordion-actions">
 					<button class="br-btn br-btn-green" onClick="createNewPlan();"><span class="icon icon-add"></span> <?= __("Create Plan","bluerabbit"); ?></button>
-					<button class="br-btn br-btn-red" onClick="$('#new-plan-form').hide();"><span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit"); ?></button>
+					<button class="br-btn red" onClick="$('#new-plan-form').hide();"><span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit"); ?></button>
 				</div>
-			</div>
-		</div>
-
-		<!-- Plan Feature Editor -->
-		<div id="plan-feature-editor" style="display:none;">
-			<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-				<button class="br-btn" onClick="backToPlans();"><span class="icon icon-back"></span> <?= __("Back","bluerabbit"); ?></button>
-				<span style="font-family:'proxima-nova-extra-condensed',sans-serif;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:1px" id="editing-plan-label"></span>
-				<div style="margin-left:auto;display:flex;gap:6px">
-					<select id="copy-from-plan-select" class="br-input" style="width:auto">
-						<option value=""><?= __("Copy features from...","bluerabbit"); ?></option>
-						<?php foreach($allPlans as $cp){ ?>
-						<option value="<?= $cp->plan_id; ?>"><?= $cp->plan_label; ?></option>
-						<?php } ?>
-					</select>
-					<button class="br-btn br-btn-amber" onClick="copyFromPlanAction();"><span class="icon icon-repeat"></span> <?= __("Copy","bluerabbit"); ?></button>
-				</div>
-			</div>
-			<input type="hidden" id="editing-plan-id" value="">
-			<table class="br-table" id="plan-features-table">
-				<thead><tr><th><?= __("Feature","bluerabbit"); ?></th><th style="width:150px" class="text-center"><?= __("Value","bluerabbit"); ?></th></tr></thead>
-				<tbody></tbody>
-			</table>
-			<div style="margin-top:12px">
-				<button class="br-btn br-btn-green" onClick="savePlanFeaturesAction();"><span class="icon icon-config"></span> <?= __("Save Plan Features","bluerabbit"); ?></button>
 			</div>
 		</div>
 
 		<!-- Role Defaults -->
-		<div style="border-top:1px solid rgba(28,194,235,0.1);margin-top:20px;padding-top:20px">
+		<div class="br-config-section-divider">
 			<h3 class="br-panel-title"><span class="icon icon-config"></span> <?= __("Role Default Plans","bluerabbit"); ?></h3>
-			<span class="br-form-hint" style="display:block;margin:-12px 0 16px"><?= __("When a user has no explicit plan assigned, they get the default plan for their WordPress role.","bluerabbit"); ?></span>
+			<span class="br-form-hint br-form-hint-block"><?= __("When a user has no explicit plan assigned, they get the default plan for their WordPress role.","bluerabbit"); ?></span>
 			<table class="br-table">
-				<thead><tr><th><?= __("Role","bluerabbit"); ?></th><th style="width:200px"><?= __("Default Plan","bluerabbit"); ?></th></tr></thead>
+				<thead><tr><th><?= __("Role","bluerabbit"); ?></th><th class="br-th-actions"><?= __("Default Plan","bluerabbit"); ?></th></tr></thead>
 				<tbody>
 					<?php
 					$role_config_map = array(
@@ -559,9 +522,9 @@
 						$current_val = isset($config[$cfg_name]['value']) ? $config[$cfg_name]['value'] : '';
 					?>
 					<tr>
-						<td style="font-weight:600"><?= $role_label; ?></td>
+						<td class="br-config-name-cell"><?= $role_label; ?></td>
 						<td>
-							<select class="br-input role-default-select" data-role="<?= $role_key; ?>" style="width:100%">
+							<select class="br-input role-default-select br-w-full" data-role="<?= $role_key; ?>">
 								<?php foreach($allPlans as $rp){ ?>
 								<?php if($rp->plan_key == 'god') continue; ?>
 								<option value="<?= $rp->plan_key; ?>" <?= $current_val == $rp->plan_key ? 'selected' : ''; ?>><?= $rp->plan_label; ?></option>
@@ -572,16 +535,16 @@
 					<?php } ?>
 				</tbody>
 			</table>
-			<div style="margin-top:10px">
+			<div class="br-config-add-row">
 				<button class="br-btn br-btn-green" onClick="saveRoleDefaults();"><span class="icon icon-config"></span> <?= __("Save Role Defaults","bluerabbit"); ?></button>
 			</div>
 		</div>
 
 		<!-- User Plan Assignment -->
-		<div style="border-top:1px solid rgba(28,194,235,0.1);margin-top:20px;padding-top:20px">
+		<div class="br-config-section-divider">
 			<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Assign Plan to User","bluerabbit"); ?></h3>
 			<div class="br-form-group">
-				<input type="text" id="plan-user-search" class="br-input" placeholder="<?= __('Search by name or email...','bluerabbit'); ?>" onKeyUp="searchUsersForPlanAssign();" style="max-width:400px">
+				<input type="text" id="plan-user-search" class="br-input br-max-w-400" placeholder="<?= __('Search by name or email...','bluerabbit'); ?>" onKeyUp="searchUsersForPlanAssign();">
 			</div>
 			<div id="plan-user-results"></div>
 		</div>
@@ -617,23 +580,23 @@
 			<tbody>
 				<?php foreach($orgs as $sKey=>$org){ ?>
 				<tr>
-					<td style="opacity:0.4"><?= $org->org_id; ?></td>
-					<td style="font-weight:600"><?= $org->org_name; ?></td>
-					<td><img src="<?= $org->org_logo; ?>" style="height:40px;border-radius:6px"></td>
+					<td class="br-config-id-cell"><?= $org->org_id; ?></td>
+					<td class="br-config-name-cell"><?= $org->org_name; ?></td>
+					<td><img src="<?= $org->org_logo; ?>" class="br-config-org-logo"></td>
 					<td><?= $org->org_color; ?></td>
 					<td><?= $org->player_display_name; ?></td>
 					<td>
-						<div style="display:flex;gap:4px">
-							<a href="<?= get_bloginfo('url').'/organization/?id='.$org->org_id; ?>" class="br-btn" style="padding:3px 8px;font-size:11px"><span class="icon icon-edit"></span> <?= __("Manage","bluerabbit"); ?></a>
-							<button class="br-btn br-btn-green" style="padding:3px 8px;font-size:11px" onClick="loadContent('new-org',<?= $org->org_id; ?>);"><?= __("Edit","bluerabbit"); ?></button>
-							<button class="br-step-btn br-step-btn-red" style="width:26px;height:26px" onClick="trashOrg(<?= $org->org_id; ?>);"><span class="icon icon-trash"></span></button>
+						<div class="br-config-org-actions">
+							<a href="<?= get_bloginfo('url').'/organization/?id='.$org->org_id; ?>" class="br-btn br-btn-sm-action"><span class="icon icon-edit"></span> <?= __("Manage","bluerabbit"); ?></a>
+							<button class="br-btn br-btn-green br-btn-sm-action" onClick="loadContent('new-org',<?= $org->org_id; ?>);"><?= __("Edit","bluerabbit"); ?></button>
+							<button class="br-step-btn br-step-btn-red br-btn-icon-sm" onClick="trashOrg(<?= $org->org_id; ?>);"><span class="icon icon-trash"></span></button>
 						</div>
 					</td>
 				</tr>
 				<?php } ?>
 			</tbody>
 		</table>
-		<div style="margin-top:12px">
+		<div class="br-config-add-row">
 			<button class="br-btn br-btn-amber" onClick="loadContent('new-org');"><span class="icon icon-add"></span> <?= __("New Organization","bluerabbit"); ?></button>
 		</div>
 	</div>
@@ -650,22 +613,22 @@
 			<tbody>
 				<?php foreach($sponsors as $sKey=>$sponsor){ ?>
 				<tr>
-					<td style="opacity:0.4"><?= $sponsor->sponsor_id; ?></td>
-					<td style="font-weight:600"><?= $sponsor->sponsor_name; ?></td>
-					<td style="font-size:12px;opacity:0.5;word-break:break-all"><?= $sponsor->sponsor_url; ?></td>
-					<td><img src="<?= $sponsor->sponsor_logo; ?>" style="height:40px;border-radius:6px"></td>
+					<td class="br-config-id-cell"><?= $sponsor->sponsor_id; ?></td>
+					<td class="br-config-name-cell"><?= $sponsor->sponsor_name; ?></td>
+					<td class="br-config-feature-desc-cell"><?= $sponsor->sponsor_url; ?></td>
+					<td><img src="<?= $sponsor->sponsor_logo; ?>" class="br-config-org-logo"></td>
 					<td><?= $sponsor->sponsor_level; ?></td>
 					<td>
-						<div style="display:flex;gap:4px">
-							<button class="br-btn br-btn-green" style="padding:3px 8px;font-size:11px" onClick="loadContent('new-sponsor',<?= $sponsor->sponsor_id; ?>);"><?= __("Edit","bluerabbit"); ?></button>
-							<button class="br-step-btn br-step-btn-red" style="width:26px;height:26px" onClick="confirmStatus(<?= $sponsor->sponsor_id; ?>,'sponsor','trash');"><span class="icon icon-trash"></span></button>
+						<div class="br-config-org-actions">
+							<button class="br-btn br-btn-green br-btn-sm-action" onClick="loadContent('new-sponsor',<?= $sponsor->sponsor_id; ?>);"><?= __("Edit","bluerabbit"); ?></button>
+							<button class="br-step-btn br-step-btn-red br-btn-icon-sm" onClick="confirmStatus(<?= $sponsor->sponsor_id; ?>,'sponsor','trash');"><span class="icon icon-trash"></span></button>
 						</div>
 					</td>
 				</tr>
 				<?php } ?>
 			</tbody>
 		</table>
-		<div style="margin-top:12px">
+		<div class="br-config-add-row">
 			<button class="br-btn br-btn-amber" onClick="loadContent('new-sponsor');"><span class="icon icon-add"></span> <?= __("New Sponsor","bluerabbit"); ?></button>
 		</div>
 		<input type="hidden" id="trash-nonce" value="<?= wp_create_nonce('trash_nonce'); ?>">
@@ -678,13 +641,13 @@
 	<div class="br-panel">
 		<h3 class="br-panel-title"><span class="icon icon-story"></span> <?= __("Settings Code Reference","bluerabbit"); ?></h3>
 		<table class="br-table">
-			<thead><tr><th style="width:50px"><?= __("ID","bluerabbit"); ?></th><th><?= __("Setting","bluerabbit"); ?></th><th><?= __("Value","bluerabbit"); ?></th></tr></thead>
+			<thead><tr><th class="br-th-narrow"><?= __("ID","bluerabbit"); ?></th><th><?= __("Setting","bluerabbit"); ?></th><th><?= __("Value","bluerabbit"); ?></th></tr></thead>
 			<tbody>
 				<?php foreach($config as $ckey=>$c){ ?>
 				<tr>
-					<td style="opacity:0.4"><?= $c['id']; ?></td>
-					<td><code style="color:#1cc2eb;font-size:12px"><?= $ckey; ?></code></td>
-					<td style="font-weight:700"><?= $c['value']; ?></td>
+					<td class="br-config-id-cell"><?= $c['id']; ?></td>
+					<td><code class="br-config-code-name"><?= $ckey; ?></code></td>
+					<td class="br-config-name-cell"><?= $c['value']; ?></td>
 				</tr>
 				<?php } ?>
 			</tbody>
@@ -697,13 +660,14 @@
 <!-- Fixed Bottom Bar -->
 <div class="br-form-bottom-bar">
 	<span></span>
-	<button class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="saveSysConfig();">
+	<button class="br-btn br-btn-green br-config-save-btn" onClick="saveSysConfig();">
 		<span class="icon icon-config"></span> <?= __("Save Settings","bluerabbit"); ?>
 	</button>
 </div>
 <script>
 var brPlans = <?= json_encode(array_map(function($p){ return array('plan_id'=>$p->plan_id, 'plan_key'=>$p->plan_key, 'plan_label'=>$p->plan_label, 'plan_type'=>$p->plan_type); }, $allPlans)); ?>;
 var brSysFeatures = <?= json_encode($sysFeatures); ?>;
+brPopulatePlanAccordions();
 
 function brScrollTo(id, btn) {
 	document.querySelectorAll('#config-tabs-buttons .br-tab-btn').forEach(function(b) { b.classList.remove('active'); });

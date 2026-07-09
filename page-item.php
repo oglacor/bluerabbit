@@ -66,8 +66,8 @@
 			<div class="container boxed max-w-1200 white-color">
 				<div class="highlight padding-10 orange-bg-200">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  indigo-bg-400"><span class="icon icon-transactions"></span></span>
-						<span class="icon-content font _24 w300 indigo-800">
+						<span class="br-icon-btn br-icon-btn-indigo"><span class="icon icon-transactions"></span></span>
+						<span class="icon-content br-text-24 w300 indigo-800">
 							<span><?php _e('Transactions','bluerabbit')." ".$i->item_name; ?></span>
 						</span>
 					</div>
@@ -95,12 +95,12 @@
 					<div class="content-loader max-w-400 relative layer base boxed white-color border rounded-20" id="<?= "item-$i->item_id"; ?>">
 						<div class="deep-bg layer absolute sq-full white-bg opacity-20"></div>
 						<div class="badge max-w-400 max-h-vh-half h-vh-full black-bg relative layer base border rounded-20" style="background-image: url(<?= $i->item_badge; ?>);">
-							<div class="item-level absolute layer base top-10 right-10 font _24 w500 border border-all border-3 rounded-max sq-40 text-center"><?= $i->item_level;?></div>
+							<div class="item-level absolute layer base top-10 right-10 br-text-24 w500 border border-all border-3 rounded-max sq-40 text-center"><?= $i->item_level;?></div>
 						</div>
 						<div class="content layer base relative">
 							<div class="base layer relative">
-								<h3 class="font _24 w600 padding-10"><?= $i->item_name;?></h3>
-								<div class="font _14 w300 padding-10">
+								<h3 class="br-text-24 w600 padding-10"><?= $i->item_name;?></h3>
+								<div class="br-text-14 w300 padding-10">
 									<?= apply_filters('the_content',$i->item_description); ?>
 								</div>
 								<div class="border rounded-8 relative padding-10">
@@ -108,7 +108,7 @@
 									<div class="layer base relative text-center">
 										<span class="icon-group inline-table">
 											<span class="icon-content text-center white-color">
-												<span class=" font _30 w600"><?=BR_Utils::instance()->toMoney($i->item_cost,"$"); ?></span>
+												<span class=" br-text-30 w600"><?=BR_Utils::instance()->toMoney($i->item_cost,"$"); ?></span>
 											</span>
 										</span>
 									</div>
@@ -133,27 +133,27 @@
 									<td>
 										<span class="icon-group">
 											<span class="icon-content">
-												<span class="line font _18 w300"><?php echo $iT->player_display_name; ?></span>
-												<span class="line font _14 w700 grey-500"><?php echo $iT->trnx_date; ?></span>
+												<span class="line br-text-18 w300"><?php echo $iT->player_display_name; ?></span>
+												<span class="line br-text-14 w700 grey-500"><?php echo $iT->trnx_date; ?></span>
 											</span>
 										</span>
 									</td>
 									<td><?php echo $iT->trnx_amount; ?></td>
 									<td>
 										<?php if($iT->trnx_use){ ?>
-											<button class="button-icon font _24 sq-40  icon-sm blue-bg-300" onClick="useItem(<?php echo "$iT->trnx_id, $iT->player_id, 0"; ?>);">
+											<button class="br-icon-btn br-icon-btn-blue" onClick="useItem(<?php echo "$iT->trnx_id, $iT->player_id, 0"; ?>);">
 												<span class="icon icon-restore"></span>
 											</button>
 
 										<?php }else{ ?>
 											<?php if($iT->item_type == 'consumable'){ ?>
-												<button class="button-icon font _24 sq-40  icon-sm orange-bg-400" onClick="useItem(<?php echo "$iT->trnx_id , $iT->player_id, 1"; ?>);">
+												<button class="br-icon-btn br-icon-btn-orange" onClick="useItem(<?php echo "$iT->trnx_id , $iT->player_id, 1"; ?>);">
 													<span class="icon icon-check"></span>
 												</button>
 											<?php } ?>
 										<?php } ?>
 										<?php if($isGM){ ?>
-											<button class="button-icon font _24 sq-40  icon-sm red-bg-A400 white-color"  onClick="br_confirm_trd('delete',<?php echo $iT->trnx_id; ?>,'trnx');">
+											<button class="br-icon-btn br-icon-btn-red-dark white-color"  onClick="br_confirm_trd('delete',<?php echo $iT->trnx_id; ?>,'trnx');">
 												<span class="icon icon-cancel"></span>
 											</button>
 										<?php } ?>

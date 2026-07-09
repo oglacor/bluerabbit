@@ -8,12 +8,12 @@ $achievements = BR_Achievement::instance()->getAchievements($adventure->adventur
 $is_edit = (isset($adventure) && isset($quest));
 ?>
 
-<div class="br-page" style="max-width:900px">
+<div class="br-page br-page-narrow">
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(159,64,226,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(159,64,226,0.4)">
-			<span class="icon icon-story" style="font-size:28px;color:#9f40e2"></span>
+		<div class="br-page-header-avatar br-avatar-purple">
+			<span class="icon icon-story br-icon-lg br-icon-purple"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Post", "bluerabbit") : __("New Post", "bluerabbit"); ?></h1>
@@ -37,7 +37,7 @@ $is_edit = (isset($adventure) && isset($quest));
 
 		<!-- Image -->
 		<div class="br-form-group">
-			<label class="br-form-label"><?= __("Post Image", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+			<label class="br-form-label"><?= __("Post Image", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
 				<div class="gallery">
 					<div class="gallery-item setting">
@@ -118,12 +118,12 @@ $is_edit = (isset($adventure) && isset($quest));
 			</a>
 			<div class="br-actions">
 				<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>">
-				<select id="the_quest_status" class="br-input" style="width:auto">
+				<select id="the_quest_status" class="br-input br-select-auto">
 					<option value="publish" <?= (!isset($quest) || $quest->quest_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish", "bluerabbit"); ?></option>
 					<option value="draft" <?= (isset($quest) && $quest->quest_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft", "bluerabbit"); ?></option>
 					<option value="trash" <?= (isset($quest) && $quest->quest_status == 'trash') ? 'selected' : ''; ?>><?= __("Trash", "bluerabbit"); ?></option>
 				</select>
-				<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+				<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateQuest();">
 					<span class="icon icon-check"></span>
 					<?= $is_edit ? __("Update Post", "bluerabbit") : __("Create Post", "bluerabbit"); ?>
 				</button>

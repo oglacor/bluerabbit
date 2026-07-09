@@ -11,6 +11,7 @@ class BR_Mailer {
 
 	private const CIPHER       = 'AES-256-CBC';
 	private const RATE_PER_SEC = 4;
+	private const BATCH_SIZE   = 100;
 
 	public function __construct() {
 		$raw            = get_option( 'br_email_settings', [] );
@@ -92,13 +93,7 @@ class BR_Mailer {
 				   FROM {$wpdb->prefix}br_player_adventure pa
 				   JOIN {$wpdb->users} u ON u.ID = pa.player_id
 				  WHERE pa.adventure_id             = %d
-				    AND pa.player_adventure_status  = 'in'
-				    AND NOT EXISTS (
-				        SELECT 1 FROM {$wpdb->usermeta} m
-				         WHERE m.user_id   = pa.player_id
-				           AND m.meta_key  = 'br_email_optout'
-				           AND m.meta_value = '1'
-				    )",
+				    AND pa.player_adventure_status  = 'in'",
 				$adventure_id
 			),
 			ARRAY_A
@@ -114,13 +109,7 @@ class BR_Mailer {
 				   FROM {$wpdb->prefix}br_player_adventure pa
 				   JOIN {$wpdb->users} u ON u.ID = pa.player_id
 				  WHERE pa.adventure_id            = %d
-				    AND pa.player_adventure_status = 'in'
-				    AND NOT EXISTS (
-				        SELECT 1 FROM {$wpdb->usermeta} m
-				         WHERE m.user_id   = pa.player_id
-				           AND m.meta_key  = 'br_email_optout'
-				           AND m.meta_value = '1'
-				    )",
+				    AND pa.player_adventure_status = 'in'",
 				$adventure_id
 			)
 		);
@@ -137,12 +126,6 @@ class BR_Mailer {
 		$display_name  = esc_html( $user['display_name'] ?? '' );
 		$user_id       = (int) ( $user['player_id'] ?? 0 );
 		$user_email    = $user['user_email'] ?? '';
-
-		$unsub_token = wp_hash( $user_id . ':' . $user_email . ':optout' );
-		$unsub_url   = esc_url( add_query_arg( [
-			'br_email_unsub' => $unsub_token,
-			'uid'            => $user_id,
-		], home_url( '/' ) ) );
 
 		$merge_tags = [
 			'name'           => $display_name,
@@ -181,7 +164,7 @@ class BR_Mailer {
       <tr><td style="background-color:#ffffff;padding:0 36px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-top:1px solid #e8e8e8;"></td></tr></table></td></tr>
       <tr><td style="background-color:#ffffff;padding:24px 36px 32px;text-align:center;border-radius:0 0 8px 8px;">
         <p style="margin:0 0 8px;font-size:13px;color:#999999;">{$site_name}</p>
-        <p style="margin:0;font-size:12px;color:#bbbbbb;">You are receiving this because you are enrolled in <strong>{$adventure}</strong>.<br><a href="{$unsub_url}" style="color:{$accent};text-decoration:underline;font-size:12px;">Unsubscribe</a></p>
+        <p style="margin:0;font-size:12px;color:#bbbbbb;">You are receiving this because you are enrolled in <strong>{$adventure}</strong>.</p>
       </td></tr>
     </table>
   </td></tr>
@@ -268,52 +251,26 @@ HTML;
 			$this->campaign_id = $this->create_campaign( $adventure_id, $subject, $body, count( $users ) );
 		}
 
-		$limit = 500;
-		$batch = array_slice( $users, 0, $limit );
-		$queue = array_slice( $users, $limit );
-
-		$sent       = 0;
-		$failed     = 0;
-		$rate_count = 0;
-		$rate_start = microtime( true );
-
-		foreach ( $batch as $user ) {
-			$html = $this->render_template( $this->settings, $subject, $body, $user );
-			if ( $this->send(
-				$user['user_email'], $user['display_name'], $subject, $html,
-				(int) $user['player_id'], $adventure_id
-			) ) {
-				$sent++;
-			} else {
-				$failed++;
-			}
-
-			$rate_count++;
-			if ( $rate_count >= self::RATE_PER_SEC ) {
-				$elapsed = microtime( true ) - $rate_start;
-				if ( $elapsed < 1.0 ) {
-					usleep( (int) ( ( 1.05 - $elapsed ) * 1_000_000 ) );
-				}
-				$rate_start = microtime( true );
-				$rate_count = 0;
-			}
+		if ( empty( $users ) ) {
+			return [ 'sent' => 0, 'failed' => 0, 'queued' => 0 ];
 		}
 
-		if ( ! empty( $queue ) ) {
-			$job_key = 'br_email_batch_' . uniqid( '', true );
-			set_transient( $job_key, [
-				'users'        => $queue,
-				'subject'      => $subject,
-				'body'         => $body,
-				'adventure_id' => $adventure_id,
-				'settings'     => $this->settings,
-				'sender_id'    => $this->sender_id,
-				'campaign_id'  => $this->campaign_id,
-			], 2 * HOUR_IN_SECONDS );
-			wp_schedule_single_event( time() + 60, 'br_email_batch_send', [ $job_key ] );
-		}
+		// Queue ALL recipients — never block the web request with bulk sending,
+		// which would time out PHP and produce incomplete, inaccurate counts.
+		$job_key = 'br_email_batch_' . uniqid( '', true );
+		set_transient( $job_key, [
+			'users'        => $users,
+			'subject'      => $subject,
+			'body'         => $body,
+			'adventure_id' => $adventure_id,
+			'settings'     => $this->settings,
+			'sender_id'    => $this->sender_id,
+			'campaign_id'  => $this->campaign_id,
+		], 2 * HOUR_IN_SECONDS );
+		wp_schedule_single_event( time(), 'br_email_batch_send', [ $job_key ] );
+		spawn_cron();
 
-		return [ 'sent' => $sent, 'failed' => $failed, 'queued' => count( $queue ) ];
+		return [ 'sent' => 0, 'failed' => 0, 'queued' => count( $users ) ];
 	}
 
 	public function send_to_adventure( int $adventure_id, string $subject, string $body ): array {
@@ -403,11 +360,9 @@ HTML;
 		$body         = $data['body'];
 		$adventure_id = (int) $data['adventure_id'];
 
-		$limit = 500;
-		$batch = array_slice( $users, 0, $limit );
-		$queue = array_slice( $users, $limit );
+		$batch = array_slice( $users, 0, self::BATCH_SIZE );
+		$queue = array_slice( $users, self::BATCH_SIZE );
 
-		$adv = null;
 		global $wpdb;
 		$adv = $wpdb->get_row( $wpdb->prepare(
 			"SELECT adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
@@ -436,7 +391,8 @@ HTML;
 		if ( ! empty( $queue ) ) {
 			$next_key = 'br_email_batch_' . uniqid( '', true );
 			set_transient( $next_key, array_merge( $data, [ 'users' => $queue ] ), 2 * HOUR_IN_SECONDS );
-			wp_schedule_single_event( time() + 60, 'br_email_batch_send', [ $next_key ] );
+			wp_schedule_single_event( time(), 'br_email_batch_send', [ $next_key ] );
+			spawn_cron();
 		}
 	}
 

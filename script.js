@@ -3200,82 +3200,141 @@ function closeStepAccordion(step_id) {
 }
 
 ////////////////////////////// UPDATE STEP ///////////////////////////
+function brCollectStepSettings(sid) {
+    var skin = $('#step-skin-' + sid).val();
+    var settings = {};
+    var step_correct = null;
+
+    switch (skin) {
+        case 'dialogue': case 'system':
+            break;
+        case 'audio':
+            settings = { url: $('#step-audio-url-' + sid).val() };
+            break;
+        case 'gallery':
+            var imgs = [];
+            $('#step-gallery-' + sid + ' .gallery-image-url').each(function() { imgs.push($(this).val()); });
+            settings = { images: imgs, layout: 'auto' };
+            break;
+        case 'find_item':
+            settings = { item_id: $('#step-find-item-' + sid).val(), message: '' };
+            break;
+        case 'multiple_choice':
+            var opts = [], correct = [];
+            $('#step-mc-options-' + sid + ' .br-option-row').each(function() {
+                var oid = $(this).find('.mc-option-id').val();
+                opts.push({ id: oid, text: $(this).find('.mc-option-text').val(), image: null, correct: $(this).find('.mc-correct').is(':checked') });
+                if ($(this).find('.mc-correct').is(':checked')) correct.push(oid);
+            });
+            settings = { question: $('#step-mc-question-' + sid).val(), question_image: $('#step-mc-image-' + sid).val(), options: opts, allow_multiple: !!parseInt($('#step-mc-multi-' + sid).val()) };
+            step_correct = JSON.stringify(correct);
+            break;
+        case 'keyphrase': case 'cryptex':
+            var raw = $('#step-kp-answers-' + sid).val();
+            var answers = raw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+            settings = { prompt: $('#step-kp-prompt-' + sid).val(), case_sensitive: !!parseInt($('#step-kp-case-' + sid).val()), trim_whitespace: true };
+            if (skin === 'cryptex') settings.wheel_count = parseInt($('#step-cryptex-wheels-' + sid).val()) || 7;
+            step_correct = JSON.stringify(answers);
+            break;
+        case 'puzzle':
+            settings = { image: $('#step-puzzle-image-' + sid).val(), cols: parseInt($('#step-puzzle-cols-' + sid).val()) || 3, rows: parseInt($('#step-puzzle-rows-' + sid).val()) || 3 };
+            break;
+        case 'scorm':
+            var scormUrl = $('#scorm-launch-url-' + sid).val();
+            if (scormUrl) settings = { scorm_launch_url: scormUrl };
+            break;
+        case 'backpack_item':
+            var itemId = $('#step-bi-item-' + sid).val();
+            settings = { prompt: $('#step-bi-prompt-' + sid).val(), item_id: itemId, consume_item: !!parseInt($('#step-bi-consume-' + sid).val()) };
+            step_correct = itemId ? JSON.stringify([itemId]) : null;
+            break;
+        case 'survey_choice': case 'survey_poll':
+            var sopts = [];
+            var container = (skin === 'survey_poll') ? '#step-sc-options-' + sid : '#step-sc-options-' + sid;
+            $(container + ' .br-option-row').each(function() {
+                sopts.push({ id: $(this).find('.sc-option-id').val(), text: $(this).find('.sc-option-text').val(), image: null });
+            });
+            settings = { question: $('#step-sc-question-' + sid).val(), options: sopts, show_results: !!parseInt($('#step-sc-results-' + sid).val()) };
+            if (skin === 'survey_choice') settings.allow_multiple = !!parseInt($('#step-sc-multi-' + sid).val());
+            break;
+        case 'survey_rating':
+            settings = { question: $('#step-sr-question-' + sid).val(), min: parseInt($('#step-sr-min-' + sid).val()), max: parseInt($('#step-sr-max-' + sid).val()), labels: { min: $('#step-sr-lmin-' + sid).val(), max: $('#step-sr-lmax-' + sid).val() } };
+            break;
+        case 'open_text':
+            settings = { min_words: parseInt($('#step-ot-minwords-' + sid).val()) || 0, use_wp_editor: !!parseInt($('#step-ot-editor-' + sid).val()), ai_validate: !!parseInt($('#step-ot-ai-' + sid).val()) };
+            break;
+        case 'upload_image': case 'upload_video':
+            settings = { prompt: $('#step-upload-prompt-' + sid).val(), max_size_mb: parseInt($('#step-upload-maxsize-' + sid).val()) || 5 };
+            break;
+    }
+    return { settings: JSON.stringify(settings), step_correct: step_correct };
+}
+
 function updateStep() {
     let step_id = $("#step-id").val();
     let adventure_id = $("#the_adventure_id").val();
     if (step_id) {
-        let step_type = $('#step-type-' + step_id).val();
+        var skin = $('#step-skin-' + step_id).val();
+        var category = brSkinCategoryMap[skin] || 'deliver';
         if (typeof tinyMCE == 'object' && typeof tinyMCE.triggerSave == 'function') {
             tinyMCE.triggerSave();
         }
-        let step_content = $('#step-content-' + step_id).val();
-        let step_title = $('#step-title-' + step_id).val();
-        let step_attach = $('#step-attach-' + step_id).val();
-        let step_image = $('#the_step_image_' + step_id).val();
-        let step_character_name = $('#step-character-name-' + step_id).val();
-        let step_character_image = $('#the_step_character_image').val();
-        let step_background = $('#the_step_background').val();
-        let step_achievement_group = $('#the_step_achievement_group').val();
-        let step_item = 0;
-        if (step_type == 'item-grab' || step_type == 'item-req') {
-            step_item = $('#step-select-items-' + step_id + ' .step-item.active input.item-id').val();
-        }
-        if (step_type == 'path-choice' && !step_achievement_group) {
-            notification('#msg-no-path-choice', 2000);
-        } else if ((step_type == 'item-grab' || step_type == 'item-req') && !step_item) {
-            notification('#msg-no-step-item', 2000);
-        } else {
-            showLoader("small");
-            jQuery.ajax({
-                url: runAJAX.ajaxurl,
-                data: ({
-                    action: 'updateStep',
-                    step_id: step_id,
-                    adventure_id: adventure_id,
-                    step_title: step_title,
-                    step_type: step_type,
-                    step_image: step_image,
-                    step_attach: step_attach,
-                    step_content: step_content,
-                    step_character_name: step_character_name,
-                    step_character_image: step_character_image,
-                    step_background: step_background,
-                    step_achievement_group: step_achievement_group,
-                    step_character_name: step_character_name,
-                    step_item: step_item,
-                }),
-                method: "POST",
-                success: function (json_text) {
-                    displayAjaxResponse(json_text);
-                    let content = JSON.parse(json_text);
-                    var sid = content.updated_step.step_id;
-                    var stype = content.updated_step.step_type;
+        var collected = brCollectStepSettings(step_id);
 
-                    if (stype == 'path-choice') {
-                        $('#step-' + sid + ' .step-title').html(content.updated_step.step_title + " <span style='opacity:0.5'>[Group: " + content.updated_step.step_achievement_group + "]</span>");
-                    } else {
-                        $('#step-' + sid + ' .step-title').text(content.updated_step.step_title);
-                    }
-                    $('#step-' + sid + ' .step-type').text(stype);
+        showLoader("small");
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: {
+                action: 'updateStep',
+                step_id: step_id,
+                adventure_id: adventure_id,
+                step_title: $('#step-title-' + step_id).val(),
+                step_type: category,
+                step_skin: skin,
+                step_content: $('#step-content-' + step_id).val(),
+                step_image: $('#the_step_image_' + step_id).val(),
+                step_attach: $('#step-attach-' + step_id).val(),
+                step_character_name: $('#step-character-name-' + step_id).val(),
+                step_character_image: $('#the_step_character_image').val(),
+                step_background: $('#the_step_background').val(),
+                step_achievement_group: $('#the_step_achievement_group').val(),
+                step_item: 0,
+                step_settings: collected.settings,
+                step_correct: collected.step_correct,
+                step_mistake_message: $('#step-mistake-msg-' + step_id).val(),
+                step_required: $('#step-required-' + step_id).val(),
+                step_xp_reward: $('#step-reward-xp-' + step_id).val(),
+                step_bloo_reward: $('#step-reward-bloo-' + step_id).val(),
+                step_ep_reward: $('#step-reward-ep-' + step_id).val(),
+                step_item_reward: $('#step-reward-item-' + step_id).val(),
+                step_achievement_reward: $('#step-reward-ach-' + step_id).val(),
+                step_branch_group_id: $('#step-branch-group-' + step_id).val()
+            },
+            method: "POST",
+            success: function (json_text) {
+                displayAjaxResponse(json_text);
+                let content = JSON.parse(json_text);
+                var sid = content.updated_step.step_id;
+                var sskin = content.updated_step.step_skin || content.updated_step.step_type;
 
-                    var stepColorMap = {
-                        'dialogue':'#1cc2eb','open':'#42a5f5','jump':'#7c4dff',
-                        'system':'#ff9800','win':'#24da98','fail':'#f44336',
-                        'item-req':'#e040fb','item-grab':'#e040fb','path-choice':'#9f40e2',
-                        'choose-avatar':'#7c4dff','choose-nickname':'#7c4dff',
-                        'video':'#f7cb15','scorm':'#00bcd4'
-                    };
-                    $('#step-' + sid).attr('style', '--step-color:' + (stepColorMap[stype] || '#1cc2eb'));
+                $('#step-' + sid + ' .step-title').text(content.updated_step.step_title);
+                $('#step-' + sid + ' .step-type').text(sskin);
 
-                    closeStepAccordion(sid);
-                    setTimeout(function() {
-                        document.getElementById('step-' + sid).scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
-            });
+                var stepColorMap = {
+                    'dialogue':'#1cc2eb','video':'#f7cb15','audio':'#ff9800','gallery':'#42a5f5','find_item':'#e040fb',
+                    'multiple_choice':'#7c4dff','keyphrase':'#00bcd4','cryptex':'#00bcd4','puzzle':'#9f40e2','backpack_item':'#e040fb','scorm':'#00bcd4',
+                    'survey_choice':'#42a5f5','survey_rating':'#f7cb15','survey_poll':'#42a5f5','open_text':'#42a5f5','upload_image':'#ff9800','upload_video':'#ff9800',
+                    'jump_to_step':'#7c4dff','branch_choice':'#9f40e2',
+                    'system':'#ff9800','win':'#24da98','fail':'#f44336','choose_nickname':'#7c4dff','choose_avatar':'#7c4dff'
+                };
+                $('#step-' + sid).attr('style', '--step-color:' + (stepColorMap[sskin] || '#1cc2eb'));
 
-        }
-
+                closeStepAccordion(sid);
+                setTimeout(function() {
+                    document.getElementById('step-' + sid).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        });
     } else {
         $("#notify-message ul.content").append($('#msg-no-id').html());
         $("#notify-message ul.content li:last-child").delay(1000).fadeOut(300, function () {
@@ -3420,30 +3479,81 @@ function updateStepButton(btn_id) {
     }
 }
 
-function checkStepType() {
-    $('#step-buttons-form-container').html('');
-    $('.conditional-display').hide();
-    let s_id = $('#step-id').val();
-    let step_type = $('#step-type-' + s_id).val();
-    let type_display = '.' + step_type + '-display';
-    $(type_display).show();
-    if ($('#step-type-' + s_id).val() != 'path-choice') {
-        $('#the_step_achievement_group').val('');
-    }
-    jQuery.ajax({
-        url: runAJAX.ajaxurl,
-        data: ({
-            action: 'loadStepButtonForm',
-            button_form: $('#step-type-' + s_id).val(),
-            step_id: $('#step-id').val()
-        }),
-        method: "POST",
-        success: function (data) {
-            if (data) {
-                $('#step-buttons-form-container').html(data);
-            }
-        }
+function checkStepType() { brCheckStepSkin($('#step-id').val()); }
+
+var brSkinCategoryMap = {
+    'dialogue':'deliver','video':'deliver','audio':'deliver','gallery':'deliver','find_item':'deliver',
+    'multiple_choice':'validate','keyphrase':'validate','cryptex':'validate','puzzle':'validate','backpack_item':'validate','scorm':'validate',
+    'survey_choice':'collect','survey_rating':'collect','survey_poll':'collect','open_text':'collect','upload_image':'collect','upload_video':'collect',
+    'jump_to_step':'flow','branch_choice':'flow',
+    'system':'deliver','win':'flow','fail':'flow','choose_nickname':'deliver','choose_avatar':'deliver'
+};
+
+function brCheckStepSkin(sid) {
+    var skin = $('#step-skin-' + sid).val();
+    var category = brSkinCategoryMap[skin] || 'deliver';
+    $('#step-category-' + sid).val(category);
+
+    // Show/hide skin panels
+    $('#step-form-' + sid + ' .br-skin-panel, #step-form-' + sid + ' .br-skin-panel-inline').each(function() {
+        var skins = ($(this).data('skins') || '').split(',');
+        $(this).toggle(skins.indexOf(skin) !== -1);
     });
+
+    // Load jump buttons if needed
+    if (skin === 'jump_to_step') {
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: { action: 'loadStepButtonForm', button_form: 'jump', step_id: sid },
+            method: "POST",
+            success: function(data) { if (data) $('#step-buttons-form-container').html(data); }
+        });
+    }
+}
+
+function brAddMcOption(sid) {
+    var id = String.fromCharCode(97 + $('#step-mc-options-' + sid + ' .br-option-row').length);
+    $('#step-mc-options-' + sid).append(
+        '<div class="br-option-row" style="display:flex;gap:8px;align-items:center;margin-bottom:6px">' +
+        '<input type="checkbox" class="mc-correct" value="' + id + '">' +
+        '<input class="br-input mc-option-text" style="flex:1" placeholder="Option text">' +
+        '<input type="hidden" class="mc-option-id" value="' + id + '">' +
+        '<button class="br-btn br-btn-red" style="padding:4px 8px" onClick="$(this).closest(\'.br-option-row\').remove();"><span class="icon icon-trash"></span></button>' +
+        '</div>'
+    );
+}
+
+function brAddScOption(sid) {
+    var id = String.fromCharCode(97 + $('#step-sc-options-' + sid + ' .br-option-row').length);
+    $('#step-sc-options-' + sid).append(
+        '<div class="br-option-row" style="display:flex;gap:8px;align-items:center;margin-bottom:6px">' +
+        '<input class="br-input sc-option-text" style="flex:1" placeholder="Option text">' +
+        '<input type="hidden" class="sc-option-id" value="' + id + '">' +
+        '<button class="br-btn br-btn-red" style="padding:4px 8px" onClick="$(this).closest(\'.br-option-row\').remove();"><span class="icon icon-trash"></span></button>' +
+        '</div>'
+    );
+}
+
+function brAddGalleryImage(sid) {
+    var frame = wp.media({ multiple: false, library: { type: 'image' } });
+    frame.on('select', function() {
+        var url = frame.state().get('selection').first().toJSON().url;
+        var container = $('#step-gallery-' + sid);
+        if (container.find('.br-gallery-thumb').length >= 7) return;
+        var idx = container.find('.br-gallery-thumb').length;
+        container.append(
+            '<div class="br-gallery-thumb" data-index="' + idx + '">' +
+            '<div style="width:80px;height:80px;border-radius:6px;background:url(' + url + ') center/cover;border:1px solid rgba(255,255,255,0.1)"></div>' +
+            '<button class="br-btn br-btn-red" style="padding:2px 6px;font-size:10px;margin-top:2px" onClick="$(this).closest(\'.br-gallery-thumb\').remove();"><span class="icon icon-trash"></span></button>' +
+            '<input type="hidden" class="gallery-image-url" value="' + url + '">' +
+            '</div>'
+        );
+    });
+    frame.open();
+}
+
+function brRemoveGalleryImage(sid, idx) {
+    $('#step-gallery-' + sid + ' .br-gallery-thumb[data-index=' + idx + ']').remove();
 }
 
 
@@ -4244,6 +4354,35 @@ function updateAdventure() {
     });
 }
 
+function brSaveAiKey() {
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_save_ai_api_key',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            api_key: $('#the_adventure_ai_api_key').val()
+        },
+        success: function(raw) { displayAjaxResponse(raw); }
+    });
+}
+
+function brRemoveAiKey() {
+    $('#the_adventure_ai_api_key').val('');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_save_ai_api_key',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            api_key: ''
+        },
+        success: function(raw) { displayAjaxResponse(raw); }
+    });
+}
+
 ////////////////////////////////////////// Preview Template  ////////////////////////////////////////////
 
 function previewTemplate(adv_id = null) {
@@ -4380,7 +4519,9 @@ function saveSysConfig() {
         }),
         method: "POST",
         success: function (data_received) {
-            displayAjaxResponse(data_received);
+            saveAllPlanFeatures(function() {
+                displayAjaxResponse(data_received);
+            });
         }
     });
 }
@@ -4446,72 +4587,61 @@ function deletePlanConfirm(plan_id, plan_label) {
     }
 }
 
-function editPlanFeatures(plan_id, plan_label) {
-    $('#plans-list-view').hide();
-    $('#plan-feature-editor').show();
-    $('#editing-plan-id').val(plan_id);
-    $('#editing-plan-label').text(plan_label);
+function brPopulatePlanAccordions() {
+    if (typeof brSysFeatures === 'undefined' || typeof brPlans === 'undefined') return;
 
-    if (typeof brSysFeatures === 'undefined') return;
+    $('.plan-features-body').each(function() {
+        var $tbody = $(this);
+        var planId = $tbody.data('plan-id');
+        var planKey = '';
+        brPlans.forEach(function(p) { if (p.plan_id == planId) planKey = p.plan_key; });
 
-    var plan_key = '';
-    if (typeof brPlans !== 'undefined') {
-        brPlans.forEach(function(p) {
-            if (p.plan_id == plan_id) plan_key = p.plan_key;
-        });
-    }
-
-    var tbody = $('#plan-features-table tbody');
-    tbody.empty();
-    for (var fKey in brSysFeatures) {
-        var f = brSysFeatures[fKey];
-        var val = (plan_key && f[plan_key] !== undefined) ? f[plan_key] : '0';
-        var row = '<tr class="plan-feature-row">';
-        row += '<td class="font _16 w600 text-left">' + (f.label || fKey) + '</td>';
-        row += '<td class="text-center">';
-        row += '<input type="hidden" class="pf-feature-id" value="' + f.id + '">';
-        if (f.type === 'number') {
-            row += '<input type="number" class="form-ui pf-value w-100" value="' + val + '">';
-        } else {
-            row += '<input type="checkbox" class="pf-value" ' + (parseInt(val) ? 'checked' : '') + '>';
+        $tbody.empty();
+        for (var fKey in brSysFeatures) {
+            var f = brSysFeatures[fKey];
+            var val = (planKey && f[planKey] !== undefined) ? f[planKey] : '0';
+            var row = '<tr class="plan-feature-row">';
+            row += '<td>' + (f.label || fKey) + '</td>';
+            row += '<td class="text-center">';
+            row += '<input type="hidden" class="pf-feature-id" value="' + f.id + '">';
+            if (f.type === 'number') {
+                row += '<input type="number" class="form-ui pf-value" value="' + val + '" style="width:80px">';
+            } else {
+                row += '<input type="checkbox" class="pf-value" ' + (parseInt(val) ? 'checked' : '') + '>';
+            }
+            row += '</td></tr>';
+            $tbody.append(row);
         }
-        row += '</td></tr>';
-        tbody.append(row);
-    }
+    });
 }
 
-function backToPlans() {
-    $('#plan-feature-editor').hide();
-    $('#plans-list-view').show();
+function saveAllPlanFeatures(onDone) {
+    if (typeof brPlans === 'undefined') { if (onDone) onDone(); return; }
+    var pending = 0;
+    $('.plan-features-body').each(function() {
+        var planId = $(this).data('plan-id');
+        var features_data = [];
+        $(this).find('.plan-feature-row').each(function() {
+            var fid = $(this).find('.pf-feature-id').val();
+            var el = $(this).find('.pf-value');
+            var val = el.is(':checkbox') ? (el.is(':checked') ? 1 : 0) : (el.val() || 0);
+            features_data.push({ feature_id: fid, feature_value: val });
+        });
+        if (!features_data.length) return;
+        pending++;
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: { action: 'savePlanFeatures', plan_id: planId, features_data: features_data },
+            method: 'POST',
+            success: function() { pending--; if (pending <= 0 && onDone) onDone(); }
+        });
+    });
+    if (pending === 0 && onDone) onDone();
 }
 
 function savePlanFeaturesAction() {
     showLoader('small');
-    var plan_id = $('#editing-plan-id').val();
-    var features_data = [];
-    $('.plan-feature-row').each(function () {
-        var feature_id = $('.pf-feature-id', this).val();
-        var el = $('.pf-value', this);
-        var val = 0;
-        if (el.is(':checkbox')) {
-            val = el.is(':checked') ? 1 : 0;
-        } else {
-            val = el.val() || 0;
-        }
-        features_data.push({ feature_id: feature_id, feature_value: val });
-    });
-    jQuery.ajax({
-        url: runAJAX.ajaxurl,
-        data: {
-            action: 'savePlanFeatures',
-            plan_id: plan_id,
-            features_data: features_data
-        },
-        method: "POST",
-        success: function (data_received) {
-            displayAjaxResponse(data_received);
-        }
-    });
+    saveAllPlanFeatures(function() { displayAjaxResponse('{"success":true,"message":"Plan features saved","just_notify":true}'); });
 }
 
 var planSearchTimer = null;
@@ -5059,6 +5189,7 @@ function updateAchievement() {
         a_display: $('#the_achievement_display').val(),
         a_group: $('#the_achievement_group').val(),
         a_path: $('#the_achievement_path').val(),
+        branch_group_id: $('#the_branch_group_id').val(),
         magic_code: $('#the_achievement_code').val(),
         a_content: $('#the_achievement_content').val(),
         adventure_id: $('#the_adventure_id').val(),
@@ -6125,6 +6256,13 @@ function downloadQuestCSV() {
 
 //////////////////  VALIDATE QUEST (sets grade + pp_status) ////////////////
 // validate_action: 'validate' (grade=100, publish) or 'invalidate' (grade=0, draft)
+// Toggle visual active state for br-mech-checkbox-btn labels on change
+$(document).on('change', '.br-mech-checkbox-btn input[type="checkbox"]', function() {
+    var $label = $(this).closest('.br-mech-checkbox-btn');
+    var cls = $label.data('checked-class') || 'is-checked';
+    $label.toggleClass(cls, this.checked);
+});
+
 function validateQuest(quest_id, player_id, validate_action) {
     let nonce = $("#grade_nonce").val();
     let adventure_id = $("#the_adventure_id").val();
@@ -6144,11 +6282,11 @@ function validateQuest(quest_id, player_id, validate_action) {
             displayAjaxResponse(data_received);
             let grade = validate_action == 'validate' ? 100 : 0;
             if (grade > 0) {
-                $("#validate-btn-" + player_id + "-" + quest_id).addClass('grey-bg-500').removeClass('green-bg-600').prop('disabled', true);
-                $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('grey-bg-500').addClass('red-bg-800').prop('disabled', false);
+                $("#validate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-green').prop('disabled', true);
+                $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-red').prop('disabled', false);
             } else {
-                $("#validate-btn-" + player_id + "-" + quest_id).removeClass('grey-bg-500').addClass('green-bg-600').prop('disabled', false);
-                $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('grey-bg-500').removeClass('red-bg-800').prop('disabled', true);
+                $("#validate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-green').prop('disabled', false);
+                $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-red').prop('disabled', true);
             }
             $("#the_post_grade_" + quest_id + "_" + player_id).val(grade);
         }
@@ -6196,6 +6334,7 @@ function br_trash() {
     let id = $('#br-' + trash_action + '-id').val();
     let type = $("#trd-type").val();
     let reload = $("#reload").val();
+    let player_id = $("#trd-player-id").val();
     jQuery.ajax({
         url: runAJAX.ajaxurl,
         data: ({
@@ -6204,7 +6343,8 @@ function br_trash() {
             nonce: nonce,
             adventure_id: adventure_id,
             type: type,
-            reload: reload
+            reload: reload,
+            player_id: player_id || ''
         }),
         method: "POST",
         success: function (data_received) {
@@ -8167,3 +8307,289 @@ function updateRequestStatus(request_id, new_status) {
         }
     });
 }
+
+////////////////////////////// PLAYER STEP INTERACTIONS ///////////////////////////
+function brStepAjax(stepId, questId, adventureId, response, onSuccess) {
+    showLoader('small');
+    $.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: { action: 'br_complete_step', step_id: stepId, quest_id: questId, adventure_id: adventureId, response: response },
+        success: function(json) {
+            displayAjaxResponse(json);
+            var data = JSON.parse(json);
+            if (onSuccess) onSuccess(data);
+        }
+    });
+}
+
+function brShowStepNext(contextId) {
+    var $step = $('#' + contextId).closest('.step');
+    if (!$step.length) $step = $('[id$="-' + contextId + '"]').closest('.step').first();
+    if (!$step.length) return;
+    var idx = $('.step').index($step);
+    var $nextStep = $('.step').eq(idx + 1);
+    // Hide the submit button inside the dialogue box
+    $step.find('.steps-navigation.action-buttons').hide();
+    // Create nav as direct child of .step-content-container (same level as dialogue-box)
+    var $container = $step.find('.step-content-container');
+    var $nav = $container.children('.steps-navigation.br-step-nav-injected');
+    if (!$nav.length) {
+        $nav = $('<div class="steps-navigation br-step-nav-injected"></div>');
+        $container.append($nav);
+    }
+    if ($nextStep.length) {
+        var nextOrder = $nextStep.attr('id').replace('step-', '');
+        $nav.html(
+            '<a class="step-nav-button step-next" href="#step-' + nextOrder + '">' +
+            '<svg id="button-step-next" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 172 172"><rect class="outline" x="1" y="1" width="170" height="170"/><rect class="back-color" x="15.69" y="15.69" width="140.63" height="140.63"/><polygon class="main-arrow" points="129.27 86.02 70.31 51.98 70.31 71.73 44.66 71.73 44.66 100.31 70.31 100.31 70.31 120.06 129.27 86.02"/></svg></a>'
+        ).show();
+    } else {
+        $nav.html(
+            '<button class="action-button success" onClick="submitPlayerWork();">Submit</button>'
+        ).show();
+    }
+}
+
+function brShowFeedback(elemId, correct, message) {
+    var el = $(elemId);
+    if (correct) {
+        el.css({ background: 'rgba(36,218,152,0.15)', color: '#24da98', border: '1px solid rgba(36,218,152,0.3)' }).html('<span class="icon icon-check"></span> ' + (message || 'Correct!')).show();
+    } else {
+        el.css({ background: 'rgba(244,67,54,0.15)', color: '#f44336', border: '1px solid rgba(244,67,54,0.3)' }).html('<span class="icon icon-cancel"></span> ' + (message || 'Incorrect. Try again.')).show();
+    }
+}
+
+function brSubmitMcStep(stepId, questId, advId) {
+    var selected = [];
+    $('#mc-options-' + stepId + ' .mc-input:checked').each(function() { selected.push($(this).val()); });
+    if (!selected.length) return;
+    brStepAjax(stepId, questId, advId, { selected: selected }, function(data) {
+        if (data.result && data.result.correct === 1) {
+            brShowFeedback('#mc-feedback-' + stepId, true);
+            $('#mc-submit-' + stepId).hide();
+            $('#mc-options-' + stepId + ' .mc-input').prop('disabled', true);
+            $('#mc-options-' + stepId + ' .mc-input:checked').closest('.br-step-option').addClass('br-option-correct');
+            brShowStepNext('mc-feedback-' + stepId);
+        } else {
+            brShowFeedback('#mc-feedback-' + stepId, false, data.result ? data.result.mistake_message : null);
+        }
+    });
+}
+
+function brSubmitKpStep(stepId, questId, advId) {
+    var answer = $('#kp-answer-' + stepId).val();
+    if (!answer) return;
+    brStepAjax(stepId, questId, advId, { answer: answer }, function(data) {
+        if (data.result && data.result.correct === 1) {
+            brShowFeedback('#kp-feedback-' + stepId, true);
+            $('#kp-submit-' + stepId).hide();
+            $('#kp-answer-' + stepId).prop('disabled', true);
+            brShowStepNext('kp-feedback-' + stepId);
+        } else {
+            brShowFeedback('#kp-feedback-' + stepId, false, data.result ? data.result.mistake_message : null);
+            $('#kp-answer-' + stepId).val('').focus();
+        }
+    });
+}
+
+function brSubmitCryptexStep(stepId, questId, advId) {
+    var answer = '';
+    $('#cryptex-' + stepId + ' .cryptex-wheel').each(function() { answer += $(this).val(); });
+    if (!answer) return;
+    brStepAjax(stepId, questId, advId, { answer: answer }, function(data) {
+        if (data.result && data.result.correct === 1) {
+            brShowFeedback('#cryptex-feedback-' + stepId, true, 'Unlocked!');
+            $('#cryptex-' + stepId + ' .cryptex-wheel').prop('disabled', true);
+            brShowStepNext('cryptex-feedback-' + stepId);
+        } else {
+            brShowFeedback('#cryptex-feedback-' + stepId, false, data.result ? data.result.mistake_message : null);
+            $('#cryptex-' + stepId + ' .cryptex-wheel').val('').first().focus();
+        }
+    });
+}
+
+function brSubmitGenericStep(stepId, questId, advId, extraData, contextId) {
+    brStepAjax(stepId, questId, advId, extraData || {}, function(data) {
+        if (data.success) {
+            if (contextId) { brShowStepNext(contextId); }
+            else { location.reload(); }
+        }
+    });
+}
+
+function brSubmitSurveyChoice(stepId, questId, advId) {
+    var selected = [];
+    $('#sc-options-' + stepId + ' .sc-input:checked').each(function() { selected.push($(this).val()); });
+    if (!selected.length) return;
+    brStepAjax(stepId, questId, advId, { selected: selected }, function(data) {
+        if (data.success) {
+            $('#sc-submit-' + stepId).hide();
+            $('#sc-options-' + stepId + ' .sc-input').prop('disabled', true);
+            $('#sc-options-' + stepId + ' .sc-input:checked').closest('.br-step-option').addClass('br-option-correct');
+            brShowStepNext('sc-options-' + stepId);
+        }
+    });
+}
+
+function brSubmitPoll(stepId, questId, advId) {
+    var selected = [];
+    $('#poll-options-' + stepId + ' .poll-input:checked').each(function() { selected.push($(this).val()); });
+    if (!selected.length) return;
+    brStepAjax(stepId, questId, advId, { selected: selected }, function(data) {
+        if (data.success) { location.reload(); }
+    });
+}
+
+function brSelectRating(stepId, value) {
+    $('#sr-value-' + stepId).val(value);
+    $('#sr-buttons-' + stepId + ' .sr-rating-btn').removeClass('br-rating-active');
+    $('#sr-buttons-' + stepId + ' .sr-rating-btn').each(function() {
+        if (parseInt($(this).data('value')) <= value) {
+            $(this).addClass('br-rating-active');
+        }
+    });
+}
+
+function brSubmitSurveyRating(stepId, questId, advId) {
+    var value = $('#sr-value-' + stepId).val();
+    if (!value) return;
+    brStepAjax(stepId, questId, advId, { value: value }, function(data) {
+        if (data.success) { location.reload(); }
+    });
+}
+
+function brUploadStepImage(stepId, questId, advId) {
+    var frame = wp.media({ multiple: false, library: { type: 'image' } });
+    frame.on('select', function() {
+        var url = frame.state().get('selection').first().toJSON().url;
+        brStepAjax(stepId, questId, advId, { url: url }, function(data) {
+            if (data.success) { location.reload(); }
+        });
+    });
+    frame.open();
+}
+
+function brUploadStepVideo(stepId, questId, advId) {
+    var frame = wp.media({ multiple: false, library: { type: 'video' } });
+    frame.on('select', function() {
+        var url = frame.state().get('selection').first().toJSON().url;
+        brStepAjax(stepId, questId, advId, { url: url }, function(data) {
+            if (data.success) { location.reload(); }
+        });
+    });
+    frame.open();
+}
+
+function brChooseBranch(advId, groupId, achievementId, stepId, questId) {
+    if (!confirm('This choice is permanent. Are you sure?')) return;
+    showLoader('small');
+    $.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: { action: 'br_player_branch_choice', adventure_id: advId, group_id: groupId, achievement_id: achievementId },
+        success: function(json) {
+            displayAjaxResponse(json);
+            var data = JSON.parse(json);
+            if (data.success) {
+                brStepAjax(stepId, questId, advId, { group_id: groupId, achievement_id: achievementId }, function() {
+                    location.reload();
+                });
+            }
+        }
+    });
+}
+
+// ── Open Text: word count + AI validation ────────────────────────
+function brCountWords(html) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    div.querySelectorAll('img, a, iframe, video, audio').forEach(function(el) { el.remove(); });
+    var text = (div.textContent || div.innerText || '').trim();
+    if (!text) return 0;
+    return text.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+}
+
+function brGetOpenTextContent() {
+    if (typeof tinyMCE === 'object' && typeof tinyMCE.triggerSave === 'function') {
+        tinyMCE.triggerSave();
+    }
+    return $('#the_pp_content').val() || '';
+}
+
+function brCheckOpenText(stepId) {
+    var $container = $('[data-step-id="' + stepId + '"].open-field');
+    var minWords = parseInt($container.attr('data-min-words')) || 0;
+    var aiValidate = $container.attr('data-ai-validate') === '1';
+    var $feedback = $('#ot-feedback-' + stepId);
+    var content = brGetOpenTextContent();
+    var wordCount = brCountWords(content);
+
+    $feedback.removeClass('br-step-feedback-error br-step-feedback-success').html('');
+
+    if (minWords > 0 && wordCount < minWords) {
+        $feedback.addClass('br-step-feedback-error').html(
+            '<span class="icon icon-cancel"></span> ' +
+            brI18n.ot_min_words.replace('%d', minWords).replace('%c', wordCount)
+        );
+        return;
+    }
+
+    if (aiValidate) {
+        $feedback.html('<span class="icon icon-data"></span> ' + brI18n.ot_ai_checking);
+        showLoader('small');
+        $.ajax({
+            url: runAJAX.ajaxurl,
+            method: 'POST',
+            data: {
+                action: 'br_ai_validate_text',
+                step_id: stepId,
+                quest_id: $container.attr('data-quest-id'),
+                adventure_id: $container.attr('data-adventure-id'),
+                content: content
+            },
+            success: function(raw) {
+                var data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+                if (data.valid) {
+                    brOpenTextPassed(stepId, content);
+                } else {
+                    $feedback.addClass('br-step-feedback-error').html('<span class="icon icon-cancel"></span> ' + (data.message || brI18n.ot_ai_fail));
+                }
+            },
+            error: function() {
+                brOpenTextPassed(stepId, content);
+            }
+        });
+        return;
+    }
+
+    brOpenTextPassed(stepId, content);
+}
+
+function brOpenTextPassed(stepId, content) {
+    var $feedback = $('#ot-feedback-' + stepId);
+    $feedback.removeClass('br-step-feedback-error').html('');
+
+    // Hide editor, show answer display
+    $('#ot-editor-wrap-' + stepId).hide();
+    $('#ot-answer-text-' + stepId).html(content);
+    $('#ot-answer-' + stepId).show();
+    $('#ot-success-' + stepId).show();
+
+    // Show next step navigation
+    brShowStepNext('ot-success-' + stepId);
+}
+
+function brEditOpenText(stepId) {
+    $('#ot-answer-' + stepId).hide();
+    $('#ot-success-' + stepId).hide();
+    // Hide the injected next nav
+    $('[data-step-id="' + stepId + '"]').find('.br-step-nav-injected').remove();
+    $('#ot-editor-wrap-' + stepId).show();
+}
+
+var brI18n = window.brI18n || {};
+brI18n.ot_min_words = brI18n.ot_min_words || 'You need at least %d words. You have %c.';
+brI18n.ot_ai_checking = brI18n.ot_ai_checking || 'Validating your content...';
+brI18n.ot_ai_pass = brI18n.ot_ai_pass || 'Content validated!';
+brI18n.ot_ai_fail = brI18n.ot_ai_fail || 'Your response doesn\'t seem to address the question. Please revise and try again.';

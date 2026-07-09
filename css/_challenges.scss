@@ -1,0 +1,1086 @@
+@import 'variables';
+
+/*************************************************************/
+/************************** CHALLENGES / SURVEYS ****************************/
+/*************************************************************/
+
+.challenge-gradient-overlay { 
+	background-image: linear-gradient(
+		135deg,
+		rgba(4, 22, 30, 0.96) 0%,
+		rgba(11, 61, 79, 0.75) 50%,
+		rgba(4, 22, 30, 0.92) 100%
+	);
+}
+
+// ── Root layout ─────────────────────────────────────────────────────────────
+.challenge-quest {
+	position: relative;
+	z-index: 20;
+	width: 100%;
+	min-height: 100vh;
+	display: flex;
+	font-family: $base-font;
+	color: $hud-text;
+
+	// Scan line animation across whole page
+	&::after {
+		content: '';
+		position: fixed;
+		left: 0; right: 0;
+		height: 2px;
+		background: rgba(28,194,235,0.06);
+		pointer-events: none;
+		z-index: 1;
+		animation: hud-scan 6s linear infinite;
+	}
+
+	@keyframes hud-scan {
+		0%   { top: 0; opacity: .5; }
+		100% { top: 100vh; opacity: 0; }
+	}
+
+	.confirm-action { bottom: 75%; z-index: 20; }
+
+	// ── SIDEBAR ─────────────────────────────────────────────────────────────
+	.challenge-sidebar {
+		transition: all 0.5s ease-in-out;
+		width: 200px;
+		flex-shrink: 0;
+		background: $hud-surface;
+		border-right: 1px solid $hud-border;
+		position: relative;
+
+		.content {
+			position: sticky;
+			top: 0;
+			padding: 16px 12px;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		// Title
+		.challenge-title {
+			padding: 0 2px 12px;
+			border-bottom: 1px solid $hud-border;
+			margin-bottom: 6px;
+
+			h1 {
+				font-size: 13px;
+				font-weight: 600;
+				color: $hud-text;
+				line-height: 1.35;
+				letter-spacing: .02em;
+			}
+		}
+
+		// Nav section label
+		.hud-nav-label {
+			font-size: 9px;
+			letter-spacing: .18em;
+			color: $hud-text-dim;
+			text-transform: uppercase;
+			padding: 6px 6px 4px;
+		}
+
+		// Timer bar
+		.challenge-timer {
+			opacity: 0;
+			visibility: hidden;
+			height: 0;
+			overflow: hidden;
+			transition: all 0.4s ease;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-bottom: 6px;
+
+			.timer-icon {
+				width: 26px; height: 26px;
+				border-radius: 5px;
+				background: rgba(28,194,235,.12);
+				border: 1px solid $hud-border;
+				display: flex; align-items: center; justify-content: center;
+				font-size: 13px; color: $hud-cyan; flex-shrink: 0;
+			}
+			.timer-track-wrap { flex: 1; }
+			.progress {
+				height: 4px;
+				background: rgba(255,255,255,.07);
+				border-radius: 2px;
+				overflow: hidden;
+				position: relative;
+
+				&::after {
+					content: '';
+					display: block;
+					height: 100%;
+					width: 100%;
+					border-radius: 2px;
+					background: $hud-green;
+					transition: width .3s linear, background .5s ease;
+				}
+				&.warning::after  { background: $hud-yellow; }
+				&.danger::after   { background: $hud-red; }
+				&.dead::after     { background: rgba(80,80,80,.5); }
+			}
+			.timer-container {
+				font-size: 12px;
+				font-weight: 700;
+				color: $hud-text;
+				min-width: 34px;
+				text-align: right;
+				font-family: $condensed-font;
+			}
+		}
+
+		// Nav list
+		.challenge-nav {
+			visibility: hidden;
+			opacity: 0;
+			transition: all .4s ease;
+
+			table {
+				width: 100%;
+				border-collapse: separate;
+				border-spacing: 0 3px;
+			}
+
+			tr {
+				cursor: pointer;
+
+				&:hover {
+					td.question-number, td.question-title {
+						background: rgba(28,194,235,.1);
+						border-color: $hud-border-mid;
+					}
+				}
+				&.answered {
+					td.question-number { color: $hud-green; background: rgba(36,218,152,.1); border-color: rgba(36,218,152,.3); }
+					td.question-title  { background: rgba(36,218,152,.06); border-color: rgba(36,218,152,.2); color: rgba(36,218,152,.7); }
+				}
+				&.current {
+					td.question-number { background: $hud-cyan; color: $hud-bg; border-color: $hud-cyan; }
+					td.question-title  { background: rgba(28,194,235,.15); border-color: $hud-border-mid; color: $hud-text; }
+				}
+
+				td {
+					vertical-align: middle;
+					border: 1px solid $hud-border;
+					transition: all .15s;
+				}
+				td.question-number {
+					width: 28px; height: 28px;
+					background: rgba(11,61,79,.6);
+					border-radius: 5px 0 0 5px;
+					font-size: 11px; font-weight: 700;
+					color: $hud-text-dim;
+					text-align: center;
+					padding: 0 5px;
+					border-right: none;
+				}
+				td.question-title {
+					background: rgba(3,15,24,.7);
+					border-radius: 0 5px 5px 0;
+					border-left: none;
+					height: 28px;
+					font-size: 11px;
+					color: $hud-text-dim;
+					padding: 0 8px;
+					overflow: hidden;
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					max-width: 130px;
+				}
+			}
+
+			// Submit inside nav
+			.challenge-complete-actions {
+				margin-top: 12px;
+
+				button {
+					width: 100%;
+					background: rgba(36,218,152,.1);
+					border: 1px solid rgba(36,218,152,.35);
+					border-radius: 6px;
+					color: $hud-green;
+					font-size: 11px;
+					font-weight: 500;
+					letter-spacing: .08em;
+					text-transform: uppercase;
+					padding: 9px 10px;
+					cursor: pointer;
+					display: flex; align-items: center; justify-content: center; gap: 6px;
+					transition: all .15s;
+					font-family: $condensed-font;
+
+					&:hover { background: rgba(36,218,152,.2); border-color: rgba(36,218,152,.6); }
+					.icon { font-size: 15px; }
+				}
+			}
+		}
+
+		// Mobile nav dots
+		.challenge-nav-mobile {
+			display: none;
+			width: 100%;
+			padding: 8px 4px;
+			gap: 5px;
+			flex-wrap: wrap;
+			justify-content: center;
+
+			button.button-icon {
+				width: 28px; height: 28px;
+				border-radius: 5px;
+				background: rgba(11,61,79,.5);
+				border: 1px solid $hud-border;
+				color: $hud-text-dim;
+				font-size: 12px; font-weight: 700;
+				cursor: pointer;
+				transition: all .15s;
+
+				&:hover  { background: rgba(28,194,235,.15); border-color: $hud-border-mid; }
+				&.answered { background: rgba(36,218,152,.12); border-color: rgba(36,218,152,.3); color: $hud-green; }
+				&.current  { background: $hud-cyan; border-color: $hud-cyan; color: $hud-bg; }
+			}
+		}
+
+		// Resources footer in sidebar
+		.hud-sidebar-resources {
+			margin-top: auto;
+			padding-top: 12px;
+			border-top: 1px solid $hud-border;
+
+			.res-label {
+				font-size: 9px; letter-spacing: .14em;
+				color: $hud-text-dim; text-transform: uppercase;
+				margin-bottom: 7px;
+			}
+			.res-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+			.res-chip {
+				background: rgba(247,203,21,.1);
+				border: 1px solid rgba(247,203,21,.3);
+				border-radius: 4px;
+				padding: 3px 8px;
+				font-size: 11px; color: $hud-yellow;
+				font-family: $condensed-font;
+				letter-spacing: .06em;
+
+				&.bloo {
+					background: rgba(28,194,235,.1);
+					border-color: rgba(28,194,235,.3);
+					color: $hud-cyan;
+				}
+				&.ep {
+					background: rgba(145,249,185,.1);
+					border-color: rgba(145,249,185,.3);
+					color: #91f9b9;
+				}
+			}
+		}
+	}
+
+	// ── CONDITIONS / WELCOME PANEL ───────────────────────────────────────────
+	.challenge-conditions {
+		transition: all 0.5s ease-in-out;
+		flex: 1;
+		overflow: hidden;
+		background: $hud-bg;
+		position: relative;
+		border-left: 1px solid $hud-border;
+
+		.content {
+			position: absolute;
+			top: 50%; transform: translateY(-50%);
+			padding: 40px 36px;
+			width: 100%; max-width: 420px;
+		}
+
+		h3.font {
+			font-size: 9px;
+			color: $hud-text-dim;
+			letter-spacing: .18em;
+			text-transform: uppercase;
+			padding: 16px 0 8px;
+			&:first-child { padding-top: 0; }
+		}
+
+		h2 {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			font-size: 13px;
+			font-weight: 400;
+			color: $hud-text-muted;
+			padding: 5px 0;
+			.icon { font-size: 15px; color: $hud-yellow; width: 18px; flex-shrink: 0; }
+			strong { color: $hud-text; font-weight: 700; }
+		}
+
+		.block-text {
+			display: inline-flex !important;
+			align-items: center; gap: 6px;
+			background: rgba(11,61,79,.4) !important;
+			border: 1px solid $hud-border !important;
+			border-radius: 6px !important;
+			padding: 6px 12px !important;
+			margin: 4px 4px 4px 0;
+
+			.font.condensed { font-size: 10px; letter-spacing: .1em; opacity: .6; }
+			.font.w600 { font-weight: 700; font-size: 18px; color: $hud-text; }
+
+			&.amber-border-400      { border-color: rgba(247,203,21,.35) !important; }
+			&.light-green-border-A200 { border-color: rgba(36,218,152,.35) !important; }
+			&.cyan-border-A200      { border-color: rgba(28,194,235,.35) !important; }
+		}
+
+		.attempts-indicator {
+			display: flex; gap: 5px; margin-top: 14px;
+			.attempt-pip {
+				width: 8px; height: 8px;
+				border-radius: 50%;
+				background: $hud-cyan;
+				box-shadow: 0 0 5px rgba(28,194,235,.5);
+				&.used { background: rgba(255,255,255,.12); box-shadow: none; }
+			}
+		}
+
+		.action-button { margin-top: 22px; }
+
+		.challenge-actions {
+			text-align: left;
+
+			button.challenge-main-action-button {
+				display: block; width: 100%; max-width: 260px;
+				background: $hud-cyan;
+				border: none; border-radius: 8px;
+				color: $hud-bg;
+				font-size: 20px; font-weight: 700;
+				letter-spacing: .12em; text-transform: uppercase;
+				padding: 14px 20px;
+				cursor: pointer;
+				font-family: $condensed-font;
+				transition: all .2s;
+
+				&:hover { background: lighten(#1cc2eb, 8%); }
+
+				&.level-button, &.max-button, &.reqs-button, &.deadline-button {
+					background: rgba(40,50,60,.5);
+					border: 1px solid rgba(144,243,254,.1);
+					color: $hud-text-dim; font-size: 14px;
+					cursor: not-allowed;
+					&:hover { background: rgba(40,50,60,.5); }
+				}
+			}
+
+			.attempt-cost-legend {
+				margin-top: 8px; max-width: 260px;
+				background: rgba(36,218,152,.08) !important;
+				border: 1px solid rgba(36,218,152,.25);
+				border-radius: 6px;
+				padding: 7px 12px;
+
+				h3 { font-size: 10px; letter-spacing: .1em; color: $hud-text-dim; padding: 0 0 2px; }
+				h1 { font-size: 18px; font-weight: 700; color: $hud-green; font-family: $condensed-font; }
+			}
+		}
+	}
+
+	// ── CONTENT AREA ────────────────────────────────────────────────────────
+	.challenge-content {
+		transition: all 0.5s ease-in-out;
+		flex: 0;
+		overflow: hidden;
+
+		.challenge-questions {
+			width: 100%; height: 0; overflow: hidden;
+			background: $hud-bg;
+		}
+
+		// ── SINGLE QUESTION BLOCK ──────────────────────────────────────────
+		.challenge-question {
+			padding: 36px 40px;
+			min-height: 60vh;
+			background: $hud-bg;
+			border-bottom: 1px solid $hud-border;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 18px;
+
+			&:nth-child(even) { background: rgba(11,61,79,.15); }
+
+			// Q counter
+			h3 {
+				font-size: 10px;
+				color: $hud-text-dim;
+				letter-spacing: .18em;
+				text-transform: uppercase;
+				font-weight: 400;
+				strong { color: $hud-text; font-weight: 700; }
+			}
+
+			// ── MEDIA BLOCK ───────────────────────────────────────────────
+			// Shared wrapper for image / video / audio
+			.question-media-wrap {
+				width: 100%; max-width: 720px;
+				background: $hud-surface;
+				border: 1px solid $hud-border;
+				border-radius: 10px;
+				overflow: hidden;
+				position: relative;
+
+				.media-type-badge {
+					position: absolute; top: 8px; left: 8px; z-index: 2;
+					display: inline-flex; align-items: center; gap: 5px;
+					background: rgba(4,22,30,.85);
+					border: 1px solid $hud-border-mid;
+					border-radius: 4px;
+					padding: 3px 8px;
+					font-size: 9px; letter-spacing: .14em;
+					color: $hud-cyan; text-transform: uppercase;
+					font-family: $condensed-font;
+				}
+			}
+
+			// Image question media
+			.question-image {
+				display: block;
+				width: 100%; max-width: 720px;
+				max-height: 300px;
+				object-fit: contain;
+				border-radius: 10px;
+				border: 1px solid $hud-border;
+			}
+
+			// Video
+			video.question-image {
+				width: 100%; max-width: 720px;
+				aspect-ratio: 16/9;
+				border-radius: 10px;
+				border: 1px solid $hud-border;
+				background: $hud-surface;
+			}
+
+			// Audio player
+			audio.question-image {
+				width: 100%; max-width: 720px;
+				border-radius: 10px;
+				filter: none;
+			}
+
+
+			// ── QUESTION TEXT ─────────────────────────────────────────────
+			.question-title {
+				font-size: 18px;
+				font-weight: 700;
+				color: $hud-text;
+				text-align: center;
+				max-width: 720px;
+				line-height: 1.45;
+				border-left: 3px solid $hud-cyan;
+				padding: 10px 16px;
+				text-align: left;
+				background: rgba(28,194,235,.04);
+				border-radius: 0 8px 8px 0;
+				width: 100%;
+			}
+
+			// ── TEXT OPTIONS (default 2-col grid) ─────────────────────────
+			ul.question-options {
+				width: 100%; max-width: 720px;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				list-style: none;
+				padding: 0; margin: 0;
+				counter-reset: opt-counter;
+
+				// Single-column when has-media (PHP adds this class)
+				&.opts-1col { grid-template-columns: 1fr; }
+
+				li.question-option {
+					background: $hud-surface;
+					border: 1px solid $hud-border;
+					border-left: 3px solid rgba(28,194,235,.3);
+					border-radius: 0 8px 8px 0;
+					padding: 13px 16px;
+					cursor: pointer;
+					display: flex; align-items: center; gap: 12px;
+					transition: all .15s;
+					position: relative;
+					counter-increment: opt-counter;
+
+					// Letter badge via CSS counter
+					&::before {
+						content: counter(opt-counter, upper-alpha);
+						width: 26px; height: 26px;
+						border-radius: 5px;
+						background: rgba(11,61,79,.7);
+						border: 1px solid $hud-border;
+						display: flex; align-items: center; justify-content: center;
+						font-size: 11px; font-weight: 700;
+						color: $hud-text-dim;
+						flex-shrink: 0;
+						text-align: center;
+						line-height: 26px;
+					}
+
+					// Image inside text option
+					img {
+						display: inline-block;
+						max-height: 100px; max-width: 140px;
+						border-radius: 5px; object-fit: contain;
+					}
+
+					span.font { font-size: 14px; color: $hud-text-muted; line-height: 1.3; }
+
+					&:hover {
+						border-left-color: $hud-cyan;
+						background: rgba(28,194,235,.08);
+						span.font { color: $hud-text; }
+					}
+					&.active {
+						border-left-color: $hud-purple;
+						background: rgba(159,64,226,.12);
+						border-color: rgba(159,64,226,.5);
+						border-left-color: $hud-purple;
+						&::before { background: $hud-purple; border-color: $hud-purple; color: #fff; }
+						span.font { color: $hud-violet; }
+					}
+					&.correct {
+						border-left-color: $hud-green;
+						background: rgba(36,218,152,.1);
+						border-color: rgba(36,218,152,.4);
+						span.font { color: $hud-green; }
+					}
+					&.wrong {
+						border-left-color: $hud-red;
+						background: rgba(226,64,64,.1);
+						border-color: rgba(226,64,64,.35);
+						span.font { color: lighten(#e24040, 15%); }
+					}
+				}
+
+				// ── IMAGE OPTIONS (4-col grid for kids / image answers) ───
+				&.opts-images {
+					grid-template-columns: repeat(4, 1fr);
+					gap: 12px;
+
+					li.question-option {
+						flex-direction: column;
+						padding: 0;
+						border-left-width: 1px;
+						border-radius: 10px;
+						border: 2px solid $hud-border;
+						overflow: hidden;
+						align-items: stretch;
+						gap: 0;
+
+						// Remove counter letter (replaced by positioned badge)
+						&::before { display: none; }
+
+						.opt-img-wrap {
+							position: relative;
+							width: 100%; aspect-ratio: 1;
+							background: $hud-surface-2;
+							display: flex; align-items: center; justify-content: center;
+							overflow: hidden;
+
+							img {
+								width: 100%; height: 100%;
+								object-fit: cover;
+								max-height: none; max-width: none;
+							}
+
+							.opt-letter-badge {
+								position: absolute; top: 6px; left: 6px;
+								width: 22px; height: 22px;
+								border-radius: 4px;
+								background: rgba(4,22,30,.8);
+								border: 1px solid $hud-border;
+								display: flex; align-items: center; justify-content: center;
+								font-size: 10px; font-weight: 700;
+								color: $hud-text-dim;
+							}
+							.opt-check-badge {
+								position: absolute; top: 6px; right: 6px;
+								width: 22px; height: 22px;
+								border-radius: 50%;
+								background: $hud-purple;
+								border: 2px solid $hud-purple;
+								display: none;
+								align-items: center; justify-content: center;
+								.icon { font-size: 12px; color: #fff; }
+							}
+
+							// Emoji / icon fallback (no img)
+							.opt-emoji {
+								font-size: 44px;
+								line-height: 1;
+							}
+						}
+
+						.opt-img-label {
+							padding: 8px 8px;
+							font-size: 12px;
+							color: $hud-text-muted;
+							text-align: center;
+							background: $hud-surface;
+							border-top: 1px solid $hud-border;
+							line-height: 1.2;
+							span.font { font-size: 12px; }
+						}
+
+						&:hover {
+							border-color: rgba(28,194,235,.5);
+							background: transparent;
+						}
+						&.active {
+							border-color: $hud-purple;
+							background: transparent;
+							.opt-letter-badge { background: rgba(159,64,226,.8); border-color: $hud-purple; color: #fff; }
+							.opt-check-badge  { display: flex; }
+							.opt-img-label    { color: $hud-violet; background: rgba(159,64,226,.1); }
+						}
+						&.correct {
+							border-color: $hud-green;
+							.opt-img-label { color: $hud-green; }
+						}
+						&.wrong {
+							border-color: $hud-red;
+							.opt-img-label { color: lighten(#e24040,15%); }
+						}
+					}
+				}
+
+				// 2-col image options (when only 2 image answers)
+				&.opts-images-2col { grid-template-columns: 1fr 1fr; }
+			}
+
+			// ── BOTTOM SUBMIT ──────────────────────────────────────────────
+			.challenge-q-footer {
+				display: flex;
+				align-items: center; justify-content: space-between;
+				width: 100%; max-width: 720px;
+				padding-top: 10px;
+				border-top: 1px solid $hud-border;
+				margin-top: auto;
+
+				.q-xp {
+					display: flex; align-items: center; gap: 6px;
+					font-size: 11px; color: $hud-text-dim;
+					.icon { font-size: 13px; color: $hud-yellow; }
+				}
+
+				.q-actions { display: flex; gap: 8px; }
+
+				.hud-btn {
+					background: rgba(28,194,235,.12);
+					border: 1px solid rgba(28,194,235,.4);
+					border-radius: 6px;
+					padding: 9px 18px;
+					font-size: 11px; color: $hud-cyan;
+					font-family: $condensed-font;
+					letter-spacing: .1em; text-transform: uppercase;
+					cursor: pointer;
+					display: flex; align-items: center; gap: 6px;
+					transition: all .15s;
+
+					&:hover { background: rgba(28,194,235,.22); border-color: $hud-cyan; }
+
+					&.btn-submit {
+						border-color: rgba(36,218,152,.5);
+						color: $hud-green;
+						background: rgba(36,218,152,.1);
+						&:hover { background: rgba(36,218,152,.2); border-color: $hud-green; }
+					}
+					.icon { font-size: 14px; }
+				}
+			}
+		}
+
+		// Bottom page submit
+		.challenge-complete-actions-bottom-page {
+			padding: 14px 24px;
+			text-align: center;
+			background: $hud-surface;
+			border-top: 1px solid $hud-border;
+
+			button {
+				background: rgba(36,218,152,.1);
+				border: 1px solid rgba(36,218,152,.35);
+				border-radius: 6px;
+				color: $hud-green;
+				font-size: 12px; font-weight: 500;
+				letter-spacing: .1em; text-transform: uppercase;
+				padding: 10px 22px;
+				cursor: pointer;
+				display: inline-flex; align-items: center; gap: 7px;
+				font-family: $condensed-font;
+				transition: all .15s;
+				&:hover { background: rgba(36,218,152,.2); border-color: $hud-green; }
+			}
+		}
+	}
+
+	// ── CONFIRM OVERLAY ──────────────────────────────────────────────────────
+	.confirm-action.overlay-layer {
+		background: $hud-surface-2;
+		border: 1px solid $hud-border-mid;
+		border-radius: 8px;
+		padding: 10px;
+		display: flex; align-items: center; gap: 8px;
+
+		button { border-radius: 6px; }
+		.close-confirm {
+			background: rgba(226,64,64,.15);
+			border: 1px solid rgba(226,64,64,.3);
+			color: lighten(#e24040,15%);
+			border-radius: 6px;
+		}
+	}
+
+	// ── TIMES UP ─────────────────────────────────────────────────────────────
+	#times-up {
+		.background { background: rgba(4,22,30,.94) !important; }
+		h1 { font-size: 52px; color: $hud-text; font-weight: 700; font-family: $condensed-font; }
+	}
+
+	// ── STATE: IDLE (welcome) ────────────────────────────────────────────────
+	&.idle {
+		.challenge-sidebar {
+			width: 50%; max-width: 580px; flex: 1;
+			.challenge-title h1 { font-size: 44px; font-weight: 700; line-height: 1.1; }
+		}
+		.challenge-conditions { flex: 1; }
+		.challenge-content    { flex: 0; }
+	}
+
+	// ── STATE: RUNNING ───────────────────────────────────────────────────────
+	&.running {
+		.challenge-sidebar {
+			width: 200px;
+			.challenge-title h1 { font-size: 13px; }
+			.challenge-timer {
+				opacity: 1; visibility: visible;
+				height: auto; overflow: visible;
+				margin-bottom: 8px;
+			}
+			.challenge-nav { visibility: visible; opacity: 1; }
+		}
+		.challenge-conditions { width: 0; flex: 0; overflow: hidden; border: none; }
+		.challenge-content {
+			flex: 1; overflow: visible;
+			.challenge-questions { height: auto; }
+		}
+	}
+
+	// ── STATE: COMPLETE ──────────────────────────────────────────────────────
+	&.complete {
+		.challenge-actions  { visibility: hidden; opacity: 0; width: 0; margin: 0; padding: 0; }
+		.challenge-questions { visibility: hidden; opacity: 0; width: 0; flex: 0; }
+	}
+
+	.challenge-complete-actions-mobile { display: none; }
+}
+
+ul.questions{
+	margin: 0;
+	padding: 0;
+	&.sortable{
+		li.question{
+			cursor: all-scroll;
+			ul.question-options, .add-option, .question-actions, .question-image, .content{
+				display: none;
+			}
+		}
+	}
+	li.question{
+		display: block;
+		margin: 0 0 20px 0;
+		position: relative;
+		width: 100%;
+		.question-container{
+			display: flex;
+			width: 100%;
+			padding: 10px;
+			gap: 10px;
+			.question-content{
+				width: 100%;
+				display: flex;
+				flex-flow: column;
+				.question-itself, .question-description, .question-config{
+					border-radius: 4px;
+					padding: 5px;
+					border: dashed 1px rgba(0,0,0,0.3);
+					background-color: rgba(0,0,0,0.1);
+					margin: 0 0 10px 0;
+				}
+				h4{
+					padding:5px 0;
+				}
+				textarea{
+					width: 100%;
+					background-color: #FFF;
+					margin: 0 0 10px 0;
+				}
+			}
+			.question-image{
+				clear: both;
+				position: relative;
+				width: 150px;
+				height: 150px;
+				text-align: center;
+				z-index: 10;
+				padding: 5px;
+				border: dashed 1px rgba(0,0,0,0.3);
+				border-radius: 4px;
+				background-color: rgba(0,0,0,0.1);
+				img{
+					display: block;
+					width: 140px;
+					cursor: pointer;
+					border-radius: 4px;
+				}
+				.actions{
+					display: block;
+					position: absolute;
+					top: 5px; right: 5px;
+				}
+			}
+		}
+	}
+}
+
+
+/* SURVEYS */
+.survey-questions-form{
+	.add-new-question-header{
+		width:100%;
+		padding: 10px;
+		position: sticky;
+		top: 50px;
+		z-index: 100;
+		background-color: rgba(#FFE0B2, 1);
+		text-align: center;
+	}
+}
+.survey-question-block{
+	h4{
+		font-size: 14px;
+		color: #80CBC4;
+		text-align: right;
+		padding: 5px;
+	}
+	h2{
+		font-size: 22px;
+		font-weight: 600;
+		color: #FFF;
+		padding: 5px;
+	}
+	.question-image{
+		max-height: 200px;
+		img{
+			max-height: 200px;
+		};
+	}
+	ul.question-options{
+		width: 100%;
+		li.option{
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			.option-image{
+				width: 100px;
+				height: 100px;
+			}
+			.option-text{
+				font-size: 20px;
+			}
+
+		}
+	}
+}
+.survey-open-question{
+	h3{
+		font-size: 16px;
+		color:#FFF;
+		margin: 10px 0;
+		display: block;
+	}
+	text-area{
+		display: block;
+		width: 100%;
+		background-color: #FFF;
+		margin: 0 0 10px 0;
+	}
+}
+.survey-rating-question{
+	margin: 0 auto;
+	text-align: center;
+	button.star{
+		border-radius: 50px;
+		width: 50px; height: 50px;
+		background-color: #888;
+		transform: scale(0.8);
+		transition: all 0.3s ease-out;
+		border: solid 2px #37474F;
+		color: #37474F;
+		font-size: 16px;
+        transition: all 0.3s ease-out;
+		&:hover{
+			color: #FFF;
+			border: solid 2px $new-colors-dark-blue;
+			background-color: $new-colors-blue;
+			transform: scale(1);
+			font-size: 24px;
+		}
+		&.active{
+			color: $white;
+			border: solid 2px $new-colors-green;
+			background-color: $new-colors-green;
+			transform: scale(1);
+			font-size: 24px;
+            &:hover{
+                color: #FFF;
+                border: solid 2px $new-colors-dark-blue;
+                background-color: $new-colors-yellow;
+                transform: scale(1);
+                font-size: 24px;
+            }
+		}
+		&.star-0{
+			&.active{
+				color: #FFF;
+				background-color: #F44336;
+			}
+		}
+	}
+}
+
+ul.question-options{ 
+	width: 100%;
+	margin: 0; padding: 0;
+	position: relative;
+	padding: 10px 0;
+	text-align: center;
+	vertical-align: top;
+	li{
+		margin: 0 5px;
+		vertical-align: top;
+		display: inline-block;
+		&.option{ 
+			opacity: 0.5;
+			z-index: 2;
+			position: relative;
+			width: 100%;
+			border-radius: 8px;
+			border: solid 1px;
+			background-color: rgba(255,255,255,0.2);
+			padding: 7px;
+			margin: 5px;
+			transition: all 0.3s ease-out;
+			&.form{
+				display:flex;
+				opacity: 1;
+				margin: 5px 0;
+				align-items: center;
+				gap: 5px;;
+			}
+			&.active{
+				opacity: 1;
+				border: solid 1px #CDDC39;
+				background-color: rgba(#CDDC39,0.2);
+			}
+			.option-image{
+				position: relative;
+				display: block;
+				float: left;
+				width: 30%; 
+				max-width: 100px;
+				height: 100px;
+				background-size: cover;
+				background-repeat: no-repeat;
+				background-position: center center;
+				display: block;
+				cursor: pointer;
+				border-radius: 8px; margin: 5px 10px 5px 5px;
+				border: solid 1px rgba($black,0.3);
+				background-color: rgba($black,0.1);
+			}
+			.option-image-buttons{
+				width: 50px;;
+			}
+			.option-types{
+				height: 38px;
+				position: relative;
+				width: 100%;
+				.option-type{
+					cursor: pointer;
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 38px;
+					padding: 8px;
+					text-align: center;
+				}
+			}
+			.option-text{
+				padding: 5px;
+				text-align: center;
+				position: relative;
+				width: 100%;
+				text-align: left;
+				font-size: 18px;
+				display: flex;
+				flex-flow: column;
+				h3{
+					margin: 0;
+					padding: 0;
+					@include font(14px,300);
+				}
+				input.form-ui{
+					@include font(24px, 500);
+					box-shadow: none;
+					width: 100%;
+					padding: 5px;
+					color: rgba($black,1);
+					&::placeholder{
+						@include font(18px, 300);
+						padding: 10px;
+						font-style: italic;
+						color: rgba($black,0.5);
+					}
+				}
+			}
+			.option-actions{
+				width: 50px;
+				padding: 5px;
+				position: relative;
+				.confirm-action{
+					padding: 10px;
+					background-color: $white;
+					box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.5);
+					border: solid 1px $error;
+					border-radius: 4px;
+					bottom: -6px;
+					width: 140px;
+					left: -15px;
+					text-align: center;
+					transition: all 0.3s ease-out;
+					.confirm-buttons-container{
+						width: 100%;
+						padding: 5px;
+						text-align: center;
+					}
+				}
+			}
+
+		}
+	}
+}
+
+

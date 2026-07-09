@@ -36,11 +36,11 @@ if($opts_all_images){
 	<div class="question-media-wrap">
 		<?php if($q_is_image){ ?>
 			<span class="media-type-badge"><span class="icon icon-image"></span> <?= __("Image","bluerabbit"); ?></span>
-			<img src="<?= $qs[$i]->question_image; ?>" class="question-image" style="margin:0;border-radius:0;" alt="">
+			<img src="<?= $qs[$i]->question_image; ?>" class="question-image br-media-flush" alt="">
 
 		<?php }elseif($q_is_video){ ?>
 			<span class="media-type-badge"><span class="icon icon-video"></span> <?= __("Video","bluerabbit"); ?></span>
-			<video class="question-image" controls style="margin:0;border-radius:0;">
+			<video class="question-image br-media-flush" controls>
 				<source src="<?= $qs[$i]->question_image; ?>">
 			</video>
 
@@ -53,7 +53,7 @@ if($opts_all_images){
 						<svg class="svg-play" viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 							<polygon points="6,3 20,12 6,21" fill="#1cc2eb"/>
 						</svg>
-						<svg class="svg-pause" viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:none">
+						<svg class="svg-pause br-initially-hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 							<rect x="5" y="3" width="4" height="18" rx="1" fill="#1cc2eb"/>
 							<rect x="15" y="3" width="4" height="18" rx="1" fill="#1cc2eb"/>
 						</svg>
@@ -63,7 +63,7 @@ if($opts_all_images){
 						<div class="player-hint">// <?= __("press play to hear the question","bluerabbit"); ?></div>
 					</div>
 					<div class="waveform" id="waveform-<?= $qs[$i]->question_id; ?>">
-						<?php for($b=0;$b<13;$b++){ ?><div class="bar" style="height:<?= rand(6,24); ?>px;animation-delay:<?= ($b*.05); ?>s"></div><?php } ?>
+						<?php for($b=0;$b<13;$b++){ ?><div class="bar" style="--bar-h:<?= rand(6,24); ?>px;--bar-delay:<?= ($b*.05); ?>s"></div><?php } ?>
 					</div>
 				</div>
 				<div class="player-track">

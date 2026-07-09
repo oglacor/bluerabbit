@@ -28,12 +28,12 @@
 						<?php if($consumables){ ?>
 							<div class="highlight padding-10 pink-bg-50">
 								<span class="icon-group">
-									<span class="button-icon font _24 sq-40  pink-bg-700 white-color">
+									<span class="br-icon-btn br-icon-btn-pink white-color">
 										<span class="icon icon-basket"></span>
 									</span>
 									<span class="icon-content">
-										<span class="font _24 line"><?php _e("My Items",'bluerabbit'); ?></span>
-										<span class="font _14 line"><?php _e('Items bought in the item shop','bluerabbit'); ?></span>
+										<span class="br-text-24 line"><?php _e("My Items",'bluerabbit'); ?></span>
+										<span class="br-text-14 line"><?php _e('Items bought in the item shop','bluerabbit'); ?></span>
 									</span>
 								</span>
 							</div>
@@ -54,16 +54,16 @@
 										<div class="confirm-action overlay-layer" id="confirm-reset-transactions">
 											<button class="form-ui white-bg" onClick="resetTransactions(<?php echo $current_player->player_id; ?>);">
 												<span class="icon-group">
-													<span class="button-icon font _24 sq-40  red-bg-A400 icon-sm">
+													<span class="br-icon-btn br-icon-btn-red-dark">
 														<span class="icon icon-trash white-color"></span>
 													</span>
 													<span class="icon-content">
-														<span class="line red-A400 font _18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
-														<span class="line font _14 grey-400"><?php _e("You can't undo this","bluerabbit"); ?></span>
+														<span class="line red-A400 br-text-18 w900"><?php _e("Are you sure?","bluerabbit"); ?></span>
+														<span class="line br-text-14 grey-400"><?php _e("You can't undo this","bluerabbit"); ?></span>
 													</span>
 												</span>
 											</button>
-											<button class="close-confirm button-icon font _24 sq-40  blue-grey-bg-800 white-color icon-sm" onClick="hideAllOverlay();">
+											<button class="br-close-btn" onClick="hideAllOverlay();">
 												<span class="icon icon-cancel white-color"></span>
 											</button>
 										</div>
@@ -75,12 +75,12 @@
 						<?php }else{ ?>
 							<div class="highlight padding-10 pink-bg-50">
 								<span class="icon-group">
-									<span class="button-icon font _24 sq-40  pink-bg-700 white-color">
+									<span class="br-icon-btn br-icon-btn-pink white-color">
 										<span class="icon icon-basket"></span>
 									</span>
 									<span class="icon-content">
-										<span class="font _24 line"><?php _e("You haven't bought any items",'bluerabbit'); ?></span>
-										<span class="font _14 line"><?php _e('Items bought in the item shop','bluerabbit'); ?></span>
+										<span class="br-text-24 line"><?php _e("You haven't bought any items",'bluerabbit'); ?></span>
+										<span class="br-text-14 line"><?php _e('Items bought in the item shop','bluerabbit'); ?></span>
 									</span>
 								</span>
 							</div>
@@ -88,12 +88,12 @@
 						<?php if($key_items){ ?>
 							<div class="highlight padding-10 indigo-bg-50">
 								<span class="icon-group">
-									<span class="button-icon font _24 sq-40  light-blue-bg-700 white-color">
+									<span class="br-icon-btn br-icon-btn-blue white-color">
 										<span class="icon icon-key"></span>
 									</span>
 									<span class="icon-content">
-										<span class="font _24 line"><?php _e('My Key Items','bluerabbit'); ?></span>
-										<span class="font _14 line"><?php _e('Items bought to unlock','bluerabbit'); ?></span>
+										<span class="br-text-24 line"><?php _e('My Key Items','bluerabbit'); ?></span>
+										<span class="br-text-14 line"><?php _e('Items bought to unlock','bluerabbit'); ?></span>
 									</span>
 								</span>
 							</div>
@@ -111,12 +111,12 @@
 						<?php if($rewards){ ?>
 							<div class="highlight padding-10 teal-bg-50">
 								<span class="icon-group">
-									<span class="button-icon font _24 sq-40  teal-bg-400 white-color">
+									<span class="br-icon-btn br-icon-btn-teal white-color">
 										<span class="icon icon-backpack"></span>
 									</span>
 									<span class="icon-content">
-										<span class="font _24 line"><?php _e('My collection','bluerabbit'); ?></span>
-										<span class="font _14 line"><?php _e('Items earned after completing','bluerabbit'); ?></span>
+										<span class="br-text-24 line"><?php _e('My collection','bluerabbit'); ?></span>
+										<span class="br-text-14 line"><?php _e('Items earned after completing','bluerabbit'); ?></span>
 									</span>
 								</span>
 							</div>
@@ -149,12 +149,12 @@
 						?>	 
 						<div class="highlight padding-10 grey-bg-50">
 							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  orange-bg-400 white-color">
+								<span class="br-icon-btn br-icon-btn-orange white-color">
 									<span class="icon icon-transactions"></span>
 								</span>
 								<span class="icon-content">
-									<span class="font _24 line"><?php _e('My transactions','bluerabbit'); ?></span>
-									<span class="font _14 line"><?php _e('Purchases and consumption','bluerabbit'); ?></span>
+									<span class="br-text-24 line"><?php _e('My transactions','bluerabbit'); ?></span>
+									<span class="br-text-14 line"><?php _e('Purchases and consumption','bluerabbit'); ?></span>
 								</span>
 							</span>
 						</div>
@@ -173,15 +173,15 @@
 											<td>
 												<span class="icon-group">
 													<span class="icon-content">
-														<span class="line font _18 w300"><?php echo $iT->item_name; ?></span>
-														<span class="line font _14 w700 grey-500"><?php echo $iT->trnx_date; ?></span>
+														<span class="line br-text-18 w300"><?php echo $iT->item_name; ?></span>
+														<span class="line br-text-14 w700 grey-500"><?php echo $iT->trnx_date; ?></span>
 													</span>
 												</span>
 											</td>
 											
 											
 											<td>
-												<span class="form-ui light-green-bg-400 white-color font _16">
+												<span class="form-ui light-green-bg-400 white-color br-text-16">
 													<?php echo BR_Utils::instance()->toMoney($iT->trnx_amount); ?>
 												</span>
 											</td>

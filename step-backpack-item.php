@@ -1,0 +1,57 @@
+<?php
+$settings = $step->step_settings ? json_decode($step->step_settings, true) : [];
+$req_item_id = $settings['item_id'] ?? $step->step_item;
+$req_item = $req_item_id ? $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id = %d", $req_item_id)) : null;
+$player_step = $wpdb->get_row($wpdb->prepare(
+	"SELECT * FROM {$wpdb->prefix}br_player_steps WHERE step_id = %d AND player_id = %d AND quest_id = %d AND adventure_id = %d",
+	$step->step_id, $current_user->ID, $q->quest_id, $adv_child_id
+));
+$already_done = ($player_step && $player_step->ps_correct == 1);
+$has_item = $req_item_id ? $wpdb->get_var($wpdb->prepare(
+	"SELECT COUNT(*) FROM {$wpdb->prefix}br_transactions WHERE player_id = %d AND adventure_id = %d AND object_id = %d AND trnx_status = 'publish'",
+	$current_user->ID, $adv_child_id, $req_item_id
+)) : 0;
+?>
+<div class="step <?= $i==0 ? 'active' : ''; ?>" id="step-<?= $step->step_order; ?>">
+	<?php include (TEMPLATEPATH . "/steps-background.php"); ?>
+	<div class="step-content-container step-validate">
+		<div class="dialogue-box">
+			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
+			<div class="edge-left"></div>
+			<div class="center br-text-center">
+				<?php if (!empty($settings['prompt'])) { ?><h3><?= esc_html($settings['prompt']); ?></h3><?php } ?>
+				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
+
+				<?php if ($req_item) { ?>
+				<div class="br-step-item-display <?= ($has_item || $already_done) ? '' : 'br-step-item-locked'; ?>">
+					<?php if ($req_item->item_badge) { ?>
+					<img src="<?= esc_attr($req_item->item_badge); ?>" alt="" class="br-step-item-badge">
+					<?php } ?>
+					<div class="br-step-item-name"><?= esc_html($req_item->item_name); ?></div>
+				</div>
+				<?php } ?>
+
+				<?php if ($already_done) { ?>
+				<div class="br-step-feedback br-step-feedback-success">
+					<span class="icon icon-check"></span> <?= __("Item verified!", "bluerabbit"); ?>
+				</div>
+				<?php } elseif ($has_item) { ?>
+				<div class="steps-navigation action-buttons">
+					<button class="action-button success" onClick="brSubmitGenericStep(<?= $step->step_id; ?>, <?= $q->quest_id; ?>, <?= $adv_child_id; ?>, {player_id:<?= $current_user->ID; ?>,adventure_id:<?= $adv_child_id; ?>}, 'backpack-fb-<?= $step->step_id; ?>');">
+						<?= __("Use Item", "bluerabbit"); ?>
+					</button>
+				</div>
+				<div id="backpack-fb-<?= $step->step_id; ?>" class="br-step-feedback"></div>
+				<?php } else { ?>
+				<div class="br-step-feedback br-step-feedback-error">
+					<span class="icon icon-lock"></span> <?= __("You don't have this item yet", "bluerabbit"); ?>
+				</div>
+				<?php } ?>
+			</div>
+			<div class="edge-right"></div>
+			<div class="corner-bl"></div><div class="edge-bottom"></div><div class="corner-br"></div>
+		</div>
+		<?php include (TEMPLATEPATH . "/step-nav-button-back.php"); ?>
+		<?php if ($already_done) { include (TEMPLATEPATH . "/step-nav-button-next.php"); } ?>
+	</div>
+</div>

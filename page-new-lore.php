@@ -8,12 +8,12 @@ $achievements = BR_Achievement::instance()->getAchievements($adventure->adventur
 $is_edit = ($adventure && isset($quest));
 ?>
 
-<div class="br-page" style="max-width:900px">
+<div class="br-page br-page-narrow">
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(159,64,226,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(159,64,226,0.4)">
-			<span class="icon icon-narrative" style="font-size:28px;color:#9f40e2"></span>
+		<div class="br-page-header-avatar br-avatar-purple">
+			<span class="icon icon-narrative br-icon-lg br-icon-purple"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Resource", "bluerabbit") : __("New Resource", "bluerabbit"); ?></h1>
@@ -122,7 +122,7 @@ $is_edit = ($adventure && isset($quest));
 			</a>
 			<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>">
 			<input type="hidden" id="the_quest_status" value="publish">
-			<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+			<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateQuest();">
 				<span class="icon icon-check"></span>
 				<?= $is_edit ? __("Update Resource", "bluerabbit") : __("Publish Resource", "bluerabbit"); ?>
 			</button>

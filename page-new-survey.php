@@ -39,8 +39,8 @@ $is_edit = isset($quest) && $quest;
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(0,150,136,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(0,150,136,0.4)">
-			<span class="icon icon-survey" style="font-size:28px;color:#009688"></span>
+		<div class="br-page-header-avatar br-avatar-survey">
+			<span class="icon icon-survey br-icon-lg br-icon-survey"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Survey", "bluerabbit") : __("New Survey", "bluerabbit"); ?></h1>
@@ -74,16 +74,16 @@ $is_edit = isset($quest) && $quest;
 		<div class="br-scroll-section" id="general"><div class="br-panel">
 			<div class="highlight padding-10 grey-bg-200">
 				<span class="icon-group">
-					<span class="button-icon font _24 sq-40  teal-bg-400"><span class="icon icon-survey"></span></span>
-					<span class="icon-content"><span class="line font _24 grey-800"><?php _e("General Settings","bluerabbit"); ?></span></span>
+					<span class="br-icon-btn br-icon-btn-teal"><span class="icon icon-survey"></span></span>
+					<span class="icon-content"><span class="line br-text-24 grey-800"><?php _e("General Settings","bluerabbit"); ?></span></span>
 				</span>
 			</div>
 			<table class="table w-full" cellpadding="0">
-				<thead><tr class="font _12 grey-600"><td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td><td><?php _e('Value','bluerabbit'); ?></td></tr></thead>
-				<tbody class="font _16">
+				<thead><tr class="br-text-12 grey-600"><td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td><td><?php _e('Value','bluerabbit'); ?></td></tr></thead>
+				<tbody class="br-text-16">
 					<tr>
 						<td class="text-right w-150"><?php _e('Name','bluerabbit'); ?></td>
-						<td><div class="input-group w-full"><label class="teal-bg-800 font w900"><span class="icon icon-survey"></span></label><input class="form-ui font _30 w-full" type="text" value="<?= $is_edit ? $quest->quest_title : ''; ?>" id="the_quest_title"></div></td>
+						<td><div class="input-group w-full"><label class="teal-bg-800 font w900"><span class="icon icon-survey"></span></label><input class="form-ui br-text-30 w-full" type="text" value="<?= $is_edit ? $quest->quest_title : ''; ?>" id="the_quest_title"></div></td>
 					</tr>
 					<tr>
 						<td class="text-right w-150"><?php _e('Color','bluerabbit'); ?></td>
@@ -106,7 +106,7 @@ $is_edit = isset($quest) && $quest;
 						</td>
 					</tr>
 					<tr>
-						<td class="text-right v-top"><span class="font _16 block"><?= __("Main image","bluerabbit");?></span><span class="font _12 block red-500"><?php _e("Required","bluerabbit"); ?></span></td>
+						<td class="text-right v-top"><span class="br-text-16 block"><?= __("Main image","bluerabbit");?></span><span class="br-text-12 block red-500"><?php _e("Required","bluerabbit"); ?></span></td>
 						<td>
 							<div class="br-gallery br-gallery-single">
 								<?php $thumb_id = 'the_quest_badge'; $file = isset($quest->mech_badge) ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
@@ -126,9 +126,9 @@ $is_edit = isset($quest) && $quest;
 		<div class="br-scroll-section" id="survey-questions"><div class="br-panel">
 			<div class="padding-10 grey-bg-200">
 				<span class="icon-group">
-					<span class="button-icon font _24 sq-40 teal-bg-400"><span class="icon icon-question"></span></span>
+					<span class="br-icon-btn br-icon-btn-teal"><span class="icon icon-question"></span></span>
 					<span class="icon-content">
-						<span class="line font _24 grey-800"><?php _e("Survey Questions","bluerabbit"); ?></span>
+						<span class="line br-text-24 grey-800"><?php _e("Survey Questions","bluerabbit"); ?></span>
 					</span>
 					<span class="icon-content pull-right">
 						<button class="form-ui amber-bg-800 white-color default-actions" onClick="activateReorder('#questions');"><span class="icon icon-repeat"></span> <?php _e("Reorder","bluerabbit");?></button>
@@ -156,7 +156,7 @@ $is_edit = isset($quest) && $quest;
 				</div>
 				<div id="questions-bottom"></div>
 			<?php }else{ ?>
-				<div class="highlight padding-10 red-bg-100 text-center font _24 w400"><?= __('Please save the survey before adding questions','bluerabbit'); ?></div>
+				<div class="highlight padding-10 red-bg-100 text-center br-text-24 w400"><?= __('Please save the survey before adding questions','bluerabbit'); ?></div>
 			<?php } ?>
 		</div></div>
 
@@ -181,7 +181,7 @@ $is_edit = isset($quest) && $quest;
 	</a>
 	<div class="br-actions">
 		<?php if(isset($paths['publish'])){ ?>
-		<select id="the_achievement_id" class="br-input" style="width:auto">
+		<select id="the_achievement_id" class="br-input br-select-auto">
 			<option value="0" <?= !isset($quest->achievement_id) ? 'selected' : ''; ?>><?= __('All paths','bluerabbit'); ?></option>
 			<?php foreach($paths['publish'] as $a){ ?>
 				<option id="achievement-option-<?= $a->achievement_id; ?>" value="<?= $a->achievement_id;?>" <?= (isset($quest->achievement_id) && $quest->achievement_id == $a->achievement_id) ? 'selected' : ''; ?>><?= $a->achievement_name; ?></option>
@@ -190,7 +190,7 @@ $is_edit = isset($quest) && $quest;
 		<?php } else { ?>
 			<input id="the_achievement_id" type="hidden" value="0">
 		<?php } ?>
-		<select id="the_quest_status" class="br-input" style="width:auto">
+		<select id="the_quest_status" class="br-input br-select-auto">
 			<option value="publish" <?= (!$is_edit || $quest->quest_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish","bluerabbit"); ?></option>
 			<option value="draft" <?= ($is_edit && $quest->quest_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft","bluerabbit"); ?></option>
 			<option value="locked" <?= ($is_edit && $quest->quest_status == 'locked') ? 'selected' : ''; ?>><?= __("Locked","bluerabbit"); ?></option>
@@ -199,14 +199,14 @@ $is_edit = isset($quest) && $quest;
 		<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_quest_nonce'); ?>">
 		<input type="hidden" id="delete-question-nonce" value="<?= wp_create_nonce('br_delete_question_nonce'); ?>">
 		<input type="hidden" id="delete-option-nonce" value="<?= wp_create_nonce('br_delete_option_nonce'); ?>">
-		<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+		<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateQuest();">
 			<span class="icon icon-check"></span>
 			<?= $is_edit ? __("Update Survey", "bluerabbit") : __("Create Survey", "bluerabbit"); ?>
 		</button>
 		<?php if($is_edit){ ?>
 		<button class="br-btn" onClick="showOverlay('#list-of-adventures');"><span class="icon icon-infinite"></span> <?= __("Duplicate","bluerabbit"); ?></button>
 		<div class="confirm-action overlay-layer red-bg-400" id="list-of-adventures">
-			<span class="line font _14 w900 white-color"><?php _e('Select destination','bluerabbit'); ?></span>
+			<span class="line br-text-14 w900 white-color"><?php _e('Select destination','bluerabbit'); ?></span>
 			<select class="form-ui" id="adventure_target">
 				<?php foreach($adventures as $c){ ?><option value="<?= $c->adventure_id;?>"><?= $c->adventure_id == $adventure->adventure_id ? __("Same adventure","bluerabbit") : $c->adventure_title;?></option><?php } ?>
 			</select><br>

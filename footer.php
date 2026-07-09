@@ -51,7 +51,7 @@
 		<div class="confirm-logout layer feedback fixed sq-vp-full" id="confirm-logout">
 			<div class="layer background red-bg-800 opacity-80 absolute" onClick="hideAllOverlay();"></div>
 			<div class="layer base absolute perfect-center">
-				<button class="foreground form-ui red-bg-400 font _30" onClick="br_logout();">
+				<button class="foreground form-ui red-bg-400 br-text-30" onClick="br_logout();">
 					<?= __("Logout","bluerabbit"); ?>
 				</button><br>
 				<button class="foreground form-ui" onClick="hideAllOverlay();"><?= __("Cancel","bluerabbit"); ?></button>
@@ -62,11 +62,11 @@
 			<div class="layer absolute background blue-bg-800 opacity-80" onClick="hideAllOverlay();"></div>
 			<div class="layer absolute background black-bg opacity-60" onClick="hideAllOverlay();"></div>
 			<div class="layer relative base perfect-center text-center w-400">
-				<h3 class="white-color font _30 w700"><span class="icon icon-mail"></span> <?php _e("Contact Admin","bluerabbit"); ?></h3>
-				<p class="white-color font _14 opacity-60 padding-5"><?php _e("Send a message to the adventure admins","bluerabbit"); ?></p>
-				<input class="form-ui w-full font _16" type="text" id="request-subject" placeholder="<?php _e("Subject","bluerabbit"); ?>" maxlength="255">
+				<h3 class="white-color br-text-30 w700"><span class="icon icon-mail"></span> <?php _e("Contact Admin","bluerabbit"); ?></h3>
+				<p class="white-color br-text-14 opacity-60 padding-5"><?php _e("Send a message to the adventure admins","bluerabbit"); ?></p>
+				<input class="form-ui w-full br-text-16" type="text" id="request-subject" placeholder="<?php _e("Subject","bluerabbit"); ?>" maxlength="255">
 				<br>
-				<textarea class="form-ui w-full font _14" id="request-content" rows="5" placeholder="<?php _e("Describe your request...","bluerabbit"); ?>"></textarea>
+				<textarea class="form-ui w-full br-text-14" id="request-content" rows="5" placeholder="<?php _e("Describe your request...","bluerabbit"); ?>"></textarea>
 				<br>
 				<button class="form-ui blue-bg-400" onClick="submitRequest();"><span class="icon icon-check"></span> <?php _e("Send","bluerabbit"); ?></button>
 				<button class="form-ui grey-bg-600" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span> <?php _e("Cancel","bluerabbit"); ?></button>
@@ -80,7 +80,7 @@
 				<div class="layer absolute background deep-purple-bg-400 opacity-80" onClick="hideAllOverlay();"></div>
 				<div class="layer absolute background black-bg opacity-60" onClick="hideAllOverlay();"></div>
 				<div class="layer relative base perfect-center text-center">
-					<h3 class="white-color font _30 w700"><span class="icon icon-qr"></span> <?php _e("What's the code?",'bluerabbit'); ?></h3>
+					<h3 class="white-color br-text-30 w700"><span class="icon icon-qr"></span> <?php _e("What's the code?",'bluerabbit'); ?></h3>
 					<input class="magic-code-field" type="text" id="magic-code" placeholder="<?php _e("Enter code",'bluerabbit'); ?>">
 					<br>
 					<button class="form-ui purple-bg-400" onClick="submitMagicCode();"><span class="icon icon-check"></span> <?php _e('Send','bluerabbit'); ?></button>
@@ -92,24 +92,24 @@
 				<div class="layer absolute background red-bg-400 opacity-80" onClick="hideAllOverlay();"></div>
 				<div class="layer absolute background black-bg opacity-60" onClick="hideAllOverlay();"></div>
 				<div class="layer relative base perfect-center text-center w-400">
-					<h1 class="font _20 w100 padding-10 w-full white-color red-bg-400 text-center">
+					<h1 class="br-text-20 w100 padding-10 w-full white-color red-bg-400 text-center">
 						<span class="icon icon-quest"></span>
 						<?php _e("Reset Demo","bluerabbit"); ?>
 					</h1>
 					<?php if(BR_Config::instance()->getSetting('req_password_reset_demo', $adventure->adventure_id)){ ?>
-						<h3 class="white-bg grey-900 padding-5 font _14"><?= __("To reset this demo type your pasword and click reset","bluerabbit"); ?></h3>
+						<h3 class="white-bg grey-900 padding-5 br-text-14"><?= __("To reset this demo type your pasword and click reset","bluerabbit"); ?></h3>
 						<br>
 						<div class="input-group w-full">
-							<label for="the_player_password" class="red-bg-A400 white-color font _16 w300 uppercase condensed">
+							<label for="the_player_password" class="red-bg-A400 white-color br-text-16 w300 uppercase condensed">
 								<span class="icon icon-lock"></span><?= __("Password","bluerabbit"); ?>
 							</label>
-							<input type="password" id="the_player_password" name="the_player_password" class="form-ui font _18 w-full">
+							<input type="password" id="the_player_password" name="the_player_password" class="form-ui br-text-18 w-full">
 						</div>
-						<button class="form-ui red-bg-A400 font _20" onClick="resetDemoAdventurePlayer();"><?= __("Reset","bluerabbit"); ?></button>
+						<button class="form-ui red-bg-A400 br-text-20" onClick="resetDemoAdventurePlayer();"><?= __("Reset","bluerabbit"); ?></button>
 					<?php }else{ ?>
-						<h3 class="white-bg grey-900 padding-5 font _14"><?= __("To reset this demo click reset","bluerabbit"); ?></h3>
+						<h3 class="white-bg grey-900 padding-5 br-text-14"><?= __("To reset this demo click reset","bluerabbit"); ?></h3>
 						<br>
-						<button class="form-ui red-bg-A400 font _20" onClick="resetDemoAdventurePlayer();"><?= __("Reset","bluerabbit"); ?></button>
+						<button class="form-ui red-bg-A400 br-text-20" onClick="resetDemoAdventurePlayer();"><?= __("Reset","bluerabbit"); ?></button>
 					<?php } ?>
 				</div>
 				<input type="hidden" id="reset_demo_nonce" value="<?php echo wp_create_nonce('br_reset_demo_nonce'); ?>" />
@@ -160,11 +160,11 @@
             <div class="hidden" id="msg-save-first">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("Please save first","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("Please save first","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -172,11 +172,11 @@
             <div class="hidden" id="msg-error">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("Error","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("Error","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -184,11 +184,11 @@
             <div class="hidden" id="msg-new-tabi-row">
                 <li class='border green-bg-400 green-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-check green-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("Tabi Row Inserted","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("Tabi Row Inserted","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -196,11 +196,11 @@
             <div class="hidden" id="msg-no-id">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("Invalid object ID","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("Invalid object ID","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -208,11 +208,11 @@
             <div class="hidden" id="msg-no-path-choice">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("You must choose a path group for this type of step","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("You must choose a path group for this type of step","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -220,11 +220,11 @@
             <div class="hidden" id="msg-no-step-item">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("You must select an item for this type of step","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("You must select an item for this type of step","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -232,11 +232,11 @@
             <div class="hidden" id="msg-no-step-req-selected">
                 <li class='border red-bg-400 red-border-500'>
                     <span class='icon-group white-color '>
-                        <span class='button-icon font _24 sq-40  icon-sm white-bg'>
+                        <span class='br-icon-btn br-icon-btn-white'>
                             <span class='icon icon-cancel red-400'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _16'><?= __("You must select the right item to proceed on this quest","bluerabbit"); ?></span>
+                            <span class='line br-text-16'><?= __("You must select the right item to proceed on this quest","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -244,11 +244,11 @@
             <div class="hidden" id="msg-new-button-added">
                 <li class='border white-bg blue-border-400'>
                     <span class='icon-group blue-grey-900'>
-                        <span class='button-icon font _24 sq-40  icon-sm blue-bg-400'>
+                        <span class='br-icon-btn br-icon-btn-blue'>
                             <span class='icon icon-check white-color'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _18 w900'><?= __("Button added!","bluerabbit"); ?></span>
+                            <span class='line br-text-18 w900'><?= __("Button added!","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -256,11 +256,11 @@
             <div class="hidden" id="msg-new-button-added">
                 <li class='border white-bg blue-border-400'>
                     <span class='icon-group blue-grey-900'>
-                        <span class='button-icon font _24 sq-40  icon-sm blue-bg-400'>
+                        <span class='br-icon-btn br-icon-btn-blue'>
                             <span class='icon icon-check white-color'></span>
                         </span>
                         <span class='icon-content'>
-                            <span class='line font _18 w900'><?= __("Button added!","bluerabbit"); ?></span>
+                            <span class='line br-text-18 w900'><?= __("Button added!","bluerabbit"); ?></span>
                         </span>
                     </span>
                 </li>
@@ -268,11 +268,11 @@
             <div class="hidden" id="msg-text-copied">
 				<li class='border deep-purple-bg-400 purple-border-800'>
 					<span class='icon-group'>
-						<span class='button-icon font _24 sq-40'>
+						<span class='br-icon-btn'>
 							<span class='icon white-color'></span>
 						</span>
 						<span class='icon-content white-color'>
-							<span class='line font _16'><?= __("Copied!","bluerabbit"); ?></span>
+							<span class='line br-text-16'><?= __("Copied!","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</li>
@@ -280,11 +280,11 @@
             <div class="hidden" id="msg-no-file-selected">
 				<li class='border red-bg-400 red-border-800'>
 					<span class='icon-group'>
-						<span class='button-icon font _24 sq-40'>
+						<span class='br-icon-btn'>
 							<span class='icon icon-cancel white-color'></span>
 						</span>
 						<span class='icon-content white-color'>
-							<span class='line font _16'><?= __("No file selected!","bluerabbit"); ?></span>
+							<span class='line br-text-16'><?= __("No file selected!","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</li>
@@ -299,28 +299,28 @@
 		</div>
 		<!-- END Message inputs -->
 		<div class="svg-container">
-			<svg class="hex-clip-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.5 0, 1 0.25, 1 0.75, 0.5 1, 0 0.75, 0 0.25" />
 					</clipPath>
 				</defs>
 			</svg>  	
-			<svg class="hex-clip-flat-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-flat-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-flat-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.25 0, 0.75 0, 1 0.5, 0.75 1, 0.25 1, 0 0.5" />
 					</clipPath>
 				</defs>
 			</svg>  	
-			<svg class="hex-clip-long-flat-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-long-flat-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-long-flat-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.175 0, 0.825 0, 1 0.5, 0.825 1, 0.175 1, 0 0.5" />
 					</clipPath>
 				</defs>
 			</svg>  	
-			<svg class="hex-clip-longer-flat-svg" style="width: 0; height: 0; overflow: hidden;">
+			<svg class="hex-clip-longer-flat-svg svg-clip-definitions">
 				<defs>
 					<clipPath id="hex-clip-longer-flat-svg" clipPathUnits="objectBoundingBox">
 						<polygon points="0.125 0, 0.875 0, 1 0.5, 0.875 1, 0.125 1, 0 0.5" />
@@ -374,10 +374,10 @@
 			<div class="layer deep-bg fixed sq-full black-bg opacity-50 top left" onClick="activate('#profile-box');"></div>
 			<div class="profile-box-container layer overlay">
 				<div class="layer background black-bg absolute sq-full top left" style= "background-image: url(<?= get_bloginfo('stylesheet_directory')."/images/profile-box-bg.png"; ?>); "></div>
-				<button class="layer foreground absolute top-10 left-10 font _20 button-icon transparent-bg opacity-60" onClick="activate('#profile-box');">
+				<button class="layer foreground absolute top-10 left-10 br-icon-btn br-icon-btn-transparent br-text-20 opacity-60" onClick="activate('#profile-box');">
 					<span class="icon icon-cancel"></span>
 				</button>
-				<button class="layer foreground absolute top-10 right-10 font _20 button-icon transparent-bg opacity-60" id="logout-button" onClick="activate('#confirm-logout');">
+				<button class="layer foreground absolute top-10 right-10 br-icon-btn br-icon-btn-transparent br-text-20 opacity-60" id="logout-button" onClick="activate('#confirm-logout');">
 					<span class="icon icon-power"></span>
 				</button>
 
@@ -386,7 +386,7 @@
 						<?php if(isset($myRank)){?>
 						<button class="form-ui transparent-bg" onClick="loadAchievementCard(<?= $myRank->achievement_id; ?>);">
 							<span class="layer background absolute white-bg opacity-10 background-badge"></span>
-							<span class="layer base button-icon badge-icon sq-40 font _22" <?= br_color_attr($myRank->achievement_color ? $myRank->achievement_color : $adventure->adventure_color) ?>>
+							<span class="layer base br-icon-btn badge-icon br-text-22" <?= br_color_attr($myRank->achievement_color ? $myRank->achievement_color : $adventure->adventure_color) ?>>
 								<span class="icon icon-rank perfect-center absolute"></span>
 							</span>
 							<span class="relative layer base text"><?= $myRank->achievement_name ? $myRank->achievement_name : $adventure->adventure_nickname;?></span>
@@ -406,20 +406,20 @@
 						</a>
 					</div>
 					<div class="w-full padding-10 text-center">
-						<h1 class="font _40 w100 white-color">
+						<h1 class="br-text-40 w100 white-color">
 							<span id="status-player-display-name"><?= $current_player->player_display_name; ?></span>
-							<a href="<?= get_bloginfo('url')."/my-account/"; ?>" class="opacity-30 font _16">
+							<a href="<?= get_bloginfo('url')."/my-account/"; ?>" class="opacity-30 br-text-16">
 								<span class="icon icon-edit"></span>
 							</a>
 						</h1>
 						<?php if(isset($adventure) && isset($current_player->player_level) ){ ?>
-							<h3 class="font _24 w900 white-color" id="status-player-level"><?= "LV ".$current_player->player_level; ?></h3>
+							<h3 class="br-text-24 w900 white-color" id="status-player-level"><?= "LV ".$current_player->player_level; ?></h3>
 						<?php } ?>
 					</div>
 					<?php if(isset($adventure) && isset($current_player->player_level)){ ?>
 						<div class="status-stats" id="status-stats">
 							<div class="stat w-full" id="status-xp">
-								<div class="stat-legend font _14">
+								<div class="stat-legend br-text-14">
 									<div class="left-legend w-half text-left pull-left uppercase font w900">
 										<span class="icon icon-star"></span> <?= $xp_long_label; ?>
 									</div>
@@ -432,7 +432,7 @@
 								</div>
 							</div>
 							<div class="stat w-full" id="status-bloo">
-								<div class="stat-legend font _14 padding-5">
+								<div class="stat-legend br-text-14 padding-5">
 									<div class="left-legend w-half text-left pull-left uppercase font w900">
 										<span class="icon icon-bloo"></span> <?= $bloo_long_label; ?>
 									</div>
@@ -449,7 +449,7 @@
 							</div>
 							<?php if(($use_encounters) && isset($adventure)){ ?>
 								<div class="stat w-full" id="status-ep">
-									<div class="stat-legend font _14 padding-5">
+									<div class="stat-legend br-text-14 padding-5">
 										<div class="left-legend w-half text-left pull-left uppercase font w900">
 											<span class="icon icon-activity"></span> <?= $ep_long_label; ?>
 										</div>

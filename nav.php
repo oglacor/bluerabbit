@@ -465,7 +465,7 @@
 						<a class="" href="<?= get_bloginfo('url')."/new-quest/?adventure_id=$adv_parent_id"; ?>">
 							<span class="content">
 								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-quest.png" alt=""/></span>
-								<span class="label"><?= __("New Quest","bluerabbit"); ?></span>
+								<span class="label"><?= __("New Milestone","bluerabbit"); ?></span>
 							</span>
 						</a>
 					</li>

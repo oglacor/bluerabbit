@@ -10,11 +10,11 @@ $players = $wpdb->get_results("
 "); ?>
 
 <!-- Bulk Upload -->
-<div style="padding:16px 0;border-bottom:1px solid rgba(28,194,235,0.08)">
-	<label class="br-form-label" style="margin-bottom:8px"><?= __('Bulk Upload Players', 'bluerabbit'); ?></label>
-	<span class="br-form-hint" style="display:block;margin-bottom:10px"><?= __("Upload a CSV file with a single column and the emails of the players you want to assign", "bluerabbit"); ?></span>
-	<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-		<input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" class="br-input" style="padding:7px 14px;flex:1;min-width:200px" accept=".csv">
+<div class="br-psa-bulk-section">
+	<label class="br-form-label br-psa-bulk-label"><?= __('Bulk Upload Players', 'bluerabbit'); ?></label>
+	<span class="br-form-hint br-psa-bulk-hint"><?= __("Upload a CSV file with a single column and the emails of the players you want to assign", "bluerabbit"); ?></span>
+	<div class="br-psa-bulk-row">
+		<input type="file" name="the_csv_file_with_players" id="the_csv_file_with_players" class="br-input br-psa-file-input" accept=".csv">
 		<button type="button" onClick="assignBulkUsersToAchievement();" class="br-btn br-btn-green">
 			<span class="icon icon-upload"></span> <?= __("Upload file", "bluerabbit"); ?>
 		</button>
@@ -22,14 +22,14 @@ $players = $wpdb->get_results("
 </div>
 
 <!-- Search + Actions Bar -->
-<div style="display:flex;align-items:center;gap:10px;padding:16px 0;flex-wrap:wrap" id="tutorial-player-select">
-	<input type="text" class="br-input" id="search-achievement-players" placeholder="<?= __('Search players...', 'bluerabbit'); ?>" style="flex:1;min-width:180px">
-	<span style="font-size:13px;color:rgba(255,255,255,0.4)"><span id="ach-player-count"><?= count($players); ?></span> <?= __("players", "bluerabbit"); ?></span>
-	<div class="br-actions" style="gap:6px">
-		<button class="br-btn br-btn-green" onClick="triggerAchievements();" style="padding:6px 14px;font-size:13px">
+<div class="br-psa-toolbar" id="tutorial-player-select">
+	<input type="text" class="br-input br-psa-search" id="search-achievement-players" placeholder="<?= __('Search players...', 'bluerabbit'); ?>">
+	<span class="br-psa-count"><span id="ach-player-count"><?= count($players); ?></span> <?= __("players", "bluerabbit"); ?></span>
+	<div class="br-actions br-psa-actions">
+		<button class="br-btn br-btn-green br-psa-action-btn" onClick="triggerAchievements();">
 			<span class="icon icon-check"></span> <?= __("Assign all", "bluerabbit"); ?>
 		</button>
-		<button class="br-btn br-btn-red" onClick="triggerAchievements('off');" style="padding:6px 14px;font-size:13px">
+		<button class="br-btn br-btn-red br-psa-action-btn" onClick="triggerAchievements('off');">
 			<span class="icon icon-cancel"></span> <?= __("Remove all", "bluerabbit"); ?>
 		</button>
 	</div>
@@ -49,7 +49,7 @@ $players = $wpdb->get_results("
 		<div class="br-player-info">
 			<span class="br-player-name"><?= esc_html($pName); ?></span>
 			<span class="br-player-meta">
-				<span style="color:#9f40e2;font-weight:700">Lv.<?= $p->player_level; ?></span> &middot; <?= esc_html($p->user_email); ?>
+				<span class="br-psa-player-meta-level">Lv.<?= $p->player_level; ?></span> &middot; <?= esc_html($p->user_email); ?>
 			</span>
 			<input type="hidden" class="player-id" value="<?= $p->player_id; ?>">
 		</div>
@@ -96,11 +96,11 @@ var brAchPlayers = {
 		var h = '', p = this.page;
 		if (p > 1) h += '<button class="br-page-btn" onclick="brAchPlayers.goTo(' + (p-1) + ')">&laquo;</button>';
 		var start = Math.max(1, p - 3), end = Math.min(pages, p + 3);
-		if (start > 1) { h += '<button class="br-page-btn" onclick="brAchPlayers.goTo(1)">1</button>'; if (start > 2) h += '<span style="color:rgba(255,255,255,0.3)">…</span>'; }
+		if (start > 1) { h += '<button class="br-page-btn" onclick="brAchPlayers.goTo(1)">1</button>'; if (start > 2) h += '<span class="br-pagination-ellipsis">…</span>'; }
 		for (var i = start; i <= end; i++) {
 			h += '<button class="br-page-btn' + (i === p ? ' active' : '') + '" onclick="brAchPlayers.goTo(' + i + ')">' + i + '</button>';
 		}
-		if (end < pages) { if (end < pages-1) h += '<span style="color:rgba(255,255,255,0.3)">…</span>'; h += '<button class="br-page-btn" onclick="brAchPlayers.goTo(' + pages + ')">' + pages + '</button>'; }
+		if (end < pages) { if (end < pages-1) h += '<span class="br-pagination-ellipsis">…</span>'; h += '<button class="br-page-btn" onclick="brAchPlayers.goTo(' + pages + ')">' + pages + '</button>'; }
 		if (p < pages) h += '<button class="br-page-btn" onclick="brAchPlayers.goTo(' + (p+1) + ')">&raquo;</button>';
 		$('#ach-player-pagination').html(h);
 	},

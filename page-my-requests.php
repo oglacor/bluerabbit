@@ -14,15 +14,15 @@
 <div class="br-journey-manager">
 
 	<!-- Header -->
-	<div class="br-panel" style="border-radius:12px 12px 0 0;margin-bottom:0;">
-		<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-			<div style="display:flex;align-items:center;gap:14px;">
-				<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(33,150,243,0.15);border-radius:10px;font-size:22px;color:#2196f3;">
+	<div class="br-panel br-requests-header">
+		<div class="br-requests-header-row">
+			<div class="br-requests-header-left">
+				<div class="br-requests-icon-box">
 					<span class="icon icon-mail"></span>
 				</div>
 				<div>
-					<h2 class="br-panel-title" style="margin:0;"><?php _e('My Requests', 'bluerabbit'); ?></h2>
-					<span style="font-size:13px;color:rgba(255,255,255,0.45);">
+					<h2 class="br-panel-title br-m0"><?php _e('My Requests', 'bluerabbit'); ?></h2>
+					<span class="br-requests-subtitle">
 						<?= $my_counts->total . ' ' . __('sent','bluerabbit'); ?>
 					</span>
 				</div>
@@ -36,8 +36,8 @@
 	</div>
 
 	<!-- Filters -->
-	<div class="br-panel" style="border-radius:0;margin-bottom:0;padding:12px 24px;">
-		<div class="br-actions" style="gap:6px;">
+	<div class="br-panel br-requests-filters">
+		<div class="br-actions br-gap-6">
 			<button class="br-btn cyan request-filter-btn active" id="request-filter-all" data-status="all" onClick="loadMyRequests('all');">
 				<?php _e("All","bluerabbit"); ?> (<?= $my_counts->total; ?>)
 			</button>
@@ -54,7 +54,7 @@
 	</div>
 
 	<!-- Request list -->
-	<div class="br-section-body" id="my-requests-list" style="border-radius:0 0 12px 12px;">
+	<div class="br-section-body br-requests-list" id="my-requests-list">
 		<?php
 		$my_requests = $wpdb->get_results($wpdb->prepare("SELECT *
 			FROM {$wpdb->prefix}br_requests r

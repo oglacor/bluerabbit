@@ -40,8 +40,8 @@ $is_edit = isset($quest);
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(244,67,54,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(244,67,54,0.4)">
-			<span class="icon icon-challenge" style="font-size:28px;color:#f44336"></span>
+		<div class="br-page-header-avatar br-avatar-red">
+			<span class="icon icon-challenge br-icon-lg br-icon-red"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title" id="challenge-title-label"><?= $is_edit ? __("Edit Challenge", "bluerabbit") . ' &rsaquo; ' . esc_html($quest->quest_title) : __("New Challenge", "bluerabbit"); ?></h1>
@@ -52,7 +52,7 @@ $is_edit = isset($quest);
 		<input type="hidden" id="the_challenge_id" value="<?= $questID; ?>">
 		<input type="hidden" id="the_quest_order" value="<?= isset($quest) ? $quest->quest_order : count($quests); ?>">
 		<?php if ($is_edit) { ?>
-		<a class="br-btn" href="<?= get_bloginfo('url') . "/challenge/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank" style="margin-left:auto">
+		<a class="br-btn br-ml-auto" href="<?= get_bloginfo('url') . "/challenge/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank">
 			<span class="icon icon-view"></span> <?= __("View Challenge", "bluerabbit"); ?>
 		</a>
 		<?php } ?>
@@ -109,7 +109,7 @@ $is_edit = isset($quest);
 		</div>
 
 		<div class="br-form-group">
-			<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+			<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
 				<div class="br-gallery br-gallery-single">
 					<?php $thumb_id = 'the_quest_badge'; $file = isset($quest) ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
@@ -122,7 +122,7 @@ $is_edit = isset($quest);
 	<div class="br-scroll-section" id="challenge-mechanics"><div class="br-panel">
 		<?php include (get_stylesheet_directory() . '/component-quest-base-mechs.php'); ?>
 
-		<h3 class="br-panel-title" style="margin-top:24px"><span class="icon icon-challenge"></span> <?= __("Challenge Mechanics", "bluerabbit"); ?></h3>
+		<h3 class="br-panel-title br-mt-md"><span class="icon icon-challenge"></span> <?= __("Challenge Mechanics", "bluerabbit"); ?></h3>
 
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Time Limit", "bluerabbit"); ?></label>
@@ -133,7 +133,7 @@ $is_edit = isset($quest);
 			</div>
 		</div>
 
-		<div class="br-form-grid" style="grid-template-columns:1fr 1fr 1fr">
+		<div class="br-form-grid br-form-grid-3">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Questions to display", "bluerabbit"); ?></label>
 				<input class="br-input" type="number" id="the_quest_questions_to_display"
@@ -149,7 +149,7 @@ $is_edit = isset($quest);
 				<div class="br-input-group">
 					<input class="br-input" type="number" min="1" id="the_quest_max_attempts"
 						   value="<?= isset($quest->mech_max_attempts) ? $quest->mech_max_attempts : ''; ?>">
-					<span class="br-input-suffix" style="font-size:10px"><?= __("0 = infinite", "bluerabbit"); ?></span>
+					<span class="br-input-suffix br-input-suffix-sm"><?= __("0 = infinite", "bluerabbit"); ?></span>
 				</div>
 			</div>
 		</div>
@@ -165,7 +165,7 @@ $is_edit = isset($quest);
 				<div class="br-input-group">
 					<input class="br-input" type="number" id="the_quest_attempt_cost"
 						   value="<?= isset($quest->mech_attempt_cost) ? $quest->mech_attempt_cost : ''; ?>">
-					<span class="br-input-suffix" style="font-size:10px"><?= __("after free attempts", "bluerabbit"); ?></span>
+					<span class="br-input-suffix br-input-suffix-sm"><?= __("after free attempts", "bluerabbit"); ?></span>
 				</div>
 			</div>
 		</div>
@@ -182,11 +182,11 @@ $is_edit = isset($quest);
 		<p class="br-panel-subtitle"><?= __("The more questions the more random the challenge", "bluerabbit"); ?></p>
 
 		<?php if(isset($adventure) && isset($quest)){ ?>
-			<div class="br-form-group" style="margin-bottom:16px">
+			<div class="br-form-group br-mb-md">
 				<label class="br-form-label"><?= __("Bulk Upload", "bluerabbit"); ?></label>
 				<div class="br-question-upload">
 					<form id="upload_bulk_questions_form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
-						<input type="file" name="the_csv_file_with_questions" id="the_csv_file_with_questions" class="br-input" style="flex:1">
+						<input type="file" name="the_csv_file_with_questions" id="the_csv_file_with_questions" class="br-input br-flex-1">
 						<button type="button" class="br-btn br-btn-green" onClick="uploadBulkQuestions();">
 							<span class="icon icon-upload"></span> <?= __("Upload file", "bluerabbit"); ?>
 						</button>
@@ -198,14 +198,14 @@ $is_edit = isset($quest);
 				<?php if(isset($questions)){ $qCount = 0; foreach($questions as $qKey=>$question){ $qCount++; include (TEMPLATEPATH . '/challenge-question-form.php'); } } ?>
 			</div>
 			<div id="questions-bottom"></div>
-			<div style="padding:12px 0;text-align:right">
+			<div class="br-flex-mt-sm br-flex-end">
 				<button class="br-btn br-btn-green" onClick="addQuestion('challenge');">
 					<span class="icon icon-add"></span> <?= __("Add Question", "bluerabbit"); ?>
 				</button>
 			</div>
 		<?php }else{ ?>
 			<div class="br-empty-state">
-				<span class="icon icon-warning" style="font-size:24px;color:#f44336"></span>
+				<span class="icon icon-warning br-icon-red br-icon-md"></span>
 				<span><?= __('Please save the challenge before adding questions','bluerabbit'); ?></span>
 			</div>
 		<?php } ?>
@@ -232,7 +232,7 @@ $is_edit = isset($quest);
 	</a>
 	<div class="br-actions">
 		<?php if(isset($paths['publish'])){ ?>
-		<select id="the_achievement_id" class="br-input" style="width:auto">
+		<select id="the_achievement_id" class="br-input br-select-auto">
 			<option value="0" <?= !isset($quest->achievement_id) ? 'selected' : ''; ?>><?= __('All paths','bluerabbit'); ?></option>
 			<?php foreach($paths['publish'] as $a){ ?>
 				<option id="achievement-option-<?= $a->achievement_id; ?>" value="<?= $a->achievement_id;?>" <?= (isset($quest) && $quest->achievement_id == $a->achievement_id) ? 'selected' : ''; ?>><?= $a->achievement_name; ?></option>
@@ -241,7 +241,7 @@ $is_edit = isset($quest);
 		<?php } else { ?>
 			<input id="the_achievement_id" type="hidden" value="0">
 		<?php } ?>
-		<select id="the_quest_status" class="br-input" style="width:auto">
+		<select id="the_quest_status" class="br-input br-select-auto">
 			<option value="publish" <?= (!$is_edit || $quest->quest_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish","bluerabbit"); ?></option>
 			<option value="draft" <?= ($is_edit && $quest->quest_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft","bluerabbit"); ?></option>
 			<option value="locked" <?= ($is_edit && $quest->quest_status == 'locked') ? 'selected' : ''; ?>><?= __("Locked","bluerabbit"); ?></option>
@@ -256,12 +256,12 @@ $is_edit = isset($quest);
 		</button>
 		<?php if($is_edit){ ?>
 		<button class="br-btn" onClick="showOverlay('#list-of-adventures');"><span class="icon icon-infinite"></span> <?= __("Duplicate","bluerabbit"); ?></button>
-		<div class="confirm-action overlay-layer" id="list-of-adventures" style="background:rgba(30,30,30,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:16px">
-			<span style="display:block;font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:8px"><?= __('Select destination','bluerabbit'); ?></span>
-			<select class="br-input" id="adventure_target" style="margin-bottom:8px">
+		<div class="confirm-action overlay-layer br-confirm-dialog" id="list-of-adventures">
+			<span class="br-confirm-dialog-title"><?= __('Select destination','bluerabbit'); ?></span>
+			<select class="br-input br-mb-sm" id="adventure_target">
 				<?php foreach($adventures as $c){ ?><option value="<?= $c->adventure_id;?>"><?= $c->adventure_id == $adventure->adventure_id ? __("Same adventure","bluerabbit") : $c->adventure_title;?></option><?php } ?>
 			</select>
-			<div style="display:flex;gap:6px">
+			<div class="br-confirm-dialog-actions">
 				<button class="br-btn br-btn-green" onClick="duplicateQuest(<?= $quest->quest_id; ?>);"><span class="icon icon-infinite"></span> <?= __("Duplicate","bluerabbit");?></button>
 				<button class="br-btn" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit");?></button>
 			</div>

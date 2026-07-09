@@ -31,8 +31,8 @@ class BR_Adventure {
 
 
             $adventure_data = $_POST['adventure_data'];
-            $adventure_id = $adventure_data['adventure_id'];
-            $old_adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
+            $adventure_id = intval($adventure_data['adventure_id']);
+            $old_adventure = $adventure_id ? $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id)) : null;
             if($old_adventure){ $add_adventure = true; }
             if($add_adventure){
                 $adventure_owner = $adventure_data['adventure_owner'];
@@ -47,31 +47,27 @@ class BR_Adventure {
                 $adventure_xp_long_label = $adventure_data['adventure_xp_long_label'];
                 $adventure_bloo_long_label = $adventure_data['adventure_bloo_long_label'];
                 $adventure_ep_long_label = $adventure_data['adventure_ep_long_label'];
-                $adventure_grade_scale = $adventure_data['adventure_grade_scale'];
-                $adventure_type = $adventure_data['adventure_type'];
-                $adventure_progression_type = $adventure_data['adventure_progression_type'];
-                $adventure_privacy = $adventure_data['adventure_privacy'];
-                $adventure_status = $adventure_data['adventure_status'];
-                $adventure_instructions = stripslashes_deep($adventure_data['adventure_instructions']);
-                $adventure_nickname = $adventure_data['adventure_nickname'];
+                $adventure_grade_scale = $adventure_data['adventure_grade_scale'] ?? 'none';
+                $adventure_type = $adventure_data['adventure_type'] ?? 'normal';
+                $adventure_progression_type = $adventure_data['adventure_progression_type'] ?? 'before';
+                $adventure_privacy = $adventure_data['adventure_privacy'] ?? '';
+                $adventure_status = $adventure_data['adventure_status'] ?? 'publish';
+                $adventure_instructions = stripslashes_deep($adventure_data['adventure_instructions'] ?? '');
+                $adventure_nickname = $adventure_data['adventure_nickname'] ?? '';
                 $adventure_level_up_array = isset($adventure_data['adventure_level_up_array']) ? serialize($adventure_data['adventure_level_up_array']) : '';
-                $adventure_color = $adventure_data['adventure_color'];
-                $adventure_hide_schedule = $adventure_data['adventure_hide_schedule'];
-                $adventure_hide_quests = $adventure_data['adventure_hide_quests'];
-                $adventure_has_guilds = $adventure_data['adventure_has_guilds'];
+                $adventure_color = $adventure_data['adventure_color'] ?? '';
+                $adventure_hide_schedule = $adventure_data['adventure_hide_schedule'] ?? 'no';
+                $adventure_hide_quests = $adventure_data['adventure_hide_quests'] ?? '';
+                $adventure_has_guilds = $adventure_data['adventure_has_guilds'] ?? 0;
                 $unenrolled = $adventure_data['unenrolled'] ?? [];
                 $adventure_ranks = $adventure_data['adventure_ranks'] ?? [];
-                $adventure_settings = $adventure_data['adventure_settings'];
+                $adventure_settings = $adventure_data['adventure_settings'] ?? [];
 
                 if ($adventure_gmt && $adventure_gmt !== '0') { date_default_timezone_set($adventure_gmt); }
                 $today = date('Y-m-d h:i:s');
                 $adventure_date_modified = date("Y-m-d H:i:s");
-                if($adventure_data['adventure_start_date']){
-                    $adventure_start_date = date('Y-m-d H:i:s',strtotime($adventure_data['adventure_start_date']));
-                }
-                if($adventure_data['adventure_end_date']){
-                    $adventure_end_date = date('Y-m-d H:i:s',strtotime($adventure_data['adventure_end_date']));
-                }
+                $adventure_start_date = !empty($adventure_data['adventure_start_date']) ? date('Y-m-d H:i:s', strtotime($adventure_data['adventure_start_date'])) : null;
+                $adventure_end_date = !empty($adventure_data['adventure_end_date']) ? date('Y-m-d H:i:s', strtotime($adventure_data['adventure_end_date'])) : null;
 
                 if(!$adventure_title){
                     $errors[] = __("The adventure name can't be empty","bluerabbit");
@@ -79,14 +75,14 @@ class BR_Adventure {
                 if($adventure_progression_type == 'after' && $adventure_grade_scale == 'none'){
                     $errors[] = __("You can't assign rewards after grading if no grading scale is set","bluerabbit");
                 }
-                if(!$old_adventure->adventure_code){
+                if(!$old_adventure || !$old_adventure->adventure_code){
                     $first_str = BR_Utils::instance()->random_str(12,'1234567890abcdef');
                     $code_string = $first_str.$current_user->ID;
                     $adventure_code = str_shuffle($code_string);
                 }else{
                     $adventure_code = $old_adventure->adventure_code;
                 }
-                if(!$old_adventure->adventure_topic_id){
+                if(!$old_adventure || !$old_adventure->adventure_topic_id){
                     $notification_topic = BR_Utils::instance()->random_str(12,'1234567890abcdef');
                     $adventure_topic_id = "topicID".str_shuffle($notification_topic);
                 }else{
@@ -203,7 +199,7 @@ class BR_Adventure {
                 $isAdmin=true;
             }
             if(is_page('new-adventure')){
-                if($isAdmin){
+                if(isset($isAdmin) && $isAdmin==true){
                     $adventure = $wpdb->get_row("SELECT a.*, c.player_xp, c.player_bloo, c.player_level, c.player_prev_level, c.player_gpa, c.player_adventure_status, c.player_adventure_role, c.player_date_enrolled, c.player_last_login, c.player_hide_intro, c.player_guild, c.player_ep FROM {$wpdb->prefix}br_adventures a
                     LEFT JOIN {$wpdb->prefix}br_player_adventure c
                     ON a.adventure_id = c.adventure_id AND c.player_id=$current_user->ID

@@ -37,11 +37,11 @@
 			<div class="body-ui">
 				<div class="highlight <?php echo $c->achievement_color ? $c->achievement_color : "brown"; ?>-bg-800 padding-10 page-break text-center">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  brown-bg-400 icon-lg">
+						<span class="br-icon-btn br-icon-btn-brown">
 							<span class="icon icon-challenge"></span>
 						</span>
 						<span class="icon-content white-color">
-							<span class="line font _36 w300"> <?php echo $c->quest_title; ?> </span>
+							<span class="line br-text-30 w300"> <?php echo $c->quest_title; ?> </span>
 							<span class="line fon _18 w600 <?php echo $c->achievement_color; ?>-400">
 								<?php echo $c->achievement_name ? __("Track","bluerabbit").": $c->achievement_name" : "Challenge"; ?>
 							</span>
@@ -50,10 +50,10 @@
 				</div>
 				<div class="highlight padding-20 brown-bg-50">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  brown-bg-400"><span class="icon icon-challenge"></span></span>
+						<span class="br-icon-btn br-icon-btn-brown"><span class="icon icon-challenge"></span></span>
 						<span class="icon-content text-left">
-							<span class="line font _24 w900"><?php _e("Results by Question","bluerabbit"); ?></span>
-							<span class="line font _16 w100"><?php _e("The numbers below each answer represent the number of times that answer was chosen over the total of times shown ","bluerabbit"); ?></span>
+							<span class="line br-text-24 w900"><?php _e("Results by Question","bluerabbit"); ?></span>
+							<span class="line br-text-16 w100"><?php _e("The numbers below each answer represent the number of times that answer was chosen over the total of times shown ","bluerabbit"); ?></span>
 						</span>
 						<span class="icon-content text-left">
 							<button class="form-ui blue-grey-bg-400" onClick="$('#simple-table').toggleClass('hidden')"><span class="icon icon-list"></span> <?= __("Show simple table","bluerabbit"); ?></button>
@@ -64,11 +64,11 @@
 			<div id="simple-table" class="hidden">
 				<div class="highlight blue-grey-bg-800 padding-10 page-break text-center">
 					<div class="icon-group">
-						<span class="button-icon font _24 sq-40  brown-bg-400 icon-lg">
+						<span class="br-icon-btn br-icon-btn-brown">
 							<span class="icon icon-challenge"></span>
 						</span>
 						<span class="icon-content white-color">
-							<span class="line font _24 w300"> <?php _e('Quick Export Table',"bluerabbit");?> </span>
+							<span class="line br-text-24 w300"> <?php _e('Quick Export Table',"bluerabbit");?> </span>
 							<span class="line fon _14 w600">
 								<?php echo __("Just copy and paste","bluerabbit"); ?>
 							</span>
@@ -139,10 +139,10 @@
 				<?php foreach($questions as $qKey=>$question){ ?>
 					<div class="highlight orange-bg-50 padding-10">
 						<span class="icon-group">
-							<span class="button-icon font _24 sq-40  brown-bg-300 font w900 _24"> ? </span>
+							<span class="br-icon-btn br-icon-btn-brown br-text-24 w900"> ? </span>
 							<span class="icon-content">
-								<span class="line font _14 w100"><?php echo __("Question ID","bluerabbit")."#$qKey"; ?></span>
-								<span class="line font _24 w100"><?php echo $question['title']; ?></span>
+								<span class="line br-text-14 w100"><?php echo __("Question ID","bluerabbit")."#$qKey"; ?></span>
+								<span class="line br-text-24 w100"><?php echo $question['title']; ?></span>
 							</span>
 						</span>
 					</div>
@@ -159,18 +159,18 @@
 										$a_count = $wpdb->get_row("SELECT COUNT(*) as total_answers FROM {$wpdb->prefix}br_challenge_attempt_answers WHERE answer_id={$option['answer_id']}");
 									?>
 									<?php if($option['answer_correct'] > 0){ ?>
-										<span class="button-icon font _24 sq-40  green-bg-400">
+										<span class="br-icon-btn br-icon-btn-green">
 											<span class="icon-check icon"></span>
 										</span>
 									<?php }else{ ?>
-										<span class="button-icon font _24 sq-40  red-bg-400">
+										<span class="br-icon-btn br-icon-btn-red">
 											<span class="icon-cancel icon"></span>
 										</span>
 									<?php } ?>
 									
 									<span class="icon-content">
-										<span class="line font _24"> <?php echo $option['answer_value'] ; ?> </span>
-										<span class="line font _18">
+										<span class="line br-text-24"> <?php echo $option['answer_value'] ; ?> </span>
+										<span class="line br-text-18">
 											<?php echo "$a_count->total_answers / $total_attempts->total_answers" ; ?> :  
 											<strong><?php echo round($a_count->total_answers / $total_attempts->total_answers *100)."%" ; ?></strong>
 										</span>
@@ -184,10 +184,10 @@
 				<?php $attempts = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_challenge_attempts WHERE quest_id=$c->quest_id ORDER BY player_id, attempt_date"); ?>
 				<div class="highlight padding-20 brown-bg-50 text-center">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  brown-bg-400"><span class="icon icon-challenge"></span></span>
+						<span class="br-icon-btn br-icon-btn-brown"><span class="icon icon-challenge"></span></span>
 						<span class="icon-content  text-left">
-							<span class="line font _24 w900"><?php _e("Results by Attempt","bluerabbit"); ?></span>
-							<span class="line font _14 w100 "><?php echo __("Total Attempts","bluerabbit").": ".count($attempts);?></span>
+							<span class="line br-text-24 w900"><?php _e("Results by Attempt","bluerabbit"); ?></span>
+							<span class="line br-text-14 w100 "><?php echo __("Total Attempts","bluerabbit").": ".count($attempts);?></span>
 						</span>
 					</span>
 				</div>
@@ -249,12 +249,12 @@
 									<td>
 										<?php if($att->attempt_status=='success'){ ?>
 											<?php $success++; ?>
-											<span class="button-icon font _24 sq-40  icon-sm green-bg-400">
+											<span class="br-icon-btn br-icon-btn-green">
 												<span class="icon icon-check"></span>
 											</span>
 										<?php }else{ ?>
 											<?php $failure++; ?>
-											<span class="button-icon font _24 sq-40  icon-sm red-bg-400">
+											<span class="br-icon-btn br-icon-btn-red">
 												<span class="icon icon-cancel"></span>
 											</span>
 										<?php } ?>
@@ -266,31 +266,31 @@
 				</div>
 				<div class="highlight padding-20 deep-purple-bg-50 text-center">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  deep-purple-bg-400"><span class="icon icon-skill"></span></span>
+						<span class="br-icon-btn br-icon-btn-deep-purple"><span class="icon icon-skill"></span></span>
 						<span class="icon-content">
-							<span class="line font _24 w900"><?php echo count($attempts); ?></span>
-							<span class="line font _14 w100 condensed"><?php _e("Total Attempts","bluerabbit"); ?></span>
+							<span class="line br-text-24 w900"><?php echo count($attempts); ?></span>
+							<span class="line br-text-14 w100 condensed"><?php _e("Total Attempts","bluerabbit"); ?></span>
 						</span>
 					</span>
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  light-green-bg-400"><span class="icon icon-check"></span></span>
+						<span class="br-icon-btn br-icon-btn-green"><span class="icon icon-check"></span></span>
 						<span class="icon-content">
-							<span class="line font _24 w900"><?php echo $success; ?></span>
-							<span class="line font _14 w100 condensed"><?php _e("Successful Attempts","bluerabbit"); ?></span>
+							<span class="line br-text-24 w900"><?php echo $success; ?></span>
+							<span class="line br-text-14 w100 condensed"><?php _e("Successful Attempts","bluerabbit"); ?></span>
 						</span>
 					</span>
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40  red-bg-400"><span class="icon icon-cancel"></span></span>
+						<span class="br-icon-btn br-icon-btn-red"><span class="icon icon-cancel"></span></span>
 						<span class="icon-content">
-							<span class="line font _24 w900"><?php echo $failure; ?></span>
-							<span class="line font _14 w100 condensed"><?php _e("Failed Attempts","bluerabbit"); ?></span>
+							<span class="line br-text-24 w900"><?php echo $failure; ?></span>
+							<span class="line br-text-14 w100 condensed"><?php _e("Failed Attempts","bluerabbit"); ?></span>
 						</span>
 					</span>
 				</div>
 		</div>
 	</div>
 	<?php }else{ ?>	
-	 <h1 class="font _48 text-center padding-20 w900"><?php _e("Challenge not found!","bluerabbit"); ?></h1>
+	 <h1 class="br-text-40 text-center padding-20 w900"><?php _e("Challenge not found!","bluerabbit"); ?></h1>
 	<?php } ?>	
 </div>
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

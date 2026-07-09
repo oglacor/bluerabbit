@@ -27,8 +27,8 @@ $is_edit = isset($quest) && $quest;
 
 	<!-- Header -->
 	<div class="br-panel br-page-header">
-		<div class="br-page-header-avatar" style="background:rgba(255,193,7,0.2);display:flex;align-items:center;justify-content:center;border-color:rgba(255,193,7,0.4)">
-			<span class="icon icon-mission" style="font-size:28px;color:#ffc107"></span>
+		<div class="br-page-header-avatar br-avatar-amber">
+			<span class="icon icon-mission br-icon-lg br-icon-amber"></span>
 		</div>
 		<div>
 			<h1 class="br-page-title"><?= $is_edit ? __("Edit Mission", "bluerabbit") : __("New Mission", "bluerabbit"); ?></h1>
@@ -39,7 +39,7 @@ $is_edit = isset($quest) && $quest;
 		<input type="hidden" id="the_quest_order" value="<?= $is_edit ? $quest->quest_order : count($quests); ?>">
 		<input type="hidden" value="0" id="the_quest_guild">
 		<?php if ($is_edit) { ?>
-		<a class="br-btn" href="<?= get_bloginfo('url') . "/mission/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank" style="margin-left:auto">
+		<a class="br-btn br-ml-auto" href="<?= get_bloginfo('url') . "/mission/?questID=$quest->quest_id&adventure_id=$quest->adventure_id"; ?>" target="_blank">
 			<span class="icon icon-view"></span> <?= __("View Mission", "bluerabbit"); ?>
 		</a>
 		<?php } ?>
@@ -70,7 +70,7 @@ $is_edit = isset($quest) && $quest;
 	<!-- Tab Content -->
 
 		<!-- ═══ BASIC ═══ -->
-		<div class="br-scroll-section" id="general"><div class="br-panel" style="max-width:900px;margin:0 auto;padding:16px">
+		<div class="br-scroll-section" id="general"><div class="br-panel br-panel-narrow">
 			<h3 class="br-panel-title"><span class="icon icon-settings"></span> <?= __("Basic Settings", "bluerabbit"); ?></h3>
 
 			<div class="br-form-group">
@@ -100,7 +100,7 @@ $is_edit = isset($quest) && $quest;
 			</div>
 
 			<div class="br-form-group">
-				<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span style="color:#f44336;font-size:10px;letter-spacing:0">*<?= __("Required", "bluerabbit"); ?></span></label>
+				<label class="br-form-label"><?= __("Main Image", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 				<div class="br-form-component">
 					<div class="br-gallery br-gallery-single">
 						<?php $thumb_id = 'the_quest_badge'; $file = $is_edit ? $quest->mech_badge : ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
@@ -110,22 +110,22 @@ $is_edit = isset($quest) && $quest;
 		</div></div>
 
 		<!-- ═══ CONTENT ═══ -->
-		<div class="br-scroll-section" id="content"><div class="br-panel" style="max-width:900px;margin:0 auto;padding:16px">
+		<div class="br-scroll-section" id="content"><div class="br-panel br-panel-narrow">
 			<?php include(get_stylesheet_directory() . '/component-quest-content.php'); ?>
 		</div></div>
 
 		<!-- ═══ MECHANICS ═══ -->
-		<div class="br-scroll-section" id="mechanics"><div class="br-panel" style="max-width:900px;margin:0 auto;padding:16px">
+		<div class="br-scroll-section" id="mechanics"><div class="br-panel br-panel-narrow">
 			<?php include(get_stylesheet_directory() . '/component-quest-base-mechs.php'); ?>
 		</div></div>
 
 		<!-- ═══ OBJECTIVES ═══ -->
-		<div class="br-scroll-section" id="objectives"><div class="br-panel" style="max-width:900px;margin:0 auto;padding:16px">
+		<div class="br-scroll-section" id="objectives"><div class="br-panel br-panel-narrow">
 			<h3 class="br-panel-title"><span class="icon icon-objectives"></span> <?= __("Mission Objectives", "bluerabbit"); ?></h3>
 
 			<?php if ($is_edit) { ?>
 				<?php if (empty($objectives)) { ?>
-				<p style="text-align:center;color:rgba(255,255,255,0.35);padding:16px">— <?= __("No objectives", "bluerabbit"); ?> —</p>
+				<p class="br-empty-text">— <?= __("No objectives", "bluerabbit"); ?> —</p>
 				<?php } ?>
 				<table class="br-table" id="objectives">
 					<thead>
@@ -146,13 +146,13 @@ $is_edit = isset($quest) && $quest;
 					</tbody>
 				</table>
 
-				<div style="display:flex;gap:8px;margin-top:16px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+				<div class="br-flex-between br-mt-sm">
 					<div class="br-actions">
 						<button class="br-btn br-btn-red default-actions" onClick="showOverlay('#confirm-reset-objectives');">
 							<span class="icon icon-rotate"></span> <?= __("Reset Objectives for Players", "bluerabbit"); ?>
 						</button>
 						<div class="confirm-action overlay-layer shadow text-center padding-10" id="confirm-reset-objectives">
-							<button class="br-btn br-btn-red" style="padding:10px 20px" onClick="resetQuestObjectives(<?= $quest->quest_id; ?>);">
+							<button class="br-btn br-btn-red br-btn-confirm" onClick="resetQuestObjectives(<?= $quest->quest_id; ?>);">
 								<span class="icon icon-warning"></span> <?= __("Are you sure?", "bluerabbit"); ?>
 							</button>
 						</div>
@@ -161,7 +161,7 @@ $is_edit = isset($quest) && $quest;
 						<button class="br-btn br-btn-green default-actions" onClick="showOverlay('#new-objective-menu');">
 							<span class="icon icon-add"></span> <?= __("New Objective", "bluerabbit"); ?>
 						</button>
-						<div class="confirm-action overlay-layer shadow text-center padding-10" id="new-objective-menu" style="background:rgba(4,22,30,0.95);border:1px solid rgba(28,194,235,0.2);border-radius:8px">
+						<div class="confirm-action overlay-layer shadow text-center padding-10 br-objective-menu" id="new-objective-menu">
 							<button class="br-btn" onClick="addObjective('keyword-input');">
 								<span class="icon icon-comment"></span> <?= __("Type Keyword", "bluerabbit"); ?>
 							</button>
@@ -172,7 +172,7 @@ $is_edit = isset($quest) && $quest;
 					</div>
 				</div>
 			<?php } else { ?>
-			<div class="br-empty" style="padding:24px">
+			<div class="br-empty br-empty-md">
 				<span class="icon icon-objectives"></span>
 				<h3><?= __("Save the mission first", "bluerabbit"); ?></h3>
 			</div>
@@ -180,7 +180,7 @@ $is_edit = isset($quest) && $quest;
 		</div></div>
 
 		<!-- ═══ REQUIREMENTS ═══ -->
-		<div class="br-scroll-section" id="requirements"><div class="br-panel" style="max-width:900px;margin:0 auto;padding:16px">
+		<div class="br-scroll-section" id="requirements"><div class="br-panel br-panel-narrow">
 			<?php
 			include(TEMPLATEPATH . '/component-quest-reqs.php');
 			include(TEMPLATEPATH . '/component-quest-key-item-req.php');
@@ -189,7 +189,7 @@ $is_edit = isset($quest) && $quest;
 		</div></div>
 
 		<!-- ═══ ADVANCED ═══ -->
-		<div class="br-scroll-section" id="advanced-options"><div class="br-panel" style="max-width:900px;margin:0 auto;padding:16px">
+		<div class="br-scroll-section" id="advanced-options"><div class="br-panel br-panel-narrow">
 			<?php
 			include(TEMPLATEPATH . '/component-quest-additional-mechs.php');
 			include(TEMPLATEPATH . '/component-quest-item-reward.php');
@@ -206,7 +206,7 @@ $is_edit = isset($quest) && $quest;
 	</a>
 	<div class="br-actions">
 		<?php if (isset($paths['publish'])) { ?>
-		<select id="the_achievement_id" class="br-input" style="width:auto">
+		<select id="the_achievement_id" class="br-input br-select-auto">
 			<option value="0" <?= !isset($quest->achievement_id) ? 'selected' : ''; ?>><?= __("All paths", "bluerabbit"); ?></option>
 			<?php foreach ($paths['publish'] as $a) { ?>
 			<option id="achievement-option-<?= $a->achievement_id; ?>" value="<?= $a->achievement_id; ?>"
@@ -217,7 +217,7 @@ $is_edit = isset($quest) && $quest;
 		<input id="the_achievement_id" type="hidden" value="0">
 		<?php } ?>
 
-		<select id="the_quest_status" class="br-input" style="width:auto">
+		<select id="the_quest_status" class="br-input br-select-auto">
 			<option value="publish" <?= (!$is_edit || $quest->quest_status == 'publish') ? 'selected' : ''; ?>><?= __("Publish", "bluerabbit"); ?></option>
 			<option value="draft" <?= ($is_edit && $quest->quest_status == 'draft') ? 'selected' : ''; ?>><?= __("Draft", "bluerabbit"); ?></option>
 			<option value="locked" <?= ($is_edit && $quest->quest_status == 'locked') ? 'selected' : ''; ?>><?= __("Locked", "bluerabbit"); ?></option>
@@ -228,7 +228,7 @@ $is_edit = isset($quest) && $quest;
 		<input type="hidden" id="delete-question-nonce" value="<?= wp_create_nonce('br_delete_question_nonce'); ?>">
 		<input type="hidden" id="delete-option-nonce" value="<?= wp_create_nonce('br_delete_option_nonce'); ?>">
 
-		<button id="submit-button" type="button" class="br-btn br-btn-green" style="padding:10px 24px;font-size:14px" onClick="updateQuest();">
+		<button id="submit-button" type="button" class="br-btn br-btn-green br-btn-submit" onClick="updateQuest();">
 			<span class="icon icon-check"></span>
 			<?= $is_edit ? __("Update Mission", "bluerabbit") : __("Create Mission", "bluerabbit"); ?>
 		</button>

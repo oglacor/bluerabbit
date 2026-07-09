@@ -14,9 +14,9 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 			<div class="dashboard-content white-bg">
 				<div class="w-full padding-10 purple-bg-50">
 					<span class="icon-group">
-						<span class="button-icon font _24 sq-40 purple-bg-400"><span class="icon icon-achievement"></span></span>
+						<span class="br-icon-btn br-icon-btn-purple"><span class="icon icon-achievement"></span></span>
 						<span class="icon-content">
-							<span class="line font _24 grey-800">
+							<span class="line br-text-24 grey-800">
 								<?= __("Assign Achievement","bluerabbit"); ?>
 							</span>
 							<?php if(isset($a)){ ?>
@@ -39,10 +39,10 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						</div>
 						<div class="highlight padding-10 grey-bg-200">
 							<span class="icon-group">
-								<span class="button-icon font _24 sq-40  purple-bg-400"><span class="icon icon-achievement"></span></span>
+								<span class="br-icon-btn br-icon-btn-purple"><span class="icon icon-achievement"></span></span>
 								<span class="icon-content">
-									<span class="line font _24 grey-800"><?php _e("Magic Code","bluerabbit"); ?></span>
-									<span class="line font _14 grey-800">
+									<span class="line br-text-24 grey-800"><?php _e("Magic Code","bluerabbit"); ?></span>
+									<span class="line br-text-14 grey-800">
 										<?= __("This code can be used by all players.","bluerabbit"); ?><br>
 										<?= __("The achievement is assigned only once so it doesn't matter if the player scans or uses the code multiple times.","bluerabbit"); ?><br>
 									</span>
@@ -51,16 +51,16 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 						</div>
 						<table class="table w-full" cellpadding="0">
 							<thead>
-								<tr class="font _12 grey-600">
+								<tr class="br-text-12 grey-600">
 									<td class="text-right w-150"><?php _e('Setting','bluerabbit'); ?></td>
 									<td><?php _e('Value','bluerabbit'); ?></td>
 								</tr>
 							</thead>
-							<tbody class="font _16">
+							<tbody class="br-text-16">
 								<tr>
 									<td class="text-right w-150"><?php _e('Magic code','bluerabbit'); ?></td>
 									<td>
-										<div class="input-group w-full font _30">
+										<div class="input-group w-full br-text-30">
 											<label class="purple-bg-800 font _30 w900"><span class="icon icon-magic"></span></label>
 											<input class="form-ui w-full" type="text" value="<?= isset($a) ? $a->achievement_code : ""; ?>" id="the_achievement_code" readonly>
 										</div>
@@ -113,12 +113,12 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
                                 ?>
                                 <div class="highlight padding-10 grey-bg-100" id="tutorial-earned-players">
                                     <span class="icon-group">
-                                        <span class="button-icon font _24 sq-40  indigo-bg-400">
+                                        <span class="br-icon-btn br-icon-btn-indigo">
                                             <?= count($players); ?>
                                         </span>
                                         <span class="icon-content">
                                             <span class="line font w500 _26"><?php _e('Awarded Players',"bluerabbit"); ?></span>
-                                            <span class="line font _14 w300 grey-500"><?php _e('A list of the players that earned the achievement.','bluerabbit'); ?></span>
+                                            <span class="line br-text-14 w300 grey-500"><?php _e('A list of the players that earned the achievement.','bluerabbit'); ?></span>
                                         </span>
                                     </span>
                                 </div>

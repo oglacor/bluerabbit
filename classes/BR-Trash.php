@@ -82,17 +82,53 @@ class BR_Trash {
                 $sql = "UPDATE {$wpdb->prefix}br_transactions SET trnx_status=%s, trnx_modified=%s WHERE trnx_id=%d AND adventure_id=%d";
                 $sql = $wpdb->prepare ($sql,$status,$today,$id,$adventure_id);
             }elseif($type == 'player_post'){
-                if($status=='delete'){
-                    $sql = "DELETE FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND adventure_id=%d AND player_id=%d";
-                    $sql = $wpdb->prepare ($sql,$id,$adventure_id,$current_user->ID);
+                $target_player = isset($_POST['player_id']) ? (int) $_POST['player_id'] : $current_user->ID;
+                $quest_id = (int) $id;
+                if($status=='delete' || $status=='trash'){
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND adventure_id=%d AND player_id=%d", $quest_id, $adventure_id, $target_player));
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_player_steps WHERE quest_id=%d AND adventure_id=%d AND player_id=%d", $quest_id, $adventure_id, $target_player));
+                    $quest = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=%d", $quest_id));
+                    if ($quest) {
+                        if ($quest->mech_item_reward) {
+                            $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_transactions WHERE player_id=%d AND adventure_id=%d AND object_id=%d AND trnx_status='publish'", $target_player, $adventure_id, $quest->mech_item_reward));
+                        }
+                        if ($quest->mech_achievement_reward) {
+                            $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_player_achievement WHERE player_id=%d AND adventure_id=%d AND achievement_id=%d", $target_player, $adventure_id, $quest->mech_achievement_reward));
+                        }
+                    }
+                    BR_Player::instance()->resetPlayer($adventure_id, $target_player);
+                    BR_Activity::instance()->logActivity($adventure_id, 'reset', 'player_post', "player=$target_player", $quest_id);
+                    $sql = null;
                 }else{
                     $sql = "UPDATE {$wpdb->prefix}br_player_posts SET pp_status=%s, pp_modified=%s WHERE quest_id=%d AND adventure_id=%d AND player_id=%d";
-                    $sql = $wpdb->prepare ($sql,$status, $today,$id,$adventure_id,$current_user->ID);
+                    $sql = $wpdb->prepare ($sql,$status, $today,$quest_id,$adventure_id,$target_player);
+                }
+            }elseif($type == 'attempt'){
+                $target_player = isset($_POST['player_id']) ? (int) $_POST['player_id'] : $current_user->ID;
+                $attempt_id = (int) $id;
+                $attempt = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_challenge_attempts WHERE attempt_id=%d", $attempt_id));
+                if ($attempt && ($status=='delete' || $status=='trash')) {
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_challenge_attempt_answers WHERE attempt_id=%d AND player_id=%d", $attempt_id, $attempt->player_id));
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_challenge_attempts WHERE attempt_id=%d", $attempt_id));
+                    $remaining = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}br_challenge_attempts WHERE quest_id=%d AND player_id=%d AND adventure_id=%d AND attempt_status='success'", $attempt->quest_id, $attempt->player_id, $adventure_id));
+                    if (!$remaining) {
+                        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND adventure_id=%d AND player_id=%d", $attempt->quest_id, $adventure_id, $attempt->player_id));
+                    }
+                    BR_Player::instance()->resetPlayer($adventure_id, $attempt->player_id);
+                    BR_Activity::instance()->logActivity($adventure_id, 'reset', 'attempt', "player={$attempt->player_id}", $attempt_id);
+                    $sql = null;
+                } else {
+                    $sql = "UPDATE {$wpdb->prefix}br_challenge_attempts SET attempt_status=%s WHERE attempt_id=%d AND adventure_id=%d";
+                    $sql = $wpdb->prepare ($sql,$status,$id,$adventure_id);
                 }
             }elseif($type == 'survey-answer'){
+                $target_player = isset($_POST['player_id']) ? (int) $_POST['player_id'] : $current_user->ID;
                 if($status=='delete'){
-                    $sql = "DELETE FROM {$wpdb->prefix}br_survey_answers WHERE survey_id=%d AND player_id=%d";
-                    $sql = $wpdb->prepare ($sql,$id,$current_user->ID);
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_survey_answers WHERE survey_id=%d AND player_id=%d AND adventure_id=%d", $id, $target_player, $adventure_id));
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_player_steps WHERE quest_id=%d AND player_id=%d AND adventure_id=%d", $id, $target_player, $adventure_id));
+                    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND adventure_id=%d AND player_id=%d", $id, $adventure_id, $target_player));
+                    BR_Player::instance()->resetPlayer($adventure_id, $target_player);
+                    $sql = null;
                 }
             }elseif($type == 'guild'){
                 $sql = "UPDATE {$wpdb->prefix}br_guilds SET guild_status=%s WHERE guild_id=%d AND adventure_id=%d";
@@ -140,11 +176,12 @@ class BR_Trash {
                 $sql = $wpdb->prepare ($sql,$status,$id,$adventure_id);
             }
 
-            $wpdb->query($sql);
-            BR_Activity::instance()->logActivity($adventure_id, $status,$type,"",$id);
-
+            if ($sql) {
+                $wpdb->query($sql);
+                BR_Activity::instance()->logActivity($adventure_id, $status,$type,"",$id);
+                BR_Player::instance()->resetPlayer($adventure_id, $current_user->ID);
+            }
             $data['success'] = true;
-            BR_Player::instance()->resetPlayer($adventure_id,  $current_user->ID);
             if($reload){
                 $data['location']='reload';
             }else{
