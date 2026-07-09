@@ -215,6 +215,55 @@
         initActivityChart();
     };
 
+    // ── Workforce Engagement (segment breakdown, horizontal bar) ──
+
+    var segColors = [palette.primary, palette.accent, palette.purple, palette.green, '#ff9800', '#f44336', '#607d8b', '#9575cd', '#4db6ac'];
+
+    function renderSegmentBreakdown(data) {
+        if (!data) return;
+
+        var coverage = document.getElementById('br-segment-coverage');
+        if (coverage) coverage.textContent = data.label + ' data available for ' + data.coverage_pct + '% of players';
+
+        destroyChart('segment');
+        var ctx = document.getElementById('br-segment-chart');
+        var segments = data.segments || [];
+        if (ctx && segments.length) {
+            charts['segment'] = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: segments.map(function(s) { return s.label; }),
+                    datasets: [{
+                        label: 'Avg Engagement Score',
+                        data: segments.map(function(s) { return s.avg_score; }),
+                        backgroundColor: segments.map(function(s, i) { return segColors[i % segColors.length]; }),
+                        borderWidth: 0
+                    }]
+                },
+                options: hBarOpts()
+            });
+        }
+
+        var $body = $('#br-segment-table-body');
+        if ($body.length) {
+            var rows = '';
+            segments.forEach(function(s) {
+                rows += '<tr><td>' + esc(s.label) + '</td>'
+                     + '<td class="text-center">' + numFmt(s.count) + '</td>'
+                     + '<td class="text-center">' + s.avg_score + '</td>'
+                     + '<td class="text-center">' + s.avg_completion_pct + '%</td></tr>';
+            });
+            $body.html(rows);
+        }
+    }
+
+    function loadSegmentBreakdown(dimension) {
+        ajax('br_stats_segment_breakdown', { dimension: dimension }, function(res) {
+            if (!res.success) return;
+            renderSegmentBreakdown(res.data);
+        });
+    }
+
     // ── Type Completion Doughnut ─────────────────────────
 
     var typeColors = {
@@ -486,6 +535,11 @@
             initQuestFunnel();
             initXpDistribution();
             initActivityChart();
+
+            if (cfg.segmentBreakdown) renderSegmentBreakdown(cfg.segmentBreakdown);
+            $('#br-segment-dimension').on('change', function() {
+                loadSegmentBreakdown($(this).val());
+            });
 
             $(document).on('click', '.br-stats-player-row', function(e) {
                 e.preventDefault();

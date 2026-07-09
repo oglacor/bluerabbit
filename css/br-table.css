@@ -2564,3 +2564,94 @@ select.br-input option {
     font-size: 11px;
   }
 }
+
+.br-w-full {
+  width: 100%;
+}
+
+.br-btn-mini {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.br-gap-6 {
+  gap: 6px;
+}
+
+.br-icon-primary {
+  color: #1cc2eb;
+}
+
+.br-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.br-roster-scroll {
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+}
+
+.br-roster-table th,
+.br-roster-table td {
+  white-space: nowrap;
+}
+
+.br-roster-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: #04161e;
+}
+
+.br-roster-table .br-roster-name-cell {
+  position: sticky;
+  left: 0;
+  background: #04161e;
+  z-index: 2;
+  min-width: 180px;
+}
+
+.br-roster-table th.br-roster-name-cell {
+  z-index: 5;
+}
+
+.br-roster-role-gm { color: #00bcd4; }
+.br-roster-role-npc { color: #1cc2eb; }
+
+.br-roster-col-header {
+  text-align: center;
+  min-width: 60px;
+}
+
+.br-roster-col-header img {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.br-roster-cell {
+  text-align: center;
+}
+
+.br-roster-cell-done {
+  color: #24da98;
+  font-size: 18px;
+}
+
+.br-roster-cell-pending {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 18px;
+}
+
+.br-roster-grade-input {
+  width: 56px;
+  text-align: center;
+  background: rgba(36, 218, 152, 0.12);
+  border: 1px solid rgba(36, 218, 152, 0.4);
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 2px 4px;
+  font-size: 12px;
+}

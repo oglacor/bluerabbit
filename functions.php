@@ -1173,6 +1173,7 @@ require_once ("$dirName/classes/BR-Trash.php");
 require_once ("$dirName/classes/BR-Scorm.php");
 require_once ("$dirName/classes/BR-mailer.php");
 require_once ("$dirName/classes/BR-Stats.php");
+require_once ("$dirName/classes/BR-PlayerMeta.php");
 require_once ("$dirName/functions/br-email-admin.php");
 
 // ── Stats Dashboard ─────────────────────────────────────────────────────────
@@ -1314,6 +1315,17 @@ function br_stats_activity_heatmap() {
 }
 add_action( 'wp_ajax_br_stats_activity_heatmap', 'br_stats_activity_heatmap' );
 
+function br_stats_segment_breakdown() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$dimension = sanitize_text_field( $_POST['dimension'] ?? '' );
+	if ( ! array_key_exists( $dimension, BR_Stats::SEGMENT_DIMENSIONS ) ) wp_send_json_error( 'Invalid dimension' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_engagement_by_segment( $aid, $dimension ) );
+}
+add_action( 'wp_ajax_br_stats_segment_breakdown', 'br_stats_segment_breakdown' );
+
 function br_stats_player_panel() {
 	check_ajax_referer( 'br_stats_nonce', 'nonce' );
 	$uid = (int) $_POST['user_id'];
@@ -1343,6 +1355,57 @@ function br_stats_player_panel() {
 	] );
 }
 add_action( 'wp_ajax_br_stats_player_panel', 'br_stats_player_panel' );
+
+function br_meta_manager_enqueue_assets() {
+	if ( is_page( 'player-meta' ) ) {
+		wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
+		wp_enqueue_script( 'br-meta-manager', get_template_directory_uri() . '/js/br-meta-manager.js', [ 'jquery' ], '1.0', true );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'br_meta_manager_enqueue_assets' );
+
+function br_meta_save_player() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+
+	$player_id = (int) $_POST['player_id'];
+	$fields    = [];
+	foreach ( array_keys( BR_PlayerMeta::FIELDS ) as $col ) {
+		if ( isset( $_POST['fields'][ $col ] ) ) $fields[ $col ] = wp_unslash( $_POST['fields'][ $col ] );
+	}
+
+	$meta = new BR_PlayerMeta();
+	$ok   = $meta->save_player_meta( $player_id, $fields );
+	if ( $ok ) {
+		wp_send_json_success( $fields );
+	} else {
+		wp_send_json_error( 'Save failed' );
+	}
+}
+add_action( 'wp_ajax_br_meta_save_player', 'br_meta_save_player' );
+
+function br_meta_preview_csv() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+
+	$csv  = wp_unslash( $_POST['csv'] ?? '' );
+	$meta = new BR_PlayerMeta();
+	wp_send_json_success( $meta->import_csv( $aid, $csv, true ) );
+}
+add_action( 'wp_ajax_br_meta_preview_csv', 'br_meta_preview_csv' );
+
+function br_meta_commit_csv() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+
+	$csv  = wp_unslash( $_POST['csv'] ?? '' );
+	$meta = new BR_PlayerMeta();
+	wp_send_json_success( $meta->import_csv( $aid, $csv, false ) );
+}
+add_action( 'wp_ajax_br_meta_commit_csv', 'br_meta_commit_csv' );
 
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );

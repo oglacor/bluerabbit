@@ -2383,3 +2383,107 @@ select.br-input {
     font-size: 11px;
   }
 }
+
+// ── Shared small utilities (ported from the CI4 rewrite's br-table.scss) ──
+
+.br-w-full {
+  width: 100%;
+}
+
+.br-btn-mini {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.br-gap-6 {
+  gap: 6px;
+}
+
+.br-icon-primary {
+  color: $br-primary;
+}
+
+// ── page-players.php roster spreadsheet (ported from CI4 rewrite 2026-07) ──
+
+.br-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+// overflow-x:auto on .br-table-scroll forces overflow-y to compute to
+// auto too (per spec, an axis can't stay "visible" while its sibling
+// axis isn't) - that silently makes it a scrolling container of its
+// own, so a plain sticky thead would stick to ITS scrollport, which
+// never actually scrolls internally (the page scrolls instead). Giving
+// it a bounded height turns it into a real self-scrolling grid so the
+// sticky header has something to stick within - top:0 of this box,
+// not top:50px of the page.
+.br-roster-scroll {
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+}
+
+.br-roster-table {
+  th, td {
+    white-space: nowrap;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: $br-bg;
+  }
+
+  .br-roster-name-cell {
+    position: sticky;
+    left: 0;
+    background: $br-bg;
+    z-index: 2;
+    min-width: 180px;
+  }
+
+  th.br-roster-name-cell {
+    z-index: 5;
+  }
+}
+
+.br-roster-role-gm { color: $br-teal; }
+.br-roster-role-npc { color: $br-primary; }
+
+.br-roster-col-header {
+  text-align: center;
+  min-width: 60px;
+
+  img {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+}
+
+.br-roster-cell {
+  text-align: center;
+}
+
+.br-roster-cell-done {
+  color: $br-green;
+  font-size: 18px;
+}
+
+.br-roster-cell-pending {
+  color: rgba($br-white, 0.2);
+  font-size: 18px;
+}
+
+.br-roster-grade-input {
+  width: 56px;
+  text-align: center;
+  background: rgba($br-green, 0.12);
+  border: 1px solid rgba($br-green, 0.4);
+  border-radius: 6px;
+  color: $br-white;
+  padding: 2px 4px;
+  font-size: 12px;
+}

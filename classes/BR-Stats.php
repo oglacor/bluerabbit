@@ -800,6 +800,198 @@ class BR_Stats {
         ];
     }
 
+    // Whitelist of player_meta columns exposed as segment dimensions.
+    // Never interpolate a client-supplied column name into SQL - always
+    // validate against this map first (also re-validated in the AJAX handler).
+    const SEGMENT_DIMENSIONS = [
+        'work_country'    => 'Country',
+        'business_pillar' => 'Business Pillar',
+        'work_function'   => 'Function',
+        'work_level'      => 'Level',
+        'player_gender'   => 'Gender',
+        'work_cluster'    => 'Cluster',
+    ];
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Same bulk-then-score-in-PHP pattern as get_adventure_engagement(), but
+    // grouped by a whitelisted br_player_meta column instead of one global bucket.
+    public function get_engagement_by_segment( int $adventure_id, string $dimension ): array {
+        global $wpdb;
+
+        if ( ! array_key_exists( $dimension, self::SEGMENT_DIMENSIONS ) ) {
+            $dimension = 'work_country';
+        }
+
+        // 1 — all players (xp, level, last_login) + their segment value.
+        // player_meta has no unique index on player_id, so pick one row
+        // deterministically via MAX(player_meta_id) rather than GROUP BY.
+        $players = $wpdb->get_results( $wpdb->prepare(
+            "SELECT pa.player_id, pa.player_xp, pa.player_level, pa.player_last_login,
+                COALESCE(NULLIF(pm.{$dimension}, ''), 'Unknown') AS segment
+            FROM {$wpdb->prefix}br_player_adventure pa
+            LEFT JOIN {$wpdb->prefix}br_player_meta pm
+                ON pm.player_meta_id = (
+                    SELECT MAX(player_meta_id) FROM {$wpdb->prefix}br_player_meta
+                    WHERE player_id = pa.player_id
+                )
+            WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'",
+            $adventure_id
+        ), ARRAY_A );
+
+        if ( empty( $players ) ) {
+            return [ 'dimension' => $dimension, 'label' => self::SEGMENT_DIMENSIONS[ $dimension ], 'coverage_pct' => 0, 'segments' => [] ];
+        }
+
+        $pids = array_column( $players, 'player_id' );
+        $ph   = implode( ',', array_fill( 0, count( $pids ), '%d' ) );
+        $pmap = [];
+        foreach ( $players as $p ) $pmap[ $p['player_id'] ] = $p;
+
+        // 2 — last activity-log date per player
+        $log_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, MAX(log_date) AS last_log
+            FROM {$wpdb->prefix}br_activity_log
+            WHERE adventure_id = %d AND player_id IN ($ph)
+            GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $log_map = [];
+        foreach ( $log_rows as $r ) $log_map[ $r['player_id'] ] = $r['last_log'];
+
+        // 3 — total quest count
+        $total_q = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND quest_status = 'publish'
+              AND quest_type IN ('quest','challenge','survey','mission')",
+            $adventure_id
+        ) );
+
+        // 4 — total completions per player
+        $comp_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, COUNT(*) AS done
+            FROM {$wpdb->prefix}br_player_posts
+            WHERE adventure_id = %d AND player_id IN ($ph)
+            GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $comp_map = [];
+        foreach ( $comp_rows as $r ) $comp_map[ $r['player_id'] ] = (int) $r['done'];
+
+        // 5 — recent completions (30 d)
+        $rec_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, COUNT(*) AS done
+            FROM {$wpdb->prefix}br_player_posts
+            WHERE adventure_id = %d AND player_id IN ($ph)
+              AND pp_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $rec_map = [];
+        foreach ( $rec_rows as $r ) $rec_map[ $r['player_id'] ] = (int) $r['done'];
+
+        // 6 — max level
+        $max_lvl = (int) max( array_column( $players, 'player_level' ) );
+
+        // 7 — transaction counts
+        $txn_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, COUNT(*) AS cnt
+            FROM {$wpdb->prefix}br_transactions
+            WHERE adventure_id = %d AND player_id IN ($ph)
+            GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $txn_map = [];
+        foreach ( $txn_rows as $r ) $txn_map[ $r['player_id'] ] = (int) $r['cnt'];
+
+        // ── Score every player in PHP, bucketed by segment ──────
+        $buckets     = []; // segment label => running sums
+        $known_count = 0;
+        $now         = time();
+
+        foreach ( $pids as $pid ) {
+            $p       = $pmap[ $pid ];
+            $segment = $p['segment'];
+
+            $has_login = ! empty( $p['player_last_login'] ) && strtotime( $p['player_last_login'] ) > 0;
+            $has_log   = isset( $log_map[ $pid ] );
+
+            if ( ! $has_login && ! $has_log ) {
+                $rec = 0;
+            } else {
+                $login_ts = $has_login ? strtotime( $p['player_last_login'] ) : 0;
+                $log_ts   = $has_log   ? strtotime( $log_map[ $pid ] )       : 0;
+                $days     = max( 0, ( $now - max( $login_ts, $log_ts ) ) / 86400 );
+                if      ( $days <= 1 )  $rec = 25;
+                elseif  ( $days <= 3 )  $rec = 22;
+                elseif  ( $days <= 7 )  $rec = 18;
+                elseif  ( $days <= 14 ) $rec = 12;
+                elseif  ( $days <= 30 ) $rec = 6;
+                else                    $rec = max( 0, round( 25 - $days / 10 ) );
+            }
+
+            $rd  = $rec_map[ $pid ] ?? 0;
+            $frq = $total_q > 0 ? (int) round( min( 1, $rd / max( 1, $total_q * 0.3 ) ) * 25 ) : 0;
+
+            $dn       = $comp_map[ $pid ] ?? 0;
+            $cmp      = $total_q > 0 ? (int) round( ( $dn / $total_q ) * 25 ) : 0;
+            $comp_pct = $total_q > 0 ? ( $dn / $total_q ) * 100 : 0;
+
+            $prg = $max_lvl > 0 ? (int) round( ( (int) $p['player_level'] / $max_lvl ) * 15 ) : 0;
+            $eco = min( 10, (int) round( ( $txn_map[ $pid ] ?? 0 ) * 2 ) );
+
+            $score = $rec + $frq + $cmp + $prg + $eco;
+
+            if ( ! isset( $buckets[ $segment ] ) ) {
+                $buckets[ $segment ] = [ 'count' => 0, 'score_sum' => 0, 'xp_sum' => 0, 'comp_pct_sum' => 0 ];
+            }
+            $buckets[ $segment ]['count']++;
+            $buckets[ $segment ]['score_sum']    += $score;
+            $buckets[ $segment ]['xp_sum']       += (int) $p['player_xp'];
+            $buckets[ $segment ]['comp_pct_sum'] += $comp_pct;
+
+            if ( $segment !== 'Unknown' ) $known_count++;
+        }
+
+        // "Unknown" always shown on its own; long tail beyond the top 8
+        // segments (by headcount) rolls into "Other" to avoid a huge legend.
+        $unknown = $buckets['Unknown'] ?? null;
+        unset( $buckets['Unknown'] );
+        uasort( $buckets, function ( $a, $b ) { return $b['count'] <=> $a['count']; } );
+
+        $top  = array_slice( $buckets, 0, 8, true );
+        $rest = array_slice( $buckets, 8, null, true );
+
+        if ( ! empty( $rest ) ) {
+            $other = [ 'count' => 0, 'score_sum' => 0, 'xp_sum' => 0, 'comp_pct_sum' => 0 ];
+            foreach ( $rest as $r ) {
+                $other['count']        += $r['count'];
+                $other['score_sum']    += $r['score_sum'];
+                $other['xp_sum']       += $r['xp_sum'];
+                $other['comp_pct_sum'] += $r['comp_pct_sum'];
+            }
+            $top['Other'] = $other;
+        }
+        if ( $unknown ) $top['Unknown'] = $unknown;
+
+        $segments = [];
+        foreach ( $top as $label => $b ) {
+            $segments[] = [
+                'label'              => $label,
+                'count'              => $b['count'],
+                'avg_score'          => $b['count'] > 0 ? (int) round( $b['score_sum'] / $b['count'] ) : 0,
+                'avg_xp'             => $b['count'] > 0 ? (int) round( $b['xp_sum'] / $b['count'] ) : 0,
+                'avg_completion_pct' => $b['count'] > 0 ? round( $b['comp_pct_sum'] / $b['count'], 1 ) : 0,
+            ];
+        }
+
+        return [
+            'dimension'    => $dimension,
+            'label'        => self::SEGMENT_DIMENSIONS[ $dimension ],
+            'coverage_pct' => count( $pids ) > 0 ? round( ( $known_count / count( $pids ) ) * 100, 1 ) : 0,
+            'segments'     => $segments,
+        ];
+    }
+
     // Portable: swap $wpdb for PDO to migrate.
     // Reuses the same guild leaderboard pattern from page-guilds.php
     public function get_guild_leaderboard( int $adventure_id ): array {

@@ -300,6 +300,14 @@
 						</a>
 					</li>
 					<li class="nav-button">
+						<a class="" href="<?= get_bloginfo('url')."/player-meta/?adventure_id=$adv_child_id";?>">
+							<span class="content">
+								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-player.png" alt=""/></span>
+								<span class="label"><?= __("Player Meta","bluerabbit"); ?></span>
+							</span>
+						</a>
+					</li>
+					<li class="nav-button">
 						<a class="" href="<?= get_bloginfo('url')."/report/?adventure_id=$adv_child_id";?>">
 							<span class="content">
 								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-report.png" alt=""/></span>

@@ -23,6 +23,7 @@ if ($is_manager) {
     $all_players_data = $stats->get_all_players($adv_child_id, $per_page, ($page - 1) * $per_page);
     $adv_tabis        = $stats->get_adventure_tabi_completion($adv_child_id);
     $adv_engagement   = $stats->get_adventure_engagement($adv_child_id);
+    $adv_segment      = $stats->get_engagement_by_segment($adv_child_id, 'work_country');
 }
 ?>
 
@@ -40,7 +41,9 @@ window.brStats = {
     },
     adventureTitle: '<?= esc_js($adventure->adventure_title); ?>',
     typeCompletion: <?= json_encode($p_types); ?>,
-    engagement: <?= json_encode($p_engagement); ?>
+    engagement: <?= json_encode($p_engagement); ?>,
+    segmentDimensions: <?= json_encode($is_manager ? BR_Stats::SEGMENT_DIMENSIONS : []); ?>,
+    segmentBreakdown: <?= json_encode($is_manager ? $adv_segment : null); ?>
 };
 </script>
 
@@ -240,6 +243,46 @@ window.brStats = {
             </div>
             <?php } ?>
         </div>
+    </div>
+
+    <!-- Workforce Engagement (breakdown by player_meta segment) -->
+    <div class="br-stats-panel">
+        <div class="br-stats-segment-header">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <h3 style="margin:0"><?= __("Workforce Engagement", "bluerabbit"); ?></h3>
+                <select class="br-input" id="br-segment-dimension" style="padding:4px 8px;font-size:12px;width:auto">
+                    <?php foreach (BR_Stats::SEGMENT_DIMENSIONS as $dim_key => $dim_label) { ?>
+                    <option value="<?= esc_attr($dim_key); ?>" <?= $dim_key === 'work_country' ? 'selected' : ''; ?>><?= esc_html($dim_label); ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+            <span class="br-stats-segment-coverage" id="br-segment-coverage">
+                <?= sprintf(esc_html__("%s data available for %s%% of players", "bluerabbit"), esc_html($adv_segment['label']), $adv_segment['coverage_pct']); ?>
+            </span>
+        </div>
+        <div class="br-stats-chart-wrap">
+            <canvas id="br-segment-chart"></canvas>
+        </div>
+        <table class="table transparent-bg br-stats-table" id="br-segment-table" style="margin-top:16px">
+            <thead>
+                <tr>
+                    <td><?= __("Segment", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("Players", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("Avg Score", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("Avg Completion", "bluerabbit"); ?></td>
+                </tr>
+            </thead>
+            <tbody id="br-segment-table-body">
+                <?php foreach ($adv_segment['segments'] as $seg) { ?>
+                <tr>
+                    <td><?= esc_html($seg['label']); ?></td>
+                    <td class="text-center"><?= number_format($seg['count']); ?></td>
+                    <td class="text-center"><?= $seg['avg_score']; ?></td>
+                    <td class="text-center"><?= $seg['avg_completion_pct']; ?>%</td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
     </div>
 
     <!-- Player Table -->
