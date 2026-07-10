@@ -1,0 +1,171 @@
+.br-auth-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: #04161e;
+  background-size: cover;
+  background-position: center;
+}
+
+.br-auth-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 22, 30, 0.75);
+}
+
+.br-auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.br-auth-logo {
+  max-width: 260px;
+  max-height: 90px;
+  margin-bottom: 24px;
+}
+
+.br-auth-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.br-auth-title {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.br-hidden {
+  display: none;
+}
+
+.br-auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.br-auth-tabs .br-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+.br-auth-panel {
+  display: none;
+}
+
+.br-auth-panel.active {
+  display: block;
+}
+
+.br-auth-error {
+  color: #f44336;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.br-auth-error .icon {
+  margin-right: 4px;
+}
+
+.br-auth-success {
+  color: #24da98;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.br-auth-links {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.br-auth-links a {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.br-auth-links a:hover {
+  color: #1cc2eb;
+}
+
+.br-auth-links strong {
+  color: #9f40e2;
+  cursor: pointer;
+}
+
+.br-auth-links + .br-auth-links {
+  margin-top: 8px;
+}
+
+#loginform p {
+  margin: 0 0 16px;
+}
+
+#loginform label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 6px;
+}
+
+#loginform input.input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(28, 194, 235, 0.15);
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#loginform input.input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(28, 194, 235, 0.4);
+}
+
+#loginform .login-remember label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#loginform .login-remember input {
+  width: auto;
+}
+
+#loginform .login-submit input[type="submit"] {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(36, 218, 152, 0.12);
+  border: 1px solid rgba(36, 218, 152, 0.35);
+  color: #24da98;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#loginform .login-submit input[type="submit"]:hover {
+  background: rgba(36, 218, 152, 0.22);
+  color: #ffffff;
+}

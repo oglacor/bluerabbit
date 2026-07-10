@@ -1,0 +1,198 @@
+// ═══════════════════════════════════════════════════════════
+// BlueRabbit — Auth pages (login / register)
+// Ported from the CI4 rewrite's br-auth.scss (2026-07-01), standalone like
+// br-stats.scss/br-table.scss/br-notify.scss - not pulled into style.scss's
+// @import chain, own small $br-* variable block redeclared locally.
+//
+// WP keeps wp_login_form() for real authentication (nonces/cookies/redirect
+// handled by WP core - not worth rebuilding for a visual reskin) so, unlike
+// CI4's auth/login.php which fully owns its markup, page-login.php needs
+// override rules below targeting wp_login_form()'s fixed output structure
+// (#loginform, .login-username/.login-password/.login-submit) to match the
+// br-input/br-btn look without touching how the form actually authenticates.
+// ═══════════════════════════════════════════════════════════
+
+$br-primary:  #1cc2eb;
+$br-purple:   #9f40e2;
+$br-green:    #24da98;
+$br-red:      #f44336;
+$br-white:    #ffffff;
+$br-bg:       #04161e;
+$radius:      12px;
+$radius-sm:   6px;
+
+.br-auth-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: $br-bg;
+  background-size: cover;
+  background-position: center;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 22, 30, 0.75);
+  }
+}
+
+.br-auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.br-auth-logo {
+  max-width: 260px;
+  max-height: 90px;
+  margin-bottom: 24px;
+}
+
+.br-auth-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.br-auth-title {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.br-hidden {
+  display: none;
+}
+
+.br-auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  .br-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.br-auth-panel {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+.br-auth-error {
+  color: $br-red;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 16px;
+
+  .icon {
+    margin-right: 4px;
+  }
+}
+
+.br-auth-success {
+  color: $br-green;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.br-auth-links {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+
+  a {
+    color: rgba($br-white, 0.5);
+
+    &:hover { color: $br-primary; }
+  }
+
+  strong {
+    color: $br-purple;
+    cursor: pointer;
+  }
+}
+
+.br-auth-links + .br-auth-links {
+  margin-top: 8px;
+}
+
+// ── wp_login_form() output overrides (WP core markup, IDs/classes fixed) ──
+
+#loginform {
+  p {
+    margin: 0 0 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba($br-white, 0.5);
+    margin-bottom: 6px;
+  }
+
+  input.input {
+    width: 100%;
+    background: rgba($br-white, 0.06);
+    border: 1px solid rgba($br-primary, 0.15);
+    border-radius: $radius-sm;
+    color: $br-white;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      background: rgba($br-white, 0.1);
+      border-color: rgba($br-primary, 0.4);
+    }
+  }
+
+  .login-remember label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: none;
+    font-weight: 500;
+    letter-spacing: normal;
+    color: rgba($br-white, 0.7);
+
+    input {
+      width: auto;
+    }
+  }
+
+  .login-submit {
+    input[type="submit"] {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba($br-green, 0.12);
+      border: 1px solid rgba($br-green, 0.35);
+      color: $br-green;
+      border-radius: $radius-sm;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+
+      &:hover {
+        background: rgba($br-green, 0.22);
+        color: $br-white;
+      }
+    }
+  }
+}

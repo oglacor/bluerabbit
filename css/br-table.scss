@@ -4439,6 +4439,23 @@ select.br-input {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+.br-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.br-secrets-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.br-secrets-message-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba($br-white, 0.85);
+}
+
 // ── page-wall.php ────────────────────────────────────────────
 
 .br-wall-type-btn-login {

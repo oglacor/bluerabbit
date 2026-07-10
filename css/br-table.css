@@ -4636,6 +4636,23 @@ select.br-input option:hover {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+.br-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.br-secrets-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.br-secrets-message-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .br-wall-type-btn-login {
   background: rgba(28, 194, 235, 0.25);
   color: #1cc2eb;

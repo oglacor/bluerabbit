@@ -1263,6 +1263,9 @@ function br_color_attr( string $color, string $type = 'bg', bool $declaration_on
 function br_stats_enqueue_assets() {
 	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
 	wp_enqueue_style( 'br-notify', get_template_directory_uri() . '/css/br-notify.css', [], '1.0' );
+	if ( is_page('login') ) {
+		wp_enqueue_style( 'br-auth', get_template_directory_uri() . '/css/br-auth.css', ['br-table'], '1.0' );
+	}
 	if ( is_page('stats') ) {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], '1.0' );
 		wp_enqueue_script( 'br-stats', get_template_directory_uri() . '/js/br-stats.js', ['jquery'], '1.0', true );
