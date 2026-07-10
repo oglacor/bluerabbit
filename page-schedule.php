@@ -1,274 +1,189 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<div class="background blue-bg-700 sq-full fixed layer"></div>
-<div class="background black-bg opacity-80 sq-full fixed layer"></div>
-<div class="layer base w-full relative schedule">
-<?php 
+<?php
 	if($adventure->adventure_hide_schedule == 'hide'){
 		$sessions = BR_Session::instance()->getSessions($adventure->adventure_id, 'hide');
 	}else{
 		$sessions = BR_Session::instance()->getSessions($adventure->adventure_id, 'publish');
 	}
 
-$speakers = $wpdb->get_results("
-	SELECT speakers.*, players.player_first, players.player_last, players.player_display_name, players.player_picture, players.player_bio, players.player_company, players.player_website, players.player_linkedin FROM {$wpdb->prefix}br_speakers speakers
-    LEFT JOIN {$wpdb->prefix}br_players players ON speakers.player_id = players.player_id
-	WHERE speakers.adventure_id=$adventure->adventure_id
-	ORDER BY speakers.speaker_first_name, speakers.speaker_last_name
-"); 
+	$speakers = $wpdb->get_results("
+		SELECT speakers.*, players.player_first, players.player_last, players.player_display_name, players.player_picture, players.player_bio, players.player_company, players.player_website, players.player_linkedin FROM {$wpdb->prefix}br_speakers speakers
+		LEFT JOIN {$wpdb->prefix}br_players players ON speakers.player_id = players.player_id
+		WHERE speakers.adventure_id=$adventure->adventure_id
+		ORDER BY speakers.speaker_first_name, speakers.speaker_last_name
+	");
 	$player_achievements = $wpdb->get_col("SELECT
 	achievement_id FROM {$wpdb->prefix}br_player_achievement
 	WHERE adventure_id=$adventure->adventure_id AND player_id=$current_user->ID");
-	
-	$all_achievements = $wpdb->get_results("SELECT * 
+
+	$all_achievements = $wpdb->get_results("SELECT *
 	FROM {$wpdb->prefix}br_achievements
 	WHERE adventure_id=$adventure->adventure_id AND achievement_status='publish' ORDER BY achievement_id");
 	$achievements = array();
-	$$achievement_badge = array();
+	$achievement_badge = array();
 	foreach($all_achievements as $ach){
-		$achievements[$ach->achievement_id] = $ach->achievement_color; 
-		$achievement_badge[$ach->achievement_id] = $ach->achievement_badge; 
+		$achievements[$ach->achievement_id] = $ach->achievement_color;
+		$achievement_badge[$ach->achievement_id] = $ach->achievement_badge;
 	}
 	$all_guilds = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_guilds WHERE adventure_id=$adventure->adventure_id AND guild_status='publish' ORDER BY guild_xp DESC, guild_bloo DESC, guild_name ASC");
-	
+
 	$player_guilds = $wpdb->get_col("SELECT
 	guild_id FROM {$wpdb->prefix}br_player_guild
 	WHERE adventure_id=$adventure->adventure_id AND player_id=$current_user->ID GROUP BY guild_id");
-	
-	$guilds =[];
-	$guild_logos =[];
+
+	$guilds = [];
+	$guild_logos = [];
 	foreach($all_guilds as $t){
-		$guilds[$t->guild_id] = $t->guild_color; 
-		$guild_logos[$t->guild_id] = $t->guild_logo; 
+		$guilds[$t->guild_id] = $t->guild_color;
+		$guild_logos[$t->guild_id] = $t->guild_logo;
 	}
-	function current_timezone($adv_tz = 'America/MexicoCity') {
-	  $zones_array = array();
-	  $timestamp = time();
-	  foreach(timezone_identifiers_list() as $key => $zone) {
-		date_default_timezone_set($zone);
-		  if($zone == $adv_tz){
-			  $the_zone = ' GMT ' . date('P', $timestamp)." ".$zone;
-		  }
-	  }
-	  return $the_zone;
-	}
-	$timestamp = time();
-	$the_zone = ' GMT ' . date('P', $timestamp);
+
+	$the_zone = ' GMT ' . date('P', time());
+
+	// Same per-session gating as before (achievement path / guild
+	// membership), pre-filtered once so the day-grouping loop below can
+	// stay a single simple pass instead of WP's original duplicated
+	// day-boundary markup.
+	$visible_sessions = array_values(array_filter($sessions, function($s) use ($player_achievements, $player_guilds){
+		return (!$s->achievement_id || in_array($s->achievement_id, $player_achievements))
+			&& (!$s->guild_id || in_array($s->guild_id, $player_guilds));
+	}));
+?>
+
+<div class="br-page">
+
+	<div class="br-panel br-page-header">
+		<div>
+			<h1 class="br-page-title"><?= __("Schedule", "bluerabbit"); ?></h1>
+			<span class="br-page-subtitle"><?= esc_html($adventure->adventure_title); ?></span>
+		</div>
+	</div>
+
+	<?php if ($visible_sessions):
+		$current_day = null;
 	?>
+		<?php foreach ($visible_sessions as $key => $session):
+			$session_day = date('Ymd', strtotime($session->session_start));
+			if ($session_day !== $current_day):
+				if ($current_day !== null) echo '</div></div>';
+				$current_day = $session_day;
+				$date_values = explode(',', date('Y,m,d,l,F', strtotime($session->session_start)));
+		?>
+		<div class="br-panel br-schedule-day">
+			<div class="br-schedule-day-header">
+				<span class="br-schedule-day-number"><?= esc_html($date_values[2]); ?></span>
+				<div class="br-schedule-day-labels">
+					<span class="br-schedule-day-weekday"><?= esc_html($date_values[3]); ?></span>
+					<span class="br-schedule-day-month"><?= esc_html($date_values[4]); ?></span>
+				</div>
+			</div>
+			<div>
+		<?php endif; ?>
 
-	
-			<div class="w-full boxed max-w-1200 layer base relative text-center">
-				<?php if($sessions){ ?>
-					<?php $current_day = date('Ymd', strtotime($sessions[0]->session_start));?>
-					<?php $date_values = explode(",",date('Y,m,d,l,F', strtotime($sessions[0]->session_start))); ?>
-					<div class="layer base relative schedule-day">
-						<div class="schedule-day-description layer foreground text-center purple-bg-300 schedule-day-date">
-							<div class="layer background absolute sq-full blend-luminosity purple-bg-300"></div>
-							<div class="layer background absolute sq-full blend-luminosity opacity-70 black-bg"></div>
-							<div class="icon-group padding-10 inline-table white-color layer base relative">
-								<div class="icon-content text-center top">
-									<span class="line br-text-30 w900"><?= $date_values[2]; ?></span>
-								</div>
-								<div class="icon-content text-left">
-									<span class="line br-text-12 w300"><?= $date_values[3]; ?></span>
-									<span class="line br-text-20 w300"><?= $date_values[4]; ?></span>
-								</div>
-							</div>
-						</div>
-						<div class="schedule-day-sessions">
-						<?php foreach($sessions as $key=>$session){ ?>
-
-							<?php $session_day = date('Ymd', strtotime($session->session_start)); ?>
-
-							<?php if($session_day > $current_day){ ?>
-								<?php $current_day = $session_day; ?>
-								<?php $date_values = explode(",",date('Y,m,d,l,F', strtotime($session->session_start))); ?>
-							</div>
-						</div>
-						<div class="layer base relative schedule-day">
-							<div class="schedule-day-description layer foreground text-center purple-bg-300 schedule-day-date">
-								<div class="layer background absolute sq-full blend-luminosity purple-bg-300"></div>
-								<div class="layer background absolute sq-full blend-luminosity opacity-70 black-bg"></div>
-								<div class="icon-group padding-10 inline-table white-color layer base relative">
-									<div class="icon-content text-center top">
-										<span class="line br-text-30 w900"><?= $date_values[2]; ?></span>
-									</div>
-									<div class="icon-content text-left">
-										<span class="line br-text-12 w300"><?= $date_values[3]; ?></span>
-										<span class="line br-text-20 w300"><?= $date_values[4]; ?></span>
-									</div>
-								</div>
-							</div>
-							<div class="schedule-day-sessions">
-
-						<?php } ?>
-						<?php if((!$session->achievement_id || in_array($session->achievement_id, $player_achievements)) && (!$session->guild_id || in_array($session->guild_id, $player_guilds))){ ?>
-						<div class="overflow-hidden relative layer base schedule-session" id="milestone-session-<?= $key; ?>">
-							<?php if($isGM){ ?>
-								<div class="corner circle small green-bg-400 top right layer foreground absolute">
-									<a class="br-text-14 white-color" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span class="icon icon-edit"></span> </a>
-								</div>
-							<?php } ?>
-							<?php $date_values = explode(",",date('Y,m,d,l,F', strtotime($session->session_start))); ?>
-							<div class="foreground highlight white-color padding-5 margin-0" onClick="showOverlay('#session-detail-<?= $key; ?>'); activate('#milestone-session-<?= $key; ?>');">
-								<div class=" relative w-full padding-10 flex">
-									<div class="w-100 relative layer base">
-										<?php $session_image = $session->speaker_picture ? $session->speaker_picture : $adventure->adventure_badge;?>
-										<div class="button-icon sq-100 border border-2 border-all blue-grey-border-700 pull-left" style="background-image: url(<?= $session_image;?>);"></div>
-									</div>
-									<div class="icon-content text-left cursor-pointer padding-10">
-										<h2 class="br-text-30 w600">
-											<?= $session->session_title; ?>
-										</h2>
-										<p class="padding-10 br-text-16 w600 opacity-60 mix-blend-overlay">
-                                            <?php if($session->speaker_ids){ ?>
-                                                <?php $the_speakers = explode(",",$session->speaker_ids); ?>
-                                                <?php foreach($speakers as $sp){ ?>
-                                                    <?php if(in_array($sp->speaker_id, $the_speakers)){ ?>
-                                                        <strong><?= "$sp->speaker_first_name $sp->speaker_last_name"; ?> | </strong>
-                                                    <?php } ?>
-                                                <?php } ?>
-                                            <?php } ?>
-
-											<?php if($session->achievement_id){ ?>
-												<button class="br-icon-btn border border-all border-1 <?= $achievements[$session->achievement_id];?>-400 white-bg" style="background-image: url(<?= $achievement_badge[$session->achievement_id]; ?>);">
-												</button>
-											<?php } ?>
-											<?php if($session->guild_id){ ?>
-												<button class="br-icon-btn border border-all border-1 <?= $guilds[$session->guild_id];?>-400 white-bg" style="background-image: url(<?= $guild_logos[$session->guild_id]; ?>);">
-												</button>
-											<?php } ?>
-											<span class="icon icon-time"></span> <?= date('H:i', strtotime($session->session_start)); ?> - 
-											<?= date('H:i', strtotime($session->session_end)); ?> | <?= $the_zone; ?> 
-											<?= $session->session_room ? " | <strong class='amber-400'>$session->session_room</strong>" : ''; ?>
-
-										</p>
-										<p class="br-text-18 w300 line-150">
-											<?= wp_trim_words($session->session_description, 50);?>
-										</p>
-									</div>
-								</div> 
-							</div>
-						</div>
-						<?php } ?>
-						<?php } ?>
-					</div>
-					<?php foreach($sessions as $key=>$session){ ?>
-						<?php 
-							$bg_image = $adventure->adventure_badge;
-							if($session->speaker_picture){
-								$bg_image = $session->speaker_picture; 
-							}elseif($achievement_badge[$session->achievement_id]){
-								$bg_image = $achievement_badge[$session->achievement_id]; 
-							}elseif($guild_logos[$session->guild_id]){
-								$bg_image = $guild_logos[$session->guild_id]; 
-							}						
-						?>
-						<div id="session-detail-<?= $key; ?>" class="overlay-layer session-detail">
-							<div class="background grey-bg-900 fixed"></div>
-							<div class="background black-bg opacity-40 blend-luminosity fixed cursor-pointer" style="background-image: url(<?= $bg_image; ?>);" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"></div>
-							<div class="session-detail-content white-color">
-								<div class="layer absolute top right foreground">
-									<button class="br-icon-btn br-icon-btn-red" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"><span class="icon icon-cancel"></span></button>
-								</div>
-								<?php if($isGM){ ?>
-									<div class="layer absolute top left foreground">
-										<a class="br-icon-btn br-icon-btn-green br-text-14" href="<?= get_bloginfo('url')."/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id";?>"> <span  class="icon icon-edit"></span> </a>
-									</div>
-								<?php } ?>
-								<div class="highlight text-center padding-10 margin-0">
-									<h1 class="br-text-30 w600"><?= $session->session_title; ?></h1>
-								</div>
-								<div class="highlight text-center padding-10 margin-0">
-									<div class="background <?=$adventure->adventure_color; ?>-bg-300 opacity-20"></div>
-									<div class="icon-group foreground">
-										<div class="icon-content">
-											<span class="line br-text-24 w500"><?= date('D M jS, Y', strtotime($session->session_start)); ?></span>
-											<span class="line br-text-18 w500">
-												<?php 
-													echo date('H:i', strtotime($session->session_start))." - ".date('H:i', strtotime($session->session_end));
-													if($session->session_room){
-														echo " |  $session->session_room";
-													}
-												?>														
-											</span>
-										</div>
-									</div>
-								</div>
-								<?php if($session->speaker_ids){ ?>
-                                    <div class="highlight text-center padding-10 margin-10">
-                                    <?php if($session->speaker_ids){ ?>
-                                        <?php foreach($speakers as $sp){ ?>
-                                            <?php if(in_array($sp->speaker_id, $the_speakers)){ ?>
-                                                <div class="icon-group">
-                                                    <div class="br-icon-btn border border-all <?=$adventure->adventure_color; ?>-border-300" style="background-image: url(<?= $sp->player_picture ? $sp->player_picture : $sp->speaker_picture; ?>);" >
-                                                    </div>
-                                                    <div class="icon-content text-left">
-                                                        <span class="line br-text-24 w500">
-                                                            <?= "$sp->speaker_first_name $sp->speaker_last_name"; ?>
-                                                        </span>
-                                                        <?php if($sp->speaker_company){ ?>
-                                                            <span class="line br-text-14 w100">
-                                                                <?= "$sp->speaker_company"; ?>
-                                                            </span>
-                                                        <?php } ?>
-                                                    </div>
-                                                </div>
-                                            <?php } ?>
-                                        <?php } ?>
-                                    <?php } ?>
-                                    </div>
-								<?php } ?>
-								<div class="highlight text-center padding-10 margin-10">
-									<?php if($session->quest_id){ ?>
-										<?php
-										$sched_color = $session->quest_type == 'quest' ? '#2196f3' : '#795548';
-										?>
-										<a class="form-ui" style="background-color:<?= $sched_color; ?>" href="<?= get_bloginfo('url')."/$session->quest_type/?adventure_id=$adventure->adventure_id&questID=$session->quest_id"; ?>">
-											<span class="icon icon-<?= $session->quest_type; ?>"></span>
-											<?= __("View")." $session->quest_type"; ?>
-										</a>
-									<?php } ?>
-								</div>
-								<div class="content">
-									<?= apply_filters('the_content', $session->session_description); ?>
-								</div>
-								<?php if($session->speaker_bio){ ?>
-									<div class="highlight padding-10 text-center">
-										<button class="form-ui red-bg-300 br-text-14" target="_blank"  onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');"><span class="icon icon-language"></span> <?php _e("Speaker Bio","bluerabbit"); ?></button>
-									</div>
-									<div class="speaker-bio " id="speaker-bio-<?= $key; ?>">
-										<div class="background black-bg opacity-50"></div>
-										<div class="line-150 br-text-14 padding-10 text-center foreground">
-											<span class="br-icon-btn" style="background-image: url(<?= $session->speaker_picture; ?>);"></span>
-											<br>
-											<span class="br-text-24 w300"><?= "$session->speaker_first_name $session->speaker_last_name"; ?></span><br>
-											<?= apply_filters('the_content', $session->speaker_bio); ?>
-											<button class="br-close-btn" onClick="$('#speaker-bio-<?= $key; ?>').toggleClass('active');">
-												<span class="icon icon-arrow-up white-color"></span>
-											</button>
-										</div>
-									</div>
-								<?php } ?>
-							</div>
-
-						</div>
-					<?php } ?>
-				<?php }else{ ?>
-					<div class="highlight padding-10 text-center red-bg-50 red-600">
-						<span class="icon-group">
-							<span class="br-icon-btn br-icon-btn-white red-400">
-								<span class="icon icon-warning"></span>
-							</span>
-							<span class="icon-content">
-								<span class="line br-text-40 w500">
-									<?php _e("No Sessions Available","bluerabbit"); ?>
-								</span>
-							</span>
-							
-						</span>
-					</div>
+			<?php $session_speaker_ids = $session->speaker_ids ? explode(',', $session->speaker_ids) : []; ?>
+			<div class="br-schedule-session-card" id="milestone-session-<?= $key; ?>" onClick="showOverlay('#session-detail-<?= $key; ?>'); activate('#milestone-session-<?= $key; ?>');">
+				<?php if ($isGM || $isAdmin) { ?>
+				<a class="br-schedule-session-edit br-btn br-btn-sm br-btn-green" onClick="event.stopPropagation();" href="<?= get_bloginfo('url') . "/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id"; ?>"><span class="icon icon-edit"></span></a>
 				<?php } ?>
+				<?php
+				$session_image = '';
+				foreach ($speakers as $sp) { if (in_array($sp->speaker_id, $session_speaker_ids)) { $session_image = $sp->speaker_picture; break; } }
+				$session_image = $session_image ?: $adventure->adventure_badge;
+				?>
+				<div class="br-schedule-session-thumb" style="background-image: url(<?= esc_url($session_image); ?>);"></div>
+				<div class="br-schedule-session-body">
+					<h2 class="br-schedule-session-title"><?= esc_html($session->session_title); ?></h2>
+					<div class="br-schedule-session-meta">
+						<?php foreach ($speakers as $sp) { if (in_array($sp->speaker_id, $session_speaker_ids)) { ?>
+						<strong><?= esc_html($sp->speaker_first_name . ' ' . $sp->speaker_last_name); ?></strong>
+						<?php } } ?>
+						<?php if ($session->achievement_id && !empty($achievement_badge[$session->achievement_id])) { ?>
+						<span class="br-schedule-badge" style="background-image: url(<?= esc_url($achievement_badge[$session->achievement_id]); ?>);"></span>
+						<?php } ?>
+						<?php if ($session->guild_id && !empty($guild_logos[$session->guild_id])) { ?>
+						<span class="br-schedule-badge" style="background-image: url(<?= esc_url($guild_logos[$session->guild_id]); ?>);"></span>
+						<?php } ?>
+						<span><span class="icon icon-time"></span> <?= date('H:i', strtotime($session->session_start)); ?> - <?= date('H:i', strtotime($session->session_end)); ?> | <?= esc_html($the_zone); ?></span>
+						<?php if ($session->session_room) { ?><span class="br-badge br-badge-amber"><?= esc_html($session->session_room); ?></span><?php } ?>
+					</div>
+					<p class="br-schedule-session-desc"><?= wp_trim_words($session->session_description, 30); ?></p>
+				</div>
+			</div>
+		<?php endforeach; ?>
 			</div>
 		</div>
+
+		<?php foreach ($visible_sessions as $key => $session):
+			$session_speaker_ids = $session->speaker_ids ? explode(',', $session->speaker_ids) : [];
+			$bg_image = $adventure->adventure_badge;
+			$first_speaker = null;
+			foreach ($speakers as $sp) { if (in_array($sp->speaker_id, $session_speaker_ids)) { $first_speaker = $sp; break; } }
+			if ($first_speaker && $first_speaker->speaker_picture) $bg_image = $first_speaker->speaker_picture;
+			elseif ($session->achievement_id && !empty($achievement_badge[$session->achievement_id])) $bg_image = $achievement_badge[$session->achievement_id];
+			elseif ($session->guild_id && !empty($guild_logos[$session->guild_id])) $bg_image = $guild_logos[$session->guild_id];
+		?>
+		<div id="session-detail-<?= $key; ?>" class="overlay-layer br-modal-overlay session-detail">
+			<div class="br-modal-backdrop" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"></div>
+			<div class="br-panel br-modal br-schedule-detail">
+				<div class="br-modal-header">
+					<h3 class="br-modal-header-title"><?= esc_html($session->session_title); ?></h3>
+					<div class="br-modal-header-actions">
+						<?php if ($isGM || $isAdmin) { ?>
+						<a class="br-btn br-btn-mini br-btn-green" href="<?= get_bloginfo('url') . "/new-session/?adventure_id=$adventure->adventure_id&session_id=$session->session_id"; ?>">
+							<span class="icon icon-edit"></span> <?= __("Edit", "bluerabbit"); ?>
+						</a>
+						<?php } ?>
+						<button class="br-modal-close" onClick="hideAllOverlay(); activate('#milestone-session-<?= $key; ?>');"><span class="icon icon-cancel"></span></button>
+					</div>
+				</div>
+				<div class="br-schedule-detail-hero" style="background-image: url(<?= esc_url($bg_image); ?>);"></div>
+				<div class="br-schedule-detail-body">
+					<p class="br-page-subtitle">
+						<?= date('D M jS, Y', strtotime($session->session_start)); ?> —
+						<?= date('H:i', strtotime($session->session_start)) . ' - ' . date('H:i', strtotime($session->session_end)); ?>
+						<?= $session->session_room ? ' | ' . esc_html($session->session_room) : ''; ?>
+					</p>
+
+					<?php if ($session_speaker_ids) { ?>
+					<div class="br-panel br-schedule-speakers-panel">
+						<?php foreach ($speakers as $sp) { if (in_array($sp->speaker_id, $session_speaker_ids)) { ?>
+						<a class="br-schedule-speaker-chip" href="<?= get_bloginfo('url') . "/speaker/?adventure_id=$adventure->adventure_id&speaker_id=$sp->speaker_id"; ?>">
+							<div class="br-schedule-speaker-avatar" style="background-image: url(<?= esc_url($sp->player_picture ? $sp->player_picture : $sp->speaker_picture); ?>);"></div>
+							<div>
+								<div class="br-schedule-speaker-name"><?= esc_html($sp->speaker_first_name . ' ' . $sp->speaker_last_name); ?></div>
+								<?php if ($sp->speaker_company) { ?><div class="br-schedule-speaker-company"><?= esc_html($sp->speaker_company); ?></div><?php } ?>
+							</div>
+						</a>
+						<?php } } ?>
+					</div>
+					<?php } ?>
+
+					<?php if ($session->quest_id) { ?>
+					<a class="br-btn br-btn-blue" href="<?= get_bloginfo('url') . "/$session->quest_type/?adventure_id=$adventure->adventure_id&questID=$session->quest_id"; ?>">
+						<span class="icon icon-<?= esc_attr($session->quest_type); ?>"></span> <?= __("View") . " " . $session->quest_type; ?>
+					</a>
+					<?php } ?>
+
+					<div class="br-schedule-detail-description"><?= apply_filters('the_content', $session->session_description); ?></div>
+
+					<?php if ($session->speaker_bio) { ?>
+					<div class="br-panel" style="margin-top:16px">
+						<h3 class="br-panel-title"><?= __("Speaker Bio", "bluerabbit"); ?></h3>
+						<?= apply_filters('the_content', $session->speaker_bio); ?>
+					</div>
+					<?php } ?>
+				</div>
+			</div>
+		</div>
+		<?php endforeach; ?>
+
+	<?php else: ?>
+	<div class="br-panel br-empty">
+		<span class="icon icon-warning"></span>
+		<h3><?= __("No Sessions Available", "bluerabbit"); ?></h3>
+	</div>
+	<?php endif; ?>
+
+</div>
 
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

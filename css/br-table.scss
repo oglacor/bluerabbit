@@ -4547,6 +4547,253 @@ select.br-input {
   color: rgba($br-white, 0.85);
 }
 
+// ── page-schedule.php ────────────────────────────────────────
+.br-schedule-day {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.br-schedule-day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $br-border;
+}
+
+.br-schedule-day-number {
+  font-family: $condensed;
+  font-size: 32px;
+  font-weight: 900;
+  color: $br-primary;
+  line-height: 1;
+}
+
+.br-schedule-day-labels {
+  display: flex;
+  flex-direction: column;
+}
+
+.br-schedule-day-weekday {
+  font-size: 12px;
+  color: rgba($br-white, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.br-schedule-day-month {
+  font-size: 16px;
+  color: $br-white;
+  font-weight: 700;
+}
+
+.br-schedule-session-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: $radius;
+  background: rgba($br-white, 0.03);
+  border: 1px solid transparent;
+  cursor: pointer;
+  margin-bottom: 10px;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: rgba($br-primary, 0.3);
+    background: rgba($br-primary, 0.05);
+  }
+}
+
+.br-schedule-session-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-sm;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid $br-border;
+  flex-shrink: 0;
+}
+
+.br-schedule-session-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-schedule-session-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $br-white;
+  margin: 0 0 4px;
+}
+
+.br-schedule-session-meta {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.br-schedule-session-desc {
+  font-size: 13px;
+  color: rgba($br-white, 0.6);
+  line-height: 1.5;
+}
+
+.br-schedule-session-edit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.br-schedule-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba($br-white, 0.3);
+  display: inline-block;
+}
+
+.br-schedule-speaker-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: $br-white;
+}
+
+.br-schedule-speaker-company {
+  font-size: 12px;
+  color: rgba($br-white, 0.45);
+}
+
+// Generic centered modal (session detail, and reusable for any future
+// click-to-detail popup) - .br-modal-overlay/-backdrop/.br-modal are
+// generic, only .br-schedule-detail itself is schedule-specific.
+.br-modal-overlay {
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  &.active {
+    display: flex;
+  }
+}
+
+.br-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 10, 14, 0.75);
+  cursor: pointer;
+}
+
+.br-modal {
+  position: relative;
+  z-index: 1;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.br-schedule-detail {
+  width: min(640px, 92vw);
+  border-radius: $radius;
+}
+
+.br-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba($br-white, 0.08);
+  flex-shrink: 0;
+}
+
+.br-modal-header-title {
+  margin: 0;
+  font-family: $condensed;
+  font-weight: 800;
+  font-size: 18px;
+  color: $br-white;
+}
+
+.br-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.br-modal-close {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba($br-white, 0.08);
+  color: rgba($br-white, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: rgba($br-red, 0.2); color: $br-red; }
+}
+
+.br-schedule-detail-hero {
+  height: 140px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba($br-bg, 0.2), rgba($br-bg, 0.85));
+  }
+}
+
+.br-schedule-detail-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.br-schedule-speakers-panel {
+  margin: 16px 0;
+}
+
+.br-schedule-detail-description {
+  margin-top: 16px;
+}
+
+.br-schedule-speaker-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.br-schedule-speaker-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid $br-border;
+  flex-shrink: 0;
+}
+
 // ── page-wall.php ────────────────────────────────────────────
 
 .br-wall-type-btn-login {

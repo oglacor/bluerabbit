@@ -4745,6 +4745,254 @@ select.br-input option:hover {
   color: rgba(255, 255, 255, 0.85);
 }
 
+.br-schedule-day {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.br-schedule-day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(28, 194, 235, 0.25);
+}
+
+.br-schedule-day-number {
+  font-family: "proxima-nova-extra-condensed", sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #1cc2eb;
+  line-height: 1;
+}
+
+.br-schedule-day-labels {
+  display: flex;
+  flex-direction: column;
+}
+
+.br-schedule-day-weekday {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.br-schedule-day-month {
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.br-schedule-session-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  cursor: pointer;
+  margin-bottom: 10px;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.br-schedule-session-card:hover {
+  border-color: rgba(28, 194, 235, 0.3);
+  background: rgba(28, 194, 235, 0.05);
+}
+
+.br-schedule-session-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(28, 194, 235, 0.25);
+  flex-shrink: 0;
+}
+
+.br-schedule-session-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.br-schedule-session-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+
+.br-schedule-session-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.br-schedule-session-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+}
+
+.br-schedule-session-edit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.br-schedule-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: inline-block;
+}
+
+.br-schedule-speaker-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.br-schedule-speaker-company {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.br-modal-overlay {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.br-modal-overlay.active {
+  display: flex;
+}
+
+.br-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 10, 14, 0.75);
+  cursor: pointer;
+}
+
+.br-modal {
+  position: relative;
+  z-index: 1;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.br-schedule-detail {
+  width: min(640px, 92vw);
+  border-radius: 12px;
+}
+
+.br-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.br-modal-header-title {
+  margin: 0;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.br-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.br-modal-close {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.br-modal-close:hover {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.br-schedule-detail-hero {
+  height: 140px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.br-schedule-detail-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(4, 22, 30, 0.2), rgba(4, 22, 30, 0.85));
+}
+
+.br-schedule-detail-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.br-schedule-speakers-panel {
+  margin: 16px 0;
+}
+
+.br-schedule-detail-description {
+  margin-top: 16px;
+}
+
+.br-schedule-speaker-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.br-schedule-speaker-chip:last-child {
+  margin-bottom: 0;
+}
+
+.br-schedule-speaker-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid rgba(28, 194, 235, 0.25);
+  flex-shrink: 0;
+}
+
 .br-wall-type-btn-login {
   background: rgba(28, 194, 235, 0.25);
   color: #1cc2eb;
