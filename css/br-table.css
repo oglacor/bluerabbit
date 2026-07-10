@@ -3842,6 +3842,98 @@ select.br-input option:hover {
   border-color: rgba(28, 194, 235, 0.4);
 }
 
+.br-speaker-hero {
+  position: relative;
+  padding: 40px 28px;
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.br-speaker-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4, 22, 30, 0.55), rgba(4, 22, 30, 0.92));
+}
+
+.br-speaker-hero-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.br-speaker-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  margin-bottom: 8px;
+}
+
+.br-speaker-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.br-speaker-edit {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+}
+
+.br-speaker-bio {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.br-speaker-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.br-speaker-session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.br-speaker-session-row:last-child {
+  border-bottom: none;
+}
+
+.br-speaker-session-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.br-speaker-session-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+}
+
+.br-speaker-session-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 6px 0 0;
+}
+
 .br-objective-menu {
   background: rgba(4, 22, 30, 0.95);
   border: 1px solid rgba(28, 194, 235, 0.2);
