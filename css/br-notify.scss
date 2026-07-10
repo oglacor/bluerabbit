@@ -1,0 +1,133 @@
+// ═══════════════════════════════════════════════════════════
+// BlueRabbit — Notification toast + fullscreen feedback overlay
+// Ported from the CI4 rewrite's br-notify.scss (2026-07-01), standalone
+// like br-stats.scss/br-table.scss - not pulled into style.scss's
+// @import chain, own small $br-* variable block redeclared locally
+// rather than @importing css/_variables.scss.
+//
+// Renders classes/Notification.php's pop()/notify() <li class="br-notify">
+// output - used both as the small toast in #notify-message (positioning/
+// slide-animation CSS for that lives in css/_items.scss already, untouched
+// here) and as the sole content of the fullscreen #feedback overlay.
+// ═══════════════════════════════════════════════════════════
+
+$br-primary:   #1cc2eb;
+$br-white:     #ffffff;
+$br-panel-bg:  rgba(11, 61, 79, 0.92);
+$br-border:    rgba(28, 194, 235, 0.25);
+$radius-sm:    8px;
+
+.br-notify {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-left: 4px solid $br-primary;
+  border-radius: $radius-sm;
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  text-align: left;
+}
+
+.br-notify-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.br-notify-text {
+  font-family: "proxima-nova", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: $br-white;
+}
+
+// The fullscreen overlay just needs its injected card centered with some
+// breathing room - the card itself (.br-notify or .br-feedback-panel)
+// provides all the chrome.
+#feedback .content {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+// ─────────────────────────────────────────────────────────────
+// br-feedback-panel - bigger fullscreen-only card, for ad hoc #feedback
+// messages (out of funds, out of energy, validation errors, etc.) that
+// aren't the small .br-notify toast shape. Ported alongside .br-notify
+// since they're the same underlying messaging system, just two
+// rendering contexts.
+// ─────────────────────────────────────────────────────────────
+.br-feedback-panel {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 420px;
+  margin: 0 auto;
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: 14px;
+  padding: 32px 28px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  text-align: center;
+}
+
+.br-feedback-icon {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.br-feedback-title {
+  font-family: "proxima-nova-extra-condensed", sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 26px;
+  color: $br-white;
+  margin: 0;
+}
+
+.br-feedback-body {
+  font-family: "proxima-nova", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.8);
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  ul, ol {
+    text-align: left;
+    padding-left: 20px;
+  }
+}
+
+.br-feedback-warn {
+  color: #ffc107;
+  font-weight: 700;
+}
+
+.br-feedback-cta {
+  margin-top: 4px;
+}
