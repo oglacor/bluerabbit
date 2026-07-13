@@ -20,6 +20,8 @@
   align-items: center;
   justify-content: center;
   padding: 40px 16px;
+  position: relative;
+  z-index: 100;
 }
 
 .br-auth-logo {
