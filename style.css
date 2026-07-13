@@ -9314,6 +9314,16 @@ ul.blog li.blog-post.unavailable .blog-post-headline, ul.blog li.blog-post.unava
   left: -20px;
 }
 
+.confirm-action-tooltip {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+}
+.confirm-action-tooltip.active {
+  opacity: 1;
+  visibility: visible;
+}
+
 .confirm-action {
   position: absolute;
   bottom: 105%;

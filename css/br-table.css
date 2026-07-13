@@ -3911,7 +3911,6 @@ select.br-input option:hover {
   padding: 14px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
-
 .br-speaker-session-row:last-child {
   border-bottom: none;
 }
@@ -4756,7 +4755,7 @@ select.br-input option:hover {
   gap: 12px;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(28, 194, 235, 0.25);
+  border-bottom: 1px solid rgba(28, 194, 235, 0.2);
 }
 
 .br-schedule-day-number {
@@ -4797,7 +4796,6 @@ select.br-input option:hover {
   position: relative;
   transition: border-color 0.15s, background 0.15s;
 }
-
 .br-schedule-session-card:hover {
   border-color: rgba(28, 194, 235, 0.3);
   background: rgba(28, 194, 235, 0.05);
@@ -4809,7 +4807,7 @@ select.br-input option:hover {
   border-radius: 6px;
   background-size: cover;
   background-position: center;
-  border: 1px solid rgba(28, 194, 235, 0.25);
+  border: 1px solid rgba(28, 194, 235, 0.2);
   flex-shrink: 0;
 }
 
@@ -4873,7 +4871,6 @@ select.br-input option:hover {
   align-items: center;
   justify-content: center;
 }
-
 .br-modal-overlay.active {
   display: flex;
 }
@@ -4938,7 +4935,6 @@ select.br-input option:hover {
   cursor: pointer;
   transition: all 0.15s;
 }
-
 .br-modal-close:hover {
   background: rgba(244, 67, 54, 0.2);
   color: #f44336;
@@ -4951,9 +4947,8 @@ select.br-input option:hover {
   background-position: center;
   position: relative;
 }
-
 .br-schedule-detail-hero::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom, rgba(4, 22, 30, 0.2), rgba(4, 22, 30, 0.85));
@@ -4978,7 +4973,6 @@ select.br-input option:hover {
   gap: 10px;
   margin-bottom: 10px;
 }
-
 .br-schedule-speaker-chip:last-child {
   margin-bottom: 0;
 }
@@ -4989,7 +4983,7 @@ select.br-input option:hover {
   border-radius: 50%;
   background-size: cover;
   background-position: center;
-  border: 2px solid rgba(28, 194, 235, 0.25);
+  border: 2px solid rgba(28, 194, 235, 0.2);
   flex-shrink: 0;
 }
 
@@ -6088,8 +6082,7 @@ select.br-input option:hover {
 
 .br-icon-purple {
   color: #9f40e2;
-}/*# sourceMappingURL=br-table.css.map */
-/* page-players.php roster spreadsheet (added 2026-07-08, WP-side) */
+}
 
 .br-table-scroll {
   overflow-x: auto;
@@ -6101,18 +6094,15 @@ select.br-input option:hover {
   overflow-y: auto;
 }
 
-.br-roster-table th,
-.br-roster-table td {
+.br-roster-table th, .br-roster-table td {
   white-space: nowrap;
 }
-
 .br-roster-table thead th {
   position: sticky;
   top: 0;
   z-index: 4;
   background: #04161e;
 }
-
 .br-roster-table .br-roster-name-cell {
   position: sticky;
   left: 0;
@@ -6120,24 +6110,28 @@ select.br-input option:hover {
   z-index: 2;
   min-width: 180px;
 }
-
 .br-roster-table th.br-roster-name-cell {
   z-index: 5;
 }
 
-.br-roster-role-gm { color: #00bcd4; }
-.br-roster-role-npc { color: #1cc2eb; }
+.br-roster-role-gm {
+  color: #00bcd4;
+}
+
+.br-roster-role-npc {
+  color: #1cc2eb;
+}
 
 .br-roster-col-header {
   text-align: center;
   min-width: 60px;
 }
-
 .br-roster-col-header img {
   width: 24px;
   height: 24px;
   border-radius: 4px;
-  object-fit: cover;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .br-roster-cell {
@@ -6163,4 +6157,4 @@ select.br-input option:hover {
   color: #ffffff;
   padding: 2px 4px;
   font-size: 12px;
-}
+}/*# sourceMappingURL=br-table.css.map */

@@ -312,6 +312,15 @@ ul.blog{
 		}
 	}
 }
+.confirm-action-tooltip{
+	opacity: 0;
+	visibility: hidden;
+	transition: all .3s ease-in-out;
+	&.active{
+		opacity: 1;
+		visibility: visible;
+	}
+}
 .confirm-action{
 	position: absolute;
 	bottom: 105%;

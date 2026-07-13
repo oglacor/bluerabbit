@@ -2117,7 +2117,14 @@ function loadSidebar(sidebar, filename, id) {
     }
 }
 
-
+function displayConfirmAction(who){
+    if (!$(who).hasClass('active')) {
+        $('.confirm-action-tooltip, .confirm-action, .stats-detail').removeClass('active');
+        $(who).addClass('active');
+    } else {
+        $('.confirm-action-tooltip, .confirm-action, .stats-detail').removeClass('active');
+    }
+}
 function showOverlay(who) {
     if (!$(who).hasClass('active')) {
         $('.confirm-action, .stats-detail').removeClass('active');

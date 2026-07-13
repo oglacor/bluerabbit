@@ -802,10 +802,10 @@ $image_types = array(
 						</td>
 						<td>
 							<?php if($player_role != 'gm') { ?>
-								<button class="form-ui icon-sm red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?= $play->player_id; ?>');">
+								<button class="form-ui icon-sm red-bg-200 white-color" onClick="displayConfirmAction('#confirm-option-<?= $play->player_id; ?>');">
 									<?= __("Remove","bluerabbit"); ?>
 								</button>
-								<div class="confirm-action overlay-layer" id="confirm-option-<?= $play->player_id; ?>">
+								<div class="confirm-action-tooltip" id="confirm-option-<?= $play->player_id; ?>">
 									<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
 										<span class="icon-group">
 											<span class="br-icon-btn br-icon-btn-red-dark">

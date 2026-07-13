@@ -84,13 +84,10 @@
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.8);
 }
-
 .br-feedback-body p {
   margin: 0 0 8px;
 }
-
-.br-feedback-body ul,
-.br-feedback-body ol {
+.br-feedback-body ul, .br-feedback-body ol {
   text-align: left;
   padding-left: 20px;
 }
@@ -102,4 +99,4 @@
 
 .br-feedback-cta {
   margin-top: 4px;
-}
+}/*# sourceMappingURL=br-notify.css.map */
