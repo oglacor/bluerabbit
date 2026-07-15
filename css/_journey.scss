@@ -186,6 +186,20 @@
         linear-gradient(90deg, rgba(0,140,255,0.03) 1px, transparent 1px);
     background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
     background-attachment: fixed;
+
+	// Board view is a plain scrolling list - no pan/zoom viewport needed
+	&.board-mode{
+		position: static;
+		overflow: visible;
+		touch-action: auto;
+		overscroll-behavior: auto;
+		user-select: auto;
+		cursor: default;
+		width: auto; height: auto;
+		min-width: 0; min-height: 0;
+		background-image: none;
+		&:active{ cursor: default; }
+	}
 }
 .journey{
 	.milestone-container{
@@ -196,203 +210,248 @@
 		padding: 100px 0 200px;
 		width: auto !important;
 		height: auto !important;
+		max-width: 1400px;
+		margin: 0 auto !important;
   		color: $white;
 		display: flex;
-		flex-direction: row;
-		gap: 5rem;
-		align-items: flex-start;
-		flex-wrap: nowrap;
+		flex-direction: column;
+		gap: 2.5rem;
+		align-items: stretch;
 		background-image: none !important;
 		.journey-padding-spacer{
 			display: none;
 		}
-		.board-view-column{
-			padding: 10px;
-			border-radius: 10px;
-			flex: 1 1 100%;
-			max-width: 360px;
+		.board-section{
 			width: 100%;
-			display: flex;
-			flex-direction: column;
-			border-top-width: 5px !important;
-			&.white       { border: solid 2px #FFFFFF; background-color: rgba(255, 255, 255, 0.0); }
-			&.red         { border: solid 2px #EF5350; background-color: rgba(239, 83, 80, 0.0); }
-			&.pink        { border: solid 2px #EC407A; background-color: rgba(236, 64, 122, 0.0); }
-			&.purple      { border: solid 2px #AB47BC; background-color: rgba(171, 71, 188, 0.0); }
-			&.deep-purple { border: solid 2px #7E57C2; background-color: rgba(126, 87, 194, 0.0); }
-			&.indigo      { border: solid 2px #5C6BC0; background-color: rgba(92, 107, 192, 0.0); }
-			&.blue        { border: solid 2px #42A5F5; background-color: rgba(66, 165, 245, 0.0); }
-			&.light-blue  { border: solid 2px #29B6F6; background-color: rgba(41, 182, 246, 0.0); }
-			&.cyan        { border: solid 2px #26C6DA; background-color: rgba(38, 198, 218, 0.0); }
-			&.teal        { border: solid 2px #26A69A; background-color: rgba(38, 166, 154, 0.0); }
-			&.green       { border: solid 2px #66BB6A; background-color: rgba(102, 187, 106, 0.0); }
-			&.light-green { border: solid 2px #9CCC65; background-color: rgba(156, 204, 101, 0.0); }
-			&.lime        { border: solid 2px #D4E157; background-color: rgba(212, 225, 87, 0.0); }
-			&.yellow      { border: solid 2px #FFEE58; background-color: rgba(255, 238, 88, 0.0); }
-			&.amber       { border: solid 2px #FFCA28; background-color: rgba(255, 202, 40, 0.0); }
-			&.orange      { border: solid 2px #FFA726; background-color: rgba(255, 167, 38, 0.0); }
-			&.deep-orange { border: solid 2px #FF7043; background-color: rgba(255, 112, 67, 0.0); }
-			&.brown       { border: solid 2px #8D6E63; background-color: rgba(141, 110, 99, 0.0); }
-			&.grey        { border: solid 2px #BDBDBD; background-color: rgba(189, 189, 189, 0.0); }
-			&.blue-grey   { border: solid 2px #78909C; background-color: rgba(120, 144, 156, 0.0); }
-			&.black       { border: solid 2px #000000; background-color: rgba(0, 0, 0, 0.0); }
-			.milestone-container{
-				width: 320px;
-				height: auto;
-				position: static;
-				background-color: rgba($new-colors-dark-grey,0.25);
-				padding: 10px;
-				margin: 10px 0;
-				transform: translateZ(0px) scale(1) rotate(0deg) !important;
-				&.baseZ{
-					transform: translateZ(0px) rotate(0deg) !important;
-					z-index: 1000 !important;
-				}
-			}
 		}
-		.milestone{
-            .milestone-modal-content{ display: none; }
-			::-webkit-scrollbar-track{
-				background-color: #263238;
-			}
-			::-webkit-scrollbar{
-				width: 8px;
-				height: 10px;
-				background-color: #263238;
-			}
-			::-webkit-scrollbar-thumb{
-				cursor: pointer;
-				width: 3px;
-				border-radius: 10px;
-				border: solid 4px #546E7A;
-				background-color: #546E7A;
-			}
+		.board-section-headline{
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 10px 16px;
+			margin-bottom: 16px;
+			border-left: 4px solid rgba($br-white, 0.2);
+			background: rgba($new-colors-dark-grey, 0.35);
+			border-radius: $radius-sm;
+			.icon{ font-size: 18px; opacity: 0.85; }
+		}
+		.board-section-title{
+			font: 700 18px $condensed-font;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			opacity: 0.9;
+			&.no-tabi-label{ opacity: 0.5; font-weight: 400; }
+		}
+		.board-section-stats{
+			margin-left: auto;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.board-section-stat{
+			font: 700 14px $condensed-font;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			padding: 2px 10px;
+			border-radius: 999px;
+			background: rgba($br-white, 0.1);
+			opacity: 0.85;
+			white-space: nowrap;
+		}
+		.board-section-stat-divider{
+			opacity: 0.3;
+		}
+		.board-section-headline.completed{
+			background: rgba($br-green, 0.12);
+			.board-section-title{ color: $br-green; opacity: 1; }
+			.icon{ color: $br-green; opacity: 1; }
+			.board-section-stat{ background: rgba($br-green, 0.18); color: $br-green; }
+		}
+		.board-section-body{
 			display: flex;
 			flex-direction: column;
+			gap: 10px;
+		}
+		.milestone-container{
+			width: 100%;
+			height: auto;
+			position: static;
+			background-color: rgba($new-colors-dark-grey,0.25);
+			border-radius: 8px;
+			padding: 4px;
+			margin: 0;
+			transform: none !important;
+			order: 0 !important;
+			transition: background-color .15s;
+			&:hover{ background-color: rgba($new-colors-dark-grey,0.4); }
+		}
+		// Horizontal list row, 3 columns: badge | title+meta (2 rows) | actions/locked-info.
+		// The markup is shared with Map view's hex nodes, so we flatten the nested
+		// wrappers (display:contents) and use grid placement to reassemble a clean
+		// row purely in CSS - no template changes.
+		.milestone{
+			display: grid;
+			grid-template-columns: 60px 1fr auto;
+			grid-template-rows: auto auto;
+			column-gap: 16px;
+			row-gap: 4px;
+			align-items: center;
+			padding: 10px 14px 10px 18px;
 			position: relative;
-			top: 0 !important; left: 0 !important;
-			transition: all .3s ease-out;
+			border-radius: 8px;
+			transition: all .2s ease-out;
 
+			.milestone-cta,
+			.milestone-preview-title,
+			.milestone-preview-actions{
+				display: contents;
+			}
+
+			// Repurposed as a left accent stripe (its per-state utility bg-color class
+			// still supplies the color) instead of a full-card tinted overlay.
 			.milestone-bg-color{
 				position: absolute;
-				top: -5%; left: -5%; width: 110%; height: 110%;
-				opacity: 0.2;
+				top: 0; left: 0; bottom: 0;
+				width: 4px;
+				border-radius: 8px 0 0 8px;
+				opacity: 1;
 				z-index: 1;
-				border-radius: 10px;
 			}
 			.milestone-bg-badge{
-				order: 2;
-				opacity: 1;
-				position: relative;
-				z-index: 2;
-				width: 100%;
-				height: 100px;
-				background-size: contain;
+				grid-column: 1;
+				grid-row: 1 / span 2;
+				align-self: center;
+				width: 60px;
+				height: 60px;
+				border-radius: 50%;
+				background-size: cover;
+				background-position: center;
 				background-repeat: no-repeat;
-			}
-			.milestone-cta{
-				order: 3;
 				position: relative;
-				z-index: 2;
-				.milestone-preview-level{
+				z-index: 1;
+				overflow: hidden;
+			}
+
+			.milestone-preview-title > h1{
+				grid-column: 2;
+				grid-row: 1;
+				font: 700 16px $condensed-font;
+				margin: 0;
+				z-index: 1;
+			}
+
+			// Meta chips (Level/XP/BLOO/EP) - kept as a real flex row inside modal-content
+			// (not flattened) so they line up horizontally in a single grid cell.
+			.milestone-modal-content{
+				grid-column: 2;
+				grid-row: 2;
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 6px;
+				z-index: 1;
+
+				.milestone-image, .milestone-headline, .milestone-subheadline,
+				.milestone-action, .milestone-modal-divider{
 					display: none;
 				}
-				.milestone-preview-title{
-					h1{
-						font: 500 24px $condensed-font;
-					}
-					h2{
-						text-align: center;
-						font: 600 16px $condensed-font;
-						padding: 5px;;
-						&.finished-legend{
-							padding: 10px;
-							font-size: 24px;
-							background-color: $new-colors-green;
-							text-transform: uppercase;
-							color: $new-colors-dark-blue;
-							margin: 10px 0;
-						}
-					}
+				.milestone-level, .milestone-xp, .milestone-bloo, .milestone-ep{
+					display: inline-flex;
+					width: fit-content;
+					font: 700 14px $condensed-font;
+					opacity: 0.75;
+					padding: 2px 10px;
+					background: rgba($br-white, 0.08);
+					border-radius: 999px;
 				}
 			}
-			.milestone-level{
-				order: 1;
-				padding: 3px;
-				background-color: $new-colors-purple;
-				text-align: center;
-				color: $white;
-				position: relative;
-				z-index: 2;
 
-				h2{
-					text-align: center;
-					font: 900 16px $condensed-font;
-					&::before{
-						content: "Level: ";
-					}
-				}
+			// Status text / "why it's locked" / Finished badge - column 3, alongside
+			// the action button. No explicit grid-row: auto-placement stacks whichever
+			// of these a given state actually renders, top to bottom, without overlap.
+			.milestone-preview-title > h2:not(.finished-legend),
+			.milestone-preview-title > p{
+				grid-column: 3;
+				justify-self: end;
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				width: fit-content;
+				font: 600 14px $condensed-font;
+				margin: 0;
+				opacity: 0.8;
+				background: none !important;
+				color: rgba($br-white, 0.85) !important;
+				padding: 0 !important;
+				z-index: 1;
 			}
-			.milestone-resources{
-				position: absolute;
-				bottom: 5px;
-				left: 5px;
-				opacity: 0;
-				visibility: hidden;
-				width: 100px;
-				.milestone-xp{position: relative;}
-				.milestone-bloo{position: relative;}
-				.milestone-ep{position: relative;}
+			.milestone-preview-title > h2.finished-legend{
+				grid-column: 3;
+				justify-self: end;
+				display: inline-block;
+				width: fit-content;
+				font: 700 14px $condensed-font;
+				text-transform: uppercase;
+				letter-spacing: 0.03em;
+				padding: 3px 12px !important;
+				border-radius: 999px;
+				background: $br-green !important;
+				color: $br-bg !important;
+				margin: 0;
+				z-index: 1;
 			}
-			.milestone-action-button{
-				position: absolute;
-				bottom: 5px;
-				right: 5px;
-				opacity: 0;
-				visibility: hidden;
+			.milestone-preview-title .form-ui{
+				grid-column: 3;
+				justify-self: end;
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				width: fit-content;
+				padding: 6px 16px;
+				border-radius: $radius-sm;
+				font: 700 14px $condensed-font;
+				text-transform: uppercase;
+				letter-spacing: 0.03em;
+				text-decoration: none;
+				border: none;
+				cursor: pointer;
+				transition: all .15s;
+				&:hover{ opacity: 0.85; transform: translateY(-1px); }
 			}
+
+			// Old standalone top-bar + tiny circle level badge - redundant now that the
+			// meta chips inside modal-content show the same info.
+			> .milestone-level,
+			.milestone-preview-level{
+				display: none;
+			}
+
+			// Admin/GM edit action - restyled from the old floating hex button into
+			// a small pill that stacks in column 3 alongside the action button.
 			.milestone-edit-button{
-				position: absolute;
-				top: 5px;
-				right: 5px;
-				opacity: 0;
-				visibility: hidden;
+				grid-column: 3;
+				justify-self: end;
+				position: static;
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				width: fit-content;
+				height: auto;
+				padding: 6px 16px;
+				border-radius: $radius-sm;
+				background: rgba($br-green, 0.15);
+				z-index: 1;
+				.hex{ display: none; }
+				> div:last-child{
+					position: static;
+					font: 700 14px $condensed-font;
+					color: $br-green;
+					width: auto;
+					.icon{ font-size: 14px; }
+				}
 			}
-			.milestone-description, .milestone-lock-type{
-				overflow: hidden;
-				max-height: 0;
-				scrollbar-color: #546E7A #263238;
-				scrollbar-width: thin;
-			}
-
-			&.active{
-				height: 200px;
-				.milestone-bg-color{
-					opacity: 0;
-				}
-				.milestone-bg-badge{
-					opacity: 1;
-				}
-				.milestone-level{
-					opacity: 1;
-					visibility: visible;
-				}
-				.milestone-resources{
-					opacity: 1;
-					visibility: visible;
-				}
-				.milestone-action-button{
-					opacity: 1;
-					visibility: visible;
-				}
-				.milestone-edit-button{
-					opacity: 1;
-					visibility: visible;
-				}
-				.milestone-description{
-					max-height: 127px;
-					overflow-y: scroll;
-				}
+			.milestone-activate-button{
+				display: none;
 			}
 		}
 	}

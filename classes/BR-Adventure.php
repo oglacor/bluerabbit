@@ -456,6 +456,37 @@ class BR_Adventure {
         die();
     }
 
+    public function setValidate(){
+        global $wpdb; $current_user = wp_get_current_user();
+        $data = array();
+
+        $data['success'] = false;
+        $type = $_POST['type'];
+        $id = $_POST['id'];
+        $validate = $_POST['validate'] ? 1 : 0;
+        $adventure_id = $_POST['adventure_id'];
+        $nonce = $_POST['nonce'];
+        if(wp_verify_nonce($nonce, 'validate_nonce')){
+            if($type == 'quest'){
+                $sql = "UPDATE {$wpdb->prefix}br_quests SET mech_validate=%d WHERE quest_id=%d AND adventure_id=%d";
+                $sql = $wpdb->prepare ($sql,$validate,$id,$adventure_id);
+                $wpdb->query($sql);
+
+                $data['success'] = true;
+                BR_Activity::instance()->logActivity($adventure_id, "set","validate","$type",$id);
+                $notification = new Notification();
+                $msg_content = $validate ? __('Validation required before awarding','bluerabbit') : __('Validation no longer required','bluerabbit');
+                $data['message'] = $notification->pop($msg_content,'green','check');
+                $data['just_notify'] =true;
+                $data['new_validate_nonce'] = wp_create_nonce('validate_nonce');
+            }
+        }else{
+            $data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        }
+        echo json_encode($data);
+        die();
+    }
+
     // From functions/adventure-management.php
     public function setMaxPlayers(){
         global $wpdb; $current_user = wp_get_current_user();

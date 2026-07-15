@@ -316,9 +316,9 @@ class BR_Progression {
             if ($mi->mech_deadline_cost <= 0)                              return 'milestone-deadline';
             if (!in_array($mi->quest_id, $player['deadlines']))            return 'milestone-deadline-cost';
         }
-        if (!empty($player['fqs']) && isset($reqs_ids[$mi->quest_id])) {
-            $done = array_intersect($player['fqs'], $reqs_ids[$mi->quest_id]);
-            if ($done != $reqs_ids[$mi->quest_id]) return 'milestone-requirements';
+        if (!empty($reqs_ids['quests'][$mi->quest_id])) {
+            $missing = array_diff($reqs_ids['quests'][$mi->quest_id], $player['fqs']);
+            if (!empty($missing)) return 'milestone-requirements';
         }
         return ($player['debt'] > 0) ? 'milestone-blocked' : 'milestone';
     }

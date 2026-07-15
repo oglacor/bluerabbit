@@ -2539,6 +2539,7 @@ select.br-input {
   &.unlock { color: $br-green; border-color: rgba($br-green, 0.15); &:hover { background: rgba($br-green, 0.1); } }
   &.duplicate { color: $br-purple; border-color: rgba($br-purple, 0.15); &:hover { background: rgba($br-purple, 0.1); } }
   &.trash { color: $br-red; border-color: rgba($br-red, 0.15); &:hover { background: rgba($br-red, 0.1); } }
+  &.validate-toggle.on { color: $br-teal; border-color: rgba($br-teal, 0.15); &:hover { background: rgba($br-teal, 0.1); } }
 }
 
 .br-drag {

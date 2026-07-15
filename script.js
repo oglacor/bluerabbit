@@ -6480,6 +6480,29 @@ function setBLOO(id, type) {
     });
 }
 
+///////////////////////// Set VALIDATE  //////////////////
+
+function setValidate(id, type, validate) {
+    let nonce = $("#validate-nonce").val();
+    let adventure_id = $("#the_adventure_id").val();
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({
+            action: 'setValidate',
+            validate: validate,
+            type: type,
+            id: id,
+            adventure_id: adventure_id,
+            nonce: nonce
+        }),
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
 ///////////////////////// Set MAX PLAYERS  //////////////////
 
 function setMaxPlayers(id) {
@@ -8074,7 +8097,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var journeyViewport = document.querySelector('.journey-container');
-    if (journeyViewport) {
+    if (journeyViewport && !journeyViewport.classList.contains('board-mode')) {
         var activePointers = new Map();
         var lastPinchDist = null;
         var dragStart = {

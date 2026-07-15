@@ -104,6 +104,7 @@
 			<?php if(isset($isDemo) && $isDemo){ ?>
 				<button class="action-button danger" onClick="showOverlay('#reset-demo-form');"><span class="icon icon-rotate"></span><?= __("Reset Demo","bluerabbit"); ?></button>
 			<?php } ?>
+			<?php if($journey_style != 'board'){ ?>
 			<button id="zoom-out" class="action-button">
 				<?= __("Zoom Out","bluerabbit"); ?>
 			</button>
@@ -113,12 +114,13 @@
 			<button id="zoom-reset" class="action-button">
 				<?= __("Reset Zoom","bluerabbit"); ?>
 			</button>
+			<?php } ?>
 
 
 
 		</div>
 
-		<div class="journey-container">
+		<div class="journey-container <?= $journey_style == 'board' ? 'board-mode' : ''; ?>">
 			<?php
 			if($journey_style == 'board'){
 				include (TEMPLATEPATH . '/journey-board.php');

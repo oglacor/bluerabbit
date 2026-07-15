@@ -153,23 +153,3 @@
 
 
 .scorm-next-wrapper { display: none; &.active { display: block; } }
-
-// ── Board view: tabi column headers ───────────────────────────────────────────
-
-.board-column-header {
-	width: 100%;
-	padding: 8px 12px 6px;
-	border-bottom: 2px solid rgba(0,0,0,.08);
-	margin-bottom: 8px;
-}
-.board-column-title {
-	font-weight: 700;
-	font-size: 14px;
-	text-transform: uppercase;
-	letter-spacing: .04em;
-	opacity: .85;
-}
-.board-column-title.no-tabi-label {
-	opacity: .4;
-	font-weight: 400;
-}

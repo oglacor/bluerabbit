@@ -70,6 +70,7 @@ foreach ($publish_items as $q) {
         'deadline'       => $deadline,
         'achievement_id' => $q->achievement_id ? (int)$q->achievement_id : 0,
         'tabi_id'        => $q->tabi_id ? (int)$q->tabi_id : 0,
+        'validate'       => (int)$q->mech_validate,
     ];
 }
 
@@ -435,6 +436,11 @@ $base_url = get_bloginfo('url');
         } else if (item.status === 'locked') {
             html += '  <button class="br-action-link unlock" onclick="brJourney.changeStatus(' + item.id + ',\'' + item.type + '\',\'publish\');"><span class="icon icon-check"></span> Unlock</button>';
         }
+        if (item.type === 'quest') {
+            var validateClass = item.validate ? 'validate-toggle on' : 'validate-toggle';
+            var validateLabel = item.validate ? 'Validation Required' : 'Require Validation';
+            html += '  <button class="br-action-link ' + validateClass + '" onclick="brJourney.toggleValidate(' + item.id + ');"><span class="icon icon-check"></span> ' + validateLabel + '</button>';
+        }
         html += '  <button class="br-action-link duplicate" onclick="duplicateRow(' + item.id + ');"><span class="icon icon-duplicate"></span> Duplicate</button>';
         html += '  <button class="br-action-link trash" onclick="brJourney.changeStatus(' + item.id + ',\'' + item.type + '\',\'trash\');"><span class="icon icon-trash"></span> Trash</button>';
         html += '</div>';
@@ -776,6 +782,22 @@ $base_url = get_bloginfo('url');
                 if (brj.allItems[i].id == questId) { brj.allItems[i].status = newStatus; break; }
             }
         }
+    };
+
+    // ── Toggle "Require validation before awarding" (milestones only) ──
+    brj.toggleValidate = function(questId) {
+        var item = null;
+        for (var i = 0; i < brj.allItems.length; i++) {
+            if (brj.allItems[i].id == questId) { item = brj.allItems[i]; break; }
+        }
+        if (!item) return;
+        var newValidate = item.validate ? 0 : 1;
+        setValidate(questId, 'quest', newValidate);
+        item.validate = newValidate;
+
+        var $btn = $('#quest-' + questId).find('.br-action-link.validate-toggle');
+        $btn.toggleClass('on', !!newValidate);
+        $btn.html('<span class="icon icon-check"></span> ' + (newValidate ? 'Validation Required' : 'Require Validation'));
     };
 
     // Section collapse toggles
