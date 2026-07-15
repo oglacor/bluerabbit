@@ -759,7 +759,7 @@ $base_url = get_bloginfo('url');
 
     // ── Status change with UX update ────────────────────────
     brj.changeStatus = function(questId, questType, newStatus) {
-        confirmStatus(questId, 'quest', newStatus);
+        confirmStatus(questId, questType, newStatus);
         var $container = $('#' + questType + '-' + questId);
         if (newStatus === 'trash') {
             $container.slideUp(300, function() { $(this).remove(); });

@@ -22,18 +22,18 @@
                 <a class="action-button" href="<?= $permalink ; ?>"><?= __("Do it now!","bluerabbit"); ?></a>
             </div>
             <div class="milestone-modal-divider"></div>
-			<?php if($isGM || $isAdmin){ ?>
-				<a class="form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
-					<span class="icon icon-edit inline-block"></span>
-				</a>
-			<?php } ?>
             <h2 class="milestone-level"><?=$mi->quest_type; ?> <?= __("Level","bluerabbit"); ?>: <?= $mi->mech_level; ?></h2>
             <h2 class="milestone-xp"><?=$xp_label; ?>: <?= $mi->mech_xp; ?></h2>
             <h2 class="milestone-bloo"><?=$bloo_label; ?>: <?= $mi->mech_bloo; ?></h2>
             <?php if($mi->mech_ep > 0){ ?>
                 <h2 class="milestone-ep"><?=$ep_label; ?>: <?= $mi->mech_ep; ?></h2>
             <?php } ?>
-        </div>
+ 			<?php if($isGM || $isAdmin){ ?>
+				<a class="form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
+					<span class="icon icon-edit inline-block"></span>
+				</a>
+			<?php } ?>
+       </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">
 				<h2><?= $mi->mech_level; ?></h2>

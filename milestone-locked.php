@@ -22,6 +22,11 @@
                 </button>
             </div>
             <div class="milestone-modal-divider"></div>
+			<?php if($isGM || $isAdmin){ ?>
+				<a class="form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
+					<span class="icon icon-edit inline-block"></span>
+				</a>
+			<?php } ?>
         </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">

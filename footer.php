@@ -293,6 +293,7 @@
 			<input type="hidden" id="br-trash-id" value="">
 			<input type="hidden" id="br-publish-id" value="">
 			<input type="hidden" id="br-draft-id" value="">
+			<input type="hidden" id="br-locked-id" value="">
 			<input type="hidden" id="trd-type" value="">
 			<input type="hidden" id="trd-action" value="">
 

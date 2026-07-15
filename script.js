@@ -6312,7 +6312,7 @@ function updateStatus(id, type) { //////////////// DEPRECATED !!!!!!!
 }
 
 function confirmStatus(id, type, action) {
-    $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id").val(id);
+    $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id, #br-locked-id").val(id);
     $("#trd-type").val(type);
     $("#trd-action").val(action);
     br_trash();
@@ -6323,14 +6323,14 @@ function br_confirm_trd(trash_action, id, type) {
     let message = $("#msg-" + trash_action).html();
     $("#feedback .content").html(message);
     $("#feedback").addClass('active');
-    $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id").val(id);
+    $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id, #br-locked-id").val(id);
     $("#trd-type").val(type);
     $("#trd-action").val(trash_action);
 }
 
 function clearTRD() {
     hideAllOverlay();
-    $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id, #trd-type, #trd-action").val('');
+    $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id, #br-locked-id, #trd-type, #trd-action").val('');
 }
 
 function br_trash() {
@@ -6338,6 +6338,9 @@ function br_trash() {
     let trash_action = $("#trd-action").val();
     let nonce = $('#' + trash_action + '-nonce').val();
     let adventure_id = $("#the_adventure_id").val();
+    // id is read from #br-{action}-id - any new action wired through confirmStatus()
+    // needs a matching hidden #br-{action}-id in footer.php or the id silently comes
+    // back undefined here (this is what broke "Lock" for a while).
     let id = $('#br-' + trash_action + '-id').val();
     let type = $("#trd-type").val();
     let reload = $("#reload").val();
