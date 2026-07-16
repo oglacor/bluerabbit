@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-	$questID =  $_GET['questID'];
+	$questID = br_require_id('questID');
 	$m = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adv_parent_id AND quest_id=$questID");
 
     if($m){  //// MASTER VALIDATION

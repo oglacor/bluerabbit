@@ -1,7 +1,7 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 if($adventure && ($isGM || $isAdmin || $isNPC)){
-	$achievement_id = isset($_GET['achievement_id']) ? $_GET['achievement_id'] : 0;
+	$achievement_id = br_require_id('achievement_id', false) ?: 0;
 	
 	$paths = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."br_achievements WHERE adventure_id=$adv_parent_id AND achievement_display!='badge' AND achievement_status='publish' AND achievement_id != $achievement_id ");
 	

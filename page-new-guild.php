@@ -1,7 +1,7 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 if (isset($adventure) && $isGM) {
-	$guild_id = isset($_GET['guild_id']) ? (int) $_GET['guild_id'] : null;
+	$guild_id = br_require_id('guild_id', false);
 	if ($guild_id) {
 		$g = $wpdb->get_row($wpdb->prepare(
 			"SELECT * FROM {$wpdb->prefix}br_guilds WHERE guild_id = %d", $guild_id

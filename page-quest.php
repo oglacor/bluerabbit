@@ -5,9 +5,9 @@
 		$player_id_val = $current_user->ID;
 	}else{
 		$or_draft = "";
-		$player_id_val = isset($_GET['playerID']) ? $_GET['playerID'] : $current_user->ID;
+		$player_id_val = br_require_id('playerID', false) ?: $current_user->ID;
 	}
-	$questID =  isset($_GET['questID']) ? $_GET['questID'] : NULL;
+	$questID = br_require_id('questID', false);
 	if($questID){
 		$q = $wpdb->get_row("SELECT 
 		a.quest_id, a.quest_relevance, a.quest_title, a.quest_content, a.quest_type,a.adventure_id, a.achievement_id, a.quest_success_message, a.quest_status,
@@ -78,6 +78,25 @@
 	?>
 
 	<?php if(isset($q)){ ?>
+		<?php
+			$isAdminOrGM = ($isAdmin || $isGM);
+			$q_is_locked = ($q->quest_status === 'locked');
+			$q_is_high_level = ($current_player->player_level < $q->mech_level);
+		?>
+		<?php if($isAdminOrGM && ($q_is_locked || $q_is_high_level)){ ?>
+			<div class="container boxed max-w-1200">
+				<div class="highlight text-center padding-10 purple-bg-400 white-color">
+					<span class="icon icon-eye"></span>
+					<strong><?= __("Admin/GM preview","bluerabbit"); ?>:</strong>
+					<?php if($q_is_locked){ ?>
+						<?= __("this quest is currently LOCKED for players.","bluerabbit"); ?>
+					<?php } ?>
+					<?php if($q_is_high_level){ ?>
+						<?= __("Requires Level","bluerabbit")." ".$q->mech_level.". ".__("Players below this level can't see this content.","bluerabbit"); ?>
+					<?php } ?>
+				</div>
+			</div>
+		<?php } ?>
 		<div class="container boxed max-w-1200 white-color wrap">
 			<div class="layer base relative ">
 					<div class="content">
@@ -115,7 +134,7 @@
 							</div>
 						<?php } ?>
 						<?php $today = date('YmdHi'); ?>
-						<?php if($current_player->player_level < $q->mech_level){ ?>
+						<?php if($q_is_high_level && !$isAdminOrGM){ ?>
 							<div class="highlight text-center padding-10">
 								<button class="form-ui deep-purple-bg-400 font _24">
 									<span class="icon icon-lock"></span><strong><?= __("LEVEL","bluerabbit")." ".$q->mech_level." ". $q->quest_type; ?></strong>

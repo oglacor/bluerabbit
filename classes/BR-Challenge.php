@@ -732,13 +732,23 @@ class BR_Challenge {
         die();
     }
 
-    public function getChallenge($challenge_id, $adv_id){
+    // $bypass_gates lets an Admin/GM preview a locked or above-their-level challenge:
+    // the quest_status filter and the level gate are skipped, but deadline/max-attempts/
+    // requirements gates still apply normally. The caller (page-challenge.php) uses the
+    // is_locked/locks['level'] flags returned here to show an informational banner.
+    public function getChallenge($challenge_id, $adv_id, $bypass_gates = false){
         global $wpdb; $current_user = wp_get_current_user();
 
         $result = array();
+        $status_filter = $bypass_gates ? "" : "AND quest_status='publish'";
         $challenge = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests
-        WHERE quest_id=$challenge_id AND quest_status='publish' AND quest_type='challenge'");
+        WHERE quest_id=$challenge_id $status_filter AND quest_type='challenge'");
 
+        if(!$challenge){
+            $result['challenge'] = null;
+            return $result;
+        }
+        $result['is_locked'] = ($challenge->quest_status === 'locked');
 
         $adventure = BR_Adventure::instance()->getAdventure($adv_id);
         $adv_child_id = $adventure->adventure_id;
@@ -823,7 +833,11 @@ class BR_Challenge {
         $result['attempts']=$attempts;
         $result['freeAttempts']=$challenge->mech_free_attempts - count($attempts);
         $result['questions']=$questions;
-        if($player->player_level >= $challenge->mech_level){
+        $level_ok = ($player->player_level >= $challenge->mech_level);
+        if(!$level_ok){
+            $result['locks']['level']=true;
+        }
+        if($level_ok || $bypass_gates){
             $today = date('YmdHi');
             $deadline = date('YmdHi',strtotime($challenge->mech_deadline));
             if($challenge->mech_deadline == '0000-00-00 00:00:00' || $deadline >= $today || $challenge->trnx_id){
@@ -851,7 +865,6 @@ class BR_Challenge {
             }
         }else{
             $result['unavailable']=true;
-            $result['locks']['level']=true;
             $result['message']="<span class='icon icon-xl icon-level solid-purple'></span><h1>".__("Available for level","bluerabbit")."<strong>$challenge->mech_level</strong></h1>";
         }
         return $result;

@@ -2,8 +2,8 @@
 <?php
 
 if($adventure && ($isGM || $isAdmin)){ 
-	if(isset($_GET['item_id'])){
-		$item_id = $_GET['item_id'];
+	$item_id = br_require_id('item_id', false);
+	if($item_id){
 		$i = $wpdb->get_row( "SELECT * FROM ".$wpdb->prefix."br_items WHERE item_id=$item_id");
 		$trnx = $wpdb->get_results( "SELECT * FROM ".$wpdb->prefix."br_transactions WHERE object_id=$item_id AND adventure_id=$adventure->adventure_id AND trnx_type='consumable' AND trnx_status='publish'");
 		$items_sold = count($trnx);

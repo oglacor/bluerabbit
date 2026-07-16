@@ -1,5 +1,5 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<?php  $org = BR_Organization::instance()->getOrgs($_GET['id']); ?>
+<?php  $org = BR_Organization::instance()->getOrgs(br_require_id('id')); ?>
 <h1 class="padding-10 font condensed white-color w900 uppercase _20 light-blue-bg-800">
 	<?= __('Manage Organization','bluerabbit'); ?>
 </h1>

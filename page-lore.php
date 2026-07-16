@@ -72,8 +72,9 @@
 			<?php } ?>
 	   </div>
 	</div>
-	<?php if(isset($_GET['lore_id'])){ ?>
-		<script>loadLore(<?= $_GET['lore_id']; ?>);</script>
+	<?php $lore_id = br_require_id('lore_id', false); ?>
+	<?php if($lore_id){ ?>
+		<script>loadLore(<?= $lore_id; ?>);</script>
 	<?php } ?>
 
 <?php }else{ ?>

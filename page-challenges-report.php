@@ -2,7 +2,7 @@
 
 <div class="container boxed max-w-1200">
 <?php 
-	$quest_id=$_GET['questID'];
+	$quest_id = br_require_id('questID');
 	$c = $wpdb->get_row(" SELECT a.*, b.achievement_name, b.achievement_color
 	FROM {$wpdb->prefix}br_quests a 
 	LEFT JOIN {$wpdb->prefix}br_achievements b

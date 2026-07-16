@@ -1,7 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-$speaker = isset($_GET['speaker_id']) ? $wpdb->get_row($wpdb->prepare(
-	"SELECT * FROM {$wpdb->prefix}br_speakers WHERE speaker_id = %d", (int) $_GET['speaker_id']
+$new_speaker_id = br_require_id('speaker_id', false);
+$speaker = $new_speaker_id ? $wpdb->get_row($wpdb->prepare(
+	"SELECT * FROM {$wpdb->prefix}br_speakers WHERE speaker_id = %d", $new_speaker_id
 )) : null;
 $is_edit = ($adventure && $speaker);
 $the_roles    = ['br_npc', 'br_game_master', 'administrator'];

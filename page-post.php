@@ -1,8 +1,9 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-	$questID =  $_GET['questID'];
-	if( $_GET['uID'] && $isGM){
-		$player_id =  $_GET['uID'];
+	$questID = br_require_id('questID');
+	$uID = br_require_id('uID', false);
+	if( $uID && $isGM){
+		$player_id = $uID;
 	}else{
 		$player_id =  $current_user->ID;
 	}

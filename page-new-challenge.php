@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-$questID = isset($_GET['questID']) ? (int) $_GET['questID'] : null;
+$questID = br_require_id('questID', false);
 $quests = $wpdb->get_results(" SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adventure_id ORDER BY mech_level ASC, quest_order ASC ");
 $items = BR_Item::instance()->getItems($adventure->adventure_id);
 $achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id);

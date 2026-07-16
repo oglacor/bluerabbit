@@ -1,7 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<?php if($adventure && $_GET['item_id']){ ?>
-		<?php 
-			$i = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id={$_GET['item_id']} AND adventure_id=$adventure->adventure_id AND item_status='publish'");
+<?php $item_id = br_require_id('item_id', false); ?>
+<?php if($adventure && $item_id){ ?>
+		<?php
+			$i = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id=%d AND adventure_id=%d AND item_status='publish'", $item_id, $adventure->adventure_id));
 
 			if($i){
 				$myAchievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);

@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-$session_id = isset($_GET['session_id']) ? (int) $_GET['session_id'] : null;
+$session_id = br_require_id('session_id', false);
 if ($session_id) {
 	$session = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_sessions WHERE session_id=$session_id");
 }

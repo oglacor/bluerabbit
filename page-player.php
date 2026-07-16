@@ -1,12 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 
-if($_GET['player_id']){
-	$player = BR_Player::instance()->getPlayerData($_GET['player_id']);
-}else{
+$player = BR_Player::instance()->getPlayerData(br_require_id('player_id'));
 ?>
-	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
-<?php } ?>
 
 <div class="theme blue"> 
 	<div class="container boxed max-w-1200 ">

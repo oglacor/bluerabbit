@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-	$player_search = ($roles[0] == 'administrator' && $_GET['player_id']) ? $_GET['player_id'] : $current_user->ID;
+	$player_search = ($roles[0] == 'administrator' ? br_require_id('player_id', false) : null) ?: $current_user->ID;
 	$page = isset($_GET['cp']) ? $_GET['cp'] : 1;
 	$per_page = isset($_GET['per_page']) ? $_GET['per_page'] : 20;
 
@@ -20,9 +20,10 @@
 
 
 	if($isAdmin){
-		$player_search = isset($_GET['player_id']) ? "AND adventures.adventure_owner = {$_GET['player_id']} " : "";
+		$admin_player_id_filter = br_require_id('player_id', false);
+		$player_search = $admin_player_id_filter ? "AND adventures.adventure_owner = $admin_player_id_filter " : "";
 		if($player_search){
-			$add_to_search_url.= "&player_id=".$_GET['player_id'];
+			$add_to_search_url.= "&player_id=".$admin_player_id_filter;
 		}
 		$adventures_sql = "
 			SELECT adventures.*, players.player_first, players.player_last, players.player_email, players.player_nickname FROM {$wpdb->prefix}br_adventures adventures

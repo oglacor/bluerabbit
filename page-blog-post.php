@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-	$questID =  $_GET['questID'];
+	$questID = br_require_id('questID');
 	$b = $wpdb->get_row("SELECT a.*,b.achievement_name, b.achievement_color FROM {$wpdb->prefix}br_quests a
 	LEFT JOIN {$wpdb->prefix}br_achievements b ON a.achievement_id=b.achievement_id
 	WHERE a.adventure_id=$adventure->adventure_id AND a.quest_id = $questID");

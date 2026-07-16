@@ -19,11 +19,8 @@
 <?php if($adventure){ ?>
 		<?php 
 	
-		if(($isAdmin || $isGM) && isset($_GET['player_id']) ){
-			$the_player_id_for_backpack = $_GET['player_id'];
-		}else{
-			$the_player_id_for_backpack = $current_user->ID;
-		}
+		$player_id_get = ($isAdmin || $isGM) ? br_require_id('player_id', false) : null;
+		$the_player_id_for_backpack = $player_id_get ?: $current_user->ID;
 	
         $tabis = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_tabis WHERE adventure_id=$adv_parent_id AND tabi_as_category=0 AND tabi_status='publish' ORDER BY tabi_level ASC, tabi_id ASC");
 

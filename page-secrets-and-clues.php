@@ -1,7 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-	if(($isGM || $isAdmin || $isNPC) && isset($_GET['player_id'])){
-		$the_player_id = $_GET['player_id'];
+	$player_id_get = ($isGM || $isAdmin || $isNPC) ? br_require_id('player_id', false) : null;
+	if($player_id_get){
+		$the_player_id = $player_id_get;
 		$current_player = BR_Player::instance()->getPlayerData($the_player_id);
 	}else{
 		$the_player_id = $current_user->ID;

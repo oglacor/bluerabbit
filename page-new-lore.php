@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-$questID = isset($_GET['questID']) ? (int) $_GET['questID'] : null;
+$questID = br_require_id('questID', false);
 if ($questID) {
 	$quest = $wpdb->get_row(" SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adventure_id AND quest_id=$questID AND quest_type='lore'");
 }

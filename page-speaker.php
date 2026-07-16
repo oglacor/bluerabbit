@@ -1,6 +1,7 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<?php $speaker = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_speakers WHERE speaker_id=%d", $_GET['speaker_id'])); ?>
-<?php $sessions = BR_Session::instance()->getSpeakerSessions($adventure->adventure_id, $_GET['speaker_id']); ?>
+<?php $speaker_id = br_require_id('speaker_id'); ?>
+<?php $speaker = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_speakers WHERE speaker_id=%d", $speaker_id)); ?>
+<?php $sessions = BR_Session::instance()->getSpeakerSessions($adventure->adventure_id, $speaker_id); ?>
 
 <div class="br-page br-page-narrow">
 

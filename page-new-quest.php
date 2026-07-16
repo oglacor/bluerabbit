@@ -1,7 +1,7 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
 if ($adventure && ($isGM || $isAdmin)) {
-	$questID = isset($_GET['questID']) ? (int) $_GET['questID'] : null;
+	$questID = br_require_id('questID', false);
 	if ($questID) {
 		$quest = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=$questID AND adventure_id=$adventure_id");
 		if ($quest) {

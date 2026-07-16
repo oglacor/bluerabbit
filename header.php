@@ -19,7 +19,7 @@
 		$adventure_id = $config['default_adventure']['value'];
 		BR_Player::instance()->defaultEnrollment($adventure_id, $current_user->ID);
 	}elseif(isset($_GET['adventure_id'])){
-		$adventure_id = $_GET['adventure_id'];
+		$adventure_id = br_require_id('adventure_id');
 	}
 	if(isset($adventure_id)){
 		$adventure = BR_Adventure::instance()->getAdventure($adventure_id);

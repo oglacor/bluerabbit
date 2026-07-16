@@ -2,7 +2,7 @@
 <?php if($adventure){ ?>
 <?php
 $is_manager = ($isGM || $isAdmin || $isNPC);
-$view_user_id = $is_manager && isset($_GET['uid']) ? (int)$_GET['uid'] : get_current_user_id();
+$view_user_id = ($is_manager ? br_require_id('uid', false) : null) ?: get_current_user_id();
 $stats = new BR_Stats();
 
 $p_summary      = $stats->get_player_summary($view_user_id, $adv_child_id);

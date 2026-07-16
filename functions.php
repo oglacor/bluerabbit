@@ -1,4 +1,28 @@
-<?php 
+<?php
+// Validates a $_GET value that's expected to be a record id (questID, adventure_id,
+// achievement_id, etc). Anything that isn't a plain positive integer - garbage,
+// a stray title string, an empty value - sends the visitor to 404 instead of
+// letting it reach a raw-interpolated SQL query or a ->property access on null
+// several includes deeper. A real HTTP redirect isn't reliable here since these
+// templates are always called after header.php has already started echoing HTML,
+// so this uses the same JS-redirect idiom already used elsewhere in the theme.
+function br_require_id( $key, $required = true ) {
+	if ( ! isset( $_GET[ $key ] ) || $_GET[ $key ] === '' ) {
+		if ( $required ) {
+			echo '<script>document.location.href="' . esc_url( get_bloginfo( 'url' ) ) . '/404";</script>';
+			exit;
+		}
+		return null;
+	}
+	// Present but malformed (not a plain positive integer) always 404s, even on
+	// pages where the id itself is optional - a garbage value is never valid input.
+	if ( ! ctype_digit( (string) $_GET[ $key ] ) ) {
+		echo '<script>document.location.href="' . esc_url( get_bloginfo( 'url' ) ) . '/404";</script>';
+		exit;
+	}
+	return (int) $_GET[ $key ];
+}
+
 function theme_core_setup(){
 	$roles_args = array(
 		'moderate_comments' => 0,

@@ -2,11 +2,12 @@
 
 <?php if($adventure){ ?>
 
-<?php $challenge_data = BR_Challenge::instance()->getChallenge($_GET['questID'], $adv_child_id); ?>
-<?php if($challenge_data){ ?>
-	<?php 
-	$c = $challenge_data['challenge']; 
-	
+<?php $isAdminOrGM = ($isAdmin || $isGM); ?>
+<?php $challenge_data = BR_Challenge::instance()->getChallenge(br_require_id('questID'), $adv_child_id, $isAdminOrGM); ?>
+<?php if($challenge_data && $challenge_data['challenge']){ ?>
+	<?php
+	$c = $challenge_data['challenge'];
+
 	$finished = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_posts WHERE player_id=$current_player->player_id AND quest_id=$c->quest_id");
 	$qs = $challenge_data['questions'];
 	$answers = $challenge_data['answers'];  
@@ -33,6 +34,19 @@
 	}
 
 ?>
+
+<?php if($isAdminOrGM && ($challenge_data['is_locked'] || !empty($challenge_data['locks']['level']))){ ?>
+	<div class="highlight text-center padding-10 purple-bg-400 white-color">
+		<span class="icon icon-eye"></span>
+		<strong><?= __("Admin/GM preview","bluerabbit"); ?>:</strong>
+		<?php if($challenge_data['is_locked']){ ?>
+			<?= __("this challenge is currently LOCKED for players.","bluerabbit"); ?>
+		<?php } ?>
+		<?php if(!empty($challenge_data['locks']['level'])){ ?>
+			<?= __("Requires Level","bluerabbit")." ".$c->mech_level.". ".__("Players below this level can't see this content.","bluerabbit"); ?>
+		<?php } ?>
+	</div>
+<?php } ?>
 
 <div class="layer background fixed" style="background-image: url(<?= $c->mech_badge; ?>);"></div>
 <div class="layer background fixed challenge-gradient-overlay"></div>

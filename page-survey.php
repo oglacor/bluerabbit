@@ -1,10 +1,10 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
 <?php if($adventure){ ?>
-	<?php $survey_data = BR_Survey::instance()->getSurvey($_GET['questID']); ?>
+	<?php $survey_id = br_require_id('questID'); ?>
+	<?php $survey_data = BR_Survey::instance()->getSurvey($survey_id); ?>
 	<?php if($survey_data){ ?>
-		<?php 
-		$survey_id = $_GET['questID'];
+		<?php
 		$s = $survey_data['survey'];
 		$qs = $survey_data['questions'];
 		$answers = $survey_data['answers']; 

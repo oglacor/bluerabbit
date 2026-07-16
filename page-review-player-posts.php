@@ -5,7 +5,7 @@
 <?php include (get_stylesheet_directory() . '/footer.php'); return; } ?>
 
 <?php
-$questID = isset($_GET['questID']) ? (int) $_GET['questID'] : 0;
+$questID = br_require_id('questID', false) ?: 0;
 $q = $wpdb->get_row( $wpdb->prepare(
 	"SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id = %d AND adventure_id = %d",
 	$questID, $adventure->adventure_id

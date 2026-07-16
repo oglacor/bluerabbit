@@ -2,7 +2,7 @@
 <?php
 
 if($adventure && $isGM){
-	$blockerID = isset($_GET['blockerID']) ? $_GET['blockerID'] : NULL;
+	$blockerID = br_require_id('blockerID', false);
 	if(isset($blockerID)){
 		$blocker = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."br_blockers WHERE blocker_id=$blockerID");
 		$selected_players = $wpdb->get_col("SELECT player_id FROM ".$wpdb->prefix."br_player_blocker WHERE blocker_id=$blockerID");

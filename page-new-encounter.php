@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-$enc_id = isset($_GET['enc_id']) ? (int) $_GET['enc_id'] : null;
+$enc_id = br_require_id('enc_id', false);
 if ($enc_id) {
 	$encounter = $wpdb->get_row($wpdb->prepare(
 		"SELECT * FROM {$wpdb->prefix}br_encounters WHERE adventure_id = %d AND enc_id = %d",

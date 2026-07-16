@@ -1,6 +1,7 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-$quest = isset($_GET['questID']) ? $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adventure_id AND quest_id=" . (int)$_GET['questID']) : null;
+$new_survey_quest_id = br_require_id('questID', false);
+$quest = $new_survey_quest_id ? $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adventure_id AND quest_id=$new_survey_quest_id") : null;
 $achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id);
 $paths = BR_Achievement::instance()->getAchievements($adventure->adventure_id, 'path|rank');
 if(isset($quest)){
