@@ -21,7 +21,11 @@ $active_pct  = (int) $adv_summary['total_players'] > 0
 window.brMilestoneFunnel = {
     ajaxurl: '<?= admin_url("admin-ajax.php"); ?>',
     nonce: '<?= wp_create_nonce("br_stats_nonce"); ?>',
-    adventureId: <?= (int) $adv_child_id; ?>
+    adventureId: <?= (int) $adv_child_id; ?>,
+    totalEnrolled: <?= (int) $adv_summary['total_players']; ?>,
+    loggedInCount: <?= (int) $adv_summary['logged_in_count']; ?>,
+    loggedInPct: <?= (float) $adv_summary['logged_in_pct']; ?>,
+    loggedInLabel: <?= json_encode(__("players have logged in", "bluerabbit")); ?>
 };
 </script>
 

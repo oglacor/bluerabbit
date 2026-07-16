@@ -7,6 +7,7 @@
     var palette = {
         primary: '#1cc2eb',
         green:   '#24da98',
+        orange:  '#ff9800',
         white:   '#ffffff',
         gridLine: 'rgba(255,255,255,0.08)'
     };
@@ -44,7 +45,40 @@
             var $lbl = $('<div class="br-mf-yaxis-label"></div>').text(label).css('top', top + 'px');
             $labels.append($lbl);
         }
+
+        // Marker for the "logged in" reference line, positioned from the same
+        // live scale so it always lines up with the dashed line drawn on the canvas.
+        if (cfg.loggedInCount > 0 && cfg.loggedInCount <= scale.max) {
+            var lineTop = scale.getPixelForValue(cfg.loggedInCount) - chart.chartArea.top;
+            var $marker = $('<div class="br-mf-yaxis-label logged-in"></div>')
+                .text(cfg.loggedInPct + '%')
+                .attr('title', cfg.loggedInCount + ' ' + (cfg.loggedInLabel || 'players logged in'))
+                .css('top', lineTop + 'px');
+            $labels.append($marker);
+        }
     }
+
+    // Draws the "logged in" reference line across the full (scrollable) width
+    // of the chart, at the pixel row for cfg.loggedInCount on the y scale.
+    var loggedInLinePlugin = {
+        afterDraw: function(c) {
+            if (!(cfg.loggedInCount > 0)) return;
+            var scale = c.scales['y'];
+            if (!scale || cfg.loggedInCount > scale.max) return;
+
+            var y = scale.getPixelForValue(cfg.loggedInCount);
+            var ctx2 = c.ctx;
+            ctx2.save();
+            ctx2.beginPath();
+            ctx2.setLineDash([6, 4]);
+            ctx2.lineWidth = 2;
+            ctx2.strokeStyle = palette.orange;
+            ctx2.moveTo(c.chartArea.left, y);
+            ctx2.lineTo(c.chartArea.right, y);
+            ctx2.stroke();
+            ctx2.restore();
+        }
+    };
 
     function renderChart(data) {
         var $area = $('#br-mf-chart-area');
@@ -67,16 +101,22 @@
         );
         var ctx = document.getElementById('br-mf-chart');
 
-        var labels = [], completed = [], bgCompleted = [];
+        var labels = [], fullTitles = [], completed = [], bgCompleted = [];
         data.forEach(function(r) {
+            var full = (r.is_locked ? '🔒 ' : '') + r.quest_title;
             var t = r.quest_title.length > 18 ? r.quest_title.substring(0, 16) + '…' : r.quest_title;
             if (r.is_locked) t = '🔒 ' + t;
             labels.push(t);
+            fullTitles.push(full);
             completed.push(parseInt(r.completed_count) || 0);
             bgCompleted.push(r.is_locked ? 'rgba(255,255,255,0.08)' : palette.green);
         });
 
         if (chart) chart.destroy();
+
+        // Y axis is scaled to total enrolled players, not the tallest bar, so a
+        // milestone's completion count reads in context of the whole roster.
+        var yMax = cfg.totalEnrolled > 0 ? cfg.totalEnrolled : undefined;
 
         chart = new Chart(ctx, {
             type: 'bar',
@@ -86,11 +126,20 @@
                     { yAxisID: 'y', label: 'Completed', data: completed, backgroundColor: bgCompleted, borderWidth: 0 }
                 ]
             },
+            plugins: [loggedInLinePlugin],
             options: {
                 responsive: false,
                 maintainAspectRatio: false,
                 animation: { duration: 0 },
                 legend: { display: false },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        title: function(items) { return fullTitles[items[0].index] || ''; },
+                        label: function(item) { return 'Completed: ' + item.yLabel; }
+                    }
+                },
                 scales: {
                     xAxes: [{
                         gridLines: { color: palette.gridLine, zeroLineColor: palette.gridLine },
@@ -99,7 +148,7 @@
                     yAxes: [{
                         id: 'y',
                         gridLines: { color: palette.gridLine, zeroLineColor: palette.gridLine, drawTicks: false },
-                        ticks: { display: false, beginAtZero: true }
+                        ticks: { display: false, beginAtZero: true, max: yMax }
                     }]
                 }
             }

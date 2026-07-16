@@ -250,8 +250,11 @@ class BR_Stats {
         ), ARRAY_A );
 
         $summary['active_7d'] = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(DISTINCT player_id) FROM {$wpdb->prefix}br_activity_log
-            WHERE adventure_id = %d AND log_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
+            "SELECT COUNT(DISTINCT al.player_id) FROM {$wpdb->prefix}br_activity_log al
+            JOIN {$wpdb->prefix}br_player_adventure pa
+                ON al.player_id = pa.player_id AND al.adventure_id = pa.adventure_id
+            WHERE al.adventure_id = %d AND al.log_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+              AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'",
             $adventure_id
         ) );
 
@@ -286,6 +289,7 @@ class BR_Stats {
               AND player_last_login IS NOT NULL",
             $adventure_id
         ) );
+        $summary['logged_in_count'] = $logged_in;
         $summary['logged_in_pct'] = (int) $summary['total_players'] > 0
             ? round( ( $logged_in / (int) $summary['total_players'] ) * 100, 1 )
             : 0;
@@ -355,6 +359,10 @@ class BR_Stats {
             $extra_args[] = (int) $filter_value;
         }
 
+        // The pp join's ON clause (not a WHERE filter) excludes GM/NPC/owner completions
+        // so a quest with zero real-player completions still shows up with completed_count = 0
+        // instead of disappearing from the result entirely (a LEFT JOIN filtered in WHERE
+        // behaves like an INNER JOIN).
         $sql = "SELECT
                 q.quest_id, q.quest_title, q.quest_type, q.quest_order, q.quest_status,
                 q.tabi_id, q.mech_level,
@@ -362,6 +370,11 @@ class BR_Stats {
             FROM {$wpdb->prefix}br_quests q
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.adventure_id = %d
+                AND EXISTS (
+                    SELECT 1 FROM {$wpdb->prefix}br_player_adventure pa
+                    WHERE pa.player_id = pp.player_id AND pa.adventure_id = pp.adventure_id
+                      AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+                )
             WHERE q.adventure_id = %d AND q.quest_status IN ('publish','locked')
               AND q.quest_type IN ('quest','challenge','survey','mission')
               $extra_where
@@ -455,10 +468,13 @@ class BR_Stats {
         }
 
         $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT DATE(log_date) AS date, COUNT(DISTINCT player_id) AS count
-            FROM {$wpdb->prefix}br_activity_log
-            WHERE adventure_id = %d AND DATE(log_date) >= %s AND DATE(log_date) <= %s
-            GROUP BY DATE(log_date)
+            "SELECT DATE(al.log_date) AS date, COUNT(DISTINCT al.player_id) AS count
+            FROM {$wpdb->prefix}br_activity_log al
+            JOIN {$wpdb->prefix}br_player_adventure pa
+                ON al.player_id = pa.player_id AND al.adventure_id = pa.adventure_id
+            WHERE al.adventure_id = %d AND DATE(al.log_date) >= %s AND DATE(al.log_date) <= %s
+              AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+            GROUP BY DATE(al.log_date)
             ORDER BY date ASC",
             $adventure_id, $start, $end
         ), ARRAY_A );
@@ -670,6 +686,11 @@ class BR_Stats {
                 AND q.quest_type IN ('quest','challenge','survey','mission')
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.adventure_id = %d
+                AND EXISTS (
+                    SELECT 1 FROM {$wpdb->prefix}br_player_adventure pa
+                    WHERE pa.player_id = pp.player_id AND pa.adventure_id = pp.adventure_id
+                      AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+                )
             WHERE t.adventure_id = %d AND t.tabi_status = 'publish'
             GROUP BY t.tabi_id
             ORDER BY t.tabi_id ASC",

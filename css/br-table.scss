@@ -4600,6 +4600,14 @@ select.br-input {
   font-weight: 600;
   color: rgba($br-white, 0.5);
   transform: translateY(-50%);
+
+  &.logged-in {
+    pointer-events: auto;
+    width: 52px;
+    font-weight: 900;
+    color: $br-orange;
+    cursor: help;
+  }
 }
 
 .br-mf-chart-area {
