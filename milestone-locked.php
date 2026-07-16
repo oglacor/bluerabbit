@@ -27,6 +27,11 @@
 					<span class="icon icon-edit inline-block"></span>
 				</a>
 			<?php } ?>
+ 			<?php if($isGM || $isAdmin){ ?>
+				<a class="milestone-gm-actions form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
+					<span class="icon icon-edit inline-block"></span> <?= __("Edit","bluerabbit"); ?>
+				</a>
+			<?php } ?> 
         </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">

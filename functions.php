@@ -2072,6 +2072,7 @@ add_action("wp_ajax_setXP", [BR_Adventure::instance(), 'setXP']);
 add_action("wp_ajax_setEP", [BR_Adventure::instance(), 'setEP']);
 add_action("wp_ajax_setBLOO", [BR_Adventure::instance(), 'setBLOO']);
 add_action("wp_ajax_setValidate", [BR_Adventure::instance(), 'setValidate']);
+add_action("wp_ajax_setOptional", [BR_Adventure::instance(), 'setOptional']);
 add_action("wp_ajax_setMaxPlayers", [BR_Adventure::instance(), 'setMaxPlayers']);
 add_action("wp_ajax_setStartDate", [BR_Adventure::instance(), 'setStartDate']);
 add_action("wp_ajax_setDeadline", [BR_Adventure::instance(), 'setDeadline']);

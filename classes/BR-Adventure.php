@@ -487,6 +487,37 @@ class BR_Adventure {
         die();
     }
 
+    public function setOptional(){
+        global $wpdb; $current_user = wp_get_current_user();
+        $data = array();
+
+        $data['success'] = false;
+        $type = $_POST['type'];
+        $id = $_POST['id'];
+        $optional = $_POST['optional'] ? 1 : 0;
+        $adventure_id = $_POST['adventure_id'];
+        $nonce = $_POST['nonce'];
+        if(wp_verify_nonce($nonce, 'optional_nonce')){
+            if($type == 'quest' || $type == 'challenge' || $type == 'mission' || $type == 'social' || $type == 'survey'){
+                $sql = "UPDATE {$wpdb->prefix}br_quests SET mech_optional=%d WHERE quest_id=%d AND adventure_id=%d";
+                $sql = $wpdb->prepare ($sql,$optional,$id,$adventure_id);
+                $wpdb->query($sql);
+
+                $data['success'] = true;
+                BR_Activity::instance()->logActivity($adventure_id, "set","optional","$type",$id);
+                $notification = new Notification();
+                $msg_content = $optional ? __('Marked as Side Quest','bluerabbit') : __('Marked as Required','bluerabbit');
+                $data['message'] = $notification->pop($msg_content,'blue','check');
+                $data['just_notify'] =true;
+                $data['new_optional_nonce'] = wp_create_nonce('optional_nonce');
+            }
+        }else{
+            $data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
+        }
+        echo json_encode($data);
+        die();
+    }
+
     // From functions/adventure-management.php
     public function setMaxPlayers(){
         global $wpdb; $current_user = wp_get_current_user();

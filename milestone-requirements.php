@@ -29,7 +29,12 @@
             <?php if($mi->mech_ep > 0){ ?>
                 <h2 class="milestone-ep"><?=$ep_label; ?>: <?= $mi->mech_ep; ?></h2>
             <?php } ?>
-        </div>
+  			<?php if($isGM || $isAdmin){ ?>
+				<a class="milestone-gm-actions form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
+					<span class="icon icon-edit inline-block"></span> <?= __("Edit","bluerabbit"); ?>
+				</a>
+			<?php } ?> 
+       </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">
 				<h2><span class="icon icon-lock"></span></h2>

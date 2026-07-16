@@ -1,4 +1,4 @@
-	<div class="milestone <?php echo "$mi->quest_type $hideByDay level{$mi->mech_level}";  ?>"  id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
+	<div class="milestone <?php echo "$mi->quest_type $hideByDay $left_side level{$mi->mech_level}";  ?> pending"  id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
 		<input type="hidden" class="milestone-data-id" value="<?= $elementID; ?>">
 		<input type="hidden" class="milestone-data-title" value="<?= $mi->quest_title; ?>">
 		<input type="hidden" class="milestone-data-xp" value="<?= $mi->mech_xp; ?>">
@@ -6,10 +6,11 @@
 		<input type="hidden" class="milestone-data-ep" value="<?= $mi->mech_ep; ?>">
 		<input type="hidden" class="milestone-data-level" value="<?= $mi->mech_level; ?>">
 		<input type="hidden" class="milestone-data-bg" value="<?= $mi->mech_badge; ?>">
-		<input type="hidden" class="milestone-data-color" value="<?= $mi->quest_color; ?>">
-		<input type="hidden" class="milestone-data-type" value="blocked">
+		<input type="hidden" class="milestone-data-color" value="orange">
+		<input type="hidden" class="milestone-data-type" value="pending">
         <div class="milestone-modal-content">
             <div class="milestone-image" style="background-image: url(<?= $mi->mech_badge; ?>);">
+                <span class="icon icon-time"></span>
             </div>
             <h1 class="milestone-headline"><?= $mi->quest_title; ?></h1>
             <?php if($mi->quest_secondary_headline){ ?>
@@ -17,10 +18,10 @@
                     <?= $mi->quest_secondary_headline; ?>
                 </h2>
             <?php } ?>
-            <div class="milestone-action blocked">
-                <button class="action-button blocked">
-                    <span class="icon icon-lock"></span>
-                </button>
+            <div class="milestone-action">
+                <a class="action-button pending" href="#">
+                    <?= __("Pending Validation","bluerabbit"); ?>
+                </a>
             </div>
             <div class="milestone-modal-divider"></div>
             <h2 class="milestone-level"><?= __("Level","bluerabbit"); ?>: <?= $mi->mech_level; ?></h2>
@@ -37,24 +38,22 @@
         </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">
-				<h2><span class="icon icon-lock"></span></h2>
+				<h2><span class="icon icon-time"></span></h2>
 			</div>
 			<div class="milestone-preview-title">
 				<h1><?= $mi->quest_title; ?></h1>
-				<p>
-					<span class="icon icon-lock inline-block"></span>
-					<?= __("This quest is locked. You must pay your debt before continuing.","bluerabbit"); ?>
-				</p>
-				<div class="milestone-preview-actions">
-					<a class="form-ui button locked-mark orange-bg-500" href="<?= get_bloginfo('url')."/blockers/?adventure_id=$adv_child_id"; ?>">
-						<?= __("Pay your debt","bluerabbit");?> 
-					</a>
-				</div>
+				<h2 class="padding-5">
+					<span class="icon icon-time inline-block"></span>
+					<?= __("Pending Validation","bluerabbit"); ?>
+				</h2>
+				<a class="form-ui button orange-bg-500" href="<?= $permalink; ?>">
+					<span class="icon icon-view inline-block"></span> <?= __("View Submission","bluerabbit"); ?>
+				</a>
 			</div>
 		</div>
-		<div class="milestone-bg-color" <?= br_color_attr($mi->quest_color) ?>></div>
-		<div class="milestone-bg-badge" style="background-image: url(<?= $mi->mech_badge; ?>);">
-			<span class="icon icon-lock purple-A400 font _30 inline-block absolute perfect-center block"></span>
+		<div class="milestone-bg-color orange-bg-A400"></div>
+		<div class="milestone-bg-badge orange-bg-900 blend-luminosity" style="background-image: url(<?= $mi->mech_badge; ?>);">
+			<span class="icon icon-time orange-A400 font _30 inline-block absolute perfect-center block"></span>
 			<?php if($isAdmin || $isGM){ ?>
 				<span class="absolute v-center left block icon icon-<?= $mi->quest_type; ?> font _24 black-color opacity-50"></span>
 			<?php } ?>

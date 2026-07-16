@@ -1,5 +1,5 @@
 	<?php $left_side = $left_side ?? ''; ?>
-	<div class="milestone <?= "$mi->quest_type finshed $hideByDay $left_side level{$mi->mech_level}";  ?>" id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
+	<div class="milestone <?= "$mi->quest_type $hideByDay $left_side level{$mi->mech_level}";  ?>" id="milestone-<?= $elementID; ?>" style="<?= $scale; ?>">
 		<input type="hidden" class="milestone-data-id" value="<?= $elementID; ?>">
 		<input type="hidden" class="milestone-data-title" value="<?= $mi->quest_title; ?>">
 		<input type="hidden" class="milestone-data-xp" value="<?= $mi->mech_xp; ?>">
@@ -29,10 +29,10 @@
                 <h2 class="milestone-ep"><?=$ep_label; ?>: <?= $mi->mech_ep; ?></h2>
             <?php } ?>
  			<?php if($isGM || $isAdmin){ ?>
-				<a class="form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
-					<span class="icon icon-edit inline-block"></span>
+				<a class="milestone-gm-actions form-ui" href="<?= get_bloginfo("url")."/new-$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_parent_id"; ?>">
+					<span class="icon icon-edit inline-block"></span> <?= __("Edit","bluerabbit"); ?>
 				</a>
-			<?php } ?>
+			<?php } ?> 
        </div>
 		<div class="milestone-cta">
 			<div class="milestone-preview-level">

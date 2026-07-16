@@ -181,6 +181,7 @@ class BR_Progression {
             ");
 
 
+            $pending = array();
             foreach($quests as $qKey=>$quest){
                 $pp = isset($player_work[$quest->quest_id]) ? $player_work[$quest->quest_id] : false;
                 if(isset($pp->pp_status) && $pp->pp_status == 'publish'){
@@ -202,6 +203,9 @@ class BR_Progression {
                                 $gpa[$pp->quest_id] = $pp->pp_grade;
                             }
                         }
+                    }else{
+                        // Submitted, requires validation, not graded yet - awaiting GM review
+                        $pending[] = $quest->quest_id;
                     }
                 }
             }
@@ -275,6 +279,7 @@ class BR_Progression {
             $data['player']['paid_blockers']=$paid;
             $data['player']['items']=$items;
             $data['player']['fqs']=$fqs;
+            $data['player']['pending']=$pending;
             $data['player']['deadlines']=$deadlines;
             $data['player']['unlocks']=$unlocked;
             $data['player']['gpa']=$totalgpa;
@@ -306,6 +311,7 @@ class BR_Progression {
             return 'milestone-unavailable';
         }
         if (in_array($mi->quest_id, $player['fqs'])) return 'milestone-finished';
+        if (!empty($player['pending']) && in_array($mi->quest_id, $player['pending'])) return 'milestone-pending';
         if ($mi->quest_status === 'locked')           return 'milestone-locked';
         if ($player_level < $mi->mech_level)           return 'milestone-levelup';
         if ($mi->mech_unlock_cost > 0 && !in_array($mi->quest_id, $player['unlocks'])) return 'milestone-unlock';

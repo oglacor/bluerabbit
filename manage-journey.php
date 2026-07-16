@@ -71,6 +71,7 @@ foreach ($publish_items as $q) {
         'achievement_id' => $q->achievement_id ? (int)$q->achievement_id : 0,
         'tabi_id'        => $q->tabi_id ? (int)$q->tabi_id : 0,
         'validate'       => (int)$q->mech_validate,
+        'optional'       => (int)$q->mech_optional,
     ];
 }
 
@@ -251,13 +252,10 @@ $base_url = get_bloginfo('url');
             <div class="br-text-center"><?= __('Status', 'bluerabbit'); ?></div>
         </div>
 
-        <!-- Sortable container — JS renders rows here -->
-        <div class="br-sortable sortable-row-container" id="br-milestone-list">
-            <!-- Rendered by brJourney.renderChunk() -->
+        <!-- JS renders one .br-tabi-group per tabi (plus "Other Milestones") here -->
+        <div id="br-milestone-list">
+            <!-- Rendered by brJourney.renderGroups() -->
         </div>
-
-        <!-- Scroll sentinel -->
-        <div class="br-scroll-sentinel" id="br-scroll-sentinel"></div>
 
         <!-- Empty state (shown by JS if no items) -->
         <div class="br-empty" id="br-empty-state" style="display:none;">
@@ -353,13 +351,11 @@ $base_url = get_bloginfo('url');
         achievements:  <?= json_encode($json_achievements); ?>,
         tabis:         <?= json_encode($json_tabis); ?>,
         filteredItems: [],
-        renderedCount: 0,
-        chunkSize:     30,
+        groups:        [],
         activeFilter:  'all',
         searchTerm:    '',
         pathFilter:    '',
-        tabiFilter:    '',
-        isLoading:     false
+        tabiFilter:    ''
     };
 
     var brj = window.brJourney;
@@ -378,11 +374,42 @@ $base_url = get_bloginfo('url');
             if (brj.tabiFilter && item.tabi_id != brj.tabiFilter) return false;
             return true;
         });
-        brj.renderedCount = 0;
-        $('#br-milestone-list').empty();
-        brj.renderChunk(0, brj.chunkSize);
+        brj.buildGroups();
+        brj.renderGroups();
         brj.updateSummary();
         brj.toggleEmpty();
+    };
+
+    // ── Group filtered items by tabi, "Other Milestones" first ──────
+    brj.buildGroups = function() {
+        var otherLabel = <?= json_encode(__('Other Milestones', 'bluerabbit')); ?>;
+        var byTabi = {};
+        for (var i = 0; i < brj.filteredItems.length; i++) {
+            var item = brj.filteredItems[i];
+            var tid = item.tabi_id || 0;
+            if (!byTabi[tid]) byTabi[tid] = [];
+            byTabi[tid].push(item);
+        }
+        var knownTabiIds = {};
+        for (var t = 0; t < brj.tabis.length; t++) knownTabiIds[brj.tabis[t].id] = true;
+
+        var groups = [];
+        if (byTabi[0] && byTabi[0].length) {
+            groups.push({ tabiId: 0, tabiName: otherLabel, items: byTabi[0] });
+        }
+        for (var t = 0; t < brj.tabis.length; t++) {
+            var tab = brj.tabis[t];
+            if (byTabi[tab.id] && byTabi[tab.id].length) {
+                groups.push({ tabiId: tab.id, tabiName: tab.name, items: byTabi[tab.id] });
+            }
+        }
+        // A quest can point at a tabi that's since been trashed/unpublished (so it's
+        // missing from brj.tabis) - fall back to "Other" instead of hiding it entirely.
+        for (var tid in byTabi) {
+            if (tid == 0 || knownTabiIds[tid]) continue;
+            groups.push({ tabiId: tid, tabiName: otherLabel, items: byTabi[tid] });
+        }
+        brj.groups = groups;
     };
 
     // ── Build a single row HTML ──────────────────────────────
@@ -422,7 +449,10 @@ $base_url = get_bloginfo('url');
         if (useEncounters) {
             html += '  <div class="br-num"><span class="icon icon-activity"></span><input type="number" id="the_ep-' + item.type + '-' + item.id + '" value="' + item.ep + '" onchange="setEP(' + item.id + ',\'' + item.type + '\');"></div>';
         }
-        html += '  <div class="br-status-cell"><span class="br-status ' + statusClass + '"><span class="icon ' + statusIcon + '"></span> ' + statusText + '</span></div>';
+        html += '  <div class="br-status-cell">';
+        html += '    <span class="br-status ' + statusClass + '"><span class="icon ' + statusIcon + '"></span> ' + statusText + '</span>';
+        html += '    <span class="br-req-badge ' + (item.optional ? 'sidequest' : 'required') + '">' + (item.optional ? 'Side Quest' : 'Required') + '</span>';
+        html += '  </div>';
         html += '</div>';
 
         // Action bar row
@@ -441,6 +471,9 @@ $base_url = get_bloginfo('url');
             var validateLabel = item.validate ? 'Validation Required' : 'Require Validation';
             html += '  <button class="br-action-link ' + validateClass + '" onclick="brJourney.toggleValidate(' + item.id + ');"><span class="icon icon-check"></span> ' + validateLabel + '</button>';
         }
+        var optionalClass = item.optional ? 'optional-toggle on' : 'optional-toggle';
+        var optionalLabel  = item.optional ? 'Mark as Required' : 'Mark as Side Quest';
+        html += '  <button class="br-action-link ' + optionalClass + '" onclick="brJourney.toggleOptional(' + item.id + ');"><span class="icon icon-star"></span> ' + optionalLabel + '</button>';
         html += '  <button class="br-action-link duplicate" onclick="duplicateRow(' + item.id + ');"><span class="icon icon-duplicate"></span> Duplicate</button>';
         html += '  <button class="br-action-link trash" onclick="brJourney.changeStatus(' + item.id + ',\'' + item.type + '\',\'trash\');"><span class="icon icon-trash"></span> Trash</button>';
         html += '</div>';
@@ -482,57 +515,46 @@ $base_url = get_bloginfo('url');
         return html;
     };
 
-    // ── Render a chunk ───────────────────────────────────────
-    brj.renderChunk = function(startIndex, count) {
-        var end = Math.min(startIndex + count, brj.filteredItems.length);
-        var html = '';
-        for (var i = startIndex; i < end; i++) {
-            html += brj.buildRow(brj.filteredItems[i]);
-        }
-        $('#br-milestone-list').append(html);
-        brj.renderedCount = end;
+    // ── Render all tabi groups (one headline + row list per tabi) ────
+    brj.renderGroups = function() {
+        var container = $('#br-milestone-list');
+        container.empty();
 
-        // Init datetimepickers on newly added elements
+        for (var g = 0; g < brj.groups.length; g++) {
+            var group = brj.groups[g];
+            var reqCount = 0, sideCount = 0;
+            for (var i = 0; i < group.items.length; i++) {
+                if (group.items[i].optional) sideCount++; else reqCount++;
+            }
+
+            var html = '<div class="br-tabi-group">';
+            html += '  <div class="br-tabi-headline' + (group.tabiId === 0 ? ' no-tabi' : '') + '">';
+            html += '    <span class="icon icon-' + (group.tabiId === 0 ? 'journey' : 'sabotage') + '"></span>';
+            html += '    <span class="br-tabi-title">' + brj.escHtml(group.tabiName) + '</span>';
+            html += '    <span class="br-tabi-stats">';
+            if (reqCount)  html += '<span class="br-tabi-stat required">' + <?= json_encode(__('Required', 'bluerabbit')); ?> + ': ' + reqCount + '</span>';
+            if (reqCount && sideCount) html += '<span class="br-tabi-stat-divider">|</span>';
+            if (sideCount) html += '<span class="br-tabi-stat sidequest">' + <?= json_encode(__('Side Quests', 'bluerabbit')); ?> + ': ' + sideCount + '</span>';
+            html += '    </span>';
+            html += '  </div>';
+            html += '  <div class="br-tabi-group-rows br-sortable sortable-row-container">';
+            for (var i = 0; i < group.items.length; i++) {
+                html += brj.buildRow(group.items[i]);
+            }
+            html += '  </div>';
+            html += '</div>';
+            container.append(html);
+        }
+
+        // Init datetimepickers on the newly rendered rows
         if (typeof $.fn.datetimepicker === 'function') {
-            $('#br-milestone-list .datetimepicker').not('.hasDatepicker').datetimepicker({
+            container.find('.datetimepicker').not('.hasDatepicker').datetimepicker({
                 format: 'Y/m/d H:i',
                 formatDate: 'Y/m/d',
                 formatTime: 'H:i'
             });
         }
-        // Refresh sortable to include new items
-        if (isJourneyOrder && typeof $.fn.sortable === 'function' && $('#br-milestone-list').data('ui-sortable')) {
-            $('#br-milestone-list').sortable('refresh');
-        }
-    };
-
-    // ── Infinite scroll ──────────────────────────────────────
-    brj.setupScroll = function() {
-        var sentinel = document.getElementById('br-scroll-sentinel');
-        if (!sentinel) return;
-
-        if ('IntersectionObserver' in window) {
-            var observer = new IntersectionObserver(function(entries) {
-                if (entries[0].isIntersecting && brj.renderedCount < brj.filteredItems.length && !brj.isLoading) {
-                    brj.isLoading = true;
-                    brj.renderChunk(brj.renderedCount, brj.chunkSize);
-                    brj.isLoading = false;
-                }
-            }, { rootMargin: '200px' });
-            observer.observe(sentinel);
-        } else {
-            // Fallback: scroll event
-            $(window).on('scroll.brjourney', function() {
-                if (brj.isLoading || brj.renderedCount >= brj.filteredItems.length) return;
-                var scrollBottom = $(window).scrollTop() + $(window).height();
-                var sentinelTop  = $(sentinel).offset().top;
-                if (scrollBottom > sentinelTop - 300) {
-                    brj.isLoading = true;
-                    brj.renderChunk(brj.renderedCount, brj.chunkSize);
-                    brj.isLoading = false;
-                }
-            });
-        }
+        brj.setupSortable();
     };
 
     // ── Toggle empty state ───────────────────────────────────
@@ -645,13 +667,16 @@ $base_url = get_bloginfo('url');
         }
     };
 
-    // ── Setup drag-and-drop ──────────────────────────────────
+    // ── Setup drag-and-drop (one sortable list per tabi group - dragging  ──
+    // reorders within a tabi; moving to a different tabi is done via the
+    // Quick Edit "Tabi" dropdown instead). "Reorder Journey" still reads
+    // every .row-container in DOM order across all groups, so the saved
+    // quest_order naturally clusters by tabi too.
     brj.setupSortable = function() {
-        if (!isJourneyOrder) { console.log('brJourney: sortable skipped (not journey order)'); return; }
-        if (typeof $.fn.sortable !== 'function') { console.log('brJourney: $.fn.sortable not available'); return; }
-        console.log('brJourney: initializing sortable on', $('#br-milestone-list').children().length, 'items');
+        if (!isJourneyOrder) return;
+        if (typeof $.fn.sortable !== 'function') return;
 
-        $('#br-milestone-list').sortable({
+        $('.br-tabi-group-rows').sortable({
             handle: '.br-drag:not(.hidden-handle)',
             items: '> .row-container',
             axis: 'y',
@@ -671,17 +696,6 @@ $base_url = get_bloginfo('url');
             },
             stop: function(e, ui) {
                 ui.item.css('opacity', '1');
-                var newOrder = [];
-                $('#br-milestone-list .row-container').each(function() {
-                    var id = $(this).find('.quest-id').val();
-                    for (var i = 0; i < brj.filteredItems.length; i++) {
-                        if (String(brj.filteredItems[i].id) === String(id)) {
-                            newOrder.push(brj.filteredItems[i]);
-                            break;
-                        }
-                    }
-                });
-                brj.filteredItems = newOrder;
             }
         });
     };
@@ -800,6 +814,20 @@ $base_url = get_bloginfo('url');
         $btn.html('<span class="icon icon-check"></span> ' + (newValidate ? 'Validation Required' : 'Require Validation'));
     };
 
+    // ── Toggle "Required" vs "Side Quest" (mech_optional) ───────────
+    // Full re-render so the tabi headline's Required/Side Quest counts stay correct.
+    brj.toggleOptional = function(questId) {
+        var item = null;
+        for (var i = 0; i < brj.allItems.length; i++) {
+            if (brj.allItems[i].id == questId) { item = brj.allItems[i]; break; }
+        }
+        if (!item) return;
+        var newOptional = item.optional ? 0 : 1;
+        setOptional(questId, item.type, newOptional);
+        item.optional = newOptional;
+        brj.applyFilters();
+    };
+
     // Section collapse toggles
     $('#br-drafts-toggle').on('click', function() {
         $(this).toggleClass('collapsed');
@@ -812,9 +840,7 @@ $base_url = get_bloginfo('url');
 
     // ── Init ─────────────────────────────────────────────────
     $(document).ready(function() {
-        brj.applyFilters();
-        brj.setupScroll();
-        brj.setupSortable();
+        brj.applyFilters(); // builds groups, renders rows, and inits sortable
         brj.renderDrafts();
         brj.renderTrash();
     });

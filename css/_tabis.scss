@@ -211,6 +211,15 @@
                         }
                     }
                 }
+                &.pending{
+                    .milestone-modal-content{ 
+                        background-color: rgba($br-orange,0.25);
+                        .milestone-image{
+                            background-color: rgba($br-orange,0.25);
+                            background-blend-mode: luminosity;
+                        }
+                    }
+                }
                 &.locked{
                     filter: grayscale(100%);
                     opacity: 0.8;
@@ -232,7 +241,7 @@
                         "image headline headline headline headline headline action action"
                         "image subheadline subheadline subheadline subheadline subheadline action action"
                         "image line line line line line action action"
-                        "image . milestone_level xp bloo ep action action";
+                        "image gm_actions milestone_level xp bloo ep action action";
                         .milestone-image{
                             grid-area: image;
                             width: 100%;
@@ -259,6 +268,14 @@
                             font: 400 16px $base-font;
                             opacity: 0.8;
                         }
+						.milestone-gm-actions{
+							grid-area: gm_actions;
+                            display: block;
+                            text-align: center;
+                            font: 300 16px $condensed-font;
+                            border-right: solid 1px rgba($new-colors-blue,0.2);
+                            padding: 10px;
+						}
                         .milestone-action{
                             grid-area: action;
                             button.action-button, a.action-button{
@@ -268,7 +285,7 @@
                                 align-items: center;
                                 justify-content: center;
                                 width: 100%;
-                                height: 100%;
+                                height: 100%; 
                                 padding: 10px;
                                 background-color:$new-colors-blue;
                                 color: $new-colors-dark-blue;
@@ -316,6 +333,17 @@
                                 }
                                 &.finished{
                                     background-color:$new-colors-green;
+                                    color: $white;
+                                    font-size: 30px;
+                                    line-height: 1; 
+                                    em{
+                                        font-weight: 400;
+                                        font-style: normal;
+                                        font-size: 18px;
+                                    }
+                                }
+                                &.pending{
+                                    background-color:$br-orange;
                                     color: $white;
                                     font-size: 30px;
                                     line-height: 1;

@@ -59,6 +59,7 @@
 	<input type="hidden" id="ep-nonce" value="<?php echo wp_create_nonce('ep_nonce'); ?>" />
 	<input type="hidden" id="bloo-nonce" value="<?php echo wp_create_nonce('bloo_nonce'); ?>" />
 	<input type="hidden" id="validate-nonce" value="<?php echo wp_create_nonce('validate_nonce'); ?>" />
+	<input type="hidden" id="optional-nonce" value="<?php echo wp_create_nonce('optional_nonce'); ?>" />
 	<input type="hidden" id="level-nonce" value="<?php echo wp_create_nonce('level_nonce'); ?>" />
 	<input type="hidden" id="start-date-nonce" value="<?php echo wp_create_nonce('start_date_nonce'); ?>" />
 	<input type="hidden" id="deadline-nonce" value="<?php echo wp_create_nonce('deadline_nonce'); ?>" />

@@ -2467,6 +2467,60 @@ select.br-input {
 // ── Milestone Table ──
 .br-table-wrap { padding: 0 8px; }
 
+// ── Tabi Groups (Journey Manager) ──
+.br-tabi-group { margin-bottom: 20px; }
+
+.br-tabi-headline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px;
+  margin: 0 8px 10px;
+  color: $br-panel-bg;
+  border-left: 4px solid rgba($br-primary, 1);
+  background: rgba($br-white, 1);
+  border-radius: $radius-sm;
+  position: sticky;
+  top: 110px;
+  z-index: 10;
+  box-shadow: 0 0 10px 0px rgba(255,255,255,0.5);
+  .icon { font-size: 15px; opacity: 0.85; }
+
+  &.no-tabi {
+    border-left-color: rgba($br-white, 0.2);
+    .icon { opacity: 0.5; }
+  }
+}
+
+.br-tabi-title {
+  @include condensed-heading(13px, 700);
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+
+.br-tabi-stats {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.br-tabi-stat {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 10px;
+  border-radius: $radius-pill;
+  background: rgba($br-white, 0.1);
+  opacity: 0.85;
+  white-space: nowrap;
+
+  &.sidequest { @include badge-color($br-purple); }
+}
+
+.br-tabi-stat-divider { opacity: 0.3; }
+
 .br-table-header {
   display: grid;
   grid-template-columns: 36px 36px 40px minmax(120px, 1fr) 55px 75px 75px 120px;
@@ -2503,6 +2557,25 @@ select.br-input {
 .br-status-cell {
   text-align: center;
   white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.br-req-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba($br-white, 0.08);
+  color: rgba($br-white, 0.6);
+
+  &.sidequest { @include badge-color($br-purple); }
 }
 
 // Action bar (second row under each milestone)
@@ -2540,6 +2613,7 @@ select.br-input {
   &.duplicate { color: $br-purple; border-color: rgba($br-purple, 0.15); &:hover { background: rgba($br-purple, 0.1); } }
   &.trash { color: $br-red; border-color: rgba($br-red, 0.15); &:hover { background: rgba($br-red, 0.1); } }
   &.validate-toggle.on { color: $br-teal; border-color: rgba($br-teal, 0.15); &:hover { background: rgba($br-teal, 0.1); } }
+  &.optional-toggle.on { color: $br-purple; border-color: rgba($br-purple, 0.15); &:hover { background: rgba($br-purple, 0.1); } }
 }
 
 .br-drag {

@@ -6506,6 +6506,29 @@ function setValidate(id, type, validate) {
     });
 }
 
+///////////////////////// Set OPTIONAL (Required vs Side Quest)  //////////////////
+
+function setOptional(id, type, optional) {
+    let nonce = $("#optional-nonce").val();
+    let adventure_id = $("#the_adventure_id").val();
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({
+            action: 'setOptional',
+            optional: optional,
+            type: type,
+            id: id,
+            adventure_id: adventure_id,
+            nonce: nonce
+        }),
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
 ///////////////////////// Set MAX PLAYERS  //////////////////
 
 function setMaxPlayers(id) {
