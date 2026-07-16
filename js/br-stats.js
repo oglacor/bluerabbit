@@ -119,28 +119,28 @@
         var ctx = document.getElementById('br-quest-funnel-chart');
         if (!ctx || !slice.length) return;
 
-        var labels = [], enrolled = [], completed = [], bgEnrolled = [], bgCompleted = [], borderC = [];
+        var labels = [], completed = [], bgCompleted = [], borderC = [];
         slice.forEach(function(r) {
             var t = r.quest_title.length > 30 ? r.quest_title.substring(0, 28) + '…' : r.quest_title;
             if (r.is_locked) t = '🔒 ' + t;
             labels.push(t);
-            enrolled.push(r.is_locked ? 0 : r.started_count);
             completed.push(parseInt(r.completed_count) || 0);
-            bgEnrolled.push(r.is_locked ? 'rgba(255,255,255,0.04)' : 'rgba(28,194,235,0.25)');
             bgCompleted.push(r.is_locked ? 'rgba(255,255,255,0.08)' : palette.green);
             borderC.push(r.is_locked ? 'rgba(255,255,255,0.1)' : palette.green);
         });
+
+        var opts = hBarOpts();
+        opts.legend = { display: false };
 
         charts['quest-funnel'] = new Chart(ctx, {
             type: 'horizontalBar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Enrolled',  data: enrolled,  backgroundColor: bgEnrolled, borderColor: palette.primary, borderWidth: 1 },
                     { label: 'Completed', data: completed, backgroundColor: bgCompleted, borderColor: borderC, borderWidth: 1 }
                 ]
             },
-            options: hBarOpts()
+            options: opts
         });
     }
 

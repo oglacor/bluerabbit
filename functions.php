@@ -1270,6 +1270,10 @@ function br_stats_enqueue_assets() {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], '1.0' );
 		wp_enqueue_script( 'br-stats', get_template_directory_uri() . '/js/br-stats.js', ['jquery'], '1.0', true );
 	}
+	if ( is_page('milestone-funnel') ) {
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], '1.0' );
+		wp_enqueue_script( 'br-milestone-funnel', get_template_directory_uri() . '/js/br-milestone-funnel.js', ['jquery'], '1.0', true );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'br_stats_enqueue_assets' );
 
@@ -1294,8 +1298,10 @@ function br_stats_quest_funnel() {
 	check_ajax_referer( 'br_stats_nonce', 'nonce' );
 	$aid = (int) $_POST['adventure_id'];
 	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$filter_type  = sanitize_text_field( $_POST['filter_type'] ?? 'all' );
+	$filter_value = isset( $_POST['filter_value'] ) ? (int) $_POST['filter_value'] : 0;
 	$stats = new BR_Stats();
-	wp_send_json_success( $stats->get_quest_funnel( $aid ) );
+	wp_send_json_success( $stats->get_quest_funnel( $aid, $filter_type, $filter_value ) );
 }
 add_action( 'wp_ajax_br_stats_quest_funnel', 'br_stats_quest_funnel' );
 

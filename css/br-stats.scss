@@ -81,6 +81,7 @@ $radius:       12px;
   &.accent { border-color: rgba($br-accent, 0.3); }
   &.purple { border-color: rgba($br-purple, 0.3); }
   &.green  { border-color: rgba($br-green, 0.3); }
+  &.orange { border-color: rgba($br-orange, 0.3); }
 }
 
 .br-stats-kpi-value {
@@ -94,6 +95,7 @@ $radius:       12px;
   .br-stats-kpi.accent & { color: $br-accent; }
   .br-stats-kpi.purple & { color: $br-purple; }
   .br-stats-kpi.green  & { color: $br-green; }
+  .br-stats-kpi.orange & { color: $br-orange; }
 }
 
 .br-stats-kpi-label {

@@ -4451,6 +4451,176 @@ select.br-input {
   font-size: 11px;
 }
 
+.br-stats-funnel-details-link {
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+// ── page-milestone-funnel.php ────────────────────────────────
+
+.br-mf-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+  color: $br-white;
+}
+
+.br-mf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.br-mf-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba($br-white, 0.5);
+  text-decoration: none;
+
+  &:hover { color: $br-primary; }
+}
+
+.br-mf-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba($br-white, 0.5);
+  }
+
+  select {
+    width: auto;
+    min-width: 220px;
+  }
+}
+
+.br-mf-context-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.br-mf-context-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba($br-primary, 0.1);
+  border: 1px solid rgba($br-primary, 0.25);
+
+  &.orange { background: rgba($br-orange, 0.1); border-color: rgba($br-orange, 0.25); }
+  &.accent { background: rgba($br-accent, 0.1); border-color: rgba($br-accent, 0.25); }
+}
+
+.br-mf-context-value {
+  font-family: $condensed;
+  font-size: 16px;
+  font-weight: 900;
+  color: $br-primary;
+
+  .br-mf-context-stat.orange & { color: $br-orange; }
+  .br-mf-context-stat.accent & { color: $br-accent; }
+}
+
+.br-mf-context-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba($br-white, 0.5);
+}
+
+// 16:9-ish "slide" shell — fixed aspect ratio, horizontally scrollable body
+// with a sticky y-axis column so the chart can grow arbitrarily wide.
+.br-mf-chart-shell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 720px;
+  min-height: 320px;
+  display: flex;
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.br-mf-scroll-wrap {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.br-mf-yaxis-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 100%;
+  background: $br-panel-bg;
+  box-shadow: 4px 0 8px rgba(0, 0, 0, 0.25);
+}
+
+.br-mf-yaxis-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.br-mf-yaxis-label {
+  position: absolute;
+  left: 0;
+  width: 48px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba($br-white, 0.5);
+  transform: translateY(-50%);
+}
+
+.br-mf-chart-area {
+  flex: 0 0 auto;
+  height: 100%;
+  position: relative;
+}
+
+.br-mf-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba($br-white, 0.35);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .br-mf-chart-shell { aspect-ratio: 4 / 3; }
+}
+
 // ── page-transactions.php ────────────────────────────────────
 
 .br-trnx-id {

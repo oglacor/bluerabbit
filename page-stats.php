@@ -59,7 +59,7 @@ window.brStats = {
     </div>
 
     <!-- KPI Boxes -->
-    <div class="br-stats-kpis">
+    <div class="br-stats-kpis br-stats-kpis-5">
         <div class="br-stats-kpi">
             <span class="br-stats-kpi-value"><?= number_format($adv_summary['total_players']); ?></span>
             <span class="br-stats-kpi-label"><?= __("Total Players", "bluerabbit"); ?></span>
@@ -76,6 +76,10 @@ window.brStats = {
             <span class="br-stats-kpi-value"><?= $adv_summary['completion_pct']; ?>%</span>
             <span class="br-stats-kpi-label"><?= __("Completion", "bluerabbit"); ?></span>
         </div>
+        <div class="br-stats-kpi orange">
+            <span class="br-stats-kpi-value"><?= $adv_summary['logged_in_pct']; ?>%</span>
+            <span class="br-stats-kpi-label"><?= __("Have Logged In", "bluerabbit"); ?></span>
+        </div>
     </div>
 
     <!-- Manager Charts -->
@@ -87,6 +91,9 @@ window.brStats = {
                     <button class="br-page-btn br-stats-funnel-btn" onclick="brFunnelPage(-1)">&laquo;</button>
                     <span id="br-funnel-page-label">1/1</span>
                     <button class="br-page-btn br-stats-funnel-btn" onclick="brFunnelPage(1)">&raquo;</button>
+                    <a class="br-btn br-stats-btn-sm br-stats-funnel-details-link" href="<?= esc_url(get_bloginfo("url")."/milestone-funnel/?adventure_id={$adv_child_id}"); ?>">
+                        <span class="icon icon-view"></span> <?= __("Details", "bluerabbit"); ?>
+                    </a>
                 </div>
             </div>
             <div class="br-stats-chart-wrap">

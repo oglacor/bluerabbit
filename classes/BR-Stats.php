@@ -279,6 +279,17 @@ class BR_Stats {
             $adventure_id
         ) );
 
+        // % of registered players who have an actual login record (not just an enrollment row)
+        $logged_in = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
+            WHERE adventure_id = %d AND player_adventure_status = 'in' AND player_adventure_role = 'player'
+              AND player_last_login IS NOT NULL",
+            $adventure_id
+        ) );
+        $summary['logged_in_pct'] = (int) $summary['total_players'] > 0
+            ? round( ( $logged_in / (int) $summary['total_players'] ) * 100, 1 )
+            : 0;
+
         return $summary;
     }
 
@@ -325,7 +336,8 @@ class BR_Stats {
     }
 
     // Portable: swap $wpdb for PDO to migrate.
-    public function get_quest_funnel( int $adventure_id ): array {
+    // $filter_type: 'all' | 'tabi' | 'level' — $filter_value is the tabi_id or mech_level to restrict to.
+    public function get_quest_funnel( int $adventure_id, string $filter_type = 'all', $filter_value = 0 ): array {
         global $wpdb;
         $total_players = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
@@ -333,18 +345,31 @@ class BR_Stats {
             $adventure_id
         ) );
 
-        $quests = $wpdb->get_results( $wpdb->prepare(
-            "SELECT
+        $extra_where = '';
+        $extra_args  = [];
+        if ( $filter_type === 'tabi' && (int) $filter_value > 0 ) {
+            $extra_where = 'AND q.tabi_id = %d';
+            $extra_args[] = (int) $filter_value;
+        } elseif ( $filter_type === 'level' && (int) $filter_value > 0 ) {
+            $extra_where = 'AND q.mech_level = %d';
+            $extra_args[] = (int) $filter_value;
+        }
+
+        $sql = "SELECT
                 q.quest_id, q.quest_title, q.quest_type, q.quest_order, q.quest_status,
+                q.tabi_id, q.mech_level,
                 COUNT(pp.player_id) AS completed_count
             FROM {$wpdb->prefix}br_quests q
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.adventure_id = %d
             WHERE q.adventure_id = %d AND q.quest_status IN ('publish','locked')
               AND q.quest_type IN ('quest','challenge','survey','mission')
+              $extra_where
             GROUP BY q.quest_id
-            ORDER BY q.quest_order ASC",
-            $adventure_id, $adventure_id
+            ORDER BY q.quest_order ASC";
+
+        $quests = $wpdb->get_results( $wpdb->prepare(
+            $sql, $adventure_id, $adventure_id, ...$extra_args
         ), ARRAY_A );
 
         foreach ( $quests as &$q ) {
@@ -353,6 +378,32 @@ class BR_Stats {
         }
 
         return $quests;
+    }
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // List of published tabis for a Milestone Funnel filter dropdown.
+    public function get_adventure_tabi_list( int $adventure_id ): array {
+        global $wpdb;
+        return $wpdb->get_results( $wpdb->prepare(
+            "SELECT tabi_id, tabi_name FROM {$wpdb->prefix}br_tabis
+            WHERE adventure_id = %d AND tabi_status = 'publish'
+            ORDER BY tabi_id ASC",
+            $adventure_id
+        ), ARRAY_A );
+    }
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Distinct milestone levels for a Milestone Funnel filter dropdown.
+    public function get_adventure_level_list( int $adventure_id ): array {
+        global $wpdb;
+        $levels = $wpdb->get_col( $wpdb->prepare(
+            "SELECT DISTINCT mech_level FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND quest_status IN ('publish','locked')
+              AND quest_type IN ('quest','challenge','survey','mission')
+            ORDER BY mech_level ASC",
+            $adventure_id
+        ) );
+        return array_map( 'intval', $levels );
     }
 
     // Portable: swap $wpdb for PDO to migrate.
