@@ -58,7 +58,12 @@ max-width: 1440px;
   padding: 20px 16px 60px;
   color: $br-white;
   position: relative;
-  z-index: 10;
+  // No z-index here on purpose: giving this a z-index turns it into its own
+  // stacking context, which then traps EVERY descendant - drawers, modals,
+  // no matter how high their own z-index is set - below any sibling with a
+  // higher z-index, like header.super-header and footer.taskbar (both 51).
+  // Fixed-position overlays inside .br-page need to be compared directly
+  // against those, not against .br-page's own (much lower) stacking level.
 }
 
 // ── Panel ────────────────────────────────────────────────
@@ -1074,30 +1079,74 @@ select.br-input {
   }
 }
 
-// Step Accordion
+// Step Drawer (was an inline accordion; now an overlay so it can never be
+// mistaken for the Quest's own fixed bottom bar - see .br-drawer-backdrop
+// and body.br-drawer-open below)
 .br-step-accordion {
   display: none;
-  background: rgba(4, 22, 30, 0.9);
-  border: 1px solid rgba($br-primary, 0.15);
-  border-top: none;
-  border-radius: 0 0 $radius $radius;
-  margin-top: -2px;
-  scroll-margin-top: 120px;
 
   &.open {
-    display: block;
-    animation: br-accordion-open 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(560px, 92vw);
+    z-index: 300;
+    margin-top: 0;
+    background: rgba(4, 22, 30, 0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: none;
+    border-left: 1px solid rgba($br-primary, 0.18);
+    border-radius: 0;
+    box-shadow: -24px 0 48px rgba(0, 0, 0, 0.45);
+    animation: br-drawer-open 0.25s ease;
   }
 }
 
-@keyframes br-accordion-open {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes br-drawer-open {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-// Step Form (inside accordion)
+// Shared backdrop behind ANY drawer (Step drawer, or any Conditions drawer) -
+// a real element (not just a dim filter) so clicks land on it and close
+// whatever's open, and so the site chrome (header.super-header,
+// footer.taskbar) and the page's own fixed bottom bar are genuinely
+// unreachable while a drawer is open, not just visually faded. This only
+// works because .br-page no longer declares its own z-index (see above) -
+// otherwise every drawer would be trapped below the chrome regardless of
+// its own z-index, no matter how high.
+.br-drawer-backdrop {
+  display: none;
+}
+
+body.br-drawer-open {
+  .br-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+  }
+
+  .br-form-bottom-bar {
+    opacity: 0.3;
+    filter: grayscale(0.5);
+    pointer-events: none;
+  }
+}
+
+// Step Form (fills the drawer: header/footer pinned, body scrolls)
 .br-step-form {
   color: $br-white;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .br-step-form-header {
@@ -1108,6 +1157,7 @@ select.br-input {
   gap: 10px;
   background: rgba($br-bg, 0.5);
   border-radius: 0;
+  flex-shrink: 0;
 }
 
 .br-step-form-icon {
@@ -1127,6 +1177,9 @@ select.br-input {
 
 .br-step-form-body {
   padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 // Step button form sections (avatar, jump, item-grab, etc.)
@@ -1161,7 +1214,8 @@ select.br-input {
   text-align: center;
   border-top: 1px solid rgba($br-primary, 0.12);
   background: rgba($br-bg, 0.5);
-  border-radius: 0 0 $radius $radius;
+  border-radius: 0;
+  flex-shrink: 0;
 }
 
 .br-step-buttons-container {

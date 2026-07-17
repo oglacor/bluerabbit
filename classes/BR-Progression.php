@@ -305,8 +305,12 @@ class BR_Progression {
     /**
      * Returns the milestone template filename (without .php) for a given quest and player state.
      * Replaces the nested-if cascade used in journey.php and page-adventure.php.
+     *
+     * $adv_parent_id + $conditions_snapshot (see BR_Conditions::buildProgressSnapshot) are
+     * needed to check the new unified conditions (journey %, milestone count, tabi count,
+     * level) attached to this quest via the Conditions UI.
      */
-    public function resolveMilestoneTemplate($mi, $player, $player_level, $player_achievements, $reqs_ids, $today) {
+    public function resolveMilestoneTemplate($mi, $player, $player_level, $player_achievements, $reqs_ids, $today, $adv_parent_id, $conditions_snapshot) {
         if ($mi->achievement_id && !in_array($mi->achievement_id, $player_achievements)) {
             return 'milestone-unavailable';
         }
@@ -326,6 +330,19 @@ class BR_Progression {
             $missing = array_diff($reqs_ids['quests'][$mi->quest_id], $player['fqs']);
             if (!empty($missing)) return 'milestone-requirements';
         }
+        // Previously computed by getPlayerProgress() but never enforced here.
+        if (!empty($reqs_ids['achievements'][$mi->quest_id])) {
+            $missing = array_diff($reqs_ids['achievements'][$mi->quest_id], $player_achievements);
+            if (!empty($missing)) return 'milestone-requirements';
+        }
+        if (!empty($reqs_ids['items'][$mi->quest_id])) {
+            $missing = array_diff($reqs_ids['items'][$mi->quest_id], $conditions_snapshot['key_item_ids'] ?? []);
+            if (!empty($missing)) return 'milestone-requirements';
+        }
+        // Unified conditions: journey %, milestone count, tabi count, level (via the Conditions UI).
+        if (!BR_Conditions::instance()->evaluate($adv_parent_id, 'quest', $mi->quest_id, $conditions_snapshot)) {
+            return 'milestone-requirements';
+        }
         return ($player['debt'] > 0) ? 'milestone-blocked' : 'milestone';
     }
 
@@ -341,6 +358,9 @@ class BR_Progression {
         $fqs     = $player['fqs']             ?? [];
         $ach_ids = $playerState['achievements_ids'] ?? [];
         $req_ids = $playerState['reqs_ids']   ?? [];
+
+        $current_user_id = wp_get_current_user()->ID;
+        $conditions_snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_user_id, $playerState);
 
         if ($adventure->adventure_gmt) date_default_timezone_set($adventure->adventure_gmt);
         $today       = date('YmdHi');
@@ -382,7 +402,7 @@ class BR_Progression {
             }
             if ($hideByDay) continue;
 
-            if ($this->resolveMilestoneTemplate($mi, $player, $player['level'], $ach_ids, $req_ids, $today) === 'milestone') {
+            if ($this->resolveMilestoneTemplate($mi, $player, $player['level'], $ach_ids, $req_ids, $today, $adv_parent_id, $conditions_snapshot) === 'milestone') {
                 return $mi;
             }
         }

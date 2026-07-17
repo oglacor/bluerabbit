@@ -98,27 +98,6 @@
 			}
 
 		}
-		.dashboard-type-selector{
-			button{
-				background-color: rgba($new-colors-dark-grey,0.25);
-				border: none;
-				display: inline-block;
-				width: 80px; height: 80px;
-				transition: all 0.3s ease-out;
-				&:hover{
-					background-color: rgba($new-colors-dark-grey,0.75);
-				}
-				&.active{
-					background-color:$new-colors-dark-grey;
-				}
-				svg{
-					width: 100%; height: 100%;
-				}
-				span.button-legend{
-					font-size: 14px;;
-				}
-			}
-		}
 	}
 }
 .add-single-player{

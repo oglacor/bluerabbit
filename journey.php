@@ -18,18 +18,17 @@
 
 	// Tabi locking — GMs and admins bypass all locks
 	$tabi_prereq_map  = BR_Tabi::instance()->getTabiPrerequisitesMap($adv_parent_id);
+	$tabi_reqs_map    = BR_Tabi::instance()->getTabiReqsMap($adv_parent_id);
 	$completed_tabis  = ($isGM || $isAdmin || $isNPC) ? [] : BR_Tabi::instance()->getCompletedTabiIds($adv_parent_id, $current_player->player_id);
-	// Build locked map: tabi_id => bool
+	// Build locked map: tabi_id => bool (tabi-to-tabi prereqs, quest/achievement/key-item
+	// reqs, and threshold conditions - see BR_Tabi::isTabiLocked)
 	$tabi_locked = [];
 	if($tabis) {
 		foreach($tabis as $t) {
 			if($isGM || $isAdmin || $isNPC) {
 				$tabi_locked[$t->tabi_id] = false;
-			} elseif(!empty($tabi_prereq_map[$t->tabi_id])) {
-				$missing = array_diff($tabi_prereq_map[$t->tabi_id], $completed_tabis);
-				$tabi_locked[$t->tabi_id] = !empty($missing);
 			} else {
-				$tabi_locked[$t->tabi_id] = false;
+				$tabi_locked[$t->tabi_id] = BR_Tabi::instance()->isTabiLocked($t->tabi_id, $adv_parent_id, $tabi_prereq_map, $completed_tabis, $tabi_reqs_map, $conditions_snapshot);
 			}
 		}
 	}
@@ -101,7 +100,7 @@
 						$first_milestone_for_tutorial = $elementID;
 					}
 					$permalink = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
-					$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today);
+					$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today, $adv_parent_id, $conditions_snapshot);
 					include (TEMPLATEPATH . "/$miTemplate.php");
 				}
 			?>

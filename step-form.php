@@ -532,8 +532,8 @@ $options = $settings['options'] ?? [];
 
 	<!-- Footer -->
 	<div class="br-step-form-footer">
-		<button class="br-btn br-btn-green br-btn-submit" onClick="updateStep(<?= $sid; ?>);">
-			<span class="icon icon-check"></span> <?= __("Update Step", "bluerabbit"); ?>
+		<button class="br-btn br-btn-blue br-btn-submit" onClick="updateStep(<?= $sid; ?>);">
+			<span class="icon icon-check"></span> <?= __("Save Step", "bluerabbit"); ?>
 		</button>
 	</div>
 </div>

@@ -74,10 +74,15 @@ class BR_Quest {
 			$quest_success_message = stripslashes_deep($quest_data['quest_success_message']);
 			$quest_type = $quest_data['quest_type'];
 			$quest_guild = 0;
-			$quest_reqs = $quest_data['quest_reqs'];
-			$quest_achievement_reqs = $quest_data['quest_achievement_reqs'];
+			// Only present when the page still renders the old inline requirement grids
+			// (Mission/Survey builders); Quest's builder now saves reqs separately via
+			// the Conditions panel (saveQuestConditions), so these stay null there and
+			// the reqs delete/reinsert below is skipped entirely - it must never run
+			// unconditionally or it would wipe out reqs set through the new panel.
+			$quest_reqs = $quest_data['quest_reqs'] ?? null;
+			$quest_achievement_reqs = $quest_data['quest_achievement_reqs'] ?? null;
 			$quest_libs = $quest_data['quest_libs'];
-			$quest_item_required = $quest_data['quest_item_required'];
+			$quest_item_required = $quest_data['quest_item_required'] ?? null;
 			$quest_color = $quest_data['quest_color'];
 			$quest_order = $quest_data['quest_order'];
 			$quest_icon = $quest_data['quest_icon'];
@@ -190,6 +195,11 @@ class BR_Quest {
 				$wpdb->query($sql);
 				if($wpdb->insert_id){
 					$quest_id = $wpdb->insert_id;
+					// Skipped entirely when the page no longer sends these keys at all
+					// (Quest's builder - reqs are saved separately via the Conditions
+					// panel now). Still runs as before for Mission/Survey, which still
+					// render the old inline grids and rely on this replace-on-save.
+					if($quest_reqs !== null || $quest_achievement_reqs !== null || $quest_item_required !== null){
 					$DELETE_query = "DELETE FROM {$wpdb->prefix}br_reqs WHERE quest_id=%d AND adventure_id=%d;";
 					$wpdb->query( $wpdb->prepare("$DELETE_query ", $quest_id, $adventure_id));
 					if($quest_reqs || $quest_item_required || $quest_achievement_reqs){
@@ -215,6 +225,7 @@ class BR_Quest {
 						$reqs_query .= implode(', ', $place_holders);
 						$req_insert = $wpdb->query( $wpdb->prepare("$reqs_query ", $values));
 
+					}
 					}
 					if($steps_order){
 						BR_Step::instance()->reorderStepProcess($steps_order);
@@ -1662,5 +1673,143 @@ class BR_Quest {
 		echo json_encode($data);
 		die();
     }
+
+	// Object-reference reqs (quest/achievement/key-item) live in br_reqs keyed by
+	// quest_id=the gated quest (target_type='quest', the original/default convention -
+	// unlike Tabi/Item which use the target_id column + quest_id=0 sentinel, since
+	// quest_id already IS the target here and predates that newer convention).
+	public function getQuestReqsMap($adventure_id) {
+		global $wpdb;
+		$rows = $wpdb->get_results($wpdb->prepare(
+			"SELECT quest_id, req_type, req_object_id FROM {$wpdb->prefix}br_reqs
+			WHERE adventure_id=%d AND target_type='quest'",
+			$adventure_id
+		));
+		$map = [];
+		foreach ($rows as $r) {
+			$qid = (int) $r->quest_id;
+			if ($r->req_type === 'quest') {
+				$map[$qid]['quests'][] = (int) $r->req_object_id;
+			} elseif ($r->req_type === 'achievement') {
+				$map[$qid]['achievements'][] = (int) $r->req_object_id;
+			} elseif ($r->req_type === 'item') {
+				$map[$qid]['items'][] = (int) $r->req_object_id;
+			}
+		}
+		return $map;
+	}
+
+	public function saveQuestReqs($adventure_id, $quest_id, $quest_ids, $achievement_ids, $item_id) {
+		global $wpdb;
+		$wpdb->query($wpdb->prepare(
+			"DELETE FROM {$wpdb->prefix}br_reqs WHERE adventure_id=%d AND target_type='quest' AND quest_id=%d",
+			$adventure_id, $quest_id
+		));
+
+		$values = [];
+		$placeholders = [];
+		foreach ((array) $quest_ids as $q) {
+			array_push($values, (int) $quest_id, $adventure_id, (int) $q, 'quest');
+			$placeholders[] = "(%d, %d, %d, %s)";
+		}
+		foreach ((array) $achievement_ids as $a) {
+			array_push($values, (int) $quest_id, $adventure_id, (int) $a, 'achievement');
+			$placeholders[] = "(%d, %d, %d, %s)";
+		}
+		if (!empty($item_id)) {
+			array_push($values, (int) $quest_id, $adventure_id, (int) $item_id, 'item');
+			$placeholders[] = "(%d, %d, %d, %s)";
+		}
+		if (empty($placeholders)) return true;
+
+		$sql = "INSERT INTO {$wpdb->prefix}br_reqs (quest_id, adventure_id, req_object_id, req_type) VALUES "
+			. implode(', ', $placeholders);
+		$wpdb->query($wpdb->prepare($sql, $values));
+		return true;
+	}
+
+	// Unified Conditions panel for Quests - mirrors BR_Tabi::renderTabiConditionsModal(),
+	// reusing the same modal shape (quest/achievement checkboxes, single key-item select,
+	// BR_Conditions threshold inputs) since Quest reqs and Tabi reqs are the same idea.
+	public function renderQuestConditionsModal($quest_id) {
+		global $wpdb;
+		$quest = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=%d", $quest_id
+		));
+		if (!$quest) return '';
+
+		$adventure_id = $quest->adventure_id;
+		$quests = $wpdb->get_results($wpdb->prepare(
+			"SELECT quest_id, quest_title FROM {$wpdb->prefix}br_quests
+			WHERE adventure_id=%d AND quest_id!=%d AND quest_status IN ('publish','locked') AND quest_type IN ('quest','challenge','survey','mission')
+			ORDER BY mech_level ASC, quest_order ASC",
+			$adventure_id, $quest_id
+		));
+		$achievements = $wpdb->get_results($wpdb->prepare(
+			"SELECT achievement_id, achievement_name FROM {$wpdb->prefix}br_achievements
+			WHERE adventure_id=%d AND achievement_status='publish' ORDER BY achievement_name ASC",
+			$adventure_id
+		));
+		$key_items = $wpdb->get_results($wpdb->prepare(
+			"SELECT item_id, item_name FROM {$wpdb->prefix}br_items
+			WHERE adventure_id=%d AND item_status='publish' AND item_type='key' ORDER BY item_name ASC",
+			$adventure_id
+		));
+
+		$reqs_map   = $this->getQuestReqsMap($adventure_id);
+		$quest_reqs = $reqs_map[(int) $quest_id] ?? ['quests' => [], 'achievements' => [], 'items' => []];
+		$conditions = BR_Conditions::instance()->getConditions($adventure_id, 'quest', $quest_id);
+		$condition_values = [];
+		foreach ($conditions as $c) { $condition_values[$c->condition_type] = $c->threshold_value; }
+
+		$quest_conditions_nonce = wp_create_nonce('quest_conditions_nonce');
+		$theFile = get_template_directory() . '/quest-conditions-modal.php';
+		if (!file_exists($theFile)) return '';
+		ob_start();
+		include($theFile);
+		return ob_get_clean();
+	}
+
+	public function insertQuestConditionsModal($p_quest_id = null) {
+		$quest_id = $p_quest_id ? $p_quest_id : $_POST['quest_id'];
+		echo $this->renderQuestConditionsModal($quest_id);
+		die();
+	}
+
+	public function saveQuestConditions() {
+		$data = ['success' => false];
+		$notification = new Notification();
+
+		if (!wp_verify_nonce($_POST['nonce'] ?? '', 'quest_conditions_nonce')) {
+			$data['message'] = "<h1>" . __("Nonce!", "bluerabbit") . "</h1><h4>" . __("click to close", "bluerabbit") . "</h4>";
+			echo json_encode($data);
+			die();
+		}
+
+		$quest_id     = (int) ($_POST['quest_id'] ?? 0);
+		$adventure_id = (int) ($_POST['adventure_id'] ?? 0);
+		if ($quest_id && $adventure_id) {
+			$quest_ids       = array_map('intval', (array) ($_POST['quest_ids'] ?? []));
+			$achievement_ids = array_map('intval', (array) ($_POST['achievement_ids'] ?? []));
+			$item_id         = (int) ($_POST['item_id'] ?? 0);
+			$this->saveQuestReqs($adventure_id, $quest_id, $quest_ids, $achievement_ids, $item_id);
+
+			$conditions = [];
+			foreach (BR_Conditions::CONDITION_TYPES as $type => $label) {
+				$val = $_POST['conditions'][$type] ?? '';
+				if ($val !== '') {
+					$conditions[] = ['condition_type' => $type, 'threshold_value' => (float) $val];
+				}
+			}
+			BR_Conditions::instance()->saveConditions($adventure_id, 'quest', $quest_id, $conditions);
+
+			$data['success'] = true;
+			$data['message'] = $notification->pop(__('Conditions saved', 'bluerabbit'), 'blue', 'check');
+			$data['just_notify'] = true;
+		}
+
+		echo json_encode($data);
+		die();
+	}
 
 }

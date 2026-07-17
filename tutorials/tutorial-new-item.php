@@ -12,16 +12,16 @@ const new_item_steps = [
     },
     {
         id: 'step-2',
-        title: "<?= __("Image","bluerabbit"); ?>",
-        text: "<?= __("Upload an image for your item here.","bluerabbit"); ?>",
-        attachTo: { element: '.dashboard-gallery-image-container', on: 'right' },
+        title: "<?= __("Name","bluerabbit"); ?>",
+        text: "<?= __("Give it a name.","bluerabbit"); ?>",
+        attachTo: { element: '#the_item_name', on: 'bottom' },
         buttons: [ brNextBtn() ]
     },
     {
         id: 'step-3',
-        title: "<?= __("Name","bluerabbit"); ?>",
-        text: "<?= __("Give it a name.","bluerabbit"); ?>",
-        attachTo: { element: '.dashboard-input-field-container', on: 'bottom' },
+        title: "<?= __("Image","bluerabbit"); ?>",
+        text: "<?= __("Upload an image for your item here.","bluerabbit"); ?>",
+        attachTo: { element: '#the_item_badge_wrap', on: 'right' },
         buttons: [ brNextBtn() ]
     },
     {
@@ -51,14 +51,14 @@ const new_item_steps = [
         id: 'step-7',
         title: "<?= __("Description","bluerabbit"); ?>",
         text: "<?= __("Add a longer description here.","bluerabbit"); ?>",
-        attachTo: { element: '.dashboard-text-area-container', on: 'top' },
+        attachTo: { element: '#wp-the_item_description-wrap', on: 'top' },
         buttons: [ brNextBtn() ]
     },
     {
         id: 'step-8',
         title: "<?= __("Save","bluerabbit"); ?>",
         text: "<?= __("Assign it to a path if needed, then save here.","bluerabbit"); ?>",
-        attachTo: { element: '.dashboard-save-form-container', on: 'left' },
+        attachTo: { element: '.br-form-bottom-bar', on: 'top' },
         buttons: [ brNextBtn() ]
     },
     {

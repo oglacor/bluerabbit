@@ -6,6 +6,10 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 	$a = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."br_achievements WHERE achievement_id=$achievement_id AND achievement_status='publish'");
 	if(isset($a)){
 		$selected_players = $wpdb->get_col("SELECT player_id FROM ".$wpdb->prefix."br_player_achievement WHERE achievement_id=$a->achievement_id AND adventure_id=$adv_child_id");
+		$existing_rank = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_adventure_ranks WHERE achievement_id=%d AND adventure_id=%d",
+			$a->achievement_id, $adv_parent_id
+		));
 	}
 	$is_edit = (isset($a) && $a);
 ?>
@@ -61,6 +65,23 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 					<option <?= (isset($a) && $a->achievement_display=='rank') ? 'selected' : ''; ?> value="rank"><?= __("Rank", "bluerabbit"); ?></option>
 					<option <?= (isset($a) && $a->achievement_display=='path') ? 'selected' : ''; ?> value="path"><?= __("Path", "bluerabbit"); ?></option>
 				</select>
+			</div>
+
+			<div class="br-form-grid conditional-display rank-display">
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Rank Condition", "bluerabbit"); ?></label>
+					<span class="br-form-hint"><?= __("What the player must reach to be awarded this rank", "bluerabbit"); ?></span>
+					<select class="br-input" id="the_achievement_rank_condition">
+						<option value="level" <?= (!isset($existing_rank) || !$existing_rank || $existing_rank->condition_type=='level') ? 'selected' : ''; ?>><?= __("Level", "bluerabbit"); ?></option>
+						<?php foreach(BR_Conditions::CONDITION_TYPES as $type=>$label){ if($type=='level') continue; ?>
+							<option value="<?= $type; ?>" <?= (isset($existing_rank) && $existing_rank && $existing_rank->condition_type==$type) ? 'selected' : ''; ?>><?= esc_html__($label,"bluerabbit"); ?></option>
+						<?php } ?>
+					</select>
+				</div>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Threshold", "bluerabbit"); ?></label>
+					<input class="br-input" type="number" min="0" id="the_achievement_rank_level" value="<?= isset($existing_rank) && $existing_rank ? $existing_rank->rank_level : ''; ?>" placeholder="<?= __('e.g. 5, or 75 for 75%', 'bluerabbit'); ?>">
+				</div>
 			</div>
 			<div class="br-form-grid">
 				<div class="br-form-group">

@@ -8,9 +8,63 @@
 	$colors = array(
 		"red","pink","purple","deep-purple","indigo","blue","light-blue","cyan","teal","green","light-green","lime","yellow","amber","orange","deep-orange","brown","grey","blue-grey"
 	);
+	$item_categories = BR_Item::instance()->getCategories($adventure->adventure_id);
 ?>
 <div class="br-journey-manager">
 				<input type="hidden" id="item-cat-nonce" value="<?= wp_create_nonce('item_cat_nonce'); ?>" />
+				<input type="hidden" id="item-category-nonce" value="<?= wp_create_nonce('item_category_nonce'); ?>" />
+
+				<!-- ════════════ ITEM CATEGORIES ════════════ -->
+				<div class="br-section">
+					<div class="br-section-header" onclick="$(this).toggleClass('collapsed');$(this).next('.br-section-body').toggleClass('collapsed');">
+						<h3>
+							<span class="icon icon-list"></span>
+							<?= __('Item Categories','bluerabbit'); ?>
+							<span class="br-count-badge"><?= count($item_categories); ?></span>
+						</h3>
+						<span class="br-toggle-icon icon icon-down"></span>
+					</div>
+					<div class="br-section-body">
+						<table class="br-table" id="item-categories-table">
+							<thead>
+								<tr>
+									<td><?= __("Name","bluerabbit"); ?></td>
+									<td><?= __("Color","bluerabbit"); ?></td>
+									<td class="text-center"><?= __("Actions","bluerabbit"); ?></td>
+								</tr>
+							</thead>
+							<tbody class="sortable">
+								<?php foreach($item_categories as $cat){ ?>
+									<tr id="category-row-<?= $cat->category_id; ?>" class="<?= $cat->category_color; ?>-bg-100" data-category-id="<?= $cat->category_id; ?>">
+										<td>
+											<input type="text" class="br-input category-name-input" value="<?= esc_attr($cat->category_name); ?>" onChange="saveItemCategory(<?= $cat->category_id; ?>);">
+										</td>
+										<td>
+											<select class="br-input category-color-select" onChange="saveItemCategory(<?= $cat->category_id; ?>);">
+												<?php foreach($colors as $color){ ?>
+													<option value="<?= $color; ?>" <?= $cat->category_color==$color ? 'selected' : ''; ?>><?= $color; ?></option>
+												<?php } ?>
+											</select>
+										</td>
+										<td class="text-center">
+											<button class="br-action-link edit" onClick="openItemConditionsModal('item_category', <?= $cat->category_id; ?>);">
+												<span class="icon icon-check"></span> <?= __("Conditions","bluerabbit"); ?>
+											</button>
+											<button class="br-action-link trash" onClick="trashItemCategory(<?= $cat->category_id; ?>);">
+												<span class="icon icon-trash"></span>
+											</button>
+										</td>
+									</tr>
+								<?php } ?>
+							</tbody>
+						</table>
+						<div class="br-actions">
+							<button class="br-btn cyan" onClick="addItemCategory();">
+								<span class="icon icon-add"></span> <?= __('Add Category','bluerabbit'); ?>
+							</button>
+						</div>
+					</div>
+				</div>
 
 				<!-- ════════════ HEADER BAR ════════════ -->
 				<div class="br-header">
@@ -65,6 +119,7 @@
 							<th class="text-center"><button class="br-btn ghost" onClick="toggleColumn('max');"><?= __("Max","bluerabbit"); ?></button></th>
 							<th class="text-center"><button class="br-btn ghost" onClick="toggleColumn('path');"><?= __("Path","bluerabbit"); ?></button></th>
 							<th class="text-center"><button class="br-btn ghost" onClick="toggleColumn('steps');"><?= __("Step","bluerabbit"); ?></button></th>
+							<th class="text-center"><span class="icon icon-check"></span></th>
 							<th class="text-center"><span class="icon icon-edit"></span></th>
 							<th class="text-center"><span class="icon icon-duplicate"></span></th>
 							<th class="text-center"><span class="icon icon-trash"></span></th>
@@ -118,12 +173,12 @@
 										<?php if($i->item_type == 'consumable'){ ?>
 										<div class="br-num">
 											<select id="the_item_category-<?= $i->item_id; ?>" class="br-input" onChange="setCategory(<?= $i->item_id; ?>);">
-												<option value="0" <?= !$i->item_category ? 'selected' : ''; ?>>
+												<option value="0" <?= !$i->item_category_id ? 'selected' : ''; ?>>
 													- <?= __("No Category","bluerabbit"); ?> -
 												</option>
-												<?php foreach($colors as $key=> $color){ ?>
-													<option value="<?= $color; ?>" <?= $i->item_category== $color ? 'selected' : ''; ?>>
-														<?= $color; ?>
+												<?php foreach($item_categories as $cat){ ?>
+													<option value="<?= $cat->category_id; ?>" <?= $i->item_category_id==$cat->category_id ? 'selected' : ''; ?>>
+														<?= esc_html($cat->category_name); ?>
 													</option>
 												<?php } ?>
 											</select>
@@ -176,6 +231,11 @@
 										<?php }else{?>
 											<span class="icon icon-remove br-items-icon-dim"></span>
 										<?php }?>
+									</td>
+									<td class="text-center <?=$a_color; ?>">
+										<button class="br-action-link" onClick="openItemConditionsModal('item', <?= $i->item_id; ?>);">
+											<span class="icon icon-check"></span>
+										</button>
 									</td>
 									<td class="text-center <?=$a_color; ?>">
 										<a class="br-action-link edit" href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>"><span class="icon icon-edit"></span></a>
@@ -478,5 +538,11 @@
 				</div>
 				<?php } ?>
 			<input type="hidden" id="row_type" value="item"/>
+
+			<div class="overlay-layer item-conditions-overlay" id="item-conditions-overlay">
+				<div class="tabi-conditions-modal-content" id="item-conditions-content">
+					<span class="br-text-12 grey-400"><?php _e("Loading...","bluerabbit"); ?></span>
+				</div>
+			</div>
 
 </div><!-- /.br-journey-manager -->

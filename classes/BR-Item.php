@@ -209,7 +209,7 @@ class BR_Item {
             $item_secret_badge = $item_data['item_secret_badge'];
             $item_max = $item_data['item_max'];
             $item_level = $item_data['item_level'];
-            $item_category = $item_data['item_category'];
+            $item_category_id = (int) $item_data['item_category'];
             $achievement_id = $item_data['achievement_id'];
             $item_start_date = $item_data['item_start_date'];
             $item_deadline = $item_data['item_deadline'];
@@ -228,10 +228,10 @@ class BR_Item {
             }elseif($item_type == 'key'){
                 $item_stock = 99999999;
                 $item_max = 1;
-                $item_category='';
+                $item_category_id = 0;
             }else if( $item_type == 'reward'){
                 $item_stock = 99999999;
-                $item_category='';
+                $item_category_id = 0;
                 $item_cost = 0;
                 $item_max = 1;
             }else if( $item_type == 'tabi-piece'){
@@ -248,12 +248,12 @@ class BR_Item {
             }else{
                 $errors[] = __("Item type doesn't exist, please select one from the options given","bluerabbit");
             }
-            $sql = "INSERT INTO {$wpdb->prefix}br_items ( item_id, adventure_id, item_cost, item_stock, item_player_max, item_level, item_post_date, item_post_modified, item_author, item_name, item_description, item_type, item_badge, item_secret_badge, item_secret_description, item_category, achievement_id, item_start_date, item_deadline, item_x, item_y, item_z, tabi_id, item_visibility)
-            VALUES (%d, %d, %d, %d, %d, %d, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %s, %d, %s, %s, %d, %d, %d, %d, %s )
+            $sql = "INSERT INTO {$wpdb->prefix}br_items ( item_id, adventure_id, item_cost, item_stock, item_player_max, item_level, item_post_date, item_post_modified, item_author, item_name, item_description, item_type, item_badge, item_secret_badge, item_secret_description, item_category_id, achievement_id, item_start_date, item_deadline, item_x, item_y, item_z, tabi_id, item_visibility)
+            VALUES (%d, %d, %d, %d, %d, %d, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %d, %d, %s, %s, %d, %d, %d, %d, %s )
             ON DUPLICATE KEY UPDATE
-            adventure_id=%d, item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_author=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category=%s, achievement_id=%d, item_start_date=%s, item_deadline=%s, item_x=%d, item_y=%d, item_z=%d, tabi_id=%d, item_visibility=%s";
+            adventure_id=%d, item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_author=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category_id=%d, achievement_id=%d, item_start_date=%s, item_deadline=%s, item_x=%d, item_y=%d, item_z=%d, tabi_id=%d, item_visibility=%s";
 
-            $sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility);
+            $sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility);
             if(!$errors){
                 $wpdb->query($sql);
                 $new_item_id = $wpdb->insert_id;
@@ -268,10 +268,10 @@ class BR_Item {
                     }
                     $data['message'] .= '<h1><strong>'.$item_name.'</strong></h1> <h4><strong>'.__("Item Updated!","bluerabbit").'</strong></h4> <h5>'.__("click to close","bluerabbit").'</h5>';
 
-                    $children_update = "UPDATE {$wpdb->prefix}br_items SET item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_status=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category=%s, item_start_date=%s, item_deadline=%s
+                    $children_update = "UPDATE {$wpdb->prefix}br_items SET item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_status=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category_id=%d, item_start_date=%s, item_deadline=%s
                     WHERE `item_parent`=$new_item_id AND item_id!=$new_item_id";
 
-                    $children_update = $wpdb->query( $wpdb->prepare("$children_update ",$item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_status, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category, $item_start_date, $item_deadline));
+                    $children_update = $wpdb->query( $wpdb->prepare("$children_update ",$item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_status, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $item_start_date, $item_deadline));
 
                     BR_Activity::instance()->logActivity($adventure_id,'update','item-children',$item_type,$item_id);
 
@@ -332,11 +332,12 @@ class BR_Item {
                 $allowedByDeadline = false;
             }
 
-            if($purchaseData->item_category != ""){
-                $trnxs = $wpdb->get_results("SELECT a.* FROM {$wpdb->prefix}br_transactions a
+            if($purchaseData->item_category_id){
+                $trnxs = $wpdb->get_results($wpdb->prepare("SELECT a.* FROM {$wpdb->prefix}br_transactions a
                 JOIN {$wpdb->prefix}br_items b
                 ON a.object_id=b.item_id
-                WHERE a.adventure_id=$adv_child_id AND a.player_id=$current_user->ID AND b.item_category='$purchaseData->item_category' AND trnx_status='publish'");
+                WHERE a.adventure_id=%d AND a.player_id=%d AND b.item_category_id=%d AND trnx_status='publish'",
+                $adv_child_id, $current_user->ID, $purchaseData->item_category_id));
             }else{
                 $trnxs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_transactions
                 WHERE adventure_id=$adv_child_id AND player_id=$current_user->ID AND object_id=$item_id  AND trnx_status='publish'");
@@ -350,21 +351,28 @@ class BR_Item {
                     if($left>0){
                         if($playerData->player_bloo >= $purchaseData->item_cost ){
                             if($playerData->player_level >= $purchaseData->item_level){
-                                if($purchaseData->item_player_max == 0 || (count($trnxs) < $purchaseData->item_player_max && $purchaseData->item_player_max > 0)){
-                                    $sql = "INSERT INTO {$wpdb->prefix}br_transactions (player_id, adventure_id, object_id, trnx_author, trnx_amount, trnx_type, trnx_date, trnx_modified)
-                                    VALUES (%d, %d, %d, %d, %d, %s, %s, %s)";
-                                    $sql = $wpdb->prepare($sql, $current_user->ID, $adv_child_id, $item_id, $current_user->ID, $purchaseData->item_cost, $purchaseData->item_type, $today, $today);
-                                    $sql = $wpdb->query($sql);
-                                    $msg_content = __('Item Purchased!','bluerabbit');
-                                    $data['message'] = $notification->pop($msg_content,'green','check');
-                                    $data['noClose'] = true;
-                                    $data['success']=true;
-                                    $data['sale']=true;
-                                    BR_Activity::instance()->logActivity($adv_child_id, 'purchase','item',"$purchaseData->item_type",$item_id);
-                                    BR_Player::instance()->resetPlayer($adv_child_id, $current_user->ID);
+                                $player_progress = BR_Progression::instance()->getPlayerProgress($adv_child_id, $current_user->ID);
+                                $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_user->ID, $player_progress);
+                                if(BR_Item::instance()->evaluateItemAccess($adv_child_id, $purchaseData, $snapshot)){
+                                    if($purchaseData->item_player_max == 0 || (count($trnxs) < $purchaseData->item_player_max && $purchaseData->item_player_max > 0)){
+                                        $sql = "INSERT INTO {$wpdb->prefix}br_transactions (player_id, adventure_id, object_id, trnx_author, trnx_amount, trnx_type, trnx_date, trnx_modified)
+                                        VALUES (%d, %d, %d, %d, %d, %s, %s, %s)";
+                                        $sql = $wpdb->prepare($sql, $current_user->ID, $adv_child_id, $item_id, $current_user->ID, $purchaseData->item_cost, $purchaseData->item_type, $today, $today);
+                                        $sql = $wpdb->query($sql);
+                                        $msg_content = __('Item Purchased!','bluerabbit');
+                                        $data['message'] = $notification->pop($msg_content,'green','check');
+                                        $data['noClose'] = true;
+                                        $data['success']=true;
+                                        $data['sale']=true;
+                                        BR_Activity::instance()->logActivity($adv_child_id, 'purchase','item',"$purchaseData->item_type",$item_id);
+                                        BR_Player::instance()->resetPlayer($adv_child_id, $current_user->ID);
+                                    }else{
+                                        $msg_content = __("You can't buy any more of this item",'bluerabbit');
+                                        $data['message'] = $notification->pop($msg_content,'red','cancel');
+                                    }
                                 }else{
-                                    $msg_content = __("You can't buy any more of this item",'bluerabbit');
-                                    $data['message'] = $notification->pop($msg_content,'red','cancel');
+                                    $msg_content = __("Requirements not met",'bluerabbit');
+                                    $data['message'] = $notification->pop($msg_content,'purple','lock');
                                 }
                             }else{
                                 $msg_content = __("Required level","bluerabbit").": $purchaseData->item_level";
@@ -621,5 +629,262 @@ class BR_Item {
             }
         }
         return $result;
+    }
+
+    // ── Item Categories (real entities - replaces the old free-text 19-color enum) ──
+    // br_items.adventure_id is child-scoped (see buyItem()/updateItem() - unlike quests/
+    // tabis/achievements which live on the parent template), so categories and any
+    // conditions attached to items/categories use the same child-scoped adventure_id.
+
+    public function getCategories($adventure_id) {
+        global $wpdb;
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_item_categories WHERE adventure_id=%d AND category_status='publish' ORDER BY category_order ASC, category_id ASC",
+            $adventure_id
+        ));
+    }
+
+    public function saveCategory() {
+        global $wpdb;
+        $data = ['success' => false];
+        $notification = new Notification();
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'item_category_nonce')) {
+            $data['message'] = "<h1>" . __("Nonce!", "bluerabbit") . "</h1>";
+            echo json_encode($data);
+            die();
+        }
+        $adventure_id = (int) ($_POST['adventure_id'] ?? 0);
+        $category_id  = (int) ($_POST['category_id'] ?? 0);
+        $name  = sanitize_text_field(stripslashes_deep($_POST['category_name'] ?? ''));
+        $color = sanitize_text_field($_POST['category_color'] ?? 'blue-grey');
+
+        if ($adventure_id && $name) {
+            if ($category_id) {
+                $wpdb->update("{$wpdb->prefix}br_item_categories",
+                    ['category_name' => $name, 'category_color' => $color],
+                    ['category_id' => $category_id, 'adventure_id' => $adventure_id]
+                );
+            } else {
+                $max_order = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT MAX(category_order) FROM {$wpdb->prefix}br_item_categories WHERE adventure_id=%d", $adventure_id
+                ));
+                $wpdb->insert("{$wpdb->prefix}br_item_categories", [
+                    'adventure_id'   => $adventure_id,
+                    'category_name'  => $name,
+                    'category_color' => $color,
+                    'category_order' => $max_order + 1,
+                ]);
+                $category_id = $wpdb->insert_id;
+            }
+            $data['success']     = true;
+            $data['category_id'] = $category_id;
+            $data['message']     = $notification->pop(__('Category saved', 'bluerabbit'), 'blue', 'check');
+            $data['just_notify'] = true;
+            $data['location']    = 'reload';
+        }
+        echo json_encode($data);
+        die();
+    }
+
+    public function trashCategory() {
+        global $wpdb;
+        $data = ['success' => false];
+        $notification = new Notification();
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'item_category_nonce')) {
+            echo json_encode($data);
+            die();
+        }
+        $category_id = (int) ($_POST['category_id'] ?? 0);
+        if ($category_id) {
+            $wpdb->update("{$wpdb->prefix}br_item_categories", ['category_status' => 'trash'], ['category_id' => $category_id]);
+            $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}br_items SET item_category_id=NULL WHERE item_category_id=%d", $category_id));
+            $data['success']     = true;
+            $data['message']     = $notification->pop(__('Category removed', 'bluerabbit'), 'red', 'trash');
+            $data['just_notify'] = true;
+            $data['location']    = 'reload';
+        }
+        echo json_encode($data);
+        die();
+    }
+
+    public function reorderCategories() {
+        global $wpdb;
+        $data = ['success' => false];
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'item_category_nonce')) {
+            echo json_encode($data);
+            die();
+        }
+        $order = (array) ($_POST['the_order'] ?? []);
+        foreach ($order as $k => $category_id) {
+            $wpdb->update("{$wpdb->prefix}br_item_categories", ['category_order' => $k], ['category_id' => (int) $category_id]);
+        }
+        $data['success'] = true;
+        echo json_encode($data);
+        die();
+    }
+
+    // ── Item / Category Conditions ──
+    // Achievement + specific-milestone requirements reuse br_reqs (target_type='item' or
+    // 'item_category'), same pattern as Tabi requirements (BR_Tabi::getTabiReqsMap). A
+    // category's conditions AND with an item's own (both must pass - see evaluateItemAccess).
+
+    const ITEM_TARGET_TYPES = ['item', 'item_category'];
+
+    public function getItemReqsMap($adventure_id, $target_type) {
+        global $wpdb;
+        if (!in_array($target_type, self::ITEM_TARGET_TYPES)) return [];
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT target_id, req_type, req_object_id FROM {$wpdb->prefix}br_reqs
+            WHERE adventure_id=%d AND target_type=%s",
+            $adventure_id, $target_type
+        ));
+        $map = [];
+        foreach ($rows as $r) {
+            $tid = (int) $r->target_id;
+            if ($r->req_type === 'quest') {
+                $map[$tid]['quests'][] = (int) $r->req_object_id;
+            } elseif ($r->req_type === 'achievement') {
+                $map[$tid]['achievements'][] = (int) $r->req_object_id;
+            }
+        }
+        return $map;
+    }
+
+    public function saveItemReqs($adventure_id, $target_type, $target_id, $quest_ids, $achievement_ids) {
+        global $wpdb;
+        if (!in_array($target_type, self::ITEM_TARGET_TYPES)) return false;
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}br_reqs WHERE adventure_id=%d AND target_type=%s AND target_id=%d",
+            $adventure_id, $target_type, $target_id
+        ));
+        $values = [];
+        $placeholders = [];
+        foreach ((array) $quest_ids as $q) {
+            array_push($values, $adventure_id, (int) $target_id, (int) $q, 'quest');
+            $placeholders[] = "(%d, 0, '$target_type', %d, %d, %s)";
+        }
+        foreach ((array) $achievement_ids as $a) {
+            array_push($values, $adventure_id, (int) $target_id, (int) $a, 'achievement');
+            $placeholders[] = "(%d, 0, '$target_type', %d, %d, %s)";
+        }
+        if (empty($placeholders)) return true;
+        $sql = "INSERT INTO {$wpdb->prefix}br_reqs (adventure_id, quest_id, target_type, target_id, req_object_id, req_type) VALUES "
+            . implode(', ', $placeholders);
+        $wpdb->query($wpdb->prepare($sql, $values));
+        return true;
+    }
+
+    // Checks an item's own conditions AND (if it belongs to a category) that category's
+    // conditions - both must pass. $snapshot must carry 'fqs' and 'achievement_ids' at
+    // minimum (see BR_Conditions::buildProgressSnapshot).
+    public function evaluateItemAccess($adventure_id, $item, $snapshot) {
+        if (!$this->itemReqsMet($adventure_id, 'item', $item->item_id, $snapshot)) return false;
+        if (!empty($item->item_category_id) && !$this->itemReqsMet($adventure_id, 'item_category', $item->item_category_id, $snapshot)) return false;
+        if (!BR_Conditions::instance()->evaluate($adventure_id, 'item', $item->item_id, $snapshot)) return false;
+        if (!empty($item->item_category_id) && !BR_Conditions::instance()->evaluate($adventure_id, 'item_category', $item->item_category_id, $snapshot)) return false;
+        return true;
+    }
+
+    private function itemReqsMet($adventure_id, $target_type, $target_id, $snapshot) {
+        $reqs = $this->getItemReqsMap($adventure_id, $target_type)[(int) $target_id] ?? [];
+        if (!empty($reqs['quests'])) {
+            $missing = array_diff($reqs['quests'], $snapshot['fqs'] ?? []);
+            if (!empty($missing)) return false;
+        }
+        if (!empty($reqs['achievements'])) {
+            $missing = array_diff($reqs['achievements'], $snapshot['achievement_ids'] ?? []);
+            if (!empty($missing)) return false;
+        }
+        return true;
+    }
+
+    // Renders the "Conditions" modal for an item or a category: achievement/specific-
+    // milestone requirements (br_reqs) plus threshold conditions (br_conditions).
+    // Loaded via AJAX rather than pre-rendered for every row up front.
+    public function renderItemConditionsModal($target_type, $target_id) {
+        global $wpdb;
+        if (!in_array($target_type, self::ITEM_TARGET_TYPES)) return '';
+
+        $target_name = '';
+        $adventure_id = 0;
+        if ($target_type === 'item') {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id=%d", $target_id));
+            if (!$item) return '';
+            $target_name  = $item->item_name;
+            $adventure_id = $item->adventure_id;
+        } else {
+            $category = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}br_item_categories WHERE category_id=%d", $target_id));
+            if (!$category) return '';
+            $target_name  = $category->category_name;
+            $adventure_id = $category->adventure_id;
+        }
+
+        $quests = $wpdb->get_results($wpdb->prepare(
+            "SELECT quest_id, quest_title FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id=%d AND quest_status IN ('publish','locked') AND quest_type IN ('quest','challenge','survey','mission')
+            ORDER BY quest_order ASC, quest_title ASC",
+            $adventure_id
+        ));
+        $achievements = $wpdb->get_results($wpdb->prepare(
+            "SELECT achievement_id, achievement_name FROM {$wpdb->prefix}br_achievements
+            WHERE adventure_id=%d AND achievement_status='publish' ORDER BY achievement_name ASC",
+            $adventure_id
+        ));
+
+        $reqs_map   = $this->getItemReqsMap($adventure_id, $target_type);
+        $item_reqs  = $reqs_map[(int) $target_id] ?? ['quests' => [], 'achievements' => []];
+        $conditions = BR_Conditions::instance()->getConditions($adventure_id, $target_type, $target_id);
+        $condition_values = [];
+        foreach ($conditions as $c) { $condition_values[$c->condition_type] = $c->threshold_value; }
+
+        $item_conditions_nonce = wp_create_nonce('item_conditions_nonce');
+        $theFile = get_template_directory() . '/item-conditions-modal.php';
+        if (!file_exists($theFile)) return '';
+        ob_start();
+        include($theFile);
+        return ob_get_clean();
+    }
+
+    public function insertItemConditionsModal($p_target_type = null, $p_target_id = null) {
+        $target_type = $p_target_type ? $p_target_type : ($_POST['target_type'] ?? '');
+        $target_id   = $p_target_id   ? $p_target_id   : ($_POST['target_id']   ?? 0);
+        echo $this->renderItemConditionsModal($target_type, $target_id);
+        die();
+    }
+
+    public function saveItemConditions() {
+        $data = ['success' => false];
+        $notification = new Notification();
+
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'item_conditions_nonce')) {
+            $data['message'] = "<h1>" . __("Nonce!", "bluerabbit") . "</h1>";
+            echo json_encode($data);
+            die();
+        }
+
+        $target_type  = $_POST['target_type'] ?? '';
+        $target_id    = (int) ($_POST['target_id'] ?? 0);
+        $adventure_id = (int) ($_POST['adventure_id'] ?? 0);
+        if (in_array($target_type, self::ITEM_TARGET_TYPES) && $target_id && $adventure_id) {
+            $quest_ids       = array_map('intval', (array) ($_POST['quest_ids'] ?? []));
+            $achievement_ids = array_map('intval', (array) ($_POST['achievement_ids'] ?? []));
+            $this->saveItemReqs($adventure_id, $target_type, $target_id, $quest_ids, $achievement_ids);
+
+            $conditions = [];
+            foreach (BR_Conditions::CONDITION_TYPES as $type => $label) {
+                $val = $_POST['conditions'][$type] ?? '';
+                if ($val !== '') {
+                    $conditions[] = ['condition_type' => $type, 'threshold_value' => (float) $val];
+                }
+            }
+            BR_Conditions::instance()->saveConditions($adventure_id, $target_type, $target_id, $conditions);
+
+            $data['success']     = true;
+            $data['message']     = $notification->pop(__('Conditions saved', 'bluerabbit'), 'blue', 'check');
+            $data['just_notify'] = true;
+        }
+
+        echo json_encode($data);
+        die();
     }
 }

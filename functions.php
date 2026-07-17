@@ -1193,6 +1193,7 @@ require_once ("$dirName/classes/BR-Announcement.php");
 require_once ("$dirName/classes/BR-Request.php");
 require_once ("$dirName/classes/BR-Content.php");
 require_once ("$dirName/classes/BR-Progression.php");
+require_once ("$dirName/classes/BR-Conditions.php");
 require_once ("$dirName/classes/BR-Branch.php");
 require_once ("$dirName/classes/BR-Trash.php");
 require_once ("$dirName/classes/BR-Scorm.php");
@@ -1617,6 +1618,114 @@ function br_migrate_milestone_schema() {
 	}
 }
 add_action('init', 'br_migrate_milestone_schema');
+
+// Unified Conditions engine (see classes/BR-Conditions.php). Threshold/count-based
+// gates (journey %, milestone count, tabi count, transaction count, items consumed)
+// attachable to any target (quest/tabi/achievement/item/item_category), on top of
+// the existing object-reference gates (br_reqs, br_tabi_prerequisites, br_adventure_ranks)
+// which stay as-is. target_type on br_reqs lets Tabis reuse the same
+// quest/item/achievement requirement rows Quests already have.
+function br_migrate_conditions_schema() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$prefix = $wpdb->prefix;
+
+	$table = $prefix . 'br_conditions';
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`condition_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`adventure_id` BIGINT NOT NULL,
+			`target_type` VARCHAR(20) NOT NULL,
+			`target_id` VARCHAR(40) NOT NULL,
+			`condition_type` VARCHAR(30) NOT NULL,
+			`object_id` BIGINT NULL,
+			`threshold_value` DECIMAL(10,2) NULL,
+			`condition_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`condition_id`),
+			KEY `target` (`adventure_id`, `target_type`, `target_id`)
+		) $charset_collate");
+	}
+
+	// target_type/target_id let Tabis attach the same quest/achievement/item requirement
+	// rows Quests already have via br_reqs, WITHOUT touching the ~11 existing call sites
+	// that read/write br_reqs keyed on the `quest_id` column (all default to target_type
+	// 'quest' and never set target_id, so they're completely unaffected). New non-quest
+	// rows (target_type='tabi') always set `quest_id=0` - a value no real quest_id can
+	// ever equal - and use `target_id` instead, so they can never collide with a legacy
+	// query's `WHERE quest_id=$real_quest_id` filter even if a tabi_id numerically matches
+	// some unrelated quest_id.
+	$reqs_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_reqs");
+	if (!in_array('target_type', $reqs_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_reqs ADD COLUMN `target_type` VARCHAR(20) NOT NULL DEFAULT 'quest'");
+	}
+	if (!in_array('target_id', $reqs_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_reqs ADD COLUMN `target_id` BIGINT NULL DEFAULT NULL");
+	}
+
+	// Rank achievements can now award on milestone_count/journey_pct/transaction_count/
+	// item_consumed_count, not just level. Existing rows have no condition_type value yet,
+	// so they default to 'level' - identical meaning to today's rank_level<=player_level
+	// check, zero behavior change for adventures that never touch the new option.
+	$rank_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_adventure_ranks");
+	if (!in_array('condition_type', $rank_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_adventure_ranks ADD COLUMN `condition_type` VARCHAR(30) NOT NULL DEFAULT 'level'");
+	}
+
+	// Real item categories, replacing the old free-text 19-color enum (item_category).
+	// br_items.adventure_id is child-scoped (unlike quests/tabis/achievements, which are
+	// parent-template-scoped), so categories - and any conditions attached to items/
+	// categories - live under the child adventure_id, matching where items themselves live.
+	$table = $prefix . 'br_item_categories';
+	$categories_table_is_new = ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table);
+	if ($categories_table_is_new) {
+		$wpdb->query("CREATE TABLE $table (
+			`category_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`adventure_id` BIGINT NOT NULL,
+			`category_name` VARCHAR(100) NOT NULL,
+			`category_color` VARCHAR(20) NOT NULL DEFAULT 'blue-grey',
+			`category_order` INT NOT NULL DEFAULT 0,
+			`category_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
+			`category_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`category_id`),
+			KEY `adventure_id` (`adventure_id`)
+		) $charset_collate");
+	}
+
+	$item_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_items");
+	if (!in_array('item_category_id', $item_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_items ADD COLUMN `item_category_id` BIGINT NULL DEFAULT NULL");
+	}
+
+	// One-time backfill: turn each distinct existing item_category color string (per
+	// adventure) into a real category row, then point matching items at it - preserves
+	// today's visual grouping/purchase-cap behavior without the GM having to redo anything.
+	// Guarded by $categories_table_is_new so this only ever runs the moment the table is
+	// first created, not on every request.
+	if ($categories_table_is_new) {
+		$valid_colors = ['red','pink','purple','deep-purple','indigo','blue','light-blue','cyan','teal','green','light-green','lime','yellow','amber','orange','deep-orange','brown','grey','blue-grey'];
+		$existing = $wpdb->get_results("
+			SELECT DISTINCT adventure_id, item_category FROM {$prefix}br_items
+			WHERE item_category IS NOT NULL AND item_category != ''
+		");
+		foreach ($existing as $row) {
+			// Some rows have junk values (e.g. a literal '0') from an old quick-edit
+			// dropdown default rather than a real color - skip those, they never
+			// represented an intentional category.
+			if (!in_array($row->item_category, $valid_colors)) continue;
+			$wpdb->insert("{$prefix}br_item_categories", [
+				'adventure_id'   => $row->adventure_id,
+				'category_name'  => ucwords(str_replace('-', ' ', $row->item_category)),
+				'category_color' => $row->item_category,
+			]);
+			$new_category_id = $wpdb->insert_id;
+			$wpdb->query($wpdb->prepare(
+				"UPDATE {$prefix}br_items SET item_category_id=%d WHERE adventure_id=%d AND item_category=%s",
+				$new_category_id, $row->adventure_id, $row->item_category
+			));
+		}
+	}
+}
+add_action('init', 'br_migrate_conditions_schema');
 
 function br_save_ai_api_key() {
 	global $wpdb;
@@ -2045,6 +2154,8 @@ add_action("wp_ajax_insertTabiRow", [BR_Tabi::instance(), 'insertTabiRow']);
 add_action("wp_ajax_saveTabiPiecePosition", [BR_Tabi::instance(), 'saveTabiPiecePosition']);
 add_action("wp_ajax_updateMilestonePosition", [BR_Tabi::instance(), 'updateMilestonePosition']);
 add_action("wp_ajax_updateQuest", [BR_Quest::instance(), 'updateQuest']);
+add_action("wp_ajax_insertQuestConditionsModal", [BR_Quest::instance(), 'insertQuestConditionsModal']);
+add_action("wp_ajax_saveQuestConditions", [BR_Quest::instance(), 'saveQuestConditions']);
 add_action("wp_ajax_updateEncounter", [BR_Encounter::instance(), 'updateEncounter']);
 add_action("wp_ajax_randomEncounter", [BR_Encounter::instance(), 'randomEncounter']);
 add_action("wp_ajax_answerEncounter", [BR_Encounter::instance(), 'answerEncounter']);
@@ -2074,6 +2185,11 @@ add_action("wp_ajax_buyItem", [BR_Item::instance(), 'buyItem']);
 add_action("wp_ajax_pickupItem", [BR_Item::instance(), 'pickupItem']);
 add_action("wp_ajax_checkItem", [BR_Item::instance(), 'checkItem']);
 add_action("wp_ajax_useItem", [BR_Item::instance(), 'useItem']);
+add_action("wp_ajax_saveItemCategory", [BR_Item::instance(), 'saveCategory']);
+add_action("wp_ajax_trashItemCategory", [BR_Item::instance(), 'trashCategory']);
+add_action("wp_ajax_reorderItemCategories", [BR_Item::instance(), 'reorderCategories']);
+add_action("wp_ajax_insertItemConditionsModal", [BR_Item::instance(), 'insertItemConditionsModal']);
+add_action("wp_ajax_saveItemConditions", [BR_Item::instance(), 'saveItemConditions']);
 add_action("wp_ajax_startAttempt", [BR_Challenge::instance(), 'startAttempt']);
 add_action("wp_ajax_submitAnswer", [BR_Challenge::instance(), 'submitAnswer']);
 add_action("wp_ajax_gradeChallenge", [BR_Challenge::instance(), 'gradeChallenge']);
@@ -2117,6 +2233,8 @@ add_action("wp_ajax_setTabiAsCategory", [BR_Tabi::instance(), 'setTabiAsCategory
 add_action("wp_ajax_saveTabiSize", [BR_Tabi::instance(), 'saveTabiSize']);
 add_action("wp_ajax_saveTabiPosition", [BR_Tabi::instance(), 'saveTabiPosition']);
 add_action("wp_ajax_saveTabiPrerequisites", [BR_Tabi::instance(), 'saveTabiPrerequisites']);
+add_action("wp_ajax_insertTabiConditionsModal", [BR_Tabi::instance(), 'insertTabiConditionsModal']);
+add_action("wp_ajax_saveTabiConditions", [BR_Tabi::instance(), 'saveTabiConditions']);
 add_action("wp_ajax_addJourneyAsset", [BR_Tabi::instance(), 'addJourneyAsset']);
 add_action("wp_ajax_trashJourneyAsset", [BR_Tabi::instance(), 'trashJourneyAsset']);
 add_action("wp_ajax_duplicateJourneyAsset", [BR_Tabi::instance(), 'duplicateJourneyAsset']);

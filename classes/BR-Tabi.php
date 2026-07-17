@@ -43,6 +43,91 @@ class BR_Tabi {
         die();
     }
 
+    // Renders the "Conditions" modal for a tabi: quest/achievement/key-item requirements
+    // (br_reqs, target_type='tabi') plus threshold conditions (br_conditions). Loaded via
+    // AJAX per-tabi from tabi-row.php rather than pre-rendered for every tabi row up front.
+    public function renderTabiConditionsModal($tabi_id) {
+        global $wpdb;
+        $tabi = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_tabis WHERE tabi_id=%d", $tabi_id
+        ));
+        if (!$tabi) return '';
+
+        $adventure_id = $tabi->adventure_id;
+        $quests = $wpdb->get_results($wpdb->prepare(
+            "SELECT quest_id, quest_title, quest_type FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id=%d AND quest_status IN ('publish','locked') AND quest_type IN ('quest','challenge','survey','mission')
+            ORDER BY quest_order ASC, quest_title ASC",
+            $adventure_id
+        ));
+        $achievements = $wpdb->get_results($wpdb->prepare(
+            "SELECT achievement_id, achievement_name FROM {$wpdb->prefix}br_achievements
+            WHERE adventure_id=%d AND achievement_status='publish' ORDER BY achievement_name ASC",
+            $adventure_id
+        ));
+        $key_items = $wpdb->get_results($wpdb->prepare(
+            "SELECT item_id, item_name FROM {$wpdb->prefix}br_items
+            WHERE adventure_id=%d AND item_status='publish' AND item_type='key' ORDER BY item_name ASC",
+            $adventure_id
+        ));
+
+        $reqs_map    = $this->getTabiReqsMap($adventure_id);
+        $tabi_reqs   = $reqs_map[(int) $tabi_id] ?? ['quests' => [], 'achievements' => [], 'items' => []];
+        $conditions  = BR_Conditions::instance()->getConditions($adventure_id, 'tabi', $tabi_id);
+        $condition_values = [];
+        foreach ($conditions as $c) { $condition_values[$c->condition_type] = $c->threshold_value; }
+
+        $tabi_conditions_nonce = wp_create_nonce('tabi_conditions_nonce');
+        $theFile = get_template_directory() . '/tabi-conditions-modal.php';
+        if (!file_exists($theFile)) return '';
+        ob_start();
+        include($theFile);
+        return ob_get_clean();
+    }
+
+    // From functions/ajax.php
+    public function insertTabiConditionsModal($p_tabi_id = null) {
+        $tabi_id = $p_tabi_id ? $p_tabi_id : $_POST['tabi_id'];
+        echo $this->renderTabiConditionsModal($tabi_id);
+        die();
+    }
+
+    public function saveTabiConditions() {
+        $data = ['success' => false];
+        $notification = new Notification();
+
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'tabi_conditions_nonce')) {
+            $data['message'] = "<h1>" . __("Nonce!", "bluerabbit") . "</h1><h4>" . __("click to close", "bluerabbit") . "</h4>";
+            echo json_encode($data);
+            die();
+        }
+
+        $tabi_id      = (int) ($_POST['tabi_id'] ?? 0);
+        $adventure_id = (int) ($_POST['adventure_id'] ?? 0);
+        if ($tabi_id && $adventure_id) {
+            $quest_ids       = array_map('intval', (array) ($_POST['quest_ids'] ?? []));
+            $achievement_ids = array_map('intval', (array) ($_POST['achievement_ids'] ?? []));
+            $item_id         = (int) ($_POST['item_id'] ?? 0);
+            $this->saveTabiReqs($adventure_id, $tabi_id, $quest_ids, $achievement_ids, $item_id);
+
+            $conditions = [];
+            foreach (BR_Conditions::CONDITION_TYPES as $type => $label) {
+                $val = $_POST['conditions'][$type] ?? '';
+                if ($val !== '') {
+                    $conditions[] = ['condition_type' => $type, 'threshold_value' => (float) $val];
+                }
+            }
+            BR_Conditions::instance()->saveConditions($adventure_id, 'tabi', $tabi_id, $conditions);
+
+            $data['success'] = true;
+            $data['message'] = $notification->pop(__('Conditions saved', 'bluerabbit'), 'blue', 'check');
+            $data['just_notify'] = true;
+        }
+
+        echo json_encode($data);
+        die();
+    }
+
     // From functions/ajax.php
     public function getTabiPrerequisitesMap($adventure_id) {
         global $wpdb;
@@ -57,6 +142,94 @@ class BR_Tabi {
             $map[$r->tabi_id][] = (int)$r->requires_tabi_id;
         }
         return $map;
+    }
+
+    // Tabis can require specific quests/achievements/a key item, reusing the same
+    // br_reqs table Quests already use for this - but rows here always use
+    // target_type='tabi' + target_id=<tabi_id> + quest_id=0, so they can never be
+    // picked up by the ~11 existing quest-req queries that filter on `quest_id`
+    // (0 is never a real quest_id) even if a tabi_id numerically matches a quest_id.
+    public function getTabiReqsMap($adventure_id) {
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT target_id, req_type, req_object_id FROM {$wpdb->prefix}br_reqs
+            WHERE adventure_id=%d AND target_type='tabi'",
+            $adventure_id
+        ));
+        $map = [];
+        foreach ($rows as $r) {
+            $tid = (int) $r->target_id;
+            if ($r->req_type === 'quest') {
+                $map[$tid]['quests'][] = (int) $r->req_object_id;
+            } elseif ($r->req_type === 'achievement') {
+                $map[$tid]['achievements'][] = (int) $r->req_object_id;
+            } elseif ($r->req_type === 'item') {
+                $map[$tid]['items'][] = (int) $r->req_object_id;
+            }
+        }
+        return $map;
+    }
+
+    // Replace-on-save, matching the convention used for quest reqs (BR-Quest::updateQuest)
+    // and tabi-to-tabi prereqs (saveTabiPrerequisites below).
+    public function saveTabiReqs($adventure_id, $tabi_id, $quest_ids, $achievement_ids, $item_id) {
+        global $wpdb;
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}br_reqs WHERE adventure_id=%d AND target_type='tabi' AND target_id=%d",
+            $adventure_id, $tabi_id
+        ));
+
+        $values = [];
+        $placeholders = [];
+        foreach ((array) $quest_ids as $q) {
+            array_push($values, $adventure_id, (int) $tabi_id, (int) $q, 'quest');
+            $placeholders[] = "(%d, 0, 'tabi', %d, %d, %s)";
+        }
+        foreach ((array) $achievement_ids as $a) {
+            array_push($values, $adventure_id, (int) $tabi_id, (int) $a, 'achievement');
+            $placeholders[] = "(%d, 0, 'tabi', %d, %d, %s)";
+        }
+        if (!empty($item_id)) {
+            array_push($values, $adventure_id, (int) $tabi_id, (int) $item_id, 'item');
+            $placeholders[] = "(%d, 0, 'tabi', %d, %d, %s)";
+        }
+        if (empty($placeholders)) return true;
+
+        $sql = "INSERT INTO {$wpdb->prefix}br_reqs (adventure_id, quest_id, target_type, target_id, req_object_id, req_type) VALUES "
+            . implode(', ', $placeholders);
+        $wpdb->query($wpdb->prepare($sql, $values));
+        return true;
+    }
+
+    // Consolidates every tabi-lock check (tabi-to-tabi prereqs, the new quest/achievement/
+    // key-item reqs above, and threshold conditions from BR_Conditions) into one place -
+    // previously the tabi-to-tabi check alone was duplicated inline in journey.php.
+    // $conditions_snapshot must at minimum carry 'fqs', 'achievement_ids', 'key_item_ids'
+    // (see BR_Conditions::buildProgressSnapshot).
+    public function isTabiLocked($tabi_id, $adv_parent_id, $tabi_prereq_map, $completed_tabis, $tabi_reqs_map, $conditions_snapshot) {
+        if (!empty($tabi_prereq_map[$tabi_id])) {
+            $missing = array_diff($tabi_prereq_map[$tabi_id], $completed_tabis);
+            if (!empty($missing)) return true;
+        }
+
+        $reqs = $tabi_reqs_map[$tabi_id] ?? [];
+        if (!empty($reqs['quests'])) {
+            $missing = array_diff($reqs['quests'], $conditions_snapshot['fqs'] ?? []);
+            if (!empty($missing)) return true;
+        }
+        if (!empty($reqs['achievements'])) {
+            $missing = array_diff($reqs['achievements'], $conditions_snapshot['achievement_ids'] ?? []);
+            if (!empty($missing)) return true;
+        }
+        if (!empty($reqs['items'])) {
+            $missing = array_diff($reqs['items'], $conditions_snapshot['key_item_ids'] ?? []);
+            if (!empty($missing)) return true;
+        }
+
+        if (!BR_Conditions::instance()->evaluate($adv_parent_id, 'tabi', $tabi_id, $conditions_snapshot)) {
+            return true;
+        }
+        return false;
     }
 
     // From functions/ajax.php

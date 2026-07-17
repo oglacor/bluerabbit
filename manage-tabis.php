@@ -120,6 +120,14 @@ $tabi_count = $tabis ? count($tabis) : 0;
 						<button class="br-action-link expand" data-target="tabi-details-<?= $a->tabi_id; ?>">
 							<span class="icon icon-down"></span> <?= __("Prerequisites","bluerabbit"); ?>
 						</button>
+						<button class="br-action-link" onClick="openTabiConditionsModal(<?= $a->tabi_id; ?>);">
+							<span class="icon icon-check"></span> <?= __("Conditions","bluerabbit"); ?>
+						</button>
+						<div class="overlay-layer tabi-conditions-overlay" id="tabi-conditions-overlay-<?= $a->tabi_id; ?>">
+							<div class="tabi-conditions-modal-content" id="tabi-conditions-content-<?= $a->tabi_id; ?>">
+								<span class="br-text-12 grey-400"><?php _e("Loading...","bluerabbit"); ?></span>
+							</div>
+						</div>
 						<button class="br-action-link trash" onClick="confirmStatus(<?= $a->tabi_id; ?>,'tabi','trash');">
 							<span class="icon icon-trash"></span> <?= __("Trash","bluerabbit"); ?>
 						</button>

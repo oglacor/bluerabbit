@@ -110,11 +110,12 @@ class BR_Adventure {
                             if($adventure_ranks){
                                 $ranks_ph = array();
                                 $ranks_values = array();
-                                $ranksSQL = "INSERT INTO {$wpdb->prefix}br_adventure_ranks (`adventure_id`, `rank_level`, `achievement_id`)  VALUES";
+                                $ranksSQL = "INSERT INTO {$wpdb->prefix}br_adventure_ranks (`adventure_id`, `rank_level`, `achievement_id`, `condition_type`)  VALUES";
                                 foreach($adventure_ranks as $r){
                                     $message = stripslashes_deep($r['message']);
-                                    array_push($ranks_values, $adventure_id, $r['level'], $r['achievement']);
-                                    $ranks_ph[] = "(%d, %d, %d)";
+                                    $condition_type = array_key_exists($r['condition_type'] ?? '', BR_Conditions::CONDITION_TYPES) ? $r['condition_type'] : 'level';
+                                    array_push($ranks_values, $adventure_id, $r['level'], $r['achievement'], $condition_type);
+                                    $ranks_ph[] = "(%d, %d, %d, %s)";
                                 }
                                 $ranksSQL .= implode(', ', $ranks_ph);
                                 $ranks_insert =$wpdb->query( $wpdb->prepare("$ranksSQL ", $ranks_values));
@@ -718,19 +719,22 @@ class BR_Adventure {
     }
 
     // From functions/adventure-management.php
+    // $category is now a br_item_categories.category_id (0 = no category), not a
+    // free-text color string - the quick-edit dropdown in manage-items.php lists real
+    // categories now (see BR_Item::getCategories).
     public function setCategory(){
         global $wpdb; $current_user = wp_get_current_user();
         $data = array();
 
         $data['success'] = false;
         $id = $_POST['id'];
-        $category = stripslashes_deep($_POST['category']);
+        $category_id = (int) $_POST['category'];
         $adventure_id = $_POST['adventure_id'];
         $nonce = $_POST['nonce'];
         $reload = 'reload';
         if(wp_verify_nonce($nonce, 'item_cat_nonce')){
-            $sql = "UPDATE {$wpdb->prefix}br_items SET item_category=%s WHERE (item_id=%d AND adventure_id=%d AND item_type='consumable') OR item_parent=%d";
-            $sql = $wpdb->prepare ($sql,$category,$id,$adventure_id, $id);
+            $sql = "UPDATE {$wpdb->prefix}br_items SET item_category_id=%d WHERE (item_id=%d AND adventure_id=%d AND item_type='consumable') OR item_parent=%d";
+            $sql = $wpdb->prepare ($sql, $category_id, $id, $adventure_id, $id);
             $wpdb->query($sql);
 
             $data['success'] = true;

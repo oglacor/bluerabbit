@@ -110,7 +110,7 @@
 					$permalink = get_bloginfo('url')."/$mi->quest_type/?questID=$mi->quest_id&adventure_id=$adv_child_id";
 					// Single source of truth for milestone state (see BR_Progression::resolveMilestoneTemplate) -
 					// keeps Board view's gating identical to Map view's, instead of a second, drifting copy.
-					$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today);
+					$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today, $adv_parent_id, $conditions_snapshot);
 					include (TEMPLATEPATH . "/$miTemplate.php");
 				}
 			?>

@@ -99,6 +99,14 @@
         <div class="cell cell-path">
         </div>
         <div class="cell cell-actions">
+            <button class="form-ui button br-text-12 blue-bg-200 white-color conditions-button" onClick="openTabiConditionsModal(<?= $a->tabi_id; ?>);">
+                <?php _e("Conditions","bluerabbit"); ?>
+            </button>
+            <div class="overlay-layer tabi-conditions-overlay" id="tabi-conditions-overlay-<?= $a->tabi_id; ?>">
+                <div class="tabi-conditions-modal-content" id="tabi-conditions-content-<?= $a->tabi_id; ?>">
+                    <span class="br-text-12 grey-400"><?php _e("Loading...","bluerabbit"); ?></span>
+                </div>
+            </div>
             <button class="form-ui button br-text-12 red-bg-200 white-color trash-button" onClick="showOverlay('#confirm-trash-<?= $a->tabi_id; ?>');">
                 <?php _e("Send to trash","bluerabbit"); ?>
             </button>

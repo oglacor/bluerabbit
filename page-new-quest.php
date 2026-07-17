@@ -17,15 +17,6 @@ if ($adventure && ($isGM || $isAdmin)) {
 	$achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id);
 	$paths        = BR_Achievement::instance()->getAchievements($adventure->adventure_id, 'path|rank');
 
-	if (isset($quest) && $quest) {
-		$requirements = $wpdb->get_results("SELECT b.req_object_id, b.req_type FROM {$wpdb->prefix}br_quests a LEFT JOIN {$wpdb->prefix}br_reqs b ON a.quest_id = b.quest_id WHERE a.quest_id=$quest->quest_id AND a.quest_status='publish'");
-		$reqs = [];
-		foreach ($requirements as $r) {
-			if ($r->req_type == 'quest') $reqs['quests'][] = $r->req_object_id;
-			elseif ($r->req_type == 'item') $reqs['items'][] = $r->req_object_id;
-			elseif ($r->req_type == 'achievement') $reqs['achievements'][] = $r->req_object_id;
-		}
-	}
 	$is_edit = (isset($quest) && $quest);
 	$adventures = $adventures ?? $wpdb->get_results("SELECT adventure_id, adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_status='publish'");
 ?>
@@ -219,9 +210,7 @@ if ($has_qr) {
 			include(TEMPLATEPATH . '/component-quest-additional-mechs.php');
 			include(TEMPLATEPATH . '/component-quest-item-reward.php');
 			include(TEMPLATEPATH . '/component-quest-achievement-reward.php');
-			include(TEMPLATEPATH . '/component-quest-key-item-req.php');
-			include(TEMPLATEPATH . '/component-quest-reqs.php');
-			include(TEMPLATEPATH . '/component-quest-achievement-reqs.php');
+			include(TEMPLATEPATH . '/component-quest-conditions.php');
 			?>
 		</div>
 		</div>

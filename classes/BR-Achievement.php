@@ -202,6 +202,26 @@ class BR_Achievement {
                             array('branch_group_id' => $branch_group_id ?: null),
                             array('achievement_id' => $updated_id)
                         );
+
+                        // Rank threshold, editable here as well as on the adventure Settings
+                        // Ranks panel - both write to the same br_adventure_ranks row, keyed
+                        // by achievement_id, so whichever was saved last wins (same as any
+                        // other shared-resource edit from two places).
+                        $wpdb->query($wpdb->prepare(
+                            "DELETE FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d AND achievement_id=%d",
+                            $adv_parent_id, $updated_id
+                        ));
+                        if($a_display == 'rank' && isset($a_data['a_rank_level']) && $a_data['a_rank_level'] !== ''){
+                            $a_rank_condition = $a_data['a_rank_condition'] ?? 'level';
+                            if($a_rank_condition !== 'level' && !array_key_exists($a_rank_condition, BR_Conditions::CONDITION_TYPES)){
+                                $a_rank_condition = 'level';
+                            }
+                            $wpdb->query($wpdb->prepare(
+                                "INSERT INTO {$wpdb->prefix}br_adventure_ranks (adventure_id, rank_level, achievement_id, condition_type) VALUES (%d, %d, %d, %s)",
+                                $adv_parent_id, (int) $a_data['a_rank_level'], $updated_id, $a_rank_condition
+                            ));
+                        }
+
                         $data['debug']= $achQrCode;
 
                     if(!$a_id){

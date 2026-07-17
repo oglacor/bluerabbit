@@ -122,6 +122,10 @@
 
 		<div class="journey-container <?= $journey_style == 'board' ? 'board-mode' : ''; ?>">
 			<?php
+			// Built once and shared by both the map (journey.php) and board (journey-board.php)
+			// views, plus the tabi-modal rendering further down this file - see
+			// BR_Conditions::buildProgressSnapshot() for what it carries.
+			$conditions_snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_player->player_id, $playerReset);
 			if($journey_style == 'board'){
 				include (TEMPLATEPATH . '/journey-board.php');
 			}else{
@@ -201,7 +205,7 @@
 								?>
 								<div class="milestone-container" id="milestone-container-<?= $mi->quest_id; ?>" style="order:<?= $mi->quest_order; ?>">
 								<?php
-								$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today_map);
+								$miTemplate = BR_Progression::instance()->resolveMilestoneTemplate($mi, $player, $current_player->player_level, $player_achievements, $reqs_ids, $today_map, $adv_parent_id, $conditions_snapshot);
 								include (TEMPLATEPATH . "/$miTemplate.php");
 								?>
 								</div>

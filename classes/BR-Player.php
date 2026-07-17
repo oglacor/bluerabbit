@@ -1699,7 +1699,24 @@ class BR_Player {
         $adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
         if ($adventure->adventure_gmt){ date_default_timezone_set($adventure->adventure_gmt); }
         $today = date('Y-m-d H:i:s');
-        $ranks = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=$adv_parent_id AND rank_level <= $level");
+
+        // Ranks can award on level (as before) or on milestone_count/journey_pct/
+        // transaction_count/item_consumed_count - all evaluated here since this is
+        // still the only trigger point for rank checks (fired on a detected level-up).
+        $player_progress = BR_Progression::instance()->getPlayerProgress($adv_child_id, $current_user->ID);
+        $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_user->ID, $player_progress);
+        $all_ranks = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=$adv_parent_id ORDER BY rank_level ASC");
+        $ranks = array();
+        foreach($all_ranks as $r){
+            switch($r->condition_type){
+                case 'milestone_count':     $met = $snapshot['milestone_count']     >= $r->rank_level; break;
+                case 'journey_pct':         $met = $snapshot['journey_pct']         >= $r->rank_level; break;
+                case 'transaction_count':   $met = $snapshot['transaction_count']   >= $r->rank_level; break;
+                case 'item_consumed_count': $met = $snapshot['item_consumed_count'] >= $r->rank_level; break;
+                default:                    $met = $level >= $r->rank_level; // 'level'
+            }
+            if($met) $ranks[] = $r;
+        }
         $config = BR_Config::instance()->getSysConfig();
         $logo = $config['main_logo']['value'] ? $config['main_logo']['value'] :  get_bloginfo('template_directory')."/images/logo.png";
         if($ranks){

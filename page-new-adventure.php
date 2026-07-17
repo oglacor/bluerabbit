@@ -638,7 +638,8 @@ $image_types = array(
 			<table class="br-table" id="adventure-ranks">
 				<thead>
 					<tr>
-						<td><?= __("Level","bluerabbit"); ?></td>
+						<td><?= __("Condition","bluerabbit"); ?></td>
+						<td><?= __("Threshold","bluerabbit"); ?></td>
 						<td><?= __("Achievement","bluerabbit"); ?></td>
 						<td><?= __("Actions","bluerabbit"); ?></td>
 					</tr>
@@ -646,14 +647,22 @@ $image_types = array(
 				<?php
 					 $ranks = $wpdb->get_results(
 						"SELECT * FROM {$wpdb->prefix}br_adventure_ranks
-						WHERE adventure_id=$adv_parent_id ORDER BY rank_level"
+						WHERE adventure_id=$adv_parent_id ORDER BY condition_type, rank_level"
 					);
 				?>
 				<tbody>
 					<?php foreach($ranks as $key=>$rank){ ?>
 						<tr id="row-<?= $key; ?>">
 							<td>
-								<input type="number" max="99" min="1" class="br-input rank-level" value="<?= $rank->rank_level; ?>">
+								<select class="br-input rank-condition-type">
+									<option value="level" <?= $rank->condition_type=='level' ? "selected" : ""; ?>><?= __("Level","bluerabbit"); ?></option>
+									<?php foreach(BR_Conditions::CONDITION_TYPES as $type=>$label){ if($type=='level') continue; ?>
+										<option value="<?= $type; ?>" <?= $rank->condition_type==$type ? "selected" : ""; ?>><?= esc_html__($label,"bluerabbit"); ?></option>
+									<?php } ?>
+								</select>
+							</td>
+							<td>
+								<input type="number" min="0" step="0.01" class="br-input rank-level" value="<?= $rank->rank_level; ?>">
 							</td>
 							<td>
 								<select class="br-input rank-achievement unique">
@@ -675,7 +684,15 @@ $image_types = array(
 					<!-- Default -->
 					<tr id="row-0">
 						<td>
-							<input type="number" max="99" min="1" class="br-input rank-level" value="">
+							<select class="br-input rank-condition-type">
+								<option value="level"><?= __("Level","bluerabbit"); ?></option>
+								<?php foreach(BR_Conditions::CONDITION_TYPES as $type=>$label){ if($type=='level') continue; ?>
+									<option value="<?= $type; ?>"><?= esc_html__($label,"bluerabbit"); ?></option>
+								<?php } ?>
+							</select>
+						</td>
+						<td>
+							<input type="number" min="0" step="0.01" class="br-input rank-level" value="">
 						</td>
 						<td>
 							<select class="br-input rank-achievement unique">

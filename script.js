@@ -2265,8 +2265,8 @@ function setItemType(type) {
     $("#the_item_type").val(type);
     $("button.item-type-choice, button.item-type-choice svg.icon-image").removeClass("active");
     $(`#button-${type}, #button-${type} svg.icon-image`).addClass("active");
-    $('.form-ui.cond-opt').prop('disabled', true);
-    $('.form-ui.cond-opt-' + type).prop('disabled', false);
+    $('.cond-opt').prop('disabled', true);
+    $('.cond-opt-' + type).prop('disabled', false);
 }
 
 function activateClass(class_on = "", class_off = "") {
@@ -3166,6 +3166,34 @@ function addStep(id_to_duplicate = null) {
     }
 }
 ////////////////////////////// LOAD STEP ///////////////////////////
+////////////////////////////// SHARED DRAWER BACKDROP (Step + any Conditions drawer) ///////////////////////////
+// One dynamically-injected backdrop reused by every drawer, instead of one per page/consumer.
+function brShowDrawerBackdrop() {
+    if (!$('#br-drawer-backdrop').length) {
+        $('body').append('<div class="br-drawer-backdrop" id="br-drawer-backdrop" onclick="brCloseTopDrawer();"></div>');
+    }
+    $('body').addClass('br-drawer-open');
+}
+
+function brHideDrawerBackdrop() {
+    var anyOpen = $('.br-step-accordion.open').length
+        || $('.tabi-conditions-overlay.active, .item-conditions-overlay.active, .quest-conditions-overlay.active').length;
+    if (!anyOpen) {
+        $('body').removeClass('br-drawer-open');
+    }
+}
+
+function brCloseTopDrawer() {
+    $('.br-step-accordion.open').each(function () {
+        closeStepAccordion(this.id.replace('step-accordion-', ''));
+    });
+    $('.tabi-conditions-overlay.active').each(function () {
+        closeTabiConditionsModal(this.id.replace('tabi-conditions-overlay-', ''));
+    });
+    if ($('#item-conditions-overlay').hasClass('active')) { closeItemConditionsModal(); }
+    if ($('#quest-conditions-overlay').hasClass('active')) { closeQuestConditionsModal(); }
+}
+
 function editStep(step_id) {
     if (!step_id) {
         notification('#msg-no-id', 1000);
@@ -3189,10 +3217,8 @@ function editStep(step_id) {
         success: function (data_received) {
             $accordion.html(data_received).addClass('open');
             $('#step-' + step_id + ' .br-step-edit-btn').addClass('active');
+            brShowDrawerBackdrop();
             $('.loader, .small-loader').removeClass('active');
-            setTimeout(function() {
-                document.getElementById('step-accordion-' + step_id).scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 150);
         }
     });
 }
@@ -3204,6 +3230,7 @@ function closeStepAccordion(step_id) {
     }
     $('#step-accordion-' + step_id).removeClass('open').html('');
     $('#step-' + step_id + ' .br-step-edit-btn').removeClass('active');
+    brHideDrawerBackdrop();
 }
 
 ////////////////////////////// UPDATE STEP ///////////////////////////
@@ -4300,6 +4327,7 @@ function updateAdventure() {
                 level: $('input.rank-level', this).val(),
                 achievement: $('select.rank-achievement', this).val(),
                 message: $('textarea.rank-message', this).val(),
+                condition_type: $('select.rank-condition-type', this).val() || 'level',
             };
             adventure_ranks.push(rank);
         }
@@ -4875,6 +4903,10 @@ function updateQuest() {
     let mech_item_reward = $("#mech_item_reward li.active input.item-id").val();
     let mech_achievement_reward = $("#the_mech_achievement_reward li.active input.achievement-reward-id").val();
     let quest_item_required = $("#item_required li.active input.item-id").val();
+    // The old inline requirement grids only exist on Mission/Survey builders now -
+    // Quest's builder saves reqs separately via the Conditions panel, so these keys
+    // must be left out of the payload there (see BR_Quest::updateQuest() PHP guard).
+    let has_old_reqs_ui = $('#quests-reqs, #quest-achievement-reqs, #item_required').length > 0;
     let quest_data = {
         quest_id: $('#the_quest_id').val(),
         quest_status: $('#the_quest_status').val(),
@@ -4887,10 +4919,7 @@ function updateQuest() {
         adventure_id: $('#the_adventure_id').val(),
         achievement_id: $('#the_achievement_id').val(),
         tabi_id: $('#the_tabi_id').val(),
-        quest_reqs: quest_reqs,
         quest_libs: quest_libs,
-        quest_item_required: quest_item_required,
-        quest_achievement_reqs: quest_achievement_reqs,
         quest_secondary_headline: $('#the_quest_secondary_headline').val(),
         quest_style: $('#the_quest_style').val(),
         quest_color: $('#the_quest_color').val(),
@@ -4925,6 +4954,11 @@ function updateQuest() {
         },
         quest_questions: quest_questions
     };
+    if (has_old_reqs_ui) {
+        quest_data.quest_reqs = quest_reqs;
+        quest_data.quest_achievement_reqs = quest_achievement_reqs;
+        quest_data.quest_item_required = quest_item_required;
+    }
 
     jQuery.ajax({
         url: runAJAX.ajaxurl,
@@ -5196,6 +5230,8 @@ function updateAchievement() {
         a_display: $('#the_achievement_display').val(),
         a_group: $('#the_achievement_group').val(),
         a_path: $('#the_achievement_path').val(),
+        a_rank_condition: $('#the_achievement_rank_condition').val(),
+        a_rank_level: $('#the_achievement_rank_level').val(),
         branch_group_id: $('#the_branch_group_id').val(),
         magic_code: $('#the_achievement_code').val(),
         a_content: $('#the_achievement_content').val(),
@@ -6715,6 +6751,131 @@ function closeTabiModal() {
     $('body').css('overflow', '');
 }
 
+function openTabiConditionsModal(tabiId) {
+    let $overlay = $('#tabi-conditions-overlay-' + tabiId);
+    let $content = $('#tabi-conditions-content-' + tabiId);
+    if (!$content.data('loaded')) {
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: {
+                action: 'insertTabiConditionsModal',
+                tabi_id: tabiId
+            },
+            method: 'POST',
+            success: function (data_received) {
+                $content.html(data_received);
+                $content.data('loaded', true);
+            }
+        });
+    }
+    $overlay.addClass('active');
+    brShowDrawerBackdrop();
+}
+
+function closeTabiConditionsModal(tabiId) {
+    $('#tabi-conditions-overlay-' + tabiId).removeClass('active');
+    brHideDrawerBackdrop();
+}
+
+function saveTabiConditionsModal(tabiId) {
+    let $body = $('.tabi-conditions-body[data-tabi-id="' + tabiId + '"]');
+    let adventureId = $body.data('adventure-id');
+    let nonce = $body.find('.tabi-conditions-nonce').val();
+
+    let questIds = [];
+    $body.find('.tabi-cond-quest-checkbox:checked').each(function () { questIds.push($(this).val()); });
+
+    let achievementIds = [];
+    $body.find('.tabi-cond-achievement-checkbox:checked').each(function () { achievementIds.push($(this).val()); });
+
+    let itemId = $body.find('.tabi-cond-item-select').val();
+
+    let conditions = {};
+    $body.find('.tabi-cond-threshold-input').each(function () {
+        let val = $(this).val();
+        if (val !== '') conditions[$(this).data('condition-type')] = val;
+    });
+
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveTabiConditions',
+            nonce: nonce,
+            tabi_id: tabiId,
+            adventure_id: adventureId,
+            quest_ids: questIds,
+            achievement_ids: achievementIds,
+            item_id: itemId,
+            conditions: conditions
+        },
+        method: 'POST',
+        success: function (data_received) {
+            closeTabiConditionsModal(tabiId);
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+////////////////////////////// QUEST CONDITIONS (Advanced tab) ///////////////////////////
+function openQuestConditionsModal(questId) {
+    let $content = $('#quest-conditions-content');
+    $content.html('<span class="br-text-12 grey-400">Loading...</span>');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: { action: 'insertQuestConditionsModal', quest_id: questId },
+        method: 'POST',
+        success: function (data_received) {
+            $content.html(data_received);
+        }
+    });
+    $('#quest-conditions-overlay').addClass('active');
+    brShowDrawerBackdrop();
+}
+
+function closeQuestConditionsModal() {
+    $('#quest-conditions-overlay').removeClass('active');
+    brHideDrawerBackdrop();
+}
+
+function saveQuestConditionsModal(questId) {
+    let $body = $('#quest-conditions-overlay .tabi-conditions-body');
+    let adventureId = $body.data('adventure-id');
+    let nonce = $body.find('.quest-conditions-nonce').val();
+
+    let questIds = [];
+    $body.find('.tabi-cond-quest-checkbox:checked').each(function () { questIds.push($(this).val()); });
+
+    let achievementIds = [];
+    $body.find('.tabi-cond-achievement-checkbox:checked').each(function () { achievementIds.push($(this).val()); });
+
+    let itemId = $body.find('.tabi-cond-item-select').val();
+
+    let conditions = {};
+    $body.find('.tabi-cond-threshold-input').each(function () {
+        let val = $(this).val();
+        if (val !== '') conditions[$(this).data('condition-type')] = val;
+    });
+
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveQuestConditions',
+            nonce: nonce,
+            quest_id: questId,
+            adventure_id: adventureId,
+            quest_ids: questIds,
+            achievement_ids: achievementIds,
+            item_id: itemId,
+            conditions: conditions
+        },
+        method: 'POST',
+        success: function (data_received) {
+            closeQuestConditionsModal();
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
 function updateTabiPosition(tabiId) {
     let nonce = $('#tabi-position-nonce').val();
     let top = parseInt($('#tabi-node-' + tabiId).css('top'), 10);
@@ -7085,6 +7246,129 @@ function setCategory(id) {
         }),
         method: "POST",
         success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+///////////////////////// Item Categories (real entities) //////////////////
+
+function addItemCategory() {
+    let nonce = $('#item-category-nonce').val();
+    let adventure_id = $('#the_adventure_id').val();
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveItemCategory',
+            nonce: nonce,
+            adventure_id: adventure_id,
+            category_name: 'New Category',
+            category_color: 'blue-grey'
+        },
+        method: 'POST',
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+function saveItemCategory(categoryId) {
+    let nonce = $('#item-category-nonce').val();
+    let adventure_id = $('#the_adventure_id').val();
+    let $row = $('#category-row-' + categoryId);
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveItemCategory',
+            nonce: nonce,
+            adventure_id: adventure_id,
+            category_id: categoryId,
+            category_name: $row.find('.category-name-input').val(),
+            category_color: $row.find('.category-color-select').val()
+        },
+        method: 'POST',
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+function trashItemCategory(categoryId) {
+    let nonce = $('#item-category-nonce').val();
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'trashItemCategory',
+            nonce: nonce,
+            category_id: categoryId
+        },
+        method: 'POST',
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+///////////////////////// Item / Category Conditions //////////////////
+
+function openItemConditionsModal(targetType, targetId) {
+    let $content = $('#item-conditions-content');
+    $content.html('<span class="br-text-12 grey-400">Loading...</span>');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'insertItemConditionsModal',
+            target_type: targetType,
+            target_id: targetId
+        },
+        method: 'POST',
+        success: function (data_received) {
+            $content.html(data_received);
+        }
+    });
+    $('#item-conditions-overlay').addClass('active');
+    brShowDrawerBackdrop();
+}
+
+function closeItemConditionsModal() {
+    $('#item-conditions-overlay').removeClass('active');
+    brHideDrawerBackdrop();
+}
+
+function saveItemConditionsModal() {
+    let $body = $('#item-conditions-overlay .tabi-conditions-body');
+    let targetType = $body.data('target-type');
+    let targetId = $body.data('target-id');
+    let adventureId = $body.data('adventure-id');
+    let nonce = $body.find('.item-conditions-nonce').val();
+
+    let questIds = [];
+    $body.find('.tabi-cond-quest-checkbox:checked').each(function () { questIds.push($(this).val()); });
+
+    let achievementIds = [];
+    $body.find('.tabi-cond-achievement-checkbox:checked').each(function () { achievementIds.push($(this).val()); });
+
+    let conditions = {};
+    $body.find('.tabi-cond-threshold-input').each(function () {
+        let val = $(this).val();
+        if (val !== '') conditions[$(this).data('condition-type')] = val;
+    });
+
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'saveItemConditions',
+            nonce: nonce,
+            target_type: targetType,
+            target_id: targetId,
+            adventure_id: adventureId,
+            quest_ids: questIds,
+            achievement_ids: achievementIds,
+            conditions: conditions
+        },
+        method: 'POST',
+        success: function (data_received) {
+            closeItemConditionsModal();
             displayAjaxResponse(data_received);
         }
     });

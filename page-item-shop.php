@@ -57,6 +57,14 @@
 			$item_categories[]=$i->item_category;
 		}
 		$item_categories = array_unique($item_categories);
+
+		// Hide items whose Conditions (achievement/milestone/threshold requirements set
+		// via the item or its category) aren't met yet - same "just don't show it" pattern
+		// already used above for the single-achievement_id gate.
+		$conditions_snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_player->player_id, $playerReset);
+		$items = array_values(array_filter($items, function($i) use ($conditions_snapshot, $adv_child_id) {
+			return BR_Item::instance()->evaluateItemAccess($adv_child_id, $i, $conditions_snapshot);
+		}));
 	
 		if($isGM){
 			$rewards = $wpdb->get_results( "SELECT * FROM ".$wpdb->prefix."br_items WHERE adventure_id=$adventure->adventure_id AND item_status='publish' AND item_type='reward' ORDER BY item_id");
