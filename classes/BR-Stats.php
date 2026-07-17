@@ -379,7 +379,7 @@ class BR_Stats {
               AND q.quest_type IN ('quest','challenge','survey','mission')
               $extra_where
             GROUP BY q.quest_id
-            ORDER BY q.quest_order ASC";
+            ORDER BY (q.tabi_id IS NULL OR q.tabi_id = 0) ASC, q.tabi_id ASC, q.quest_order ASC, q.mech_level ASC, q.quest_title ASC, q.quest_id ASC";
 
         $quests = $wpdb->get_results( $wpdb->prepare(
             $sql, $adventure_id, $adventure_id, ...$extra_args

@@ -48,7 +48,7 @@
 	</div>
 <?php } ?>
 
-<div class="layer background fixed" style="background-image: url(<?= $c->mech_badge; ?>);"></div>
+
 <div class="layer background fixed challenge-gradient-overlay"></div>
 
 <div class="challenge-quest idle" id="challenge">
@@ -112,6 +112,7 @@
 		</div>
 	</div>
 	<div class="challenge-conditions white-color">
+		<div class="bg-image" style="background-image: url(<?= $c->mech_badge; ?>);"></div>
 		<div class="content">
 			<h3 class="font special _16 yellow-500"><?= __("Conditions","bluerabbit"); ?></h3>
 			<h3 class="font special _16 yellow-500"></h3>
