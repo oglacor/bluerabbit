@@ -6719,7 +6719,7 @@ function openTabiModal(tabiId) {
 }
 
 function saveTabiPrerequisites(tabiId) {
-    let nonce = $('#tabi-prereq-row-' + tabiId + ' .tabi-prereq-nonce').val();
+    let nonce = $('#tabi-prereq-nonce-' + tabiId).val();
     let requires = [];
     $('.tabi-prereq-checkbox[data-tabi-id="' + tabiId + '"]:checked').each(function () {
         requires.push($(this).val());

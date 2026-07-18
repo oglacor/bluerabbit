@@ -171,7 +171,7 @@ $tabi_count = $tabis ? count($tabis) : 0;
 								</div>
 							</div>
 						</div>
-						<input type="hidden" class="tabi-prereq-nonce" value="<?= $tabi_prereq_nonce; ?>">
+						<input type="hidden" class="tabi-prereq-nonce" id="tabi-prereq-nonce-<?= $a->tabi_id; ?>" value="<?= $tabi_prereq_nonce; ?>">
 					</div>
 
 				</div>
