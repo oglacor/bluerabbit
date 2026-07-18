@@ -22,11 +22,9 @@
 
 		<div id="flipped-card-container" class="flipped-card-container"></div>
 
-		<div class="feedback overlay-layer layer fixed white-color" id="feedback">
-			<div class="background opacity-80 black-bg layer absolute base" onClick="hideAllOverlay();"></div>
-			<div class="perfect-center layer relative base">
-				<div class="foreground content">
-				</div>
+		<div class="feedback" id="feedback">
+			<div class="feedback-bg" onClick="hideAllOverlay();"></div>
+			<div class="feedback-content content">
 			</div>
 		</div>
 		<div class="overlay-layer absolute layer feedback top left sq-full" id="overlay-content">

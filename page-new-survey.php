@@ -102,7 +102,7 @@ $is_edit = isset($quest) && $quest;
 							<div class="highlight padding-10 grey-bg-200" id="tutorial-icon-select">
 								<?php $selected_icon = isset($quest->quest_icon) ? $quest->quest_icon : 'challenge'; ?>
 								<input id="the_quest_icon" class="icon-selected" type="hidden" value="<?= $selected_icon; ?>">
-								<?php include (TEMPLATEPATH . '/icon-select.php'); ?>
+								<?php $icon_select_id = "#the_quest_icon"; include (TEMPLATEPATH . '/icon-select.php'); ?>
 							</div>
 						</td>
 					</tr>

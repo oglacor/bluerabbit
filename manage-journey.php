@@ -63,8 +63,8 @@ foreach ($publish_items as $q) {
         'bloo'           => (int)$q->mech_bloo,
         'ep'             => (int)$q->mech_ep,
         'badge'          => $q->mech_badge,
-        'color'          => $q->quest_color,
-        'icon'           => $q->quest_icon,
+        'color'          => br_color_to_hex($q->quest_color ?: ''),
+        'icon'           => $q->quest_icon ?: $q->quest_type,
         'status'         => $q->quest_status,
         'start_date'     => $start,
         'deadline'       => $deadline,
@@ -437,7 +437,7 @@ $base_url = get_bloginfo('url');
         // Main data row
         html += '<div class="row br-row ' + epCol + '">';
         html += '  <div class="br-drag ' + dragClass + '"><img src="' + templateUri + '/images/drag-handle.svg" class="drag-icon"></div>';
-        html += '  <div class="br-type-icon ' + item.type + '"><span class="icon icon-' + item.type + '"></span></div>';
+        html += '  <div class="br-type-icon" style="background:rgba(' + brj.hexToRgb(item.color) + ',0.3);color:' + item.color + ';"><span class="icon icon-' + (item.icon || item.type) + '"></span></div>';
         html += '  <div class="br-thumb" style="' + thumbStyle + '" onclick="showWPUpload(\'the_quest_badge-' + item.id + '\',\'a\',\'quest\',' + item.id + ');" id="the_quest_badge-' + item.id + '_thumb"><input type="hidden" value="' + (item.badge || '') + '" id="the_quest_badge-' + item.id + '"></div>';
         html += '  <div class="br-name">';
         html += '    <input type="text" id="the_title-' + item.type + '-' + item.id + '" value="' + brj.escAttr(item.title) + '" onchange="setTitle(' + item.id + ',\'' + item.type + '\');">';
@@ -457,6 +457,7 @@ $base_url = get_bloginfo('url');
 
         // Action bar row
         html += '<div class="br-action-bar">';
+        html += '  <span class="br-type-pill ' + item.type + '"><span class="icon icon-' + item.type + '"></span> ' + (brj.typeLabels[item.type] || item.type) + '</span>';
         html += '  <a href="' + baseUrl + '/' + item.type + '/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link" target="_blank"><span class="icon icon-view"></span> View</a>';
         html += '  <a href="' + baseUrl + '/new-' + item.type + '/?adventure_id=' + adventureId + '&questID=' + item.id + '" class="br-action-link edit"><span class="icon icon-edit"></span> Edit</a>';
         html += '  <button class="br-action-link expand" data-target="br-qe-' + item.id + '"><span class="icon icon-down"></span> Quick Edit</button>';
@@ -587,6 +588,16 @@ $base_url = get_bloginfo('url');
         if (!s) return '';
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     };
+
+    // ── Color helpers ─────────────────────────────────────────
+    brj.hexToRgb = function(hex) {
+        hex = String(hex || '').replace('#', '');
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        var num = parseInt(hex, 16);
+        if (isNaN(num)) return '158,158,158';
+        return ((num >> 16) & 255) + ',' + ((num >> 8) & 255) + ',' + (num & 255);
+    };
+    brj.typeLabels = { quest: 'Quest', mission: 'Mission', challenge: 'Challenge', survey: 'Survey' };
 
     // ── Render Draft rows ────────────────────────────────────
     brj.renderDrafts = function() {

@@ -2156,7 +2156,7 @@ function setupAllOverlays() {
 }
 
 function hideAllOverlay() {
-    $('.overlay-layer, #profile-box, .layer.overlay, .layer.feedback, .layer.top-overlay').removeClass('active');
+    $('.overlay-layer, #profile-box, .layer.overlay, .feedback, .layer.top-overlay').removeClass('active');
     $('.confirm-action').removeClass('active');
     $("#main-content, #footer").removeClass('fixed');
     if ($("#audio-funky").length) {
@@ -6071,12 +6071,6 @@ function payBlocker(blocker_id) {
     });
 }
 
-//////////////////  setIconTo ////////////////
-function setIconTo(the_icon) {
-    $('.icon-select button.form-ui').removeClass('active');
-    $("." + the_icon + "-button-icon").addClass('active');
-    $("input.icon-selected").val(the_icon);
-}
 //////////////////  setColorTo ////////////////
 function selectImage(id, group) {
     $(group + ' .button').removeClass('active');
@@ -7180,6 +7174,17 @@ function brPickColor(uid, inputId, hex) {
     $('#' + uid).data('hex', hex);
     var opacity = parseInt($('#' + uid + '_opacity').val()) / 100;
     brSetColorValue(inputId, hex, opacity);
+}
+
+function brPickIcon(uid, inputId, icon) {
+    $('#' + uid + ' .br-icon-swatch').removeClass('active');
+    $('#' + uid + ' .br-icon-swatch[data-icon="' + icon + '"]').addClass('active');
+    $('#' + uid + '_preview').attr('class', 'br-icon-select-preview-glyph icon icon-' + icon);
+    var label = icon.replace(/[-_]/g, ' ').replace(/\w\S*/g, function (t) {
+        return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
+    });
+    $('#' + uid + '_preview_label').text(label);
+    $(inputId).val(icon);
 }
 
 function brUpdateOpacity(uid, inputId) {

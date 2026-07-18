@@ -215,7 +215,6 @@
 	&.overlay		{ z-index: 40;}
 	&.top-overlay	{ z-index: 50;}
 	&.alerts		{ z-index: 60;}
-	&.feedback		{ z-index: 70; &.fade{ z-index: -1; &.active{ z-index: 70; } } }
 	&.loader		{ z-index: 80; &.fade{ z-index: -1; &.active{ z-index: 80; } } }
 }
 .background{

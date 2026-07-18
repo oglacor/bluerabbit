@@ -28,15 +28,6 @@
 		@include br-animation(rotate-right, 1s, normal, forwards, linear, infinite);
 	}
 }
-.feedback{
-	position: fixed;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	left: 0;
-	z-index:2200 !important;
-	text-align: center;
-}
 .objective-success-message{
 	display: flex;
 	margin: 0 auto;

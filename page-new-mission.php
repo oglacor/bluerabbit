@@ -94,7 +94,7 @@ $is_edit = isset($quest) && $quest;
 					<div class="br-form-component" id="tutorial-icon-select">
 						<?php $selected_icon = isset($quest->quest_icon) ? $quest->quest_icon : 'mission'; ?>
 						<input id="the_quest_icon" class="icon-selected" type="hidden" value="<?= $selected_icon; ?>">
-						<?php include(TEMPLATEPATH . '/icon-select.php'); ?>
+						<?php $icon_select_id = "#the_quest_icon"; include(TEMPLATEPATH . '/icon-select.php'); ?>
 					</div>
 				</div>
 			</div>
