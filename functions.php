@@ -1362,6 +1362,22 @@ function br_stats_segment_breakdown() {
 }
 add_action( 'wp_ajax_br_stats_segment_breakdown', 'br_stats_segment_breakdown' );
 
+function br_stats_search_players() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$search = sanitize_text_field( $_POST['search'] ?? '' );
+	$stats  = new BR_Stats();
+	$result = $stats->get_all_players( $aid, 100, 0, $search );
+	foreach ( $result['players'] as &$p ) {
+		$login_ts = ( $p['player_last_login'] && strtotime( $p['player_last_login'] ) > 0 ) ? strtotime( $p['player_last_login'] ) : 0;
+		$p['last_active_label'] = $login_ts ? BR_Utils::instance()->get_time_ago( $login_ts, $aid ) : '—';
+		$p['avatar_url'] = get_avatar_url( $p['player_id'], [ 'size' => 32 ] );
+	}
+	wp_send_json_success( $result );
+}
+add_action( 'wp_ajax_br_stats_search_players', 'br_stats_search_players' );
+
 function br_stats_player_panel() {
 	check_ajax_referer( 'br_stats_nonce', 'nonce' );
 	$uid = (int) $_POST['user_id'];

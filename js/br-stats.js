@@ -525,6 +525,27 @@
              + '<span class="br-stats-currency-label">' + esc(label) + '</span></div>';
     }
 
+    function renderPlayerSearchResults(players) {
+        var $tbody = $('#br-stats-player-table tbody');
+        if (!players || !players.length) {
+            $tbody.html('<tr><td colspan="6" class="text-center br-muted">No players found</td></tr>');
+            return;
+        }
+        var rows = players.map(function(p, i) {
+            return '<tr class="br-stats-player-row" data-uid="' + p.player_id + '">'
+                 + '<td class="br-row-num">' + (i + 1) + '</td>'
+                 + '<td><span class="br-stats-player-name">'
+                 +   '<img src="' + p.avatar_url + '" class="br-stats-avatar-sm" alt="">'
+                 +   esc(p.display_name) + '</span></td>'
+                 + '<td class="text-center">' + numFmt(p.player_xp) + '</td>'
+                 + '<td class="text-center">' + numFmt(p.player_bloo) + '</td>'
+                 + '<td class="text-center">' + p.completion_pct + '%</td>'
+                 + '<td class="text-center">' + esc(p.last_active_label) + '</td>'
+                 + '</tr>';
+        }).join('');
+        $tbody.html(rows);
+    }
+
     // ── Init ─────────────────────────────────────────────
 
     $(document).ready(function() {
@@ -547,13 +568,27 @@
                 if (uid) loadPlayerPanel(uid);
             });
 
-            // Player search
+            // Player search - queries the full roster server-side, not just the
+            // current page, since the table itself is paginated (20/page).
+            var $playerTbody = $('#br-stats-player-table tbody');
+            var originalTbodyHTML = $playerTbody.html();
+            var searchTimer = null;
+
             $('#br-stats-player-search').on('keyup', function() {
-                var q = ($(this).val() || '').toLowerCase();
-                $('#br-stats-player-table tbody tr').each(function() {
-                    var s = $(this).attr('data-search') || '';
-                    this.style.display = (!q || s.indexOf(q) >= 0) ? '' : 'none';
-                });
+                var q = ($(this).val() || '').trim();
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function() {
+                    if (!q) {
+                        $playerTbody.html(originalTbodyHTML);
+                        $('.br-stats-pagination').show();
+                        return;
+                    }
+                    ajax('br_stats_search_players', { search: q }, function(res) {
+                        if (!res.success) return;
+                        renderPlayerSearchResults(res.data.players);
+                        $('.br-stats-pagination').hide();
+                    });
+                }, 300);
             });
 
             // Sortable columns

@@ -298,7 +298,7 @@ class BR_Stats {
     }
 
     // Portable: swap $wpdb for PDO to migrate.
-    public function get_all_players( int $adventure_id, int $limit = 30, int $offset = 0 ): array {
+    public function get_all_players( int $adventure_id, int $limit = 30, int $offset = 0, string $search = '' ): array {
         global $wpdb;
 
         $total_quests = (int) $wpdb->get_var( $wpdb->prepare(
@@ -306,6 +306,19 @@ class BR_Stats {
             WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission')",
             $adventure_id
         ) );
+
+        // Search matches against the full roster (not just the current page) by filtering
+        // at the DB level instead of the page's own paginated LIMIT/OFFSET window.
+        $search_sql = '';
+        $params = [ $adventure_id ];
+        if ( $search !== '' ) {
+            $search_sql = ' AND (u.display_name LIKE %s OR u.user_email LIKE %s)';
+            $like = '%' . $wpdb->esc_like( $search ) . '%';
+            $params[] = $like;
+            $params[] = $like;
+        }
+        $params[] = $limit;
+        $params[] = $offset;
 
         $players = $wpdb->get_results( $wpdb->prepare(
             "SELECT
@@ -317,11 +330,11 @@ class BR_Stats {
             LEFT JOIN {$wpdb->users} u ON pa.player_id = u.ID
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON pa.player_id = pp.player_id AND pa.adventure_id = pp.adventure_id
-            WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+            WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'" . $search_sql . "
             GROUP BY pa.player_id
             ORDER BY pa.player_xp DESC
             LIMIT %d OFFSET %d",
-            $adventure_id, $limit, $offset
+            $params
         ), ARRAY_A );
 
         foreach ( $players as &$p ) {
@@ -330,10 +343,16 @@ class BR_Stats {
                 : 0;
         }
 
+        $total_params = [ $adventure_id ];
+        if ( $search !== '' ) {
+            $total_params[] = $like;
+            $total_params[] = $like;
+        }
         $total = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
-            WHERE adventure_id = %d AND player_adventure_status = 'in' AND player_adventure_role = 'player'",
-            $adventure_id
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure pa
+            LEFT JOIN {$wpdb->users} u ON pa.player_id = u.ID
+            WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'" . $search_sql,
+            $total_params
         ) );
 
         return [ 'players' => $players, 'total' => $total, 'total_quests' => $total_quests ];
