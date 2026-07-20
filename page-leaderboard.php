@@ -1,18 +1,19 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php if($adventure){ ?>
 <?php
-$limit   = $leaderboard_limit ? $leaderboard_limit : 10;
-$players = $wpdb->get_results("
+$limit = (int) $leaderboard_limit;
+if ($limit <= 0) { $limit = 10; }
+$players = $wpdb->get_results($wpdb->prepare("
 	SELECT
 		a.player_id, a.achievement_id, a.player_xp, a.player_bloo, a.player_level, a.player_gpa,
 		b.player_display_name, b.player_picture, b.player_email, b.player_hexad_slug, b.player_hexad
 	FROM {$wpdb->prefix}br_player_adventure a
 	LEFT JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
-	WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' AND a.player_adventure_role='player'
+	WHERE a.adventure_id=%d AND a.player_adventure_status='in' AND a.player_adventure_role='player'
 	GROUP BY a.player_id
 	ORDER BY a.player_xp DESC, a.player_level DESC, a.player_bloo DESC, a.player_id ASC
-	LIMIT $limit
-");
+	LIMIT %d
+", $adventure->adventure_id, $limit));
 $medal_colors = ['#f7cb15', '#b0bec5', '#cd7f32'];
 ?>
 
@@ -73,6 +74,11 @@ $medal_colors = ['#f7cb15', '#b0bec5', '#cd7f32'];
 </div>
 
 <style>
+/* .br-page has no z-index of its own (see css/br-table.scss - kept that way so
+   drawers elsewhere don't get trapped below the header/footer's stacking context).
+   This is the only page that pairs .br-page with the older fixed .layer.background
+   (z-index:10), so it needs its own explicit z-index here to paint above it. */
+.br-page { position: relative; z-index: 11; }
 .br-leaderboard-medal {
 	display: inline-flex; align-items: center; justify-content: center;
 	width: 36px; height: 36px; border-radius: 50%;

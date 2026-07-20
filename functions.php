@@ -1635,6 +1635,43 @@ function br_migrate_milestone_schema() {
 }
 add_action('init', 'br_migrate_milestone_schema');
 
+// Exposes the already-existing (but previously unreachable) leaderboard_limit
+// adventure setting through the standard Features table on page-new-adventure.php,
+// so GMs can control how many players show on their Leaderboard page instead of
+// it being stuck at the header.php-side default of 10. Reuses the leaderboard_limit
+// key already read by header.php/page-leaderboard.php rather than adding a second,
+// differently-named setting for the same value.
+function br_migrate_leaderboard_limit_feature() {
+	global $wpdb;
+	$exists = $wpdb->get_var($wpdb->prepare(
+		"SELECT feature_id FROM {$wpdb->prefix}br_features WHERE feature_name=%s",
+		'leaderboard_limit'
+	));
+	if ($exists) return;
+
+	$wpdb->insert("{$wpdb->prefix}br_features", [
+		'feature_name'  => 'leaderboard_limit',
+		'feature_label' => __('Leaderboard Player Limit', 'bluerabbit'),
+		'feature_type'  => 'number',
+		'feature_desc'  => __("Max number of players shown on the adventure's Leaderboard page. Leave blank for the default (10).", 'bluerabbit'),
+	]);
+	$feature_id = $wpdb->insert_id;
+	if (!$feature_id) return;
+
+	// feature_value doubles as both the plan-access gate (page-new-adventure.php hides the
+	// row entirely if falsy) and the numeric field's "max" HTML attribute - an empty value
+	// would hide the row for every plan, so use a high sentinel instead of a real cap.
+	$plans = $wpdb->get_results("SELECT plan_id FROM {$wpdb->prefix}br_plans WHERE plan_status='active'");
+	foreach ($plans as $p) {
+		$wpdb->insert("{$wpdb->prefix}br_plan_features", [
+			'plan_id'       => $p->plan_id,
+			'feature_id'    => $feature_id,
+			'feature_value' => '9999',
+		]);
+	}
+}
+add_action('init', 'br_migrate_leaderboard_limit_feature');
+
 // Unified Conditions engine (see classes/BR-Conditions.php). Threshold/count-based
 // gates (journey %, milestone count, tabi count, transaction count, items consumed)
 // attachable to any target (quest/tabi/achievement/item/item_category), on top of
