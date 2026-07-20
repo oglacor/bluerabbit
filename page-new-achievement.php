@@ -130,7 +130,9 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
 					$current_branch = ($is_edit && $a->branch_group_id) ? (int) $a->branch_group_id : 0;
 					?>
 					<input type="hidden" id="the_branch_group_id" value="<?= $current_branch; ?>">
-					<input type="hidden" id="the_achievement_group" value="">
+					<?php // Legacy achievement_group (pre-Branch grouping, still live on older adventures) -
+					// preserved as a silent pass-through so saving the form doesn't wipe it. ?>
+					<input type="hidden" id="the_achievement_group" value="<?= ($is_edit && $a->achievement_group) ? esc_attr($a->achievement_group) : ''; ?>">
 					<div class="br-branch-selector">
 						<button type="button" class="br-branch-opt <?= !$current_branch ? 'active' : ''; ?>" onClick="brSelectBranch(0, this);">
 							<?= __("None", "bluerabbit"); ?>

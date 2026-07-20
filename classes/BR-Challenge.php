@@ -687,6 +687,9 @@ class BR_Challenge {
 
                 if($achievement_reward->achievement_applied){
                     $data['message'] .= '<h4 class="purple-400"><span class="icon icon-achievement"></span> <strong>'.__("Achievement already earned!","bluerabbit").'</strong></h4>';
+                }elseif(!BR_Branch::instance()->canGrantAchievement($current_user->ID, $adv_child_id, $challenge->mech_achievement_reward)){
+                    $data['message'] .= '<h4 class="purple-400"><span class="icon icon-achievement"></span> <strong>'.__("Already earned an achievement from this branch!","bluerabbit").'</strong></h4>';
+                    $achievement_reward = null;
                 }else{
                     $sql = "INSERT INTO {$wpdb->prefix}br_player_achievement (player_id, adventure_id, achievement_id, achievement_applied)
                     VALUES (%d, %d, %d, %s)";

@@ -66,13 +66,16 @@ if (!$already_done) {
 	$achievement_reward = null;
 	if ($quest->mech_achievement_reward) {
 		$prev_ach = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_achievement WHERE player_id=$player_id AND adventure_id=$adv_child_id AND achievement_id=$quest->mech_achievement_reward");
-		if (!$prev_ach) {
+		$branch_ok = BR_Branch::instance()->canGrantAchievement($player_id, $adv_child_id, $quest->mech_achievement_reward);
+		if (!$prev_ach && $branch_ok) {
 			$wpdb->query($wpdb->prepare(
 				"INSERT INTO {$wpdb->prefix}br_player_achievement (player_id, adventure_id, achievement_id, achievement_applied) VALUES (%d, %d, %d, %s)",
 				$player_id, $adv_child_id, $quest->mech_achievement_reward, $today
 			));
 		}
-		$achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=$quest->mech_achievement_reward");
+		if ($prev_ach || $branch_ok) {
+			$achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=$quest->mech_achievement_reward");
+		}
 	}
 
 	// Grant item reward if set

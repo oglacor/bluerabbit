@@ -217,6 +217,46 @@ class BR_Branch {
         die();
     }
 
+    // Guards every achievement-reward grant site (quest/challenge/step/QR completion),
+    // not just the dedicated branch-choice step - an achievement assigned to a branch
+    // group must stay mutually exclusive with its groupmates however it's earned, or
+    // players can double up by completing two different quests that reward two
+    // different achievements from the same branch. Covers both the newer branch_group_id
+    // (br_branch_groups) grouping and the legacy achievement_group string field still used
+    // by BR_Achievement::magicCode()'s "path" achievements - same exclusivity rule either way.
+    public function canGrantAchievement($player_id, $adventure_id, $achievement_id) {
+        global $wpdb;
+        $ach = $wpdb->get_row($wpdb->prepare(
+            "SELECT branch_group_id, achievement_group, achievement_display FROM {$wpdb->prefix}br_achievements WHERE achievement_id = %d",
+            $achievement_id
+        ));
+        if (!$ach) return true;
+
+        if ($ach->branch_group_id) {
+            $has_other = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement pa
+                 JOIN {$wpdb->prefix}br_achievements a ON pa.achievement_id = a.achievement_id
+                 WHERE pa.player_id = %d AND pa.adventure_id = %d
+                   AND a.branch_group_id = %d AND pa.achievement_id != %d",
+                $player_id, $adventure_id, $ach->branch_group_id, $achievement_id
+            ));
+            if ((int) $has_other > 0) return false;
+        }
+
+        if ($ach->achievement_group !== '' && $ach->achievement_group !== null && $ach->achievement_display === 'path') {
+            $has_other = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement pa
+                 JOIN {$wpdb->prefix}br_achievements a ON pa.achievement_id = a.achievement_id
+                 WHERE pa.player_id = %d AND pa.adventure_id = %d
+                   AND a.achievement_group = %s AND pa.achievement_id != %d",
+                $player_id, $adventure_id, $ach->achievement_group, $achievement_id
+            ));
+            if ((int) $has_other > 0) return false;
+        }
+
+        return true;
+    }
+
     public function getPlayerBranch($player_id, $adventure_id, $group_id) {
         global $wpdb;
         return $wpdb->get_row($wpdb->prepare(

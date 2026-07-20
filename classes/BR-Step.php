@@ -621,7 +621,7 @@ class BR_Step {
                  WHERE player_id = %d AND adventure_id = %d AND achievement_id = %d",
                 $player_id, $adventure_id, $step->step_achievement_reward
             ));
-            if (!$has) {
+            if (!$has && BR_Branch::instance()->canGrantAchievement($player_id, $adventure_id, $step->step_achievement_reward)) {
                 $wpdb->insert("{$wpdb->prefix}br_player_achievement", [
                     'player_id'           => $player_id,
                     'adventure_id'        => $adventure_id,

@@ -505,8 +505,11 @@ class BR_Quest {
 						$has_achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_achievement a
 						JOIN {$wpdb->prefix}br_achievements b ON a.achievement_id=b.achievement_id
 						WHERE a.player_id=$current_user->ID AND a.adventure_id=$adv_child_id AND a.achievement_id=$quest->mech_achievement_reward AND b.achievement_status='publish'");
+						$branch_ok = BR_Branch::instance()->canGrantAchievement($current_user->ID, $adv_child_id, $quest->mech_achievement_reward);
 						if($has_achievement_reward){
 							$data['message'] .= '<h4 class="purple-400"><span class="icon icon-achievement"></span> <strong>'.__("Achievement already earned!","bluerabbit").'</strong></h4>';
+						}elseif(!$branch_ok){
+							$data['message'] .= '<h4 class="purple-400"><span class="icon icon-achievement"></span> <strong>'.__("Already earned an achievement from this branch!","bluerabbit").'</strong></h4>';
 						}else{
 							$sql = "INSERT INTO {$wpdb->prefix}br_player_achievement (player_id, adventure_id, achievement_id, achievement_applied)
 							VALUES (%d, %d, %d, %s)";
@@ -515,7 +518,9 @@ class BR_Quest {
 							BR_Activity::instance()->logActivity($adv_child_id,'earned','achievement',$quest->mech_achievement_reward,$quest->quest_id);
 							$data['message'] .= '<h4 class="purple-400"><span class="icon icon-achievement"></span> <strong>'.__("Earned an Achievement!","bluerabbit").'</strong></h4>';
 						}
-						$achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=$quest->mech_achievement_reward");
+						if($has_achievement_reward || $branch_ok){
+							$achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=$quest->mech_achievement_reward");
+						}
 					}
 					$playerState = BR_Player::instance()->resetPlayer($adv_child_id, $player_id);
 					$adv_settings = BR_Config::instance()->getSettings($adv_parent_id);

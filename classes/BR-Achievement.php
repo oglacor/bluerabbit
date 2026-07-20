@@ -167,6 +167,14 @@ class BR_Achievement {
             }
             if($a_display != 'path'){
                 $a_group="";
+            }elseif($a_group === '' && $a_id){
+                // Guard against the form round-tripping an empty group for an existing
+                // path achievement (e.g. the group field failing to load) - that would
+                // silently drop it out of its branch's one-per-player exclusivity check
+                // in BR_Achievement::magicCode(). Preserve whatever is already saved.
+                $a_group = (string) $wpdb->get_var($wpdb->prepare(
+                    "SELECT achievement_group FROM {$wpdb->prefix}br_achievements WHERE achievement_id=%d", $a_id
+                ));
             }
             if(!$a_color){
                 $a_color='amber';

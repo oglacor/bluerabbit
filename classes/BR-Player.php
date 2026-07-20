@@ -976,7 +976,7 @@ class BR_Player {
                             $prev_ach = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_achievement a
                             JOIN {$wpdb->prefix}br_achievements b ON a.achievement_id=b.achievement_id
                             WHERE a.player_id=$user->player_id AND a.adventure_id=$adventure_id AND a.achievement_id=$pp->mech_achievement_reward AND b.achievement_status='publish'");
-                            if(!$prev_ach){
+                            if(!$prev_ach && BR_Branch::instance()->canGrantAchievement($user->player_id, $adventure_id, $pp->mech_achievement_reward)){
                                 $sql = "INSERT INTO {$wpdb->prefix}br_player_achievement (player_id, adventure_id, achievement_id, achievement_applied)
                                 VALUES (%d, %d, %d, %s)";
                                 $sql = $wpdb->prepare($sql, $user->player_id, $adventure_id, $pp->mech_achievement_reward, $today);
