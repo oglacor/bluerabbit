@@ -5723,6 +5723,13 @@ body.br-drawer-open {
   color: $br-purple;
 }
 
+.br-branch-group-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.br-branch-edit-btn,
 .br-branch-delete-btn {
   padding: 4px 10px;
   font-size: 11px;

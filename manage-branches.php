@@ -74,11 +74,16 @@ $available_achievements = array_filter($path_achievements, function($a) { return
 						<span class="br-branch-group-name"><?= esc_html($bg->group_name); ?></span>
 						<span class="br-badge br-branch-badge"><?= count($group_achievements); ?> <?= __("paths", "bluerabbit"); ?></span>
 					</div>
-					<?php if (empty($group_achievements)) { ?>
-					<button class="br-btn br-btn-red br-branch-delete-btn" onClick="brDeleteGroup(<?= $bg->group_id; ?>);">
-						<span class="icon icon-trash"></span> <?= __("Delete", "bluerabbit"); ?>
-					</button>
-					<?php } ?>
+					<div class="br-branch-group-actions">
+						<button class="br-btn ghost br-branch-edit-btn" onClick="brShowGroupForm(<?= $bg->group_id; ?>, '<?= esc_js($bg->group_name); ?>');">
+							<span class="icon icon-edit"></span> <?= __("Edit", "bluerabbit"); ?>
+						</button>
+						<?php if (empty($group_achievements)) { ?>
+						<button class="br-btn br-btn-red br-branch-delete-btn" onClick="brDeleteGroup(<?= $bg->group_id; ?>);">
+							<span class="icon icon-trash"></span> <?= __("Delete", "bluerabbit"); ?>
+						</button>
+						<?php } ?>
+					</div>
 				</div>
 
 				<!-- Assigned achievements -->
