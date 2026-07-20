@@ -5251,6 +5251,52 @@ function updateAchievement() {
         }
     });
 }
+////////////////////////////////////////// BRANCH SELECTOR (achievement form) ////////////////////////////////////////////
+
+function brSelectBranch(group_id, btnEl) {
+    $(btnEl).closest('.br-branch-selector').find('.br-branch-opt').removeClass('active');
+    $(btnEl).addClass('active');
+    $('#the_branch_group_id').val(group_id);
+}
+
+function brCreateBranchInline() {
+    $('#new-branch-inline').show();
+    $('#new-branch-name-inline').val('').focus();
+}
+
+function brSaveNewBranchInline() {
+    let group_name = $('#new-branch-name-inline').val().trim();
+    if (!group_name) return;
+    let adventure_id = $('#the_adventure_id').val();
+
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({
+            action: 'br_update_branch_group',
+            adventure_id: adventure_id,
+            group_id: 0,
+            group_name: group_name,
+            group_status: 'publish'
+        }),
+        method: 'POST',
+        success: function (json_text) {
+            displayAjaxResponse(json_text);
+            let data = JSON.parse(json_text);
+            if (data.success && data.group_id) {
+                let $btn = $('<button type="button" class="br-branch-opt active" data-group-id="' + data.group_id + '"></button>')
+                    .text(group_name + ' ')
+                    .append('<span class="br-branch-count">(0)</span>')
+                    .attr('onclick', 'brSelectBranch(' + data.group_id + ', this);');
+                $('.br-branch-selector .br-branch-add').before($btn);
+                brSelectBranch(data.group_id, $btn.get(0));
+            }
+            $('#new-branch-inline').hide();
+            $('#new-branch-name-inline').val('');
+        }
+    });
+}
+
 ////////////////////////////////////////// UPDATE TEAM ////////////////////////////////////////////
 
 function updateGuild() {
