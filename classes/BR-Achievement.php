@@ -724,32 +724,19 @@ class BR_Achievement {
                     BR_Activity::instance()->logActivity($adv_child_id,'expired','magic-code',$code,$c->achievement_id);
                 }
 
-                if($c->achievement_group != '' && $c->achievement_display =='path'){
-                    $allowed = 'YES';
-                    $group_achs = $wpdb->get_results("
-                    SELECT
-                    ach.*, player.player_id as achieved_player
-
-                    FROM {$wpdb->prefix}br_achievements ach
-                    LEFT JOIN {$wpdb->prefix}br_player_achievement player
-                    ON ach.achievement_id = player.achievement_id AND player.player_id=$current_user->ID AND player.adventure_id=$adv_child_id
-
-                    WHERE ach.achievement_group='$c->achievement_group' AND ach.achievement_status = 'publish'
-
-                    ");
-
-                    if($group_achs){
-                        foreach($group_achs as $ga){
-                            if($ga->achieved_player == $current_user->ID){
-                                $allowed = 'NOT';
-                            }
-                        }
-                        if($allowed=='NOT'){
-                            $data['message']= '<span class="icon icon-cancel red icon-xl"></span>';
-                            $data['message'].= '<h3><strong>'.__("Already walking a different path",'bluerabbit').'</strong></h3>';
-                            $error['journey']= __("Already walking a different path","bluerabbit");
-                        }
+                $held_branchmate = BR_Branch::instance()->getHeldBranchmate($current_user->ID, $adv_child_id, $c->achievement_id);
+                if($held_branchmate){
+                    $data['message']= '<span class="icon icon-cancel red icon-xl"></span>';
+                    $data['message'].= '<h3><strong>'.__("You can only earn one achievement from this branch",'bluerabbit').'</strong></h3>';
+                    $data['message'].= '<div class="held-branch-achievement">';
+                    if($held_branchmate->achievement_badge){
+                        $data['message'].= '<img src="'.esc_url($held_branchmate->achievement_badge).'" class="held-branch-achievement-badge">';
                     }
+                    $data['message'].= '<h4>'.__("You already have:",'bluerabbit').'</h4>';
+                    $data['message'].= '<strong>'.esc_html($held_branchmate->achievement_name).'</strong>';
+                    $data['message'].= '</div>';
+                    $error['journey']= __("You can only earn one achievement from this branch","bluerabbit");
+                    $data['held_achievement'] = $held_branchmate;
                 }
                 if($c->achievement_path > 0){
                     $allowed = 'NOT';

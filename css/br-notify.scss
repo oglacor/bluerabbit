@@ -96,6 +96,32 @@ $radius-sm:    8px;
   }
 }
 
+// Shown inside #feedback when a branch/path achievement is blocked because the
+// player already holds a groupmate - BR_Achievement::magicCode() builds this
+// markup server-side (see the "held_achievement" case).
+.held-branch-achievement {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 12px auto 0;
+  padding: 14px 20px;
+  background: rgba($br-white, 0.06);
+  border: 1px solid $br-border;
+  border-radius: $radius-sm;
+
+  h4 { margin: 4px 0 0; font-weight: 400; opacity: 0.7; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  strong { font-size: 18px; }
+}
+
+.held-branch-achievement-badge {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid $br-border;
+}
+
 // ─────────────────────────────────────────────────────────────
 // br-feedback-panel - bigger fullscreen-only card, for ad hoc #feedback
 // messages (out of funds, out of energy, validation errors, etc.) that

@@ -46,13 +46,27 @@ if($code){
 			<script> $(document).ready(function(){ $("#audio-funky").get(0).play(); }); </script>
 		<?php }else{ ?>
 
-		<div class="layer background fixed top left sq-full red-bg-800 blend-overlay opacity-40" style="background-image: url('<?= $c->achievement_badge; ?>');"></div>
+		<div class="layer background fixed top left sq-full red-bg-800 blend-overlay opacity-40" style="background-image: url('<?= isset($c['c']->achievement_badge) ? esc_attr($c['c']->achievement_badge) : ''; ?>');"></div>
 		<div class="relative layer base boxed text-center min-w-300  max-w-900  padding-20">
 			<?php foreach($error as $key=>$err){ ?>
 				<h5 class="font text-center uppercase w900  _18 white-color red-bg-400 padding-10">
 					<span class="icon icon-<?= $key; ?> icon-lg"></span><br><?=$err; ?>
 				</h5>
 			<?php } ?>
+
+			<?php if(!empty($c['held_achievement'])){ $held = $c['held_achievement']; ?>
+			<div class="text-center relative padding-10 inline-block w-250">
+				<div class="background layer absolute sq-full purple-gradient-400 opacity-50"></div>
+				<div class="layer relative base">
+					<?php if($held->achievement_badge){ ?>
+					<img src="<?= esc_attr($held->achievement_badge); ?>" class="w-150 margin-5 overflow-hidden border rounded-max">
+					<?php } ?>
+					<h4 class="line white-color font w100 _12 opacity-80"><?= __("You already have","bluerabbit"); ?></h4>
+					<h3 class="line white-color font w900 _18"><?= esc_html($held->achievement_name); ?></h3>
+				</div>
+			</div>
+			<?php } ?>
+
 			<div class="content text-center">
 				<a href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>" class="form-ui blue-bg-700 big">
 					<span class="icon icon-home"></span>
