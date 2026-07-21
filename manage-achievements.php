@@ -23,10 +23,18 @@ if(isset($_GET['path'])){
 }else{
 	$achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id);
 }
+
+$achievement_award_counts = array();
+$award_counts_qry = $wpdb->get_results($wpdb->prepare(
+	"SELECT achievement_id, COUNT(*) as cnt FROM {$wpdb->prefix}br_player_achievement WHERE adventure_id=%d GROUP BY achievement_id",
+	$adventure_id
+));
+foreach($award_counts_qry as $row){
+	$achievement_award_counts[$row->achievement_id] = $row->cnt;
+}
 ?>
 <div class="br-journey-manager">
 				<input type="hidden" id="magic-code-nonce" value="<?php echo wp_create_nonce('magic_code_nonce'); ?>" />
-				<input type="hidden" id="max-players-nonce" value="<?php echo wp_create_nonce('max_players_nonce'); ?>" />
 
 				<!-- ════════════ HEADER BAR ════════════ -->
 				<div class="br-header">
@@ -106,7 +114,7 @@ if(isset($_GET['path'])){
 									<th><?php _e("Name","bluerabbit"); ?></th>
 									<?php if(isset($a) && $a->achievement_display !='rank'){ ?>
 										<th><?php _e("Magic Code","bluerabbit"); ?></th>
-										<th><?php _e("Max Players","bluerabbit"); ?></th>
+										<th><?php _e("Awarded","bluerabbit"); ?></th>
 									<?php } ?>
 									<th><span class="icon icon-star"></span></th>
 									<th><span class="icon icon-bloo"></span></th>
@@ -200,9 +208,9 @@ if(isset($_GET['path'])){
 										<?php } ?>
 										<?php if($a->achievement_display !='rank'){ ?>
 											<td>
-												<div class="br-num">
+												<div class="br-num br-num-static">
 													<span class="icon icon-players"></span>
-													<input type="number" id="the_max_players-achievement-<?= $a->achievement_id; ?>" value="<?= $a->achievement_max; ?>" onChange="setMaxPlayers(<?= $a->achievement_id; ?>);">
+													<span><?= isset($achievement_award_counts[$a->achievement_id]) ? $achievement_award_counts[$a->achievement_id] : 0; ?></span>
 												</div>
 											</td>
 											<td>

@@ -2829,6 +2829,15 @@ body.br-drawer-open {
 
   .icon { font-size: 12px; opacity: 0.4; }
 
+  // Read-only variant (e.g. achievements-awarded count) - same icon+value
+  // layout as the editable input below, without the input chrome.
+  &.br-num-static span {
+    padding: 5px 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: $br-white;
+  }
+
   input[type="number"] {
     width: 100%;
     background: transparent;
