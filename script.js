@@ -2225,40 +2225,6 @@ function flipLibraryCard(id) {
 }
 
 
-/////////Download all images
-
-function downloadAllImages() {
-    showLoader();
-    let urls_ = '';
-
-    let cc = 0;
-    let url = '';
-    $("img.downloadable").each(function (i, v) {
-        url = $(v).attr("src");
-
-        if (cc == 0) {
-            urls_ = url;
-        } else {
-            urls_ = urls_ + "|" + url;
-        }
-        cc++;
-    });
-    let file_prefix = $("#file_prefix").val();
-    jQuery.ajax({
-        url: runAJAX.ajaxurl,
-        data: ({
-            action: 'downloadAllImages',
-            datos: urls_,
-            file_prefix: file_prefix
-        }),
-        method: "POST",
-        success: function (data_received) {
-            displayAjaxResponse(data_received);
-        }
-    });
-}
-
-
 ////////////////////////////////////////// FORMS FUNCTIONALITY ////////////////////////////////////////////
 
 function setItemType(type) {
@@ -6329,41 +6295,33 @@ function setPostComment(quest_id, player_id) {
 
 
 //////////////////  DOWNLOAD QUEST REVIEW CSV ////////////////
-function downloadQuestCSV() {
-    let questTitle = (document.getElementById('quest-review-title') ? document.getElementById('quest-review-title').innerText : 'quest-review').trim().replace(/[^a-z0-9\-_ ]/gi, '');
-    let rows = [
-        ['Player Name', 'Email', 'Grade', 'Entry']
-    ];
+////////////////////// UPLOAD REVIEWED CSV (grade + validation_status + comment only) //////////////////
+function uploadPostReviewCSV() {
+    let fileInput = $('#review_csv_file')[0];
+    let file = fileInput.files[0];
+    if (!file) {
+        notification('#msg-no-file-selected', 1000, '', 'player');
+        return;
+    }
+    let formData = new FormData();
+    formData.append('review_csv', file);
+    formData.append('action', 'importPlayerPostsCSV');
+    formData.append('adventure_id', $('#the_adventure_id').val());
+    formData.append('quest_id', $('#the_review_quest_id').val());
+    formData.append('nonce', $('#grade_nonce').val());
 
-    document.querySelectorAll('#player-submissions .margin-10').forEach(function (card) {
-        let name = card.querySelector('.player-name') ? card.querySelector('.player-name').innerText.trim() : '';
-        let email = card.querySelector('.player-email') ? card.querySelector('.player-email').innerText.trim() : '';
-        let gradeEl = card.querySelector('.player-grade');
-        let grade = '';
-        if (gradeEl) {
-            grade = gradeEl.tagName === 'SELECT' ? (gradeEl.options[gradeEl.selectedIndex] ? gradeEl.options[gradeEl.selectedIndex].text : '') : gradeEl.value;
+    showLoader();
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: formData,
+        processData: false,
+        contentType: false,
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+            fileInput.value = '';
         }
-        let content = card.querySelector('.player-entry-content') ? card.querySelector('.player-entry-content').innerText.trim() : '';
-        rows.push([name, email, grade, content]);
     });
-
-    let csv = rows.map(function (r) {
-        return r.map(function (v) {
-            return '"' + String(v).replace(/"/g, '""') + '"';
-        }).join(',');
-    }).join('\n');
-
-    let blob = new Blob(['﻿' + csv], {
-        type: 'text/csv;charset=utf-8;'
-    });
-    let url = URL.createObjectURL(blob);
-    let a = document.createElement('a');
-    a.href = url;
-    a.download = questTitle + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
 }
 
 
@@ -8173,10 +8131,6 @@ function displayAjaxResponse(json_data) {
         $("tr#player-row-" + data.player_id).fadeOut('fast', function () {
             $(this).remove();
         });
-    }
-    if (data.file) {
-        $("#create-zip").remove();
-        $("#download-zip").removeClass('hidden').attr('href', data.file);
     }
     if (data.levelup) {
         if (data.achievement_id) {

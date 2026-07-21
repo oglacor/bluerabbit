@@ -65,16 +65,16 @@ $rating = 0;
 			</div>
 
 			<div class="br-flex br-mt-sm br-gap-sm br-flex-wrap">
-				<input type="hidden" id="file_prefix" value="<?= esc_attr($q->quest_type.'-'.$q->quest_id.'-'); ?>">
-				<button class="br-form-btn-green" onClick="downloadQuestCSV();">
+				<a class="br-form-btn-green" href="<?= admin_url('admin-ajax.php').'?action=exportPlayerPostsCSV&adventure_id='.$adventure->adventure_id.'&quest_id='.$q->quest_id.'&nonce='.wp_create_nonce('br_grade_nonce'); ?>">
 					<span class="icon icon-download"></span> <?= __("Download CSV","bluerabbit"); ?>
-				</button>
-				<button id="create-zip" class="br-form-btn-blue" onClick="downloadAllImages();">
-					<span class="icon icon-image"></span> <?= __("Create Images Zip","bluerabbit"); ?>
-				</button>
-				<a id="download-zip" href="" class="br-btn br-initially-hidden" target="_blank">
-					<?= __("Download Zip","bluerabbit"); ?>
 				</a>
+			</div>
+			<div class="br-flex br-flex-center br-mt-sm br-gap-sm br-flex-wrap">
+				<input type="file" id="review_csv_file" accept=".csv">
+				<button class="br-form-btn-blue" onClick="uploadPostReviewCSV();">
+					<span class="icon icon-upload"></span> <?= __("Upload Reviewed CSV","bluerabbit"); ?>
+				</button>
+				<span class="br-text-12-muted"><?= __("Only updates grade, validation status and comment - everything else in the file is ignored.","bluerabbit"); ?></span>
 			</div>
 		</div>
 
@@ -189,5 +189,6 @@ $rating = 0;
 </div>
 
 <input type="hidden" id="grade_nonce" value="<?= wp_create_nonce('br_grade_nonce'); ?>">
+<input type="hidden" id="the_review_quest_id" value="<?= $q->quest_id; ?>">
 
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

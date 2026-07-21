@@ -474,7 +474,7 @@ class BR_Quest {
 				$errors['imagecount']=__("You must include $min_images images","bluerabbit"). " <h1>".__("You included","bluerabbit")." $pp_images</h1>";
 			}
 			if (wp_verify_nonce($_POST['override_nonce'], 'br_player_override_post_nonce_'.$current_user->ID)) {
-				$pp_content = "Challenge Overcome by completing all steps";
+				$pp_content = BR_POST_AUTO_COMPLETE_TEXT;
 				$wordcount = 999999;
 				$errors = false;
 				BR_Activity::instance()->logActivity($adv_child_id,'system-verification','override-player-post',$quest->quest_id);
@@ -896,6 +896,241 @@ class BR_Quest {
 			$data['message'] = $notification->pop($msg_content,'red','cancel');
 			$data['just_notify'] = true;
 		}
+		echo json_encode($data);
+		die();
+    }
+
+    // Shared by export/import below - this endpoint reads/writes every submission for a
+    // quest in one shot, a bigger blast radius than the single-row setGrade/setPostComment
+    // above, so (unlike those) it independently re-checks GM/Admin/NPC standing on the
+    // adventure rather than trusting the nonce alone.
+    private function currentUserIsGMFor($adventure){
+        global $current_user;
+        if(isset($current_user->roles[0]) && $current_user->roles[0] === 'administrator'){ return true; }
+        if(!$adventure){ return false; }
+        if($adventure->adventure_owner == $current_user->ID){ return true; }
+        return in_array($adventure->player_adventure_role, array('gm','npc'));
+    }
+
+    public function exportPlayerPostsCSV(){
+		global $wpdb; $current_user = wp_get_current_user();
+		$quest_id = intval($_GET['quest_id']);
+		$adventure_id = intval($_GET['adventure_id']);
+		$nonce = isset($_GET['nonce']) ? $_GET['nonce'] : '';
+
+		if(!wp_verify_nonce($nonce, 'br_grade_nonce')){
+			wp_die(__("Security check failed, please reload the page and try again.",'bluerabbit'));
+		}
+
+		$adventure = BR_Adventure::instance()->getAdventure($adventure_id);
+		if(!$adventure || !$this->currentUserIsGMFor($adventure)){
+			wp_die(__("You don't have permission to do this.",'bluerabbit'));
+		}
+
+		$q = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=%d AND adventure_id=%d",
+			$quest_id, $adventure_id
+		));
+		if(!$q){
+			wp_die(__("This milestone doesn't exist",'bluerabbit'));
+		}
+
+		$player_posts = $wpdb->get_results($wpdb->prepare(
+			"SELECT a.*, b.player_display_name, b.player_email
+			FROM {$wpdb->prefix}br_player_posts a
+			JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
+			WHERE a.adventure_id=%d AND a.quest_id=%d
+			ORDER BY b.player_display_name",
+			$adventure_id, $quest_id
+		));
+
+		nocache_headers();
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="'.sanitize_title($q->quest_title).'-review-'.date('Y-m-d').'.csv"');
+
+		$out = fopen('php://output', 'w');
+		fputs($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel doesn't mangle accented names
+		fputcsv($out, array('player_id','adventure_id','quest_id','player_name','player_email','submitted','grade','validation_status','comment','content'));
+
+		foreach($player_posts as $pp){
+			$validation_label = '';
+			if($q->mech_validate){
+				// pp_status is the actual field the importer below writes to for this
+				// column - read from the same field so a re-download right after an
+				// upload reflects exactly what was just written, not a grade-derived proxy.
+				$validation_label = ($pp->pp_status == 'publish') ? 'Valid' : 'Invalid';
+			}
+			if(trim((string)$pp->pp_content) === BR_POST_AUTO_COMPLETE_TEXT){
+				$plain_content = __('(No written response - milestone completed by finishing all steps)','bluerabbit');
+			}else{
+				$plain_content = $pp->pp_content
+					? trim(wp_strip_all_tags(str_replace(array('</p>','<br>','<br/>','<br />'), "\n", $pp->pp_content)))
+					: '';
+			}
+			fputcsv($out, array(
+				$pp->player_id,
+				$adventure_id,
+				$quest_id,
+				$pp->player_display_name,
+				$pp->player_email,
+				$pp->pp_date,
+				$pp->pp_grade,
+				$validation_label,
+				$pp->pp_gm_comment,
+				$plain_content,
+			));
+		}
+		fclose($out);
+		die();
+    }
+
+    // Only ever rewrites pp_grade, pp_status and pp_gm_comment - nothing else about the
+    // post (content, dates, player identity) is touched. A blank cell in grade/validation_status/
+    // comment means "leave as is", not "clear this" - lets a GM re-upload the same file
+    // across multiple review passes without wiping earlier work on rows they haven't
+    // gotten to yet.
+    public function importPlayerPostsCSV(){
+		global $wpdb; $current_user = wp_get_current_user();
+		$notification = new Notification();
+		$data = array('success' => false);
+
+		$quest_id = intval($_POST['quest_id']);
+		$adventure_id = intval($_POST['adventure_id']);
+		$nonce = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+
+		if(!wp_verify_nonce($nonce, 'br_grade_nonce')){
+			$data['message'] = $notification->pop(__("Security check failed, please reload the page and try again.",'bluerabbit'),'red','cancel');
+			$data['just_notify'] = true;
+			echo json_encode($data); die();
+		}
+
+		$adventure = BR_Adventure::instance()->getAdventure($adventure_id);
+		if(!$adventure || !$this->currentUserIsGMFor($adventure)){
+			$data['message'] = $notification->pop(__("You don't have permission to do this.",'bluerabbit'),'red','cancel');
+			$data['just_notify'] = true;
+			echo json_encode($data); die();
+		}
+
+		$q = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=%d AND adventure_id=%d",
+			$quest_id, $adventure_id
+		));
+		if(!$q){
+			$data['message'] = $notification->pop(__("This milestone doesn't exist",'bluerabbit'),'red','cancel');
+			$data['just_notify'] = true;
+			echo json_encode($data); die();
+		}
+
+		if(empty($_FILES['review_csv']['tmp_name']) || !is_uploaded_file($_FILES['review_csv']['tmp_name'])){
+			$data['message'] = $notification->pop(__("No file uploaded.",'bluerabbit'),'red','cancel');
+			$data['just_notify'] = true;
+			echo json_encode($data); die();
+		}
+
+		$handle = fopen($_FILES['review_csv']['tmp_name'], 'r');
+		$header = $handle ? fgetcsv($handle) : false;
+		if(!$header){
+			if($handle){ fclose($handle); }
+			$data['message'] = $notification->pop(__("That file looks empty or unreadable.",'bluerabbit'),'red','cancel');
+			$data['just_notify'] = true;
+			echo json_encode($data); die();
+		}
+		$header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+		$header = array_map(function($h){ return strtolower(trim($h)); }, $header);
+		$col = array_flip($header);
+
+		foreach(array('player_id','grade','validation_status','comment') as $required_col){
+			if(!isset($col[$required_col])){
+				fclose($handle);
+				$data['message'] = $notification->pop(sprintf(__("Missing expected column: %s",'bluerabbit'), $required_col),'red','cancel');
+				$data['just_notify'] = true;
+				echo json_encode($data); die();
+			}
+		}
+
+		$letter_map = array('a'=>100,'a-'=>91.75,'b+'=>83.25,'b'=>75,'b-'=>66.75,'c+'=>58.25,'c'=>50,'d'=>25,'f'=>0);
+		$updated = 0; $skipped = 0;
+
+		while(($row = fgetcsv($handle)) !== false){
+			if(count($row) === 1 && trim($row[0]) === ''){ continue; } // stray blank line
+			$row_player_id = intval($row[$col['player_id']] ?? 0);
+			if(!$row_player_id){ $skipped++; continue; }
+			if(isset($col['quest_id'], $row[$col['quest_id']]) && $row[$col['quest_id']] !== '' && intval($row[$col['quest_id']]) !== $quest_id){ $skipped++; continue; }
+			if(isset($col['adventure_id'], $row[$col['adventure_id']]) && $row[$col['adventure_id']] !== '' && intval($row[$col['adventure_id']]) !== $adventure_id){ $skipped++; continue; }
+
+			$current = $wpdb->get_row($wpdb->prepare(
+				"SELECT pp_grade, pp_status, pp_gm_comment FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND adventure_id=%d AND player_id=%d",
+				$quest_id, $adventure_id, $row_player_id
+			));
+			if(!$current){ $skipped++; continue; }
+
+			// Compares against the current value (not just "cell is non-empty") so
+			// re-uploading the same export - the exported grade/validation_status columns
+			// are always pre-filled with the current value, not blank - doesn't count as a
+			// mass "update" when nothing actually changed.
+			$set = array(); $formats = array();
+
+			if($adventure->adventure_grade_scale != 'none'){
+				$grade_cell = trim($row[$col['grade']] ?? '');
+				if($grade_cell !== ''){
+					if(is_numeric($grade_cell)){
+						$grade_val = (float) $grade_cell;
+					}elseif(isset($letter_map[strtolower($grade_cell)])){
+						$grade_val = $letter_map[strtolower($grade_cell)];
+					}else{
+						$grade_val = null;
+					}
+					if($grade_val !== null){
+						$grade_val = max(0, min(100, $grade_val));
+						if($current->pp_grade === null || (float)$current->pp_grade !== (float)$grade_val){
+							$set['pp_grade'] = $grade_val;
+							$formats[] = '%f';
+						}
+					}
+				}
+			}
+
+			if($q->mech_validate){
+				$validation_cell = strtolower(trim($row[$col['validation_status']] ?? ''));
+				if($validation_cell !== ''){
+					$new_status = in_array($validation_cell, array('valid','published','publish','pass')) ? 'publish' : 'draft';
+					if($new_status !== $current->pp_status){
+						$set['pp_status'] = $new_status;
+						$formats[] = '%s';
+					}
+				}
+			}
+
+			$comment_cell = $row[$col['comment']] ?? '';
+			if(trim($comment_cell) !== ''){
+				$new_comment = sanitize_textarea_field($comment_cell);
+				if($new_comment !== (string)$current->pp_gm_comment){
+					$set['pp_gm_comment'] = $new_comment;
+					$formats[] = '%s';
+				}
+			}
+
+			if(empty($set)){ $skipped++; continue; }
+
+			$wpdb->update(
+				"{$wpdb->prefix}br_player_posts",
+				$set,
+				array('quest_id'=>$quest_id, 'adventure_id'=>$adventure_id, 'player_id'=>$row_player_id),
+				$formats,
+				array('%d','%d','%d')
+			);
+			$updated++;
+		}
+		fclose($handle);
+
+		BR_Activity::instance()->logActivity($adventure_id, 'import', 'post-review', "", $quest_id, $updated);
+
+		$data['success'] = true;
+		$msg = sprintf(__('%d entries updated.','bluerabbit'), $updated);
+		if($skipped){ $msg .= ' '.sprintf(__('%d rows skipped.','bluerabbit'), $skipped); }
+		$data['message'] = $notification->pop($msg, 'green', 'check');
+		$data['just_notify'] = true;
+		$data['reload'] = true;
 		echo json_encode($data);
 		die();
     }

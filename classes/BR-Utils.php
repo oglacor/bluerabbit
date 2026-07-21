@@ -212,30 +212,6 @@ class BR_Utils {
         }
     }
 
-    public function downloadAllImages()
-    {
-        $data = array();
-        $datos = $_POST['datos'];
-        $dominio = wp_upload_dir();
-        $datos=explode("|",$datos);
-        $prefix=$_POST['file_prefix'];
-        $zip = new ZipArchive();
-        $tmp_zip = $zip->open($dominio['basedir'].'/'.$prefix.'images.zip', ZipArchive::CREATE);
-        foreach($datos as $img)
-        {
-            if(!empty($img))
-            {
-              $download_file = file_get_contents($img);
-              $zip->addFromString(basename($img), $download_file);
-            }
-        }
-        $zip->close();
-        $fecha = new DateTime();
-        $data['file'] = get_bloginfo('wpurl')."/wp-content/uploads/{$prefix}images.zip?v={$fecha->getTimestamp()}";
-        echo json_encode($data);
-        die();
-    }
-
     public function createQR($args){
         require_once(get_template_directory()."/libs/phpqrcode/qrlib.php");
         $uploads = wp_upload_dir();

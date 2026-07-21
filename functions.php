@@ -26,10 +26,15 @@ function br_require_id( $key, $required = true ) {
 // Milestones with no open-text steps still need a br_player_posts row to track
 // completion/grading, so the "override" submit path (BR-Quest.php's updatePost(),
 // triggered from quest.php when a player finishes a milestone with nothing to write)
-// stores this literal placeholder in pp_content. Anywhere pp_content is displayed,
-// show a friendly completion notice instead of the raw placeholder string.
+// stores this literal placeholder in pp_content. Shared constant so every place that
+// writes or checks for it (BR-Quest.php, br_render_post_content(), the CSV export)
+// stays in sync.
+define( 'BR_POST_AUTO_COMPLETE_TEXT', 'Challenge Overcome by completing all steps' );
+
+// Anywhere pp_content is displayed, show a friendly completion notice instead of the
+// raw placeholder string.
 function br_render_post_content( $pp_content, $pp_date ) {
-	if ( trim( (string) $pp_content ) === 'Challenge Overcome by completing all steps' ) {
+	if ( trim( (string) $pp_content ) === BR_POST_AUTO_COMPLETE_TEXT ) {
 		$nice_date = $pp_date ? date_i18n( 'F j, Y', strtotime( $pp_date ) ) : '';
 		return '<div class="br-post-auto-complete"><span class="icon icon-check"></span> '
 			. sprintf( __( 'This milestone was completed on %s.', 'bluerabbit' ), '<strong>' . esc_html( $nice_date ) . '</strong>' )
@@ -2203,6 +2208,8 @@ add_action("wp_ajax_resetPlayerAdventure", [BR_Player::instance(), 'resetPlayerA
 add_action("wp_ajax_updatePlayer", [BR_Player::instance(), 'updatePlayer']);
 add_action("wp_ajax_setGrade", [BR_Quest::instance(), 'setGrade']);
 add_action("wp_ajax_setPostComment", [BR_Quest::instance(), 'setPostComment']);
+add_action("wp_ajax_exportPlayerPostsCSV", [BR_Quest::instance(), 'exportPlayerPostsCSV']);
+add_action("wp_ajax_importPlayerPostsCSV", [BR_Quest::instance(), 'importPlayerPostsCSV']);
 add_action("wp_ajax_validatePlayerPost", [BR_Quest::instance(), 'validatePlayerPost']);
 add_action("wp_ajax_updateProfile", [BR_Player::instance(), 'updateProfile']);
 add_action("wp_ajax_nopriv_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
@@ -2376,7 +2383,6 @@ add_action("wp_ajax_updateOption", [BR_Challenge::instance(), 'updateOption']);
 add_action("wp_ajax_removeOption", [BR_Challenge::instance(), 'removeOption']);
 add_action("wp_ajax_updateSpeaker", [BR_Session::instance(), 'updateSpeaker']);
 add_action("wp_ajax_updateSession", [BR_Session::instance(), 'updateSession']);
-add_action("wp_ajax_downloadAllImages", [BR_Utils::instance(), 'downloadAllImages']);
 add_action("wp_ajax_loadContent", [BR_Content::instance(), 'loadContent']);
 add_action("wp_ajax_loadStory", [BR_Adventure::instance(), 'loadStory']);
 add_action("wp_ajax_br_logout", [BR_Player::instance(), 'br_logout']);
