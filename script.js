@@ -6303,6 +6303,28 @@ function setGrade(quest_id, player_id) {
     });
 }
 
+function setPostComment(quest_id, player_id) {
+    let nonce = $("#grade_nonce").val();
+    let adventure_id = $("#the_adventure_id").val();
+    let comment = $("#the_post_comment_" + quest_id + "_" + player_id).val();
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({
+            action: 'setPostComment',
+            quest_id: quest_id,
+            player_id: player_id,
+            comment: comment,
+            adventure_id: adventure_id,
+            nonce: nonce
+        }),
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
 
 
 

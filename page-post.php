@@ -7,23 +7,23 @@
 	}else{
 		$player_id =  $current_user->ID;
 	}
-	$q = $wpdb->get_row("SELECT 
+	$q = $wpdb->get_row("SELECT
 	a.*,
-	d.pp_content, d.pp_grade, d.player_id, d.pp_date, d.pp_modified, d.pp_quest_rating
-	
+	d.pp_content, d.pp_grade, d.pp_gm_comment, d.player_id, d.pp_date, d.pp_modified, d.pp_quest_rating
+
 	FROM {$wpdb->prefix}br_quests a
 	LEFT JOIN {$wpdb->prefix}br_player_posts d
 	ON a.quest_id = d.quest_id AND d.player_id=$player_id
 
 	WHERE a.adventure_id=$adventure->adventure_id AND a.quest_status='publish' AND a.quest_id=$questID");
-	
-	$requirements = $wpdb->get_results("SELECT 
-	
+
+	$requirements = $wpdb->get_results("SELECT
+
 	a.req_object_id, a.req_type, a.req_object_id,
 	b.mech_level, b.mech_xp, b.mech_bloo,
 	c.quest_title, c.quest_type, c.mech_badge,
 	d.item_name
-	
+
 	FROM {$wpdb->prefix}br_reqs a
 	LEFT JOIN {$wpdb->prefix}br_quests b
 	ON a.quest_id = b.quest_id AND b.quest_status='publish'
@@ -31,9 +31,9 @@
 	ON a.req_object_id = c.quest_id AND c.quest_status='publish'
 	LEFT JOIN {$wpdb->prefix}br_items d
 	ON a.req_object_id = d.item_id
-	
+
 	WHERE a.adventure_id=$adventure->adventure_id AND a.quest_id=$questID
-	
+
 	");
 	if($requirements){
 		$reqs = array(); $reqs_ids = array();
@@ -41,138 +41,136 @@
 			$reqs[]=$r;
 			$reqs_ids[$r->req_type][]=$r->req_object_id;
 		}
-		sort($reqs_ids['quest']);		
+		sort($reqs_ids['quest']);
 		$reqs_list = implode(",",$reqs_ids['quest']);
 		$player_quests = $wpdb->get_col("SELECT quest_id FROM {$wpdb->prefix}br_player_posts
 		WHERE adventure_id=$adventure->adventure_id AND pp_status='publish' AND player_id=$current_user->ID AND quest_id IN ($reqs_list)");
 		$player_challenges = $wpdb->get_col("SELECT quest_id FROM {$wpdb->prefix}br_challenge_attempts
 		WHERE adventure_id=$adventure->adventure_id AND attempt_status='success' AND player_id=$current_user->ID AND quest_id IN ($reqs_list)");
-		
+
 		$player_work = array_merge($player_quests,$player_challenges);sort($player_work);
 	}
-	if($q->mech_item_reward){ 
+	$item_reward = null;
+	$achievement_reward = null;
+	if($q->mech_item_reward){
 		$item_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_items WHERE item_id={$q->mech_item_reward} AND item_type='reward' AND item_status='publish'");
 	}
-	if($q->mech_achievement_reward){ 
+	if($q->mech_achievement_reward){
 		$achievement_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id={$q->mech_achievement_reward} AND achievement_status='publish'");
 	}
 
-	if($q->quest_type == 'challenge'){
+	$isChallenge = ($q && $q->quest_type == 'challenge');
+	if($isChallenge){
 		$attempts = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_challenge_attempts WHERE quest_id=$questID AND player_id=$player_id AND (attempt_status='success' OR attempt_status='fail')");
 		$grades=array();
 		foreach($attempts as $att){
 			$grades[]=$att->attempt_grade;
 		}
-		$best_grade = max($grades);
+		$best_grade = $grades ? max($grades) : null;
 	}
 ?>
 <?php if($q){ ?>
 
-<div class="tabs boxed max-w-900">
-	<div class="tab-header text-center" id="post-tabs-buttons">
-		<h1 class="br-text-40 w400 margin-20 white-color"><?= $q->quest_title; ?></h1>
-		<button id="summary-tab-button" class="tab-button transparent-bg button form-ui relative white-color active" onClick="switchTabs('#post-tabs','#summary')">
-			<span class="layer base relative"><?= __("Summary","bluerabbit"); ?></span>
-			<span class="background absolute sq-full layer inactive-content grey-bg-800"></span>
-			<span class="background absolute sq-full layer active-content blue-bg-400"></span>
-		</button>
-		<?php if($q->quest_type == 'quest'){ ?>
-			<button id="quest-answer-tab-button" class="tab-button transparent-bg button form-ui relative white-color" onClick="switchTabs('#post-tabs','#quest-answer')">
-				<span class="layer base relative"><?= __("Answer","bluerabbit"); ?></span>
-				<span class="background absolute sq-full layer inactive-content grey-bg-800"></span>
-				<span class="background absolute sq-full layer active-content blue-bg-400"></span>
-			</button>
+<div class="br-page">
+
+	<!-- Hero -->
+	<div class="br-panel br-page-header">
+		<?php if($uID && $isGM){ ?>
+		<a class="br-btn" href="<?= get_bloginfo('url')."/review-player-posts/?adventure_id=$adventure->adventure_id&questID=$q->quest_id"; ?>">
+			<span class="icon icon-arrow-left"></span> <?= __("Back to Review","bluerabbit"); ?>
+		</a>
+		<?php }else{ ?>
+		<a class="br-btn" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
+			<span class="icon icon-arrow-left"></span> <?= __("Back to Journey","bluerabbit"); ?>
+		</a>
 		<?php } ?>
+		<div class="br-page-header-avatar" style="background-image:url(<?= esc_url($q->mech_badge); ?>)"></div>
+		<div class="br-flex-1">
+			<div class="br-page-subtitle"><?= esc_html(ucfirst($q->quest_type)); ?></div>
+			<h1 class="br-page-title"><?= esc_html($q->quest_title); ?></h1>
+		</div>
+	</div>
+
+	<!-- Sticky nav -->
+	<div class="br-tabs br-tabs-sticky" id="post-tabs-buttons">
+		<button class="br-tab-btn active" onClick="brScrollTo('summary-section', this)">
+			<span class="icon icon-quest"></span> <?= __("Summary","bluerabbit"); ?>
+		</button>
+		<button class="br-tab-btn" onClick="brScrollTo('answer-section', this)">
+			<span class="icon icon-<?= $isChallenge ? 'challenge' : 'edit'; ?>"></span>
+			<?= $isChallenge ? __("Results","bluerabbit") : __("Your Answer","bluerabbit"); ?>
+		</button>
 		<?php if($q->quest_content){ ?>
-			<button id="instructions-tab-button" class="tab-button transparent-bg button form-ui relative white-color" onClick="switchTabs('#post-tabs','#instructions')">
-				<span class="layer base relative"><?= __("Instructions","bluerabbit"); ?></span>
-				<span class="background absolute sq-full layer inactive-content grey-bg-800"></span>
-				<span class="background absolute sq-full layer active-content blue-bg-400"></span>
-			</button>
+		<button class="br-tab-btn" onClick="brScrollTo('instructions-section', this)">
+			<span class="icon icon-story"></span> <?= __("Instructions","bluerabbit"); ?>
+		</button>
 		<?php } ?>
 		<?php if($q->quest_success_message){ ?>
-			<button id="success-message-tab-button" class="tab-button transparent-bg button form-ui relative white-color" onClick="switchTabs('#post-tabs','#success-message')">
-				<span class="layer base relative"><?= __("Message","bluerabbit"); ?></span>
-				<span class="background absolute sq-full layer inactive-content grey-bg-800"></span>
-				<span class="background absolute sq-full layer active-content blue-bg-400"></span>
-			</button>
+		<button class="br-tab-btn" onClick="brScrollTo('message-section', this)">
+			<span class="icon icon-check"></span> <?= __("Message","bluerabbit"); ?>
+		</button>
 		<?php } ?>
 	</div>
-	
-	<div class="tab-group tabs white-color" id="post-tabs">
-		<div class="tab active text-center" id="summary">
-			<div class="quest-image relative w-360 boxed">
-				<img src="<?= $q->mech_badge; ?>" class="w-full max-w-300">
-				<div class="absolute layer base w-full padding-10 bottom left text-center">
-					
-					<span class="relative layer base icon icon-check br-text-40 lime-500"></span>
-					<div class="layer background grey-gradient-900"></div>
-				</div>
-			</div>
-			<div class="text-center padding-10">
-				<span class="icon-group inline-table">
-					<span class="br-icon-btn br-icon-btn-amber">
-						<span class="icon icon-star white-color "></span>
-					</span>
-					<span class="icon-content">
-						<span class="line br-text-24 w600 amber-800"><?= BR_Utils::instance()->toMoney($q->mech_xp,""); ?></span>
-						<span class="line br-text-14 grey-500"><?= $xp_label; ?></span>
-					</span>
-					<span class="br-icon-btn br-icon-btn-green">
-						<span class="icon icon-bloo white-color "></span>
-					</span>
-					<span class="icon-content">
-						<span class="line br-text-24 w600 green-800"><?= BR_Utils::instance()->toMoney($q->mech_bloo,""); ?></span>
-						<span class="line br-text-14 grey-500"><?= $bloo_label; ?></span>
-					</span>
-				</span>
-			</div>
-			<?php if($achievement_reward){ ?>
-				<div class="text-center relative padding-10 margin-10">
-					<div class="background layer absolute sq-full purple-gradient-400 opacity-50"></div>
-					<img src="<?= $achievement_reward->achievement_badge;?>" class="w-150 margin-5 grey-bg-50 overflow-hidden border rounded-max layer relative base cursor-pointer" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
-					<div class="icon-group inline-table layer relative base">
-						<button class="br-icon-btn br-icon-btn-purple" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);">
-							<span class="icon icon-achievement white-color"></span>
-						</button>
-						<span class="icon-content">
-							<span class="line white-color br-text-12 w100 opacity-80"><?php _e("You earned an achievement","bluerabbit");?></span>
-							<span class="line white-color br-text-18 w900"><?= $achievement_reward->achievement_name;?></span>
-						</span>
+
+	<div id="post-tabs">
+
+		<!-- ═══ Summary ═══ -->
+		<div class="br-scroll-section" id="summary-section">
+			<div class="br-panel br-text-center">
+
+				<div class="br-flex br-flex-center br-gap-md br-flex-wrap" style="justify-content:center;">
+					<div class="br-summary-stat">
+						<span class="icon icon-star"></span>
+						<div>
+							<span class="br-stat-val"><?= BR_Utils::instance()->toMoney($q->mech_xp,""); ?></span>
+							<span class="br-stat-label"><?= $xp_label; ?></span>
+						</div>
+					</div>
+					<div class="br-summary-stat">
+						<span class="icon icon-bloo"></span>
+						<div>
+							<span class="br-stat-val"><?= BR_Utils::instance()->toMoney($q->mech_bloo,""); ?></span>
+							<span class="br-stat-label"><?= $bloo_label; ?></span>
+						</div>
 					</div>
 				</div>
-			<?php } ?>
-			<?php if($item_reward){ ?>
-				<div class="text-center relative padding-10 margin-10">
-					<div class="background layer absolute sq-full teal-gradient-400 opacity-50"></div>
-					<img src="<?= $item_reward->item_badge;?>" class="w-150 margin-5 grey-bg-50 overflow-hidden border rounded-max layer relative base">
-					<div class="icon-group inline-table layer relative base">
-						<a class="br-icon-btn br-icon-btn-teal" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id";?>">
-							<span class="icon icon-backpack white-color"></span>
+
+				<?php if($achievement_reward){ ?>
+					<div class="br-reward-card br-reward-card-purple">
+						<img src="<?= esc_url($achievement_reward->achievement_badge); ?>" onClick="loadAchievementCard(<?= $achievement_reward->achievement_id; ?>);" style="cursor:pointer;">
+						<div class="text-left">
+							<div class="br-reward-label"><?= __("You earned an achievement","bluerabbit"); ?></div>
+							<div class="br-reward-name"><?= esc_html($achievement_reward->achievement_name); ?></div>
+						</div>
+					</div>
+				<?php } ?>
+				<?php if($item_reward){ ?>
+					<div class="br-reward-card br-reward-card-teal">
+						<img src="<?= esc_url($item_reward->item_badge); ?>">
+						<div class="text-left">
+							<div class="br-reward-label"><?= __("You found an item","bluerabbit"); ?></div>
+							<div class="br-reward-name"><?= esc_html($item_reward->item_name); ?></div>
+						</div>
+						<a class="br-btn br-btn-teal br-ml-auto" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id"; ?>">
+							<span class="icon icon-backpack"></span> <?= __("Backpack","bluerabbit"); ?>
 						</a>
-						<span class="icon-content">
-							<span class="line white-color br-text-12 w100 opacity-80"><?php _e("You found an item","bluerabbit");?></span>
-							<span class="line white-color br-text-18 w900"><?= $item_reward->item_name;?></span>
-						</span>
 					</div>
-				</div>
-			<?php } ?>
-			
-			<?php if($requirements){ ?>
-				<?php 
-					$my_items = BR_Item::instance()->getMyItems($adventure->adventure_id); 
-					$myKeyItems = $my_items['ids']['key'];
-				?>
-				<?php if(!empty($reqs)){ ?>
-					<?php 
-						$my_quests = BR_Quest::instance()->getMyQuests($adventure->adventure_id);
-						$my_achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id); 
+				<?php } ?>
+
+				<?php if($requirements){ ?>
+					<?php
+						$my_items = BR_Item::instance()->getMyItems($adventure->adventure_id);
+						$myKeyItems = $my_items['ids']['key'];
 					?>
-					<h4 class="br-text-24 white-color w900 uppercase padding-20 text-center"><?php _e("Requirements","bluerabbit"); ?>: </h4>
-					<div class="highlight padding-10">
+					<?php if(!empty($reqs)){ ?>
+						<?php
+							$my_quests = BR_Quest::instance()->getMyQuests($adventure->adventure_id);
+							$my_achievements = BR_Achievement::instance()->getMyAchievements($adventure->adventure_id);
+						?>
+						<h3 class="br-panel-title br-mt-md"><span class="icon icon-lock"></span> <?= __("Requirements","bluerabbit"); ?></h3>
 						<div class="card-deck">
 							<?php foreach($reqs as $r){
-								if($r->req_type=="quest"){  
+								if($r->req_type=="quest"){
 									$mi = $r;
 									$isFinished = in_array($r->req_object_id, $player_work) ? true : false;
 									include (TEMPLATEPATH . '/req-milestone.php');
@@ -184,149 +182,126 @@
 									$a = $r;
 									$isEarned = in_array($r->req_object_id, $my_achievements) ? true : false;
 									include (TEMPLATEPATH . '/req-achievement.php');
-								} 
+								}
 							} ?>
+						</div>
+					<?php } ?>
+				<?php } ?>
+
+				<?php if(!empty($config['rate_quests']['value']) && !$isChallenge){ ?>
+					<div class="br-mt-md">
+						<h3 class="br-panel-title"><span class="icon icon-star"></span> <?= __("Rate this quest please!","bluerabbit"); ?></h3>
+						<div class="br-flex br-flex-center br-gap-sm" style="justify-content:center;">
+							<?php for($i=1;$i<=5;$i++){ ?>
+							<button id="rating-star-<?= $i; ?>" class="br-icon-btn <?= $q->pp_quest_rating >= $i ? 'br-icon-btn-amber' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,<?= $i; ?>);">
+								<span class="icon icon-star"></span>
+							</button>
+							<?php } ?>
 						</div>
 					</div>
 				<?php } ?>
-			<?php } ?>
-			<?php if($config['rate_quests']['value']>0){ ?>
-				<div class="text-center padding-10">
-
-					<div class="icon-group inline-table">
-						<span class="icon-content">
-							<span class="line br-text-24 amber-800"><?php _e("Rating","bluerabbit"); ?></span>
-							<span class="line br-text-14 grey-400"><?php _e("Rate this quest please!","bluerabbit"); ?></span>
-						</span>
-					</div>
-					<div class="icon-group rating inline-table">
-						<button id="rating-star-1" class="br-icon-btn button <?= $q->pp_quest_rating >= 1 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,1);">
-							<span class="icon icon-star"></span>
-						</button>
-						<button id="rating-star-2" class="br-icon-btn button <?= $q->pp_quest_rating >= 2 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,2);">
-							<span class="icon icon-star"></span>
-						</button>
-						<button id="rating-star-3" class="br-icon-btn button <?= $q->pp_quest_rating >= 3 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,3);">
-							<span class="icon icon-star"></span>
-						</button>
-						<button id="rating-star-4" class="br-icon-btn button <?= $q->pp_quest_rating >= 4 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,4);">
-							<span class="icon icon-star"></span>
-						</button>
-						<button id="rating-star-5" class="br-icon-btn button <?= $q->pp_quest_rating >= 5 ? 'amber-bg-400' : ''; ?>" onClick="rateQuest(<?= $q->quest_id; ?>,5);">
-							<span class="icon icon-star"></span>
-						</button>
-					</div>
-				</div>
-			<?php } ?>
+			</div>
 		</div>
-		<div class="tab" id="quest-answer">
-			<?php if($q->quest_type == 'challenge'){  ?>
-				<div class="highlight padding-10 brown-bg-50">
-					<h3 class="br-text-18 w700 brown-400 text-center condensed uppercase"><?php _e("Challenge","bluerabbit");?></h3>
-					<table width="100%" align="center">
-						<tr class="br-text-40 w900 condensed brown-400">
-							<td class="text-center"><?= $q->mech_answers_to_win; ?></td>
-							<td class="text-center">
-								<?php if($q->mech_max_attempts > 0){ ?>
-									<?= $q->mech_max_attempts; ?>
-								<?php }else{ ?>
-									<span class="icon icon-infinite"></span>
-								<?php } ?>
-							</td>
-							<td class="text-center">
-								<?php 
-								if($q->mech_time_limit > 0){
-									echo $q->mech_time_limit;
-								}else{
-									echo "<span class='icon icon-infinite'></span>";
-								}
-								?>
-							</td>
-						</tr>
-						<tr class="br-text-12 w100 grey-600">
-							<td class="text-center"><?php _e("Answers"); ?></td>
-							<td class="text-center"><?php _e("Max Attempts"); ?></td>
-							<td class="text-center"><?php _e("Time Limit"); ?></td>
-						</tr>
-					</table>
-				</div>
-				<div class="highlight padding-10 grey-bg-50">
-					<span class="icon-group">
-						<span class="br-icon-btn br-icon-btn-brown">
-							<span class="icon icon-challenge"></span>
-						</span>
-						<span class="icon-content br-text-18 w700 brown-400">
-							<?php _e("Your attempts","bluerabbit");?>
-						</span>
-						<span class="icon-content text-right br-text-24 w300 grey-800">
-							<?= __("Your best grade","bluerabbit").": <strong class='green-400 font w900'>".$best_grade."</strong>"; ?>
-						</span>
-					</span>
-				</div>
-				<div class="content">
+
+		<!-- ═══ Answer / Results ═══ -->
+		<div class="br-scroll-section" id="answer-section">
+			<?php if($isChallenge){ ?>
+				<div class="br-panel">
+					<h3 class="br-panel-title"><span class="icon icon-challenge"></span> <?= __("Challenge","bluerabbit"); ?></h3>
+					<div class="br-flex br-flex-center br-gap-md br-flex-wrap br-mb-md">
+						<div class="br-summary-stat">
+							<div>
+								<span class="br-stat-val"><?= $q->mech_answers_to_win; ?></span>
+								<span class="br-stat-label"><?= __("Answers","bluerabbit"); ?></span>
+							</div>
+						</div>
+						<div class="br-summary-stat">
+							<div>
+								<span class="br-stat-val"><?= $q->mech_max_attempts > 0 ? $q->mech_max_attempts : '<span class="icon icon-infinite"></span>'; ?></span>
+								<span class="br-stat-label"><?= __("Max Attempts","bluerabbit"); ?></span>
+							</div>
+						</div>
+						<div class="br-summary-stat">
+							<div>
+								<span class="br-stat-val"><?= $q->mech_time_limit > 0 ? $q->mech_time_limit : '<span class="icon icon-infinite"></span>'; ?></span>
+								<span class="br-stat-label"><?= __("Time Limit","bluerabbit"); ?></span>
+							</div>
+						</div>
+						<?php if($best_grade !== null){ ?>
+						<div class="br-summary-stat">
+							<div>
+								<span class="br-stat-val"><?= $best_grade; ?></span>
+								<span class="br-stat-label"><?= __("Your best grade","bluerabbit"); ?></span>
+							</div>
+						</div>
+						<?php } ?>
+					</div>
+
 					<?php if($attempts){ ?>
-						<?php 
+						<?php
 							if($q->mech_questions_to_display > 0){
 								$totalqs = $q->mech_questions_to_display;
 							}else{
-								$qs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_challenge_questions a WHERE quest_id=$q->quest_id");	
+								$qs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_challenge_questions a WHERE quest_id=$q->quest_id");
 								$totalqs = count($qs);
 							}
 						?>
-						<?php $att_count=0; ?>
-						<table class="table compact" width="100%">
+						<table class="br-table">
 							<thead>
 								<tr>
-									<td><?php _e("Attempt","bluerabbit"); ?></td>
-									<td><?php _e("Answers","bluerabbit"); ?></td>
-									<td><?php _e("Grade","bluerabbit"); ?></td>
-									<td><?php _e("Date","bluerabbit"); ?></td>
-									<td><?php _e("Status","bluerabbit"); ?></td>
+									<th><?= __("Attempt","bluerabbit"); ?></th>
+									<th><?= __("Answers","bluerabbit"); ?></th>
+									<th><?= __("Grade","bluerabbit"); ?></th>
+									<th><?= __("Date","bluerabbit"); ?></th>
+									<th class="text-center"><?= __("Status","bluerabbit"); ?></th>
 								</tr>
 							</thead>
 							<tbody>
 								<?php foreach($attempts as $key=>$att){ ?>
-									<tr class="attempt">
-
-										<td> <?= "#".($key+1); ?> </td>
-										<td><?= "<strong>$att->attempt_answers/$totalqs</strong>";?></td>
-										<td><?= "$att->attempt_grade";?></td>
-										<td><?= date('D, M jS, Y',strtotime($att->attempt_date));?></td>
-										<td>
+									<tr>
+										<td>#<?= $key+1; ?></td>
+										<td><strong><?= $att->attempt_answers; ?>/<?= $totalqs; ?></strong></td>
+										<td><?= $att->attempt_grade; ?></td>
+										<td><?= date('D, M jS, Y',strtotime($att->attempt_date)); ?></td>
+										<td class="text-center">
 											<?php if($att->attempt_status=='success'){ ?>
-												<?php $att_success=true; ?>
-												<span class="br-icon-btn br-icon-btn-green">
-													<span class="icon icon-check"></span>
-												</span>
+												<span class="br-badge br-badge-green"><span class="icon icon-check"></span> <?= __("Pass","bluerabbit"); ?></span>
 											<?php }else{ ?>
-												<span class="br-icon-btn br-icon-btn-red">
-													<span class="icon icon-cancel"></span>
-												</span>
+												<span class="br-badge br-badge-red"><span class="icon icon-cancel"></span> <?= __("Fail","bluerabbit"); ?></span>
 											<?php } ?>
 										</td>
 									</tr>
 								<?php } ?>
 							</tbody>
 						</table>
+					<?php }else{ ?>
+						<div class="br-empty-state">
+							<span class="icon icon-challenge"></span> <?= __("No attempts yet","bluerabbit"); ?>
+						</div>
 					<?php } ?>
 				</div>
 			<?php }else{ ?>
-					<h2 class="br-text-24"><?php _e("Your answer","bluerabbit");?></h2>
-					<?php if($q->pp_date == $q->pp_modified){ ?>
-						<h4 class="br-text-14 grey-500"><?= __("Published","bluerabbit").":<em> $q->pp_date </em>"; ?></h4>
-					<?php }else{ ?>
-						<h4 class="br-text-14 red-500"><?= __("Modified","bluerabbit").":<em> $q->pp_modified </em>"; ?></h4>
-					<?php } ?>
-					<?php if($isGM && $adventure->adventure_grade_scale != 'none'){ ?>
-						<?php $the_grade = $q->pp_grade; ?>
-						<div class="highlight-cell pull-right">
+				<div class="br-panel">
+					<div class="br-flex br-flex-center br-mb-md">
+						<div class="br-flex-1">
+							<h3 class="br-panel-title"><span class="icon icon-edit"></span> <?= __("Your answer","bluerabbit"); ?></h3>
+							<?php if($q->player_id){ ?>
+								<?php if($q->pp_date == $q->pp_modified){ ?>
+									<span class="br-text-12-muted"><?= __("Published","bluerabbit"); ?>: <strong><?= esc_html($q->pp_date); ?></strong></span>
+								<?php }else{ ?>
+									<span class="br-text-12-muted"><?= __("Modified","bluerabbit"); ?>: <strong><?= esc_html($q->pp_modified); ?></strong></span>
+								<?php } ?>
+							<?php } ?>
+						</div>
+						<?php if($isGM && $adventure->adventure_grade_scale != 'none' && $q->player_id){ ?>
+							<?php $the_grade = $q->pp_grade; ?>
 							<input type="hidden" id="grade_nonce" value="<?= wp_create_nonce('br_grade_nonce'); ?>"/>
-							<div class="input-group">
-								<label class="red-bg-700"><?php _e("Grade","bluerabbit"); ?>: </label>
+							<div class="br-form-group">
+								<label class="br-form-label"><span class="icon icon-progression"></span> <?= __("Grade","bluerabbit"); ?></label>
 								<?php if($adventure->adventure_grade_scale == "percentage"){ ?>
-									<input onChange="setGrade(<?= "$q->quest_id,$q->player_id"; ?>);" type="number" min="0" max="100" class="form-ui white-bg w-200" id="the_quest_grade" value="<?= $the_grade; ?>">
-								<?php }elseif($adventure->adventure_grade_scale == "letters"){   ?>
-									<select class="form-ui" id="the_quest_grade" onChange="setGrade(<?= "$q->quest_id,$q->player_id"; ?>);">
+									<input onChange="setGrade(<?= "$q->quest_id,$player_id"; ?>);" type="number" min="0" max="100" class="br-input" id="the_post_grade_<?= $q->quest_id; ?>_<?= $player_id; ?>" value="<?= $the_grade; ?>">
+								<?php }elseif($adventure->adventure_grade_scale == "letters"){ ?>
+									<select class="br-input" id="the_post_grade_<?= $q->quest_id; ?>_<?= $player_id; ?>" onChange="setGrade(<?= "$q->quest_id,$player_id"; ?>);">
 										<option value="100" <?php if($the_grade == 100){ echo 'selected'; } ?>>A</option>
 										<option value="91.75" <?php if($the_grade < 100 && $the_grade >= 91.75){ echo 'selected';  }?>>A-</option>
 										<option value="83.25" <?php if($the_grade < 91.75 && $the_grade >= 83.25){ echo 'selected';  }?>>B+</option>
@@ -337,48 +312,109 @@
 										<option value="25" <?php if($the_grade < 50 && $the_grade >= 25){ echo 'selected'; } ?>>D</option>
 										<option value="0" <?php if($the_grade < 25 && $the_grade >= 0 || !$the_grade){ echo 'selected'; } ?>>F</option>
 									</select>
-								<?php }  ?>
+								<?php } ?>
 							</div>
-						</div>
-					<?php } ?>
-					<div class="content">
-						<?= apply_filters('the_content',$q->pp_content); ?>
-					</div>
-					<div class="highlight padding-10 text-right">
-						<?php if($adventure->adventure_grade_scale == "none" || ($adventure->adventure_grade_scale != "none" && $adventure->adventure_progression_type=='before') || ($adventure->adventure_grade_scale != "none"  && !$q->pp_grade  && $adventure->adventure_progression_type=='after')) {	 ?>
-							<a class="form-ui green-bg-400" href="<?= get_bloginfo('url').'/quest/?adventure_id='.$adventure_id."&questID=".$q->quest_id;?>">
-								<span class="icon icon-edit"></span><?php _e("Edit your answer","bluerabbit"); ?>
-							</a>
-						<?php }else{ ?>
-							<h4><?php _e("This post has already been graded. Can't edit or delete.","bluerabbit"); ?></h4>
 						<?php } ?>
 					</div>
+
+					<?php if($q->player_id){ ?>
+						<div class="br-tab-content">
+							<?= br_render_post_content($q->pp_content, $q->pp_date); ?>
+						</div>
+
+						<?php if($q->pp_gm_comment){ ?>
+							<div class="br-gm-comment br-mt-md">
+								<span class="icon icon-comment"></span>
+								<div>
+									<div class="br-reward-label"><?= __("Feedback from your Game Master","bluerabbit"); ?></div>
+									<div><?= nl2br(esc_html($q->pp_gm_comment)); ?></div>
+								</div>
+							</div>
+						<?php } ?>
+
+						<div class="br-mt-md text-right">
+							<?php if($adventure->adventure_grade_scale == "none" || ($adventure->adventure_grade_scale != "none" && $adventure->adventure_progression_type=='before') || ($adventure->adventure_grade_scale != "none"  && !$q->pp_grade  && $adventure->adventure_progression_type=='after')) { ?>
+								<a class="br-btn br-btn-green" href="<?= get_bloginfo('url').'/'.$q->quest_type.'/?adventure_id='.$adventure->adventure_id."&questID=".$q->quest_id;?>">
+									<span class="icon icon-edit"></span> <?= __("Edit your answer","bluerabbit"); ?>
+								</a>
+							<?php }else{ ?>
+								<span class="br-badge br-badge-amber"><?= __("This post has already been graded. Can't edit or delete.","bluerabbit"); ?></span>
+							<?php } ?>
+						</div>
+					<?php }else{ ?>
+						<div class="br-empty-state">
+							<span class="icon icon-edit"></span> <?= __("Nothing submitted for this milestone yet","bluerabbit"); ?>
+						</div>
+					<?php } ?>
+				</div>
 			<?php } ?>
 		</div>
-		<?php if($q->quest_success_message){ ?>
-			<div class="tab" id="success-message">
-				<h2 class="br-text-24 grey-500"><?php _e("This information should help you on your journey!","bluerabbit");?></h2>
-				<div class="content">
-					<?= apply_filters('the_content',$q->quest_success_message); ?>
-				</div>
-			</div>
-		<?php } ?>
-		<?php if($q->quest_type == 'quest'){ ?>
-			<div class="tab" id="instructions">
-				<h2 class="br-text-24 grey-500 margin-20"><?php _e("Quest instructions","bluerabbit");?></h2>
-				<div class="content">
+
+		<!-- ═══ Instructions ═══ -->
+		<?php if($q->quest_content){ ?>
+		<div class="br-scroll-section" id="instructions-section">
+			<div class="br-panel">
+				<h3 class="br-panel-title"><span class="icon icon-story"></span> <?= __("Quest instructions","bluerabbit"); ?></h3>
+				<div class="br-tab-content">
 					<?= apply_filters('the_content',$q->quest_content); ?>
 				</div>
 			</div>
+		</div>
 		<?php } ?>
+
+		<!-- ═══ Message ═══ -->
+		<?php if($q->quest_success_message){ ?>
+		<div class="br-scroll-section" id="message-section">
+			<div class="br-panel">
+				<h3 class="br-panel-title"><span class="icon icon-check"></span> <?= __("This information should help you on your journey!","bluerabbit"); ?></h3>
+				<div class="br-tab-content">
+					<?= apply_filters('the_content',$q->quest_success_message); ?>
+				</div>
+			</div>
+		</div>
+		<?php } ?>
+
 	</div>
+
 </div>
-
-
 
 <script>
 	jQuery(document).ready(function($) {
 		$('img.size-full').removeAttr('width height').addClass('max-w-400');
+	});
+
+	function brScrollTo(id, btn) {
+		document.querySelectorAll('#post-tabs-buttons .br-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+		btn.classList.add('active');
+		document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	(function() {
+		var sections = document.querySelectorAll('.br-scroll-section');
+		var buttons  = document.querySelectorAll('#post-tabs-buttons .br-tab-btn');
+		if (!sections.length || !buttons.length) return;
+
+		var observer = new IntersectionObserver(function(entries) {
+			entries.forEach(function(entry) {
+				if (!entry.isIntersecting) return;
+				var id = entry.target.id;
+				buttons.forEach(function(b, i) {
+					b.classList.toggle('active', sections[i] && sections[i].id === id);
+				});
+			});
+		}, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+
+		sections.forEach(function(s) { observer.observe(s); });
+	})();
+
+	document.addEventListener('DOMContentLoaded', function () {
+		const containers = document.querySelectorAll('.dialogue-box');
+		containers.forEach(container => {
+			container.querySelectorAll('a').forEach(link => {
+				link.setAttribute('target', '_blank');
+				link.setAttribute('rel', 'noopener noreferrer');
+			});
+		});
 	});
 </script>
 <?php }else{ ?>

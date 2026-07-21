@@ -26,7 +26,7 @@ $player_posts = $wpdb->get_results( $wpdb->prepare(
 	FROM {$wpdb->prefix}br_player_posts a
 	JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
 	WHERE a.adventure_id = %d AND a.quest_id = %d
-	ORDER BY b.player_display_name, a.pp_modified, a.pp_date",
+	ORDER BY a.pp_date DESC, b.player_display_name ",
 	$adventure->adventure_id, $q->quest_id
 ) );
 $rating = 0;
@@ -49,6 +49,34 @@ $rating = 0;
 	</div>
 
 	<?php if ( $player_posts ) { ?>
+		<div class="br-panel">
+			<h3 class="br-panel-title"><span class="icon icon-quest"></span> <?= __("Milestone Data","bluerabbit"); ?></h3>
+
+			<div class="br-flex br-flex-center br-gap-md br-flex-wrap">
+				<span class="br-text-16">
+					<?= __("Total Entries","bluerabbit"); ?>: <strong><?= count($player_posts); ?></strong>
+				</span>
+				<?php if ( $config['rate_quests']['value'] > 0 && count($player_posts) > 0 ) { ?>
+				<span class="br-text-16">
+					<span class="icon icon-star"></span>
+					<?= __("Avg Rating","bluerabbit"); ?>: <strong><?= round($rating / count($player_posts), 1); ?></strong>
+				</span>
+				<?php } ?>
+			</div>
+
+			<div class="br-flex br-mt-sm br-gap-sm br-flex-wrap">
+				<input type="hidden" id="file_prefix" value="<?= esc_attr($q->quest_type.'-'.$q->quest_id.'-'); ?>">
+				<button class="br-form-btn-green" onClick="downloadQuestCSV();">
+					<span class="icon icon-download"></span> <?= __("Download CSV","bluerabbit"); ?>
+				</button>
+				<button id="create-zip" class="br-form-btn-blue" onClick="downloadAllImages();">
+					<span class="icon icon-image"></span> <?= __("Create Images Zip","bluerabbit"); ?>
+				</button>
+				<a id="download-zip" href="" class="br-btn br-initially-hidden" target="_blank">
+					<?= __("Download Zip","bluerabbit"); ?>
+				</a>
+			</div>
+		</div>
 
 		<?php foreach ( $player_posts as $pp ) { ?>
 		<?php $rating += (int) $pp->pp_quest_rating; ?>
@@ -132,41 +160,22 @@ $rating = 0;
 
 			<!-- Player submission content -->
 			<div class="player-entry-content">
-				<?= apply_filters('the_content', $pp->pp_content); ?>
+				<?= br_render_post_content($pp->pp_content, $pp->pp_date); ?>
+			</div>
+
+			<!-- GM comment (read-only to the player, shown on their own quest post) -->
+			<div class="br-form-group br-mt-md">
+				<label class="br-form-label"><span class="icon icon-comment"></span> <?= __("Comment for the player","bluerabbit"); ?></label>
+				<textarea class="br-input" rows="3" id="the_post_comment_<?= "$q->quest_id"."_".$pp->player_id; ?>"><?= esc_textarea($pp->pp_gm_comment); ?></textarea>
+				<button class="br-btn br-btn-blue br-mt-sm" onClick="setPostComment(<?= "$q->quest_id,$pp->player_id"; ?>);">
+					<span class="icon icon-check"></span> <?= __("Save Comment","bluerabbit"); ?>
+				</button>
 			</div>
 
 		</div><!-- .br-panel -->
 		<?php } ?>
 
 		<!-- Milestone summary -->
-		<div class="br-panel">
-			<h3 class="br-panel-title"><span class="icon icon-quest"></span> <?= __("Milestone Data","bluerabbit"); ?></h3>
-
-			<div class="br-flex br-flex-center br-gap-md br-flex-wrap">
-				<span class="br-text-16">
-					<?= __("Total Entries","bluerabbit"); ?>: <strong><?= count($player_posts); ?></strong>
-				</span>
-				<?php if ( $config['rate_quests']['value'] > 0 && count($player_posts) > 0 ) { ?>
-				<span class="br-text-16">
-					<span class="icon icon-star"></span>
-					<?= __("Avg Rating","bluerabbit"); ?>: <strong><?= round($rating / count($player_posts), 1); ?></strong>
-				</span>
-				<?php } ?>
-			</div>
-
-			<div class="br-flex br-mt-sm br-gap-sm br-flex-wrap">
-				<input type="hidden" id="file_prefix" value="<?= esc_attr($q->quest_type.'-'.$q->quest_id.'-'); ?>">
-				<button class="br-form-btn-green" onClick="downloadQuestCSV();">
-					<span class="icon icon-download"></span> <?= __("Download CSV","bluerabbit"); ?>
-				</button>
-				<button id="create-zip" class="br-form-btn-blue" onClick="downloadAllImages();">
-					<span class="icon icon-image"></span> <?= __("Create Images Zip","bluerabbit"); ?>
-				</button>
-				<a id="download-zip" href="" class="br-btn br-initially-hidden" target="_blank">
-					<?= __("Download Zip","bluerabbit"); ?>
-				</a>
-			</div>
-		</div>
 
 	<?php } else { ?>
 	<div class="br-panel text-center">

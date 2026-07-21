@@ -822,6 +822,37 @@ class BR_Quest {
 		die();
     }
 
+    public function setPostComment(){
+		global $wpdb; $current_user = wp_get_current_user();
+		$data = array();
+		$data['success'] = false;
+		$player_id = intval($_POST['player_id']);
+		$quest_id = intval($_POST['quest_id']);
+		$adventure_id = intval($_POST['adventure_id']);
+		$comment = sanitize_textarea_field($_POST['comment']);
+		$nonce = $_POST['nonce'];//br_grade_nonce
+		$notification = new Notification();
+		if(wp_verify_nonce($nonce, 'br_grade_nonce')){
+			$sql = "UPDATE {$wpdb->prefix}br_player_posts SET pp_gm_comment=%s WHERE quest_id=%d AND player_id=%d AND adventure_id=%d";
+			$sql = $wpdb->prepare ($sql,$comment,$quest_id,$player_id,$adventure_id);
+			$wpdb->query($sql);
+
+			$data['success'] = true;
+	        $msg_content = __('Comment Saved','bluerabbit');
+	        $data['message'] = $notification->pop($msg_content,'green','check');
+	        $data['just_notify'] =true;
+			$data['new_grade_nonce'] = wp_create_nonce('br_grade_nonce');
+			BR_Activity::instance()->logActivity($adventure_id,'set','post-comment',"",$quest_id, $player_id);
+		}else{
+			$data['success'] = false;
+	        $msg_content = __("Post doesn't exist!",'bluerabbit').'<br>'.__('check again and reload','bluerabbit');
+	        $data['message'] = $notification->pop($msg_content,'red','cancel');
+	        $data['just_notify'] =true;
+		}
+		echo json_encode($data);
+		die();
+    }
+
     public function validatePlayerPost(){
 		global $wpdb; $current_user = wp_get_current_user();
 		$data = array();

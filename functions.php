@@ -23,6 +23,21 @@ function br_require_id( $key, $required = true ) {
 	return (int) $_GET[ $key ];
 }
 
+// Milestones with no open-text steps still need a br_player_posts row to track
+// completion/grading, so the "override" submit path (BR-Quest.php's updatePost(),
+// triggered from quest.php when a player finishes a milestone with nothing to write)
+// stores this literal placeholder in pp_content. Anywhere pp_content is displayed,
+// show a friendly completion notice instead of the raw placeholder string.
+function br_render_post_content( $pp_content, $pp_date ) {
+	if ( trim( (string) $pp_content ) === 'Challenge Overcome by completing all steps' ) {
+		$nice_date = $pp_date ? date_i18n( 'F j, Y', strtotime( $pp_date ) ) : '';
+		return '<div class="br-post-auto-complete"><span class="icon icon-check"></span> '
+			. sprintf( __( 'This milestone was completed on %s.', 'bluerabbit' ), '<strong>' . esc_html( $nice_date ) . '</strong>' )
+			. '</div>';
+	}
+	return apply_filters( 'the_content', $pp_content );
+}
+
 function theme_core_setup(){
 	$roles_args = array(
 		'moderate_comments' => 0,
@@ -1672,6 +1687,19 @@ function br_migrate_leaderboard_limit_feature() {
 }
 add_action('init', 'br_migrate_leaderboard_limit_feature');
 
+// GM's written verdict on a player's milestone post - one flat column, same shape as
+// the existing pp_grade/pp_quest_rating on this table (one row per player per quest,
+// resubmission overwrites in place). Deliberately not a separate comments table: the
+// player only ever reads this, never replies, so there's no thread to model.
+function br_migrate_player_post_comment() {
+	global $wpdb;
+	$cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}br_player_posts");
+	if (!in_array('pp_gm_comment', $cols)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_player_posts ADD COLUMN `pp_gm_comment` LONGTEXT NULL AFTER `pp_grade`");
+	}
+}
+add_action('init', 'br_migrate_player_post_comment');
+
 // Unified Conditions engine (see classes/BR-Conditions.php). Threshold/count-based
 // gates (journey %, milestone count, tabi count, transaction count, items consumed)
 // attachable to any target (quest/tabi/achievement/item/item_category), on top of
@@ -2174,6 +2202,7 @@ add_action("wp_ajax_resetGuilds", [BR_Player::instance(), 'resetGuilds']);
 add_action("wp_ajax_resetPlayerAdventure", [BR_Player::instance(), 'resetPlayerAdventure']);
 add_action("wp_ajax_updatePlayer", [BR_Player::instance(), 'updatePlayer']);
 add_action("wp_ajax_setGrade", [BR_Quest::instance(), 'setGrade']);
+add_action("wp_ajax_setPostComment", [BR_Quest::instance(), 'setPostComment']);
 add_action("wp_ajax_validatePlayerPost", [BR_Quest::instance(), 'validatePlayerPost']);
 add_action("wp_ajax_updateProfile", [BR_Player::instance(), 'updateProfile']);
 add_action("wp_ajax_nopriv_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
