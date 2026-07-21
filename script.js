@@ -3168,10 +3168,18 @@ function addStep(id_to_duplicate = null) {
 ////////////////////////////// LOAD STEP ///////////////////////////
 ////////////////////////////// SHARED DRAWER BACKDROP (Step + any Conditions drawer) ///////////////////////////
 // One dynamically-injected backdrop reused by every drawer, instead of one per page/consumer.
-function brShowDrawerBackdrop() {
-    if (!$('#br-drawer-backdrop').length) {
-        $('body').append('<div class="br-drawer-backdrop" id="br-drawer-backdrop" onclick="brCloseTopDrawer();"></div>');
+// Re-parented into $container (when given) instead of always living on <body>, so its
+// z-index is only ever compared against its actual drawer sibling - not the whole DOM.
+// A Step drawer lives inside .br-step-item, which jQuery UI Sortable can promote into its
+// own stacking context (drag transforms) - a body-level backdrop would then be compared
+// against that trapped context instead of the drawer itself and could paint on top of it.
+function brShowDrawerBackdrop($container) {
+    var $target = $container && $container.length ? $container : $('body');
+    var $backdrop = $('#br-drawer-backdrop');
+    if (!$backdrop.length) {
+        $backdrop = $('<div class="br-drawer-backdrop" id="br-drawer-backdrop" onclick="brCloseTopDrawer();"></div>');
     }
+    $target.append($backdrop);
     $('body').addClass('br-drawer-open');
 }
 
@@ -3217,7 +3225,7 @@ function editStep(step_id) {
         success: function (data_received) {
             $accordion.html(data_received).addClass('open');
             $('#step-' + step_id + ' .br-step-edit-btn').addClass('active');
-            brShowDrawerBackdrop();
+            brShowDrawerBackdrop($('#step-' + step_id));
             $('.loader, .small-loader').removeClass('active');
         }
     });
