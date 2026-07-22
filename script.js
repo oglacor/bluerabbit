@@ -6265,6 +6265,19 @@ function setGrade(quest_id, player_id) {
         method: "POST",
         success: function (data_received) {
             displayAjaxResponse(data_received);
+            // For quests that also use Validate/Invalidate, the server now derives
+            // validated/not-validated straight from this grade (>0 = validated) - keep
+            // the two buttons' active/disabled state in sync without a reload.
+            let gradeNum = parseFloat(grade);
+            if (!isNaN(gradeNum)) {
+                if (gradeNum > 0) {
+                    $("#validate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-green').prop('disabled', true);
+                    $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-red').prop('disabled', false);
+                } else {
+                    $("#validate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-green').prop('disabled', false);
+                    $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-red').prop('disabled', true);
+                }
+            }
         }
     });
 }
@@ -6351,7 +6364,11 @@ function validateQuest(quest_id, player_id, validate_action) {
         method: "POST",
         success: function (data_received) {
             displayAjaxResponse(data_received);
-            let grade = validate_action == 'validate' ? 100 : 0;
+            let data = JSON.parse(data_received);
+            // The server keeps an already-set grade as-is (Validate/Invalidate no longer
+            // force it to a flat 100/0) - reflect whatever grade it actually resolved to,
+            // not just what this button click implies.
+            let grade = data.grade;
             if (grade > 0) {
                 $("#validate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-green').prop('disabled', true);
                 $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-red').prop('disabled', false);

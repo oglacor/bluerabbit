@@ -794,16 +794,36 @@ class BR_Quest {
 		global $wpdb; $current_user = wp_get_current_user();
 		$data = array();
 		$data['success'] = false;
-		$player_id = $_POST['player_id'];
-		$quest_id = $_POST['quest_id'];
-		$adventure_id = $_POST['adventure_id'];
+		$player_id = intval($_POST['player_id']);
+		$quest_id = intval($_POST['quest_id']);
+		$adventure_id = intval($_POST['adventure_id']);
 		$grade = $_POST['grade'];
 		$nonce = $_POST['nonce'];//br_grade_nonce
 		$notification = new Notification();
 		if(wp_verify_nonce($nonce, 'br_grade_nonce')){
 			if($grade > 100) { $grade = 100; }elseif($grade < 0){ $grade = 0; }
-			$sql = "UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%d WHERE quest_id=%d AND player_id=%d AND adventure_id=%d";
-			$sql = $wpdb->prepare ($sql,$grade,$quest_id,$player_id,$adventure_id);
+
+			// Quests that also use the Validate/Invalidate mechanism (mech_validate)
+			// should stay in sync with the grade itself rather than needing a separate
+			// button click - any grade greater than 0 counts as validated (published),
+			// zero counts as not validated (draft). %f (not %d) so letter-scale grades
+			// (91.75, 66.75, ...) don't get truncated to whole numbers.
+			$mech_validate = $wpdb->get_var($wpdb->prepare(
+				"SELECT mech_validate FROM {$wpdb->prefix}br_quests WHERE quest_id=%d",
+				$quest_id
+			));
+			if($mech_validate){
+				$pp_status = ($grade > 0) ? 'publish' : 'draft';
+				$sql = $wpdb->prepare(
+					"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%f, pp_status=%s WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
+					$grade, $pp_status, $quest_id, $player_id, $adventure_id
+				);
+			}else{
+				$sql = $wpdb->prepare(
+					"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%f WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
+					$grade, $quest_id, $player_id, $adventure_id
+				);
+			}
 			$wpdb->query($sql);
 
 			$data['success'] = true;
@@ -865,15 +885,24 @@ class BR_Quest {
 		$notification = new Notification();
 
 		if(wp_verify_nonce($nonce, 'br_grade_nonce')){
+			// A quest that also carries its own percentage/letter grade already has a
+			// real score in pp_grade - Validate/Invalidate should only flip whether the
+			// post counts (pp_status), not clobber that score back to a flat 100/0.
+			// Only default to full/zero marks when nothing has been graded yet at all
+			// (simple pass/fail milestones with no separate grade input).
+			$current_grade = $wpdb->get_var($wpdb->prepare(
+				"SELECT pp_grade FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
+				$quest_id, $player_id, $adventure_id
+			));
 			if($validate_action == 'validate'){
-				$grade     = 100;
+				$grade     = ($current_grade !== null) ? $current_grade : 100;
 				$pp_status = 'publish';
 				$msg       = __('Quest Validated','bluerabbit');
 				$log_type  = 'validate';
 				$notif_color = 'green';
 				$notif_icon  = 'check';
 			} else {
-				$grade     = 0;
+				$grade     = ($current_grade !== null) ? $current_grade : 0;
 				$pp_status = 'draft';
 				$msg       = __('Quest Invalidated','bluerabbit');
 				$log_type  = 'invalidate';
@@ -881,11 +910,12 @@ class BR_Quest {
 				$notif_icon  = 'cancel';
 			}
 			$sql = $wpdb->prepare(
-				"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%d, pp_status=%s WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
+				"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%f, pp_status=%s WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
 				$grade, $pp_status, $quest_id, $player_id, $adventure_id
 			);
 			$wpdb->query($sql);
 			$data['success'] = true;
+			$data['grade'] = $grade;
 			$data['message'] = $notification->pop($msg, $notif_color, $notif_icon);
 			$data['just_notify'] = true;
 			$data['new_grade_nonce'] = wp_create_nonce('br_grade_nonce');
@@ -956,22 +986,22 @@ class BR_Quest {
 			$validation_label = '';
 			if($q->mech_validate){
 				// pp_status alone can't tell "never reviewed" apart from "explicitly
-				// re-validated" - it's 'publish' by default on every fresh post, reviewed
-				// or not (see the CREATE TABLE default in functions.php), so checking it
-				// alone made every never-reviewed row read as Valid.
+				// reviewed" for a post that's never been touched at all - it's 'publish'
+				// by default on every fresh post (see the CREATE TABLE default in
+				// functions.php). But pp_grade only ever leaves NULL via setGrade() or
+				// validatePlayerPost(), and both of those now always set pp_status
+				// alongside it (see those methods) - Validate/Invalidate no longer force
+				// a flat 100/0 over a real score, so pp_status, not pp_grade's value, is
+				// the correct "is this valid" signal once a post has actually been
+				// touched at all.
 				// Left blank (not "Invalid") for a never-reviewed row (pp_grade IS NULL) -
 				// blank is what tells the importer's "leave as is" rule to skip it, so
 				// re-uploading this same file back unmodified can't mass-invalidate an
 				// entire untouched roster just because that's the fallback label.
-				// "Valid" requires an exact match to 100 (set only by validateQuest()'s
-				// Validate action); every other reviewed value (0, or anything else) is
-				// "Invalid" - never defaulted to Valid.
 				if($pp->pp_grade === null){
 					$validation_label = '';
-				}elseif((int) $pp->pp_grade === 100){
-					$validation_label = 'Valid';
 				}else{
-					$validation_label = 'Invalid';
+					$validation_label = ($pp->pp_status == 'publish') ? 'Valid' : 'Invalid';
 				}
 			}
 			if(trim((string)$pp->pp_content) === BR_POST_AUTO_COMPLETE_TEXT){
@@ -1102,6 +1132,16 @@ class BR_Quest {
 						if($current->pp_grade === null || (float)$current->pp_grade !== (float)$grade_val){
 							$set['pp_grade'] = $grade_val;
 						}
+						// Mirrors setGrade(): a quest that also uses Validate/Invalidate stays
+						// in sync with the grade itself - >0 counts as validated - rather than
+						// needing a separate validation_status value. The validation_status
+						// column below can still override this for the same row if given.
+						if($q->mech_validate){
+							$new_status = ($grade_val > 0) ? 'publish' : 'draft';
+							if($current->pp_status !== $new_status){
+								$set['pp_status'] = $new_status;
+							}
+						}
 					}
 				}
 			}
@@ -1111,15 +1151,16 @@ class BR_Quest {
 				if($validation_cell !== ''){
 					// Exact match against the "valid" sentinel only - anything else (blank,
 					// "invalid", a typo, an unrelated value) is treated as NOT valid, never
-					// defaulted to valid. Mirrors validateQuest() exactly: Validate sets
-					// grade=100+status=publish as a pair, Invalidate sets grade=0+status=draft -
-					// so this writes the same pair rather than pp_status alone, which is only
-					// ever 'publish' by default on a fresh, never-reviewed post.
+					// defaulted to valid. Mirrors validatePlayerPost(): keeps whatever grade
+					// is already set (from the grade column above, or already stored) rather
+					// than clobbering a real score back to a flat 100/0 - only defaults to
+					// 100/0 when nothing has been graded at all yet.
 					$is_valid = ($validation_cell === 'valid');
-					$new_grade = $is_valid ? 100 : 0;
+					$grade_already_set = array_key_exists('pp_grade', $set) ? $set['pp_grade'] : $current->pp_grade;
+					$new_grade = ($grade_already_set !== null) ? (float) $grade_already_set : ($is_valid ? 100.0 : 0.0);
 					$new_status = $is_valid ? 'publish' : 'draft';
-					$grade_already_set = isset($set['pp_grade']) ? $set['pp_grade'] : $current->pp_grade;
-					if((float) $grade_already_set !== (float) $new_grade || $current->pp_status !== $new_status){
+					$grade_changed = ($current->pp_grade === null) ? true : ((float) $current->pp_grade !== $new_grade);
+					if($grade_changed || $current->pp_status !== $new_status){
 						$set['pp_grade'] = $new_grade;
 						$set['pp_status'] = $new_status;
 					}
