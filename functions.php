@@ -850,6 +850,7 @@ $sql = "
 		"Projects", // List of projects to access and manage them.
 		"Project", // Here we edit name and description of the project.
 		"Assign Achievement",
+		"Assign Item",
 		"Backpack",
 		"Blocker",
 		"Blockers",
@@ -1813,6 +1814,24 @@ function br_migrate_conditions_schema() {
 }
 add_action('init', 'br_migrate_conditions_schema');
 
+// Closes a real race condition in BR_Item::buyItem()/pickupItem(): both read a
+// stock/cap count, validate, then INSERT with no atomicity between the two steps, so
+// two near-simultaneous requests (two players racing the last unit of stock, or a
+// single double-click) can both pass validation and both insert. A nullable column
+// with a UNIQUE key turns the INSERT itself into the tripwire - two requests that
+// compute the same deterministic key (because they read the same stale count) can
+// never both succeed, regardless of what beat what in application code. NULL is
+// never unique-constrained against itself in MySQL, so existing/unrelated rows are
+// unaffected.
+function br_migrate_transaction_lock_schema() {
+	global $wpdb;
+	$cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}br_transactions");
+	if (!in_array('trnx_lock_key', $cols)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_transactions ADD COLUMN `trnx_lock_key` VARCHAR(191) NULL, ADD UNIQUE KEY `idx_trnx_lock_key` (`trnx_lock_key`)");
+	}
+}
+add_action('init', 'br_migrate_transaction_lock_schema');
+
 function br_save_ai_api_key() {
 	global $wpdb;
 	$n = new Notification();
@@ -2271,6 +2290,7 @@ add_action("wp_ajax_postToWall", [BR_Quest::instance(), 'postToWall']);
 add_action("wp_ajax_loadChat", [BR_Announcement::instance(), 'loadChat']);
 add_action("wp_ajax_updateItem", [BR_Item::instance(), 'updateItem']);
 add_action("wp_ajax_buyItem", [BR_Item::instance(), 'buyItem']);
+add_action("wp_ajax_assignItem", [BR_Item::instance(), 'assignItem']);
 add_action("wp_ajax_pickupItem", [BR_Item::instance(), 'pickupItem']);
 add_action("wp_ajax_checkItem", [BR_Item::instance(), 'checkItem']);
 add_action("wp_ajax_useItem", [BR_Item::instance(), 'useItem']);

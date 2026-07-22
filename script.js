@@ -6403,6 +6403,18 @@ function br_confirm_trd(trash_action, id, type) {
     hideAllOverlay();
     let message = $("#msg-" + trash_action).html();
     $("#feedback .content").html(message);
+    // Reverting a transaction is the one action here with a real accountability
+    // requirement - append (not replace) a reason field only for it, since .content
+    // just got overwritten by the static message above and would wipe out anything
+    // placed there ahead of time.
+    if (type === 'trnx') {
+        $("#feedback .content").append(
+            '<div class="br-form-group br-mt-sm">' +
+            '<label class="br-form-label">Reason (optional)</label>' +
+            '<textarea class="br-input" id="trd-reason" rows="2"></textarea>' +
+            '</div>'
+        );
+    }
     $("#feedback").addClass('active');
     $("#br-delete-id, #br-trash-id, #br-publish-id, #br-draft-id, #br-locked-id").val(id);
     $("#trd-type").val(type);
@@ -6426,6 +6438,7 @@ function br_trash() {
     let type = $("#trd-type").val();
     let reload = $("#reload").val();
     let player_id = $("#trd-player-id").val();
+    let reason = $("#trd-reason").val();
     jQuery.ajax({
         url: runAJAX.ajaxurl,
         data: ({
@@ -6435,7 +6448,8 @@ function br_trash() {
             adventure_id: adventure_id,
             type: type,
             reload: reload,
-            player_id: player_id || ''
+            player_id: player_id || '',
+            reason: reason || ''
         }),
         method: "POST",
         success: function (data_received) {

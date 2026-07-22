@@ -120,6 +120,7 @@
 							<th class="text-center"><button class="br-btn ghost" onClick="toggleColumn('path');"><?= __("Path","bluerabbit"); ?></button></th>
 							<th class="text-center"><button class="br-btn ghost" onClick="toggleColumn('steps');"><?= __("Step","bluerabbit"); ?></button></th>
 							<th class="text-center"><span class="icon icon-check"></span></th>
+							<th class="text-center"><span class="icon icon-players" title="<?= __("Assign to player","bluerabbit"); ?>"></span></th>
 							<th class="text-center"><span class="icon icon-edit"></span></th>
 							<th class="text-center"><span class="icon icon-duplicate"></span></th>
 							<th class="text-center"><span class="icon icon-trash"></span></th>
@@ -236,6 +237,9 @@
 										<button class="br-action-link" onClick="openItemConditionsModal('item', <?= $i->item_id; ?>);">
 											<span class="icon icon-check"></span>
 										</button>
+									</td>
+									<td class="text-center <?=$a_color; ?>">
+										<a class="br-action-link" href="<?= get_bloginfo('url')."/assign-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>" title="<?= __("Assign to player","bluerabbit"); ?>"><span class="icon icon-players"></span></a>
 									</td>
 									<td class="text-center <?=$a_color; ?>">
 										<a class="br-action-link edit" href="<?= get_bloginfo('url')."/new-item/?adventure_id=$adventure->adventure_id&item_id=$i->item_id";?>"><span class="icon icon-edit"></span></a>

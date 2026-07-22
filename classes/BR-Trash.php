@@ -22,6 +22,7 @@ class BR_Trash {
         $today = date('Y-m-d g:h:s');
         $nonce = $_POST['nonce'];
         $reload = $_POST['reload'];
+        $reason = isset($_POST['reason']) ? sanitize_textarea_field($_POST['reason']) : '';
         $n = new Notification();
         $data['just_notify'] =true;
 
@@ -79,6 +80,12 @@ class BR_Trash {
                 $sql = "UPDATE {$wpdb->prefix}br_blockers SET blocker_status=%s WHERE blocker_id=%d AND adventure_id=%d";
                 $sql = $wpdb->prepare ($sql,$status,$id,$adventure_id);
             }elseif($type == 'trnx'){
+                // Read the transaction's actual owner before changing its status - the
+                // generic resetPlayer() call below needs to refresh THIS player (their
+                // bloo/stock counts are live-recomputed from trnx_status='publish' rows,
+                // so a revert only takes visible effect once resetPlayer runs for them),
+                // not the GM performing the revert.
+                $trnx_row = $wpdb->get_row($wpdb->prepare("SELECT player_id FROM {$wpdb->prefix}br_transactions WHERE trnx_id=%d AND adventure_id=%d", $id, $adventure_id));
                 $sql = "UPDATE {$wpdb->prefix}br_transactions SET trnx_status=%s, trnx_modified=%s WHERE trnx_id=%d AND adventure_id=%d";
                 $sql = $wpdb->prepare ($sql,$status,$today,$id,$adventure_id);
             }elseif($type == 'player_post'){
@@ -178,8 +185,10 @@ class BR_Trash {
 
             if ($sql) {
                 $wpdb->query($sql);
-                BR_Activity::instance()->logActivity($adventure_id, $status,$type,"",$id);
-                BR_Player::instance()->resetPlayer($adventure_id, $current_user->ID);
+                $log_content = ($type == 'trnx' && $reason !== '') ? $reason : "";
+                BR_Activity::instance()->logActivity($adventure_id, $status,$type,$log_content,$id);
+                $reset_player_id = ($type == 'trnx' && !empty($trnx_row->player_id)) ? $trnx_row->player_id : $current_user->ID;
+                BR_Player::instance()->resetPlayer($adventure_id, $reset_player_id);
             }
             $data['success'] = true;
             if($reload){
