@@ -213,6 +213,14 @@ class BR_Item {
             $achievement_id = $item_data['achievement_id'];
             $item_start_date = $item_data['item_start_date'];
             $item_deadline = $item_data['item_deadline'];
+            // Stored as 0/'' rather than true SQL NULL when disabled - $wpdb->prepare()
+            // doesn't turn a PHP null into a real NULL for %s/%f placeholders, and
+            // item_tremendous_enabled is the authoritative gate everywhere else reads,
+            // so the other fields' exact "disabled" representation doesn't matter.
+            $item_tremendous_enabled = !empty($item_data['item_tremendous_enabled']) ? 1 : 0;
+            $item_tremendous_amount = ($item_tremendous_enabled && $item_data['item_tremendous_amount'] !== '') ? (float) $item_data['item_tremendous_amount'] : 0;
+            $item_tremendous_label = $item_tremendous_enabled ? sanitize_text_field($item_data['item_tremendous_label'] ?? '') : '';
+            $item_tremendous_products = ($item_tremendous_enabled && !empty($item_data['item_tremendous_products'])) ? wp_json_encode(array_map('sanitize_text_field', (array) $item_data['item_tremendous_products'])) : '';
 
 
             if(!$item_name){
@@ -248,12 +256,12 @@ class BR_Item {
             }else{
                 $errors[] = __("Item type doesn't exist, please select one from the options given","bluerabbit");
             }
-            $sql = "INSERT INTO {$wpdb->prefix}br_items ( item_id, adventure_id, item_cost, item_stock, item_player_max, item_level, item_post_date, item_post_modified, item_author, item_name, item_description, item_type, item_badge, item_secret_badge, item_secret_description, item_category_id, achievement_id, item_start_date, item_deadline, item_x, item_y, item_z, tabi_id, item_visibility)
-            VALUES (%d, %d, %d, %d, %d, %d, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %d, %d, %s, %s, %d, %d, %d, %d, %s )
+            $sql = "INSERT INTO {$wpdb->prefix}br_items ( item_id, adventure_id, item_cost, item_stock, item_player_max, item_level, item_post_date, item_post_modified, item_author, item_name, item_description, item_type, item_badge, item_secret_badge, item_secret_description, item_category_id, achievement_id, item_start_date, item_deadline, item_x, item_y, item_z, tabi_id, item_visibility, item_tremendous_enabled, item_tremendous_amount, item_tremendous_label, item_tremendous_products)
+            VALUES (%d, %d, %d, %d, %d, %d, %s, %s, %s, %s,  %s, %s, %s, %s, %s, %d, %d, %s, %s, %d, %d, %d, %d, %s, %d, %f, %s, %s )
             ON DUPLICATE KEY UPDATE
-            adventure_id=%d, item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_author=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category_id=%d, achievement_id=%d, item_start_date=%s, item_deadline=%s, item_x=%d, item_y=%d, item_z=%d, tabi_id=%d, item_visibility=%s";
+            adventure_id=%d, item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_author=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category_id=%d, achievement_id=%d, item_start_date=%s, item_deadline=%s, item_x=%d, item_y=%d, item_z=%d, tabi_id=%d, item_visibility=%s, item_tremendous_enabled=%d, item_tremendous_amount=%f, item_tremendous_label=%s, item_tremendous_products=%s";
 
-            $sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility);
+            $sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $item_tremendous_enabled, $item_tremendous_amount, $item_tremendous_label, $item_tremendous_products, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $item_tremendous_enabled, $item_tremendous_amount, $item_tremendous_label, $item_tremendous_products);
             if(!$errors){
                 $wpdb->query($sql);
                 $new_item_id = $wpdb->insert_id;
@@ -355,38 +363,55 @@ class BR_Item {
                                 $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_user->ID, $player_progress);
                                 if(BR_Item::instance()->evaluateItemAccess($adv_child_id, $purchaseData, $snapshot)){
                                     if($purchaseData->item_player_max == 0 || (count($trnxs) < $purchaseData->item_player_max && $purchaseData->item_player_max > 0)){
-                                        // Deterministic reservation key for this exact purchase attempt - see
-                                        // br_migrate_transaction_lock_schema() in functions.php. Scoped to
-                                        // whichever cap is actually scarce for this item: stock is shop-wide
-                                        // (raced by different players), player/category max is per-player
-                                        // (raced by a double-click); either way the count component means two
-                                        // requests racing the same stale count compute the same key.
-                                        if($purchaseData->item_stock > 0 && $purchaseData->item_stock < 99999){
-                                            $lock_key = "stock_{$item_id}_{$adv_child_id}_".(count($alltrnx)+1);
-                                        }elseif($purchaseData->item_player_max > 0){
-                                            $scope = $purchaseData->item_category_id ? "cat{$purchaseData->item_category_id}" : "item{$item_id}";
-                                            $lock_key = "cap_{$current_user->ID}_{$scope}_{$adv_child_id}_".(count($trnxs)+1);
+                                        if($purchaseData->item_tremendous_enabled){
+                                            // Gift card items delegate the actual transaction insert to
+                                            // sendReward() itself (it only inserts on a real Tremendous 200,
+                                            // with its own stock/cap-scoped lock key) - buyItem() never
+                                            // double-inserts for these, and a failed/duplicate send correctly
+                                            // results in no transaction and no BLOO deducted.
+                                            $reward_result = BR_Tremendous::instance()->sendReward($current_user->ID, $item_id, $adv_child_id);
+                                            if($reward_result['success']){
+                                                $data['message'] = $notification->pop($reward_result['message'],'green','check');
+                                                $data['noClose'] = true;
+                                                $data['success'] = true;
+                                                $data['sale'] = true;
+                                            }else{
+                                                $data['message'] = $notification->pop($reward_result['message'],'red','cancel');
+                                            }
                                         }else{
-                                            $lock_key = "buy_{$current_user->ID}_{$item_id}_{$adv_child_id}_".(count($trnxs)+1);
-                                        }
-                                        $sql = "INSERT INTO {$wpdb->prefix}br_transactions (player_id, adventure_id, object_id, trnx_author, trnx_amount, trnx_type, trnx_date, trnx_modified, trnx_lock_key)
-                                        VALUES (%d, %d, %d, %d, %d, %s, %s, %s, %s)";
-                                        $sql = $wpdb->prepare($sql, $current_user->ID, $adv_child_id, $item_id, $current_user->ID, $purchaseData->item_cost, $purchaseData->item_type, $today, $today, $lock_key);
-                                        $inserted = $wpdb->query($sql);
-                                        if($inserted === false){
-                                            // Someone else's request claimed this exact slot first (the UNIQUE
-                                            // key collision) - same message a real stock/cap miss would show,
-                                            // never a raw DB error.
-                                            $msg_content = __("No More Items Left",'bluerabbit');
-                                            $data['message'] = $notification->pop($msg_content,'orange','cancel');
-                                        }else{
-                                            $msg_content = __('Item Purchased!','bluerabbit');
-                                            $data['message'] = $notification->pop($msg_content,'green','check');
-                                            $data['noClose'] = true;
-                                            $data['success']=true;
-                                            $data['sale']=true;
-                                            BR_Activity::instance()->logActivity($adv_child_id, 'purchase','item',"$purchaseData->item_type",$item_id);
-                                            BR_Player::instance()->resetPlayer($adv_child_id, $current_user->ID);
+                                            // Deterministic reservation key for this exact purchase attempt - see
+                                            // br_migrate_transaction_lock_schema() in functions.php. Scoped to
+                                            // whichever cap is actually scarce for this item: stock is shop-wide
+                                            // (raced by different players), player/category max is per-player
+                                            // (raced by a double-click); either way the count component means two
+                                            // requests racing the same stale count compute the same key.
+                                            if($purchaseData->item_stock > 0 && $purchaseData->item_stock < 99999){
+                                                $lock_key = "stock_{$item_id}_{$adv_child_id}_".(count($alltrnx)+1);
+                                            }elseif($purchaseData->item_player_max > 0){
+                                                $scope = $purchaseData->item_category_id ? "cat{$purchaseData->item_category_id}" : "item{$item_id}";
+                                                $lock_key = "cap_{$current_user->ID}_{$scope}_{$adv_child_id}_".(count($trnxs)+1);
+                                            }else{
+                                                $lock_key = "buy_{$current_user->ID}_{$item_id}_{$adv_child_id}_".(count($trnxs)+1);
+                                            }
+                                            $sql = "INSERT INTO {$wpdb->prefix}br_transactions (player_id, adventure_id, object_id, trnx_author, trnx_amount, trnx_type, trnx_date, trnx_modified, trnx_lock_key)
+                                            VALUES (%d, %d, %d, %d, %d, %s, %s, %s, %s)";
+                                            $sql = $wpdb->prepare($sql, $current_user->ID, $adv_child_id, $item_id, $current_user->ID, $purchaseData->item_cost, $purchaseData->item_type, $today, $today, $lock_key);
+                                            $inserted = $wpdb->query($sql);
+                                            if($inserted === false){
+                                                // Someone else's request claimed this exact slot first (the UNIQUE
+                                                // key collision) - same message a real stock/cap miss would show,
+                                                // never a raw DB error.
+                                                $msg_content = __("No More Items Left",'bluerabbit');
+                                                $data['message'] = $notification->pop($msg_content,'orange','cancel');
+                                            }else{
+                                                $msg_content = __('Item Purchased!','bluerabbit');
+                                                $data['message'] = $notification->pop($msg_content,'green','check');
+                                                $data['noClose'] = true;
+                                                $data['success']=true;
+                                                $data['sale']=true;
+                                                BR_Activity::instance()->logActivity($adv_child_id, 'purchase','item',"$purchaseData->item_type",$item_id);
+                                                BR_Player::instance()->resetPlayer($adv_child_id, $current_user->ID);
+                                            }
                                         }
                                     }else{
                                         $msg_content = __("You can't buy any more of this item",'bluerabbit');
@@ -547,6 +572,20 @@ class BR_Item {
                 $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $target_player_id, $player_progress);
                 if(BR_Item::instance()->evaluateItemAccess($adv_child_id, $purchaseData, $snapshot)){
                     if($purchaseData->item_player_max == 0 || (count($trnxs) < $purchaseData->item_player_max && $purchaseData->item_player_max > 0)){
+                        if($purchaseData->item_tremendous_enabled){
+                            // Always the target player's own WP account email - assignItem()
+                            // never accepts a recipient override, matching sendReward()'s own
+                            // "no override parameter exists" rule.
+                            $reward_result = BR_Tremendous::instance()->sendReward($target_player_id, $item_id, $adv_child_id);
+                            if($reward_result['success']){
+                                $data['message'] = $notification->pop($reward_result['message'],'green','check');
+                                $data['success'] = true;
+                            }else{
+                                $data['message'] = $notification->pop($reward_result['message'],'red','cancel');
+                            }
+                            echo json_encode($data);
+                            die();
+                        }
                         if($purchaseData->item_stock > 0 && $purchaseData->item_stock < 99999){
                             $lock_key = "stock_{$item_id}_{$adv_child_id}_".(count($alltrnx)+1);
                         }elseif($purchaseData->item_player_max > 0){

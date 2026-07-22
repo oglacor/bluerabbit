@@ -76,6 +76,27 @@ max-width: 1440px;
   margin-bottom: 20px;
 }
 
+// A distinct block within an existing .br-panel (e.g. page-new-item.php's Gift Card
+// Reward block inside the main Item Settings panel) - a top divider + spacing rather
+// than a full nested .br-panel, since nesting the card treatment inside itself reads
+// as a mistake, not a grouping.
+.br-panel-subsection {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba($br-white, 0.08);
+}
+
+// Tremendous catalog product picker (page-new-item.php)
+.br-tremendous-product-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: rgba($br-white, 0.8);
+  cursor: pointer;
+}
+
 .br-panel-title {
   @include condensed-heading;
   color: rgba($br-white, 0.7);

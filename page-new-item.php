@@ -12,6 +12,9 @@ if($adventure && ($isGM || $isAdmin)){
 	$item_categories = BR_Item::instance()->getCategories($adventure->adventure_id);
 	$is_edit = isset($i) && $i;
 	$current_type = $is_edit ? $i->item_type : 'consumable';
+	$br_tremendous_allowed = !($my_features && isset($my_features['allow_use_tremendous'][$f_role]) && !$my_features['allow_use_tremendous'][$f_role]);
+	$item_tremendous_products = ($is_edit && $i->item_tremendous_products) ? json_decode($i->item_tremendous_products, true) : array();
+	if (!is_array($item_tremendous_products)) $item_tremendous_products = array();
 ?>
 
 <div class="br-page br-has-bottom-bar">
@@ -206,6 +209,39 @@ if($adventure && ($isGM || $isAdmin)){
 			<button type="button" class="br-btn ghost" onClick="openItemConditionsModal('item', <?= $i->item_id; ?>);">
 				<span class="icon icon-check"></span> <?= __("Conditions","bluerabbit"); ?>
 			</button>
+		</div>
+		<?php } ?>
+
+		<?php if($br_tremendous_allowed){ ?>
+		<div class="br-panel-subsection" id="tremendous-reward-panel">
+			<h3 class="br-panel-title"><span class="icon icon-bloo"></span> <?= __("Gift Card Reward (Tremendous)","bluerabbit"); ?></h3>
+			<span class="br-form-hint"><?= __("When enabled, purchasing this item also sends the player a real gift card by email through Tremendous.com, on top of the normal BLOO cost above. Only applies to Consumable items.","bluerabbit"); ?></span>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Enable gift card for this item","bluerabbit"); ?></label>
+				<input type="checkbox" class="cond-opt cond-opt-consumable" id="the_item_tremendous_enabled" <?= ($is_edit && $i->item_tremendous_enabled) ? 'checked' : ''; ?>>
+			</div>
+
+			<div class="br-form-grid br-form-grid-2">
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Amount","bluerabbit"); ?></label>
+					<input type="number" step="0.01" min="0" class="br-input cond-opt cond-opt-consumable" id="the_item_tremendous_amount" value="<?= $is_edit ? esc_attr($i->item_tremendous_amount) : ''; ?>" placeholder="25.00">
+				</div>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Label shown to the player","bluerabbit"); ?></label>
+					<input type="text" class="br-input cond-opt cond-opt-consumable" id="the_item_tremendous_label" value="<?= $is_edit ? esc_attr($i->item_tremendous_label) : ''; ?>" placeholder="<?= __('e.g. "$25 Gift Card of your choice"','bluerabbit'); ?>">
+				</div>
+			</div>
+
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Products (what the player can choose from)","bluerabbit"); ?></label>
+				<span class="br-form-hint"><?= __("Leave empty to let the player choose from every product available on your Tremendous account.","bluerabbit"); ?></span>
+				<div class="br-actions">
+					<button type="button" class="br-btn" onClick="brLoadTremendousCatalog();"><?= __("Load Catalog","bluerabbit"); ?></button>
+				</div>
+				<div id="tremendous-catalog-list" class="br-form-hint"></div>
+				<input type="hidden" id="the_item_tremendous_products" value="<?= esc_attr(wp_json_encode($item_tremendous_products)); ?>">
+			</div>
 		</div>
 		<?php } ?>
 

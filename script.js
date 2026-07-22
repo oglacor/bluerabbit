@@ -4392,6 +4392,97 @@ function brRemoveAiKey() {
     });
 }
 
+////////////////////////////////////////// Tremendous Settings  ////////////////////////////////////////////
+
+function brSaveTremendousConfig() {
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_tremendous_save_config',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            api_key: $('#the_tremendous_api_key').val(),
+            sandbox_mode: $('#the_tremendous_sandbox_mode').val(),
+            funding_source_id: $('#the_tremendous_funding_source').val(),
+            campaign_id: $('#the_tremendous_campaign_id').val(),
+            currency_code: $('#the_tremendous_currency_code').val()
+        },
+        success: function(raw) {
+            displayAjaxResponse(raw);
+            $('#the_tremendous_api_key').val('');
+        }
+    });
+}
+
+function brLoadTremendousCatalog() {
+    showLoader();
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_tremendous_get_catalog',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val()
+        },
+        success: function(raw) {
+            $('.loader, .small-loader').removeClass('active');
+            let data = JSON.parse(raw);
+            if (!data.success || !data.products || !data.products.length) {
+                $('#tremendous-catalog-list').text('Could not load the catalog - check the Tremendous connection in adventure settings.');
+                return;
+            }
+            let selected = [];
+            try { selected = JSON.parse($('#the_item_tremendous_products').val() || '[]'); } catch (e) {}
+            let html = '';
+            data.products.forEach(function(p) {
+                let checked = selected.indexOf(p.id) >= 0 ? 'checked' : '';
+                html += '<label class="br-tremendous-product-option">' +
+                    '<input type="checkbox" class="tremendous-product-checkbox" value="' + p.id + '" ' + checked + '> ' +
+                    (p.name || p.id) + '</label>';
+            });
+            $('#tremendous-catalog-list').html(html);
+            $('.tremendous-product-checkbox').on('change', brSyncTremendousProducts);
+        }
+    });
+}
+
+function brSyncTremendousProducts() {
+    let selected = [];
+    $('.tremendous-product-checkbox:checked').each(function() {
+        selected.push($(this).val());
+    });
+    $('#the_item_tremendous_products').val(JSON.stringify(selected));
+}
+
+function brTestTremendousConnection() {
+    showLoader();
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'br_tremendous_test_connection',
+            nonce: $('#nonce').val(),
+            adventure_id: $('#the_adventure_id').val()
+        },
+        success: function(raw) {
+            displayAjaxResponse(raw);
+            let data = JSON.parse(raw);
+            if (data.success && data.funding_sources) {
+                let $select = $('#the_tremendous_funding_source');
+                let current = $select.val();
+                $select.empty();
+                data.funding_sources.forEach(function(fs) {
+                    $select.append($('<option>').val(fs.id).text(fs.name + (fs.id === 'BALANCE' ? '' : ' (' + fs.id + ')')));
+                });
+                if ($select.find('option[value="' + current + '"]').length) {
+                    $select.val(current);
+                }
+            }
+        }
+    });
+}
+
 ////////////////////////////////////////// Preview Template  ////////////////////////////////////////////
 
 function previewTemplate(adv_id = null) {
@@ -5373,6 +5464,12 @@ function updateItem() {
         item_y: $('#the_item_y').val(),
         item_z: $('#the_item_z').val(),
         tabi_id: $('#the_item_tabi').val(),
+        item_tremendous_enabled: $('#the_item_tremendous_enabled').is(':checked') ? 1 : 0,
+        item_tremendous_amount: $('#the_item_tremendous_amount').val(),
+        item_tremendous_label: $('#the_item_tremendous_label').val(),
+        item_tremendous_products: (function() {
+            try { return JSON.parse($('#the_item_tremendous_products').val() || '[]'); } catch (e) { return []; }
+        })(),
     };
     jQuery.ajax({
         url: runAJAX.ajaxurl,

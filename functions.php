@@ -922,6 +922,7 @@ $sql = "
 		"Survey",
 		"Stats",
 		"Transactions",
+		"Tremendous Orders",
 		"Tabis",
 		"Wall",
 		"Manage Requests",
@@ -1219,6 +1220,7 @@ require_once ("$dirName/classes/BR-Branch.php");
 require_once ("$dirName/classes/BR-Trash.php");
 require_once ("$dirName/classes/BR-Scorm.php");
 require_once ("$dirName/classes/BR-mailer.php");
+require_once ("$dirName/classes/BR-Tremendous.php");
 require_once ("$dirName/classes/BR-Stats.php");
 require_once ("$dirName/classes/BR-PlayerMeta.php");
 require_once ("$dirName/functions/br-email-admin.php");
@@ -1832,6 +1834,99 @@ function br_migrate_transaction_lock_schema() {
 }
 add_action('init', 'br_migrate_transaction_lock_schema');
 
+// Tremendous.com gift-card rewards integration - see classes/BR-Tremendous.php.
+// currency_code defaults to EUR (client's explicit tweak on the original brief, which
+// specified USD). tremendous_external_id's UNIQUE KEY is the idempotency lock that
+// makes a Tremendous purchase safe against duplicate sends independent of
+// trnx_lock_key above - same mechanism, same reasoning.
+function br_migrate_tremendous_schema() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$prefix = $wpdb->prefix;
+
+	$config_table = "{$prefix}br_tremendous_config";
+	if ($wpdb->get_var("SHOW TABLES LIKE '$config_table'") !== $config_table) {
+		$wpdb->query("CREATE TABLE $config_table (
+			`config_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`adventure_id` BIGINT NOT NULL,
+			`api_key_enc` TEXT NULL,
+			`sandbox_mode` TINYINT(1) NOT NULL DEFAULT 1,
+			`funding_source_id` VARCHAR(100) NOT NULL DEFAULT 'BALANCE',
+			`campaign_id` VARCHAR(100) DEFAULT NULL,
+			`currency_code` VARCHAR(10) NOT NULL DEFAULT 'EUR',
+			`config_status` VARCHAR(20) NOT NULL DEFAULT 'active',
+			`config_created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`config_id`),
+			UNIQUE KEY `adventure_id` (`adventure_id`)
+		) $charset_collate");
+	}
+
+	$orders_table = "{$prefix}br_tremendous_orders";
+	if ($wpdb->get_var("SHOW TABLES LIKE '$orders_table'") !== $orders_table) {
+		$wpdb->query("CREATE TABLE $orders_table (
+			`order_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`player_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL,
+			`item_id` BIGINT NOT NULL,
+			`tremendous_order_id` VARCHAR(255) DEFAULT NULL,
+			`tremendous_external_id` VARCHAR(255) NOT NULL,
+			`recipient_email` VARCHAR(255) NOT NULL,
+			`amount` DECIMAL(10,2) NOT NULL,
+			`currency_code` VARCHAR(10) NOT NULL DEFAULT 'EUR',
+			`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+			`sandbox` TINYINT(1) NOT NULL DEFAULT 1,
+			`api_response` LONGTEXT DEFAULT NULL,
+			`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`order_id`),
+			UNIQUE KEY `external_id` (`tremendous_external_id`),
+			KEY `player_item` (`player_id`, `item_id`),
+			KEY `adventure_id` (`adventure_id`)
+		) $charset_collate");
+	}
+
+	$item_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_items");
+	if (!in_array('item_tremendous_enabled', $item_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_items ADD COLUMN `item_tremendous_enabled` TINYINT(1) NOT NULL DEFAULT 0");
+	}
+	if (!in_array('item_tremendous_products', $item_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_items ADD COLUMN `item_tremendous_products` TEXT DEFAULT NULL");
+	}
+	if (!in_array('item_tremendous_amount', $item_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_items ADD COLUMN `item_tremendous_amount` DECIMAL(10,2) DEFAULT NULL");
+	}
+	if (!in_array('item_tremendous_label', $item_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_items ADD COLUMN `item_tremendous_label` VARCHAR(255) DEFAULT NULL");
+	}
+
+	// Plan-gates the whole feature exactly like the AI Content Validation panel
+	// (allow_use_claude_api) - reuses the existing br_features/br_plan_features
+	// system instead of inventing a separate on/off switch.
+	$exists = $wpdb->get_var($wpdb->prepare(
+		"SELECT feature_id FROM {$prefix}br_features WHERE feature_name=%s",
+		'allow_use_tremendous'
+	));
+	if (!$exists) {
+		$wpdb->insert("{$prefix}br_features", [
+			'feature_name'  => 'allow_use_tremendous',
+			'feature_label' => __('Tremendous Gift Card Rewards', 'bluerabbit'),
+			'feature_type'  => 'checkbox',
+			'feature_desc'  => __('Connect the item shop to Tremendous.com so purchasing a configured item sends a real gift card to the player.', 'bluerabbit'),
+		]);
+		$feature_id = $wpdb->insert_id;
+		if ($feature_id) {
+			$plans = $wpdb->get_results("SELECT plan_id FROM {$prefix}br_plans WHERE plan_status='active'");
+			foreach ($plans as $p) {
+				$wpdb->insert("{$prefix}br_plan_features", [
+					'plan_id'       => $p->plan_id,
+					'feature_id'    => $feature_id,
+					'feature_value' => '1',
+				]);
+			}
+		}
+	}
+}
+add_action('init', 'br_migrate_tremendous_schema');
+
 function br_save_ai_api_key() {
 	global $wpdb;
 	$n = new Notification();
@@ -2291,6 +2386,9 @@ add_action("wp_ajax_loadChat", [BR_Announcement::instance(), 'loadChat']);
 add_action("wp_ajax_updateItem", [BR_Item::instance(), 'updateItem']);
 add_action("wp_ajax_buyItem", [BR_Item::instance(), 'buyItem']);
 add_action("wp_ajax_assignItem", [BR_Item::instance(), 'assignItem']);
+add_action("wp_ajax_br_tremendous_save_config", [BR_Tremendous::instance(), 'ajax_save_config']);
+add_action("wp_ajax_br_tremendous_test_connection", [BR_Tremendous::instance(), 'ajax_test_connection']);
+add_action("wp_ajax_br_tremendous_get_catalog", [BR_Tremendous::instance(), 'ajax_get_catalog']);
 add_action("wp_ajax_pickupItem", [BR_Item::instance(), 'pickupItem']);
 add_action("wp_ajax_checkItem", [BR_Item::instance(), 'checkItem']);
 add_action("wp_ajax_useItem", [BR_Item::instance(), 'useItem']);

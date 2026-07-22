@@ -228,6 +228,12 @@ $image_types = array(
 			<span class="icon icon-data"></span> <?= __("A.I.","bluerabbit"); ?>
 		</button>
 		<?php } ?>
+		<?php $br_tremendous_allowed = !empty($adventure) && !($my_features && isset($my_features['allow_use_tremendous'][$f_role]) && !$my_features['allow_use_tremendous'][$f_role]); ?>
+		<?php if ($br_tremendous_allowed) { ?>
+		<button class="br-tab-btn" onClick="brScrollTo('tremendous-settings', this)">
+			<span class="icon icon-bloo"></span> <?= __("Tremendous","bluerabbit"); ?>
+		</button>
+		<?php } ?>
 		<button class="br-tab-btn" onClick="brScrollTo('quick-links', this)">
 			<span class="icon icon-link"></span> <?= __("Quick Links","bluerabbit"); ?>
 		</button>
@@ -1132,6 +1138,65 @@ $image_types = array(
 				<p class="br-muted"><?= __('The key is used server-side to validate player text responses with Claude Haiku. Typical cost: less than $0.01 per validation.', 'bluerabbit'); ?></p>
 			</div>
 		</details>
+	</div>
+	</div>
+	<?php } ?>
+
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<!-- TREMENDOUS SETTINGS                                    -->
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<?php if ($br_tremendous_allowed) { ?>
+	<?php $tremendous_config = BR_Tremendous::instance()->getConfig($adventure->adventure_id); ?>
+	<div class="br-scroll-section" id="tremendous-settings">
+	<div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-bloo"></span> <?= __("Tremendous Gift Card Rewards","bluerabbit"); ?></h3>
+		<span class="br-form-hint"><?= __("Connect a Tremendous.com account so purchasing a configured item sends a real gift card to the player's email. The API key is stored encrypted and used server-side only.","bluerabbit"); ?></span>
+
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("API Key","bluerabbit"); ?></label>
+			<div class="br-form-grid br-form-grid-2">
+				<input type="password" class="br-input" id="the_tremendous_api_key" value="" placeholder="<?= $tremendous_config && $tremendous_config->api_key_enc ? __('•••••••• (saved - leave blank to keep)','bluerabbit') : __('Paste your Tremendous API key','bluerabbit'); ?>">
+				<div class="br-actions">
+					<button class="br-btn br-btn-green" onClick="brSaveTremendousConfig();"><?= __("Save Settings","bluerabbit"); ?></button>
+					<button class="br-btn" onClick="brTestTremendousConnection();"><?= __("Test Connection","bluerabbit"); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<div class="br-form-grid br-form-grid-2">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Mode","bluerabbit"); ?></label>
+				<select class="br-input" id="the_tremendous_sandbox_mode">
+					<option value="1" <?= (!$tremendous_config || $tremendous_config->sandbox_mode) ? 'selected' : ''; ?>><?= __("Sandbox (test - no real money moves)","bluerabbit"); ?></option>
+					<option value="0" <?= ($tremendous_config && !$tremendous_config->sandbox_mode) ? 'selected' : ''; ?>><?= __("Production (real gift cards)","bluerabbit"); ?></option>
+				</select>
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Currency","bluerabbit"); ?></label>
+				<select class="br-input" id="the_tremendous_currency_code">
+					<?php $cur = $tremendous_config->currency_code ?? 'EUR'; ?>
+					<option value="EUR" <?= $cur == 'EUR' ? 'selected' : ''; ?>>EUR (€)</option>
+					<option value="USD" <?= $cur == 'USD' ? 'selected' : ''; ?>>USD ($)</option>
+					<option value="GBP" <?= $cur == 'GBP' ? 'selected' : ''; ?>>GBP (£)</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="br-form-grid br-form-grid-2">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Funding Source","bluerabbit"); ?></label>
+				<select class="br-input" id="the_tremendous_funding_source">
+					<option value="BALANCE" <?= (!$tremendous_config || $tremendous_config->funding_source_id == 'BALANCE') ? 'selected' : ''; ?>>BALANCE</option>
+				</select>
+				<span class="br-form-hint"><?= __("Click Test Connection to load your account's real funding sources.","bluerabbit"); ?></span>
+			</div>
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Campaign ID (optional)","bluerabbit"); ?></label>
+				<input type="text" class="br-input" id="the_tremendous_campaign_id" value="<?= esc_attr($tremendous_config->campaign_id ?? ''); ?>" placeholder="<?= __("For Tremendous-side branding","bluerabbit"); ?>">
+			</div>
+		</div>
+
+		<div id="tremendous-connection-status"></div>
 	</div>
 	</div>
 	<?php } ?>
