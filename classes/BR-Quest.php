@@ -955,10 +955,24 @@ class BR_Quest {
 		foreach($player_posts as $pp){
 			$validation_label = '';
 			if($q->mech_validate){
-				// pp_status is the actual field the importer below writes to for this
-				// column - read from the same field so a re-download right after an
-				// upload reflects exactly what was just written, not a grade-derived proxy.
-				$validation_label = ($pp->pp_status == 'publish') ? 'Valid' : 'Invalid';
+				// pp_status alone can't tell "never reviewed" apart from "explicitly
+				// re-validated" - it's 'publish' by default on every fresh post, reviewed
+				// or not (see the CREATE TABLE default in functions.php), so checking it
+				// alone made every never-reviewed row read as Valid.
+				// Left blank (not "Invalid") for a never-reviewed row (pp_grade IS NULL) -
+				// blank is what tells the importer's "leave as is" rule to skip it, so
+				// re-uploading this same file back unmodified can't mass-invalidate an
+				// entire untouched roster just because that's the fallback label.
+				// "Valid" requires an exact match to 100 (set only by validateQuest()'s
+				// Validate action); every other reviewed value (0, or anything else) is
+				// "Invalid" - never defaulted to Valid.
+				if($pp->pp_grade === null){
+					$validation_label = '';
+				}elseif((int) $pp->pp_grade === 100){
+					$validation_label = 'Valid';
+				}else{
+					$validation_label = 'Invalid';
+				}
 			}
 			if(trim((string)$pp->pp_content) === BR_POST_AUTO_COMPLETE_TEXT){
 				$plain_content = __('(No written response - milestone completed by finishing all steps)','bluerabbit');
@@ -1067,8 +1081,11 @@ class BR_Quest {
 			// Compares against the current value (not just "cell is non-empty") so
 			// re-uploading the same export - the exported grade/validation_status columns
 			// are always pre-filled with the current value, not blank - doesn't count as a
-			// mass "update" when nothing actually changed.
-			$set = array(); $formats = array();
+			// mass "update" when nothing actually changed. $set is keyed by column name and
+			// $field_formats maps column name -> wpdb format, so $formats below is always
+			// built from $set's own keys - never at risk of drifting out of sync with it.
+			$set = array();
+			$field_formats = array('pp_grade' => '%f', 'pp_status' => '%s', 'pp_gm_comment' => '%s');
 
 			if($adventure->adventure_grade_scale != 'none'){
 				$grade_cell = trim($row[$col['grade']] ?? '');
@@ -1084,7 +1101,6 @@ class BR_Quest {
 						$grade_val = max(0, min(100, $grade_val));
 						if($current->pp_grade === null || (float)$current->pp_grade !== (float)$grade_val){
 							$set['pp_grade'] = $grade_val;
-							$formats[] = '%f';
 						}
 					}
 				}
@@ -1093,10 +1109,19 @@ class BR_Quest {
 			if($q->mech_validate){
 				$validation_cell = strtolower(trim($row[$col['validation_status']] ?? ''));
 				if($validation_cell !== ''){
-					$new_status = in_array($validation_cell, array('valid','published','publish','pass')) ? 'publish' : 'draft';
-					if($new_status !== $current->pp_status){
+					// Exact match against the "valid" sentinel only - anything else (blank,
+					// "invalid", a typo, an unrelated value) is treated as NOT valid, never
+					// defaulted to valid. Mirrors validateQuest() exactly: Validate sets
+					// grade=100+status=publish as a pair, Invalidate sets grade=0+status=draft -
+					// so this writes the same pair rather than pp_status alone, which is only
+					// ever 'publish' by default on a fresh, never-reviewed post.
+					$is_valid = ($validation_cell === 'valid');
+					$new_grade = $is_valid ? 100 : 0;
+					$new_status = $is_valid ? 'publish' : 'draft';
+					$grade_already_set = isset($set['pp_grade']) ? $set['pp_grade'] : $current->pp_grade;
+					if((float) $grade_already_set !== (float) $new_grade || $current->pp_status !== $new_status){
+						$set['pp_grade'] = $new_grade;
 						$set['pp_status'] = $new_status;
-						$formats[] = '%s';
 					}
 				}
 			}
@@ -1106,11 +1131,15 @@ class BR_Quest {
 				$new_comment = sanitize_textarea_field($comment_cell);
 				if($new_comment !== (string)$current->pp_gm_comment){
 					$set['pp_gm_comment'] = $new_comment;
-					$formats[] = '%s';
 				}
 			}
 
 			if(empty($set)){ $skipped++; continue; }
+
+			$formats = array();
+			foreach(array_keys($set) as $field_name){
+				$formats[] = $field_formats[$field_name];
+			}
 
 			$wpdb->update(
 				"{$wpdb->prefix}br_player_posts",
