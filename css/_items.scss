@@ -455,3 +455,86 @@ nav.tab-nav{
 		}
 	}
 }
+
+// ═══════════════════════════════════════════════════════════
+// Modernized Item Shop (page-item-shop.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.br-item-card {
+  position: relative;
+  background: $br-panel-bg;
+  border: 1px solid $br-border;
+  border-radius: $radius;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &.br-item-card-locked {
+    opacity: 0.55;
+  }
+}
+
+.br-item-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.br-item-card-image {
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.05);
+}
+
+.br-item-card-body {
+  padding: 14px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.br-item-card-name {
+  @include condensed-heading(16px, 700);
+  color: $br-white;
+  margin: 0;
+}
+
+.br-item-card-tremendous-label {
+  font-size: 12px;
+  color: $br-amber;
+  font-weight: 600;
+}
+
+.br-item-card-description {
+  font-size: 12px;
+  color: rgba($br-white, 0.5);
+  max-height: 54px;
+  overflow: hidden;
+}
+
+.br-item-card-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  color: rgba($br-white, 0.7);
+
+  .icon { font-size: 12px; opacity: 0.6; margin-right: 2px; }
+}
+
+.br-item-card-actions {
+  padding: 12px 16px;
+  border-top: 1px solid rgba($br-white, 0.06);
+
+  .br-btn { width: 100%; justify-content: center; }
+}
