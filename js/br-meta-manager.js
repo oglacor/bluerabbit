@@ -42,10 +42,11 @@
 			if (!res.success) { alert('Save failed'); return; }
 
 			var $row = $detail.prev('.br-meta-player-row');
-			$row.find('td').eq(2).text(fields.work_country || '—');
-			$row.find('td').eq(3).text(fields.work_function || '—');
-			$row.find('td').eq(4).text(fields.business_pillar || '—');
-			$row.find('td').eq(5).text(fields.work_level || '—');
+			$row.find('td').eq(2).text(fields.player_gender || '—');
+			$row.find('td').eq(3).text(fields.work_country || '—');
+			$row.find('td').eq(4).text(fields.work_function || '—');
+			$row.find('td').eq(5).text(fields.business_pillar || '—');
+			$row.find('td').eq(6).text(fields.work_level || '—');
 		});
 	};
 
@@ -63,6 +64,7 @@
 			+ '<td><span class="br-stats-player-name">'
 			+   '<img src="' + p.avatar_url + '" class="br-stats-avatar-sm" alt="">'
 			+   esc(p.display_name) + '</span></td>'
+			+ '<td>' + (esc(p.player_gender) || '&mdash;') + '</td>'
 			+ '<td>' + (esc(p.work_country) || '&mdash;') + '</td>'
 			+ '<td>' + (esc(p.work_function) || '&mdash;') + '</td>'
 			+ '<td>' + (esc(p.business_pillar) || '&mdash;') + '</td>'
@@ -77,7 +79,7 @@
 				+ '</div>';
 		});
 		row += '<tr class="br-detail-row br-initially-hidden" id="br-meta-detail-' + p.player_id + '">'
-			+ '<td colspan="6">'
+			+ '<td colspan="7">'
 			+ '<div class="br-form-grid">' + fields + '</div>'
 			+ '<div style="text-align:right">'
 			+ '<button class="br-btn br-btn-green" onClick="brMetaSavePlayer(' + p.player_id + ', this);"><span class="icon icon-check"></span> Save</button>'
@@ -92,7 +94,7 @@
 			if (!res.success) return;
 			var players = res.data.players;
 			if (!players || !players.length) {
-				$playerTbody.html('<tr><td colspan="6" class="text-center br-muted">No players found</td></tr>');
+				$playerTbody.html('<tr><td colspan="7" class="text-center br-muted">No players found</td></tr>');
 			} else {
 				$playerTbody.html(players.map(renderMetaRow).join(''));
 			}

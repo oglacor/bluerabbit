@@ -84,6 +84,7 @@ window.brMeta = {
 				<tr>
 					<td></td>
 					<td><?= __("Player", "bluerabbit"); ?></td>
+					<td><?= __("Gender", "bluerabbit"); ?></td>
 					<td><?= __("Country", "bluerabbit"); ?></td>
 					<td><?= __("Function", "bluerabbit"); ?></td>
 					<td><?= __("Business Pillar", "bluerabbit"); ?></td>
@@ -100,13 +101,14 @@ window.brMeta = {
 							<?= esc_html($p['display_name']); ?>
 						</span>
 					</td>
+					<td><?= esc_html($p['player_gender'] ?: '—'); ?></td>
 					<td><?= esc_html($p['work_country'] ?: '—'); ?></td>
 					<td><?= esc_html($p['work_function'] ?: '—'); ?></td>
 					<td><?= esc_html($p['business_pillar'] ?: '—'); ?></td>
 					<td><?= esc_html($p['work_level'] ?: '—'); ?></td>
 				</tr>
 				<tr class="br-detail-row br-initially-hidden" id="br-meta-detail-<?= (int) $p['player_id']; ?>">
-					<td colspan="6">
+					<td colspan="7">
 						<div class="br-form-grid">
 							<?php foreach (BR_PlayerMeta::FIELDS as $col => $label) { ?>
 							<div class="br-form-group" style="margin-bottom:10px">
