@@ -471,10 +471,13 @@ nav.tab-nav{
   background: $br-panel-bg;
   border: 1px solid $br-border;
   border-radius: $radius;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 
+  // No overflow:hidden here - the confirm-action popup (position:absolute,
+  // anchored to this card via the rule above) renders just above its trigger
+  // button and would get clipped by an overflow-hidden ancestor. The image's
+  // own top corners are rounded below instead of relying on card clipping.
   &.br-item-card-locked {
     opacity: 0.55;
   }
@@ -489,6 +492,7 @@ nav.tab-nav{
 
 .br-item-card-image {
   height: 140px;
+  border-radius: $radius $radius 0 0;
   background-size: cover;
   background-position: center;
   background-color: rgba($br-white, 0.05);
