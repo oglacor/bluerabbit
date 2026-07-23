@@ -5464,7 +5464,6 @@ function updateItem() {
         item_y: $('#the_item_y').val(),
         item_z: $('#the_item_z').val(),
         tabi_id: $('#the_item_tabi').val(),
-        item_tremendous_enabled: $('#the_item_tremendous_enabled').is(':checked') ? 1 : 0,
         item_tremendous_amount: $('#the_item_tremendous_amount').val(),
         item_tremendous_label: $('#the_item_tremendous_label').val(),
         item_tremendous_products: (function() {

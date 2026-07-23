@@ -15,10 +15,10 @@
 		ON items.item_category_id = cat.category_id
 
 		LEFT JOIN {$wpdb->prefix}br_transactions trnxs
-		ON trnxs.object_id = items.item_id AND trnxs.trnx_status='publish' AND (trnxs.trnx_type='key' OR trnxs.trnx_type='consumable' OR trnxs.trnx_type='tabi-piece') AND trnxs.adventure_id=$adv_child_id
+		ON trnxs.object_id = items.item_id AND trnxs.trnx_status='publish' AND (trnxs.trnx_type='key' OR trnxs.trnx_type='consumable' OR trnxs.trnx_type='tabi-piece' OR trnxs.trnx_type='gift-card') AND trnxs.adventure_id=$adv_child_id
 
 		LEFT JOIN {$wpdb->prefix}br_transactions player_trnxs
-		ON player_trnxs.object_id = items.item_id AND player_trnxs.trnx_status='publish' AND (player_trnxs.trnx_type='key' OR player_trnxs.trnx_type='consumable' OR player_trnxs.trnx_type='tabi-piece') AND player_trnxs.player_id=$current_user->ID AND player_trnxs.adventure_id=$adv_child_id
+		ON player_trnxs.object_id = items.item_id AND player_trnxs.trnx_status='publish' AND (player_trnxs.trnx_type='key' OR player_trnxs.trnx_type='consumable' OR player_trnxs.trnx_type='tabi-piece' OR player_trnxs.trnx_type='gift-card') AND player_trnxs.player_id=$current_user->ID AND player_trnxs.adventure_id=$adv_child_id
 
 		LEFT JOIN  {$wpdb->prefix}br_tabis tabis
 		ON items.tabi_id = tabis.tabi_id
@@ -27,7 +27,7 @@
 		items.adventure_id=$adventure_items_from
 		AND items.item_status='publish'
 		AND items.item_visibility !='hidden'
-		AND (items.item_type='consumable' OR items.item_type='key' OR items.item_type='tabi-piece')
+		AND (items.item_type='consumable' OR items.item_type='key' OR items.item_type='tabi-piece' OR items.item_type='gift-card')
 		AND ($condition items.achievement_id=0)
 		AND items.item_id NOT IN (SELECT steps.step_item FROM {$wpdb->prefix}br_steps steps WHERE steps.step_item > 0 AND steps.adventure_id=$adventure_items_from AND steps.step_status='publish' AND steps.step_type = 'item-grab')
 
@@ -60,9 +60,6 @@
 		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-backpack"></span> <?= __("Backpack","bluerabbit"); ?></a>
 		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/tabis/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-sabotage"></span> <?= __("Tabis","bluerabbit"); ?></a>
 		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/transactions/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-transactions"></span> <?= __("Transactions","bluerabbit"); ?></a>
-		<?php if($isGM || $isAdmin){ ?>
-		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/tremendous-orders/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-bloo"></span> <?= __("Gift Cards","bluerabbit"); ?></a>
-		<?php } ?>
 	</div>
 
 	<?php if(!$use_items){ ?>
@@ -92,15 +89,9 @@
 				if($sold_out){ $can_buy=false; $buy_label = __("Sold Out","bluerabbit"); }
 			?>
 			<div class="br-item-card <?= !$can_buy ? 'br-item-card-locked' : ''; ?>">
-				<?php if($it->item_tremendous_enabled){ ?>
-					<span class="br-badge br-badge-amber br-item-card-badge"><span class="icon icon-bloo"></span> <?= __("Gift Card","bluerabbit"); ?></span>
-				<?php } ?>
 				<div class="br-item-card-image" style="background-image:url(<?= esc_url($it->item_badge); ?>)"></div>
 				<div class="br-item-card-body">
 					<h3 class="br-item-card-name"><?= esc_html($it->item_name); ?></h3>
-					<?php if($it->item_tremendous_enabled && $it->item_tremendous_label){ ?>
-						<span class="br-item-card-tremendous-label"><?= esc_html($it->item_tremendous_label); ?></span>
-					<?php } ?>
 					<?php if($it->item_type=='tabi-piece' && $it->tabi_name){ ?>
 						<span class="br-badge br-badge-purple"><?= sprintf(__("Part of %s","bluerabbit"), esc_html($it->tabi_name)); ?></span>
 					<?php }elseif($it->category_name){ ?>
@@ -121,15 +112,7 @@
 					<?php if($can_buy){ ?>
 						<button class="br-btn br-btn-green" onClick="showOverlay('#confirm-buy-<?= $it->item_id; ?>');"><?= $buy_label; ?></button>
 						<div class="confirm-action overlay-layer" id="confirm-buy-<?= $it->item_id; ?>">
-							<?php if($it->item_tremendous_enabled){ ?>
-								<p><?= sprintf(
-									__("This sends %1\$s to %2\$s. This cannot be undone and can only be redeemed once.","bluerabbit"),
-									'<strong>'.esc_html($it->item_tremendous_label ?: $it->item_name).'</strong>',
-									'<strong>'.esc_html($current_user->user_email).'</strong>'
-								); ?></p>
-							<?php }else{ ?>
-								<p><?= sprintf(__("Buy %1\$s for %2\$s %3\$s?","bluerabbit"), '<strong>'.esc_html($it->item_name).'</strong>', number_format($it->item_cost), $bloo_label); ?></p>
-							<?php } ?>
+							<p><?= sprintf(__("Buy %1\$s for %2\$s %3\$s?","bluerabbit"), '<strong>'.esc_html($it->item_name).'</strong>', number_format($it->item_cost), $bloo_label); ?></p>
 							<button class="br-btn br-btn-green" onClick="buyItem(<?= $it->item_id; ?>);"><?= __("Confirm","bluerabbit"); ?></button>
 							<button class="br-btn ghost close-confirm" onClick="hideAllOverlay();"><?= __("Cancel","bluerabbit"); ?></button>
 						</div>

@@ -432,7 +432,7 @@ class BR_Adventure {
                 $sql = "UPDATE {$wpdb->prefix}br_quests SET mech_bloo=%d WHERE (quest_id=%d AND adventure_id=%d) OR quest_parent=%d";
                 $sql = $wpdb->prepare ($sql,$bloo,$id,$adventure_id, $id);
             }elseif($type == 'item'){
-                $sql = "UPDATE {$wpdb->prefix}br_items SET item_cost=%d WHERE (item_id=%d AND adventure_id=%d AND (item_type='consumable' OR item_type='key' OR item_type='tabi-piece')) OR item_parent=%d";
+                $sql = "UPDATE {$wpdb->prefix}br_items SET item_cost=%d WHERE (item_id=%d AND adventure_id=%d AND (item_type='consumable' OR item_type='key' OR item_type='tabi-piece' OR item_type='gift-card')) OR item_parent=%d";
                 $sql = $wpdb->prepare ($sql,$bloo,$id,$adventure_id,$id);
             }elseif($type == 'achievement'){
                 $sql = "UPDATE {$wpdb->prefix}br_achievements SET achievement_bloo=%d WHERE (achievement_id=%d AND adventure_id=%d) OR achievement_parent=%d";
@@ -733,7 +733,7 @@ class BR_Adventure {
         $nonce = $_POST['nonce'];
         $reload = 'reload';
         if(wp_verify_nonce($nonce, 'item_cat_nonce')){
-            $sql = "UPDATE {$wpdb->prefix}br_items SET item_category_id=%d WHERE (item_id=%d AND adventure_id=%d AND item_type='consumable') OR item_parent=%d";
+            $sql = "UPDATE {$wpdb->prefix}br_items SET item_category_id=%d WHERE (item_id=%d AND adventure_id=%d AND (item_type='consumable' OR item_type='gift-card')) OR item_parent=%d";
             $sql = $wpdb->prepare ($sql, $category_id, $id, $adventure_id, $id);
             $wpdb->query($sql);
 

@@ -214,10 +214,11 @@ class BR_Item {
             $item_start_date = $item_data['item_start_date'];
             $item_deadline = $item_data['item_deadline'];
             // Stored as 0/'' rather than true SQL NULL when disabled - $wpdb->prepare()
-            // doesn't turn a PHP null into a real NULL for %s/%f placeholders, and
-            // item_tremendous_enabled is the authoritative gate everywhere else reads,
-            // so the other fields' exact "disabled" representation doesn't matter.
-            $item_tremendous_enabled = !empty($item_data['item_tremendous_enabled']) ? 1 : 0;
+            // doesn't turn a PHP null into a real NULL for %s/%f placeholders.
+            // item_tremendous_enabled is derived from item_type (not a separate
+            // checkbox) - a gift-card item always carries the reward payload, and
+            // that's the only place these fields have meaning.
+            $item_tremendous_enabled = ($item_type === 'gift-card') ? 1 : 0;
             $item_tremendous_amount = ($item_tremendous_enabled && $item_data['item_tremendous_amount'] !== '') ? (float) $item_data['item_tremendous_amount'] : 0;
             $item_tremendous_label = $item_tremendous_enabled ? sanitize_text_field($item_data['item_tremendous_label'] ?? '') : '';
             $item_tremendous_products = ($item_tremendous_enabled && !empty($item_data['item_tremendous_products'])) ? wp_json_encode(array_map('sanitize_text_field', (array) $item_data['item_tremendous_products'])) : '';
@@ -253,6 +254,13 @@ class BR_Item {
                     $errors[] = __("The store needs more items than already sold","bluerabbit")."<br>".__("Sold","bluerabbit").": $item_sold" ;
                 }
                 $item_max = 1;
+            }else if( $item_type == 'gift-card'){
+                // Same purchase rules as a consumable (finite stock, per-player max,
+                // category caps) - the only difference is buyItem()/assignItem()
+                // delegate to BR_Tremendous::sendReward() instead of a plain insert.
+                if($item_stock < $item_sold){
+                    $errors[] = __("The store needs more items than already sold","bluerabbit")."<br>".__("Sold","bluerabbit").": $item_sold" ;
+                }
             }else{
                 $errors[] = __("Item type doesn't exist, please select one from the options given","bluerabbit");
             }
@@ -350,7 +358,7 @@ class BR_Item {
                 $trnxs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_transactions
                 WHERE adventure_id=$adv_child_id AND player_id=$current_user->ID AND object_id=$item_id  AND trnx_status='publish'");
             }
-            $alltrnx = $wpdb->get_results( "SELECT * FROM ".$wpdb->prefix."br_transactions WHERE object_id=$item_id AND trnx_type='consumable' AND trnx_status='publish' AND adventure_id=$adv_child_id");
+            $alltrnx = $wpdb->get_results( "SELECT * FROM ".$wpdb->prefix."br_transactions WHERE object_id=$item_id AND (trnx_type='consumable' OR trnx_type='gift-card') AND trnx_status='publish' AND adventure_id=$adv_child_id");
 
             $left = $purchaseData->item_stock-count($alltrnx);
             //validation
@@ -363,7 +371,7 @@ class BR_Item {
                                 $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $current_user->ID, $player_progress);
                                 if(BR_Item::instance()->evaluateItemAccess($adv_child_id, $purchaseData, $snapshot)){
                                     if($purchaseData->item_player_max == 0 || (count($trnxs) < $purchaseData->item_player_max && $purchaseData->item_player_max > 0)){
-                                        if($purchaseData->item_tremendous_enabled){
+                                        if($purchaseData->item_type === 'gift-card'){
                                             // Gift card items delegate the actual transaction insert to
                                             // sendReward() itself (it only inserts on a real Tremendous 200,
                                             // with its own stock/cap-scoped lock key) - buyItem() never
@@ -562,7 +570,7 @@ class BR_Item {
             WHERE adventure_id=%d AND player_id=%d AND object_id=%d AND trnx_status='publish'",
             $adv_child_id, $target_player_id, $item_id));
         }
-        $alltrnx = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_transactions WHERE object_id=$item_id AND trnx_type='consumable' AND trnx_status='publish' AND adventure_id=$adv_child_id");
+        $alltrnx = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_transactions WHERE object_id=$item_id AND (trnx_type='consumable' OR trnx_type='gift-card') AND trnx_status='publish' AND adventure_id=$adv_child_id");
 
         $left = $purchaseData->item_stock - count($alltrnx);
 
@@ -572,7 +580,7 @@ class BR_Item {
                 $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adv_child_id, $target_player_id, $player_progress);
                 if(BR_Item::instance()->evaluateItemAccess($adv_child_id, $purchaseData, $snapshot)){
                     if($purchaseData->item_player_max == 0 || (count($trnxs) < $purchaseData->item_player_max && $purchaseData->item_player_max > 0)){
-                        if($purchaseData->item_tremendous_enabled){
+                        if($purchaseData->item_type === 'gift-card'){
                             // Always the target player's own WP account email - assignItem()
                             // never accepts a recipient override, matching sendReward()'s own
                             // "no override parameter exists" rule.
@@ -788,15 +796,18 @@ class BR_Item {
             ON items.tabi_id = tabis.tabi_id
 
 
-            WHERE items.adventure_id=$adventure_id AND items.item_status='publish' AND trnxs.player_id=$player_id AND (trnxs.trnx_type='consumable' OR trnxs.trnx_type='key' OR trnxs.trnx_type='reward' OR trnxs.trnx_type='tabi-piece') AND trnxs.trnx_use=0 AND trnxs.trnx_status='publish'
-            GROUP BY trnxs.object_id, trnxs.trnx_type ORDER BY FIELD(items.item_type, 'consumable', 'key', 'tabi-piece', 'reward'), items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
+            WHERE items.adventure_id=$adventure_id AND items.item_status='publish' AND trnxs.player_id=$player_id AND (trnxs.trnx_type='consumable' OR trnxs.trnx_type='key' OR trnxs.trnx_type='reward' OR trnxs.trnx_type='tabi-piece' OR trnxs.trnx_type='gift-card') AND trnxs.trnx_use=0 AND trnxs.trnx_status='publish'
+            GROUP BY trnxs.object_id, trnxs.trnx_type ORDER BY FIELD(items.item_type, 'consumable', 'gift-card', 'key', 'tabi-piece', 'reward'), items.tabi_id ASC, items.item_level ASC, items.item_name ASC, items.item_id ASC");
         $result = array();
         foreach($qry as $o){
             $result['all'][]=$o;
             if($o->item_type == 'key' || $o->item_type == 'tabi-piece'){
                 $result['key'][$o->item_id]=$o;
                 $result['ids']['key']=$o->item_id;
-            }elseif($o->item_type == 'consumable'){
+            }elseif($o->item_type == 'consumable' || $o->item_type == 'gift-card'){
+                // Gift cards buy/behave exactly like consumables (finite stock,
+                // per-player max, category caps) - grouped together so the
+                // backpack doesn't need a dedicated gift-card section.
                 $result['consumable'][$o->item_id]=$o;
                 $result['ids']['consumable']=$o->item_id;
             }elseif($o->item_type == 'reward'){

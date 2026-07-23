@@ -180,7 +180,7 @@ class BR_Tremendous {
         // these reservation INSERTs can succeed, and the loser never reaches the API
         // at all - so at most one real gift card can ever go out for that slot.
         $alltrnx = $wpdb->get_results($wpdb->prepare(
-            "SELECT trnx_id FROM {$wpdb->prefix}br_transactions WHERE object_id=%d AND trnx_type='consumable' AND trnx_status='publish' AND adventure_id=%d",
+            "SELECT trnx_id FROM {$wpdb->prefix}br_transactions WHERE object_id=%d AND (trnx_type='consumable' OR trnx_type='gift-card') AND trnx_status='publish' AND adventure_id=%d",
             $item_id, $adventure_id
         ));
         if ($item->item_category_id) {

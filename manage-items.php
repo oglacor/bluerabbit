@@ -1,5 +1,7 @@
 <?php $items = BR_Item::instance()->getItems($adventure->adventure_id);
 	$achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id,'path|rank');
+	$tremendous_config = BR_Tremendous::instance()->getConfig($adventure->adventure_id);
+	$tremendous_configured = $tremendous_config && !empty($tremendous_config->api_key);
 	$i_type_colors = array(
 		'key'=>'indigo-bg-400',
 		'consumable'=>'pink-bg-400',
@@ -73,6 +75,11 @@
 						<h2><?= __('Items','bluerabbit'); ?></h2>
 					</div>
 					<div class="br-header-right">
+						<?php if($tremendous_configured){ ?>
+						<a class="br-btn ghost" href="<?= get_bloginfo('url')."/tremendous-orders/?adventure_id=$adventure->adventure_id"; ?>">
+							<span class="icon icon-bloo"></span> <?= __("Gift Card Orders","bluerabbit"); ?>
+						</a>
+						<?php } ?>
 						<form id="upload_bulk_quests_form" class="br-bulk-upload" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 							<input type="file" name="the_csv_file_with_items" id="the_csv_file_with_items" size="20" />
 							<button type="button" class="br-btn ghost" onClick="uploadBulkItems();">
@@ -163,6 +170,8 @@
 													<span class="icon icon-key"></span>
 												<?php }elseif($i->item_type == "reward"){ ?>
 													<span class="icon icon-achievement"></span>
+												<?php }elseif($i->item_type == "gift-card"){ ?>
+													<span class="icon icon-bloo"></span>
 												<?php } ?>
 												<span class="hidden"><?= $i->item_type; ?></span>
 											</span>
@@ -171,7 +180,7 @@
 									</td>
 
 									<td class="text-center <?=$a_color; ?> category" >
-										<?php if($i->item_type == 'consumable'){ ?>
+										<?php if($i->item_type == 'consumable' || $i->item_type == 'gift-card'){ ?>
 										<div class="br-num">
 											<select id="the_item_category-<?= $i->item_id; ?>" class="br-input" onChange="setCategory(<?= $i->item_id; ?>);">
 												<option value="0" <?= !$i->item_category_id ? 'selected' : ''; ?>>
@@ -199,7 +208,7 @@
 										<?php }?>
 									</td>
 									<td class="text-center <?=$a_color; ?> stock">
-										<?php if($i->item_type == 'consumable'){ ?>
+										<?php if($i->item_type == 'consumable' || $i->item_type == 'gift-card'){ ?>
 											<span class="br-badge br-badge-red"><?= $i->item_stock; ?></span>
 										<?php }else{?>
 											<span class="br-badge br-badge-<?= $i->item_type == 'key' ? 'purple' : 'teal'; ?>"><span class="icon icon-infinite"></span></span>

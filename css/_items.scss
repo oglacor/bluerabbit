@@ -453,6 +453,13 @@ nav.tab-nav{
 		span.button-legend{
 			font-size: 14px;;
 		}
+		.dashboard-type-icon-font{
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			font-size: 40px;
+		}
 	}
 }
 
@@ -483,13 +490,6 @@ nav.tab-nav{
   }
 }
 
-.br-item-card-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
-}
-
 .br-item-card-image {
   height: 140px;
   border-radius: $radius $radius 0 0;
@@ -512,12 +512,6 @@ nav.tab-nav{
   margin: 0;
 }
 
-.br-item-card-tremendous-label {
-  font-size: 12px;
-  color: $br-amber;
-  font-weight: 600;
-}
-
 .br-item-card-description {
   font-size: 12px;
   color: rgba($br-white, 0.5);
@@ -537,8 +531,47 @@ nav.tab-nav{
 }
 
 .br-item-card-actions {
+  position: relative;
   padding: 12px 16px;
   border-top: 1px solid rgba($br-white, 0.06);
 
   .br-btn { width: 100%; justify-content: center; }
+
+  // Overrides the bare .confirm-action base rule (position/centering only,
+  // no visuals) with the same panel treatment as .br-panel, so the buy
+  // confirmation reads as a real UI surface instead of bare floating text.
+  // position:relative above anchors it to this footer strip specifically,
+  // so it sits directly above the Buy button rather than the whole card.
+  .confirm-action.overlay-layer {
+    width: 240px;
+    background: $br-panel-bg;
+    backdrop-filter: blur(8px);
+    border: 1px solid $br-border;
+    border-radius: $radius;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    padding: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+
+    // Message on its own line, Confirm + Cancel side by side below it
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 8px;
+
+    p {
+      width: 100%;
+      margin: 0 0 4px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: rgba($br-white, 0.85);
+
+      strong { color: $br-white; }
+    }
+
+    .br-btn {
+      width: auto;
+      flex: 1;
+    }
+  }
 }
