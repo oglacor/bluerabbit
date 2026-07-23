@@ -1434,6 +1434,7 @@ add_action( 'wp_ajax_br_stats_player_panel', 'br_stats_player_panel' );
 function br_meta_manager_enqueue_assets() {
 	if ( is_page( 'player-meta' ) ) {
 		wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', [ 'br-table' ], '1.0' );
 		wp_enqueue_script( 'br-meta-manager', get_template_directory_uri() . '/js/br-meta-manager.js', [ 'jquery' ], '1.0', true );
 	}
 }
@@ -1481,6 +1482,23 @@ function br_meta_commit_csv() {
 	wp_send_json_success( $meta->import_csv( $aid, $csv, false ) );
 }
 add_action( 'wp_ajax_br_meta_commit_csv', 'br_meta_commit_csv' );
+
+// Search matches against the full roster (not just the current page) since
+// the player table itself is paginated - same fix as br_stats_search_players.
+function br_meta_search_players() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+
+	$search = sanitize_text_field( $_POST['search'] ?? '' );
+	$meta   = new BR_PlayerMeta();
+	$result = $meta->get_players_with_meta( $aid, 100, 0, $search );
+	foreach ( $result['players'] as &$p ) {
+		$p['avatar_url'] = get_avatar_url( $p['player_id'], [ 'size' => 32 ] );
+	}
+	wp_send_json_success( $result );
+}
+add_action( 'wp_ajax_br_meta_search_players', 'br_meta_search_players' );
 
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );

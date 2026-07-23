@@ -17,11 +17,16 @@
 		return d.innerHTML;
 	}
 
+	// esc() alone is only safe inside text content - it doesn't encode quotes,
+	// so building a value="..." attribute needs those escaped too.
+	function escAttr(str) {
+		return esc(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	}
+
 	// ── Player row expand/edit ───────────────────────────
 
 	window.brMetaToggleRow = function (playerId) {
-		var $row = $('#br-meta-detail-' + playerId);
-		$row.css('display', $row.css('display') === 'none' ? '' : 'none');
+		$('#br-meta-detail-' + playerId).toggleClass('br-initially-hidden');
 	};
 
 	window.brMetaSavePlayer = function (playerId, btnEl) {
@@ -44,16 +49,69 @@
 		});
 	};
 
-	// ── Player search (client-side, current page only) ──
+	// ── Player search (full roster, not just the current page) ──
+	// The table is paginated server-side, so a purely client-side filter would
+	// silently find nothing for a player parked on any page but the current one.
+
+	var $playerTbody = $('#br-meta-player-table tbody');
+	var originalTbodyHTML = null;
+	var searchTimer = null;
+
+	function renderMetaRow(p) {
+		var row = '<tr class="br-meta-player-row" data-uid="' + p.player_id + '" onClick="brMetaToggleRow(' + p.player_id + ');" style="cursor:pointer">'
+			+ '<td class="text-center"><span class="icon icon-edit" style="opacity:0.4"></span></td>'
+			+ '<td><span class="br-stats-player-name">'
+			+   '<img src="' + p.avatar_url + '" class="br-stats-avatar-sm" alt="">'
+			+   esc(p.display_name) + '</span></td>'
+			+ '<td>' + (esc(p.work_country) || '&mdash;') + '</td>'
+			+ '<td>' + (esc(p.work_function) || '&mdash;') + '</td>'
+			+ '<td>' + (esc(p.business_pillar) || '&mdash;') + '</td>'
+			+ '<td>' + (esc(p.work_level) || '&mdash;') + '</td>'
+			+ '</tr>';
+
+		var fields = '';
+		$.each(cfg.fields, function (col, label) {
+			fields += '<div class="br-form-group" style="margin-bottom:10px">'
+				+ '<label class="br-form-label">' + esc(label) + '</label>'
+				+ '<input class="br-input br-meta-field" type="text" data-field="' + escAttr(col) + '" value="' + escAttr(p[col]) + '">'
+				+ '</div>';
+		});
+		row += '<tr class="br-detail-row br-initially-hidden" id="br-meta-detail-' + p.player_id + '">'
+			+ '<td colspan="6">'
+			+ '<div class="br-form-grid">' + fields + '</div>'
+			+ '<div style="text-align:right">'
+			+ '<button class="br-btn br-btn-green" onClick="brMetaSavePlayer(' + p.player_id + ', this);"><span class="icon icon-check"></span> Save</button>'
+			+ '</div>'
+			+ '</td>'
+			+ '</tr>';
+		return row;
+	}
+
+	function runSearch(q) {
+		ajax('br_meta_search_players', { search: q }, function (res) {
+			if (!res.success) return;
+			var players = res.data.players;
+			if (!players || !players.length) {
+				$playerTbody.html('<tr><td colspan="6" class="text-center br-muted">No players found</td></tr>');
+			} else {
+				$playerTbody.html(players.map(renderMetaRow).join(''));
+			}
+			$('.br-stats-pagination').hide();
+		});
+	}
 
 	$(document).on('keyup', '#br-meta-player-search', function () {
-		var q = ($(this).val() || '').toLowerCase();
-		$('.br-meta-player-row').each(function () {
-			var s = $(this).attr('data-search') || '';
-			var show = !q || s.indexOf(q) >= 0;
-			$(this).css('display', show ? '' : 'none');
-			if (!show) $(this).next('.br-detail-row').css('display', 'none');
-		});
+		if (originalTbodyHTML === null) originalTbodyHTML = $playerTbody.html();
+		var q = ($(this).val() || '').trim();
+		clearTimeout(searchTimer);
+		searchTimer = setTimeout(function () {
+			if (!q) {
+				$playerTbody.html(originalTbodyHTML);
+				$('.br-stats-pagination').show();
+				return;
+			}
+			runSearch(q);
+		}, 300);
 	});
 
 	// ── CSV import ────────────────────────────────────────

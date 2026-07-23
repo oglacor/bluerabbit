@@ -21,7 +21,8 @@ $total_pages = max(1, ceil($total / $per_page));
 window.brMeta = {
 	ajaxurl: '<?= admin_url("admin-ajax.php"); ?>',
 	nonce: '<?= wp_create_nonce("br_stats_nonce"); ?>',
-	adventureId: <?= (int) $adv_child_id; ?>
+	adventureId: <?= (int) $adv_child_id; ?>,
+	fields: <?= wp_json_encode( BR_PlayerMeta::FIELDS ); ?>
 };
 </script>
 
@@ -48,7 +49,7 @@ window.brMeta = {
 			<button class="br-btn" style="margin-left:8px" onClick="brMetaPreviewCsv();"><span class="icon icon-check"></span> <?= __("Preview", "bluerabbit"); ?></button>
 		</div>
 
-		<div id="br-meta-csv-preview" style="display:none">
+		<div id="br-meta-csv-preview" class="br-initially-hidden">
 			<div class="br-form-component" style="margin-bottom:16px">
 				<span class="br-form-label" style="display:block;margin-bottom:8px"><?= __("Detected columns", "bluerabbit"); ?></span>
 				<div id="br-meta-csv-columns" style="font-size:13px;color:rgba(255,255,255,0.7)"></div>
@@ -75,8 +76,8 @@ window.brMeta = {
 
 	<!-- Players -->
 	<div class="br-panel">
-		<div style="margin-bottom:12px">
-			<input type="text" class="br-input" id="br-meta-player-search" placeholder="<?= esc_attr__("Search players...", "bluerabbit"); ?>" style="max-width:300px">
+		<div class="br-stats-search-wrap">
+			<input type="text" class="br-input br-max-w-300" id="br-meta-player-search" placeholder="<?= esc_attr__("Search players...", "bluerabbit"); ?>">
 		</div>
 		<table class="table transparent-bg br-stats-table" id="br-meta-player-table">
 			<thead>
@@ -104,7 +105,7 @@ window.brMeta = {
 					<td><?= esc_html($p['business_pillar'] ?: '—'); ?></td>
 					<td><?= esc_html($p['work_level'] ?: '—'); ?></td>
 				</tr>
-				<tr class="br-detail-row" id="br-meta-detail-<?= (int) $p['player_id']; ?>" style="display:none">
+				<tr class="br-detail-row br-initially-hidden" id="br-meta-detail-<?= (int) $p['player_id']; ?>">
 					<td colspan="6">
 						<div class="br-form-grid">
 							<?php foreach (BR_PlayerMeta::FIELDS as $col => $label) { ?>

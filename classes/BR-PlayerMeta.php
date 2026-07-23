@@ -140,7 +140,7 @@ class BR_PlayerMeta {
 			$norm = $this->normalize_header( $h );
 			if ( $norm === '' ) continue;
 			foreach ( self::FIELDS as $col => $label ) {
-				if ( $norm === $col || $norm === $this->normalize_header( $label ) ) {
+				if ( $norm === $this->normalize_header( $col ) || $norm === $this->normalize_header( $label ) ) {
 					if ( ! in_array( $col, $column_map, true ) ) $column_map[ $i ] = $col;
 					continue 2;
 				}
