@@ -9,7 +9,7 @@ class BR_Tremendous {
     }
     private function __construct() {}
 
-    const API_PROD    = 'https://www.tremendousrewards.com/api/v2';
+    const API_PROD    = 'https://api.tremendous.com/api/v2';
     const API_SANDBOX = 'https://testflight.tremendous.com/api/v2';
 
     // Set only by a bootstrap test script - short-circuits apiRequest() with a canned
