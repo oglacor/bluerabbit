@@ -40,6 +40,7 @@
 			'multiple_choice' => 'multiple-choice',
 			'survey_choice' => 'survey-choice', 'survey_rating' => 'survey-rating', 'survey_poll' => 'survey-poll',
 			'upload_image' => 'upload-image', 'upload_video' => 'upload-video',
+			'case_study_html' => 'case-study-html',
 		];
 		foreach($steps as $i=>$step){
 			$skin = $step->step_skin ?: $step->step_type;

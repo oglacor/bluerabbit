@@ -13,7 +13,7 @@ $skin = $legacy_map[$skin] ?? $skin;
 
 $category_map = [
 	'dialogue' => 'deliver', 'video' => 'deliver', 'audio' => 'deliver', 'gallery' => 'deliver', 'find_item' => 'deliver',
-	'multiple_choice' => 'validate', 'keyphrase' => 'validate', 'cryptex' => 'validate', 'puzzle' => 'validate', 'backpack_item' => 'validate', 'scorm' => 'validate',
+	'multiple_choice' => 'validate', 'keyphrase' => 'validate', 'cryptex' => 'validate', 'puzzle' => 'validate', 'backpack_item' => 'validate', 'scorm' => 'validate', 'case_study_html' => 'validate',
 	'survey_choice' => 'collect', 'survey_rating' => 'collect', 'survey_poll' => 'collect', 'open_text' => 'collect', 'upload_image' => 'collect', 'upload_video' => 'collect',
 	'jump_to_step' => 'flow', 'branch_choice' => 'flow',
 	'system' => 'deliver', 'win' => 'flow', 'fail' => 'flow', 'choose_nickname' => 'deliver', 'choose_avatar' => 'deliver',
@@ -67,6 +67,7 @@ $options = $settings['options'] ?? [];
 						<option value="puzzle" <?= $skin == 'puzzle' ? 'selected' : ''; ?>><?= __("Puzzle", "bluerabbit"); ?></option>
 						<option value="backpack_item" <?= $skin == 'backpack_item' ? 'selected' : ''; ?>><?= __("Require Backpack Item", "bluerabbit"); ?></option>
 						<option value="scorm" <?= $skin == 'scorm' ? 'selected' : ''; ?>><?= __("SCORM Package", "bluerabbit"); ?></option>
+						<option value="case_study_html" <?= $skin == 'case_study_html' ? 'selected' : ''; ?>><?= __("Case Study (HTML)", "bluerabbit"); ?></option>
 					</optgroup>
 					<optgroup label="<?= __('COLLECT — Player submits, no right/wrong', 'bluerabbit'); ?>">
 						<option value="open_text" <?= $skin == 'open_text' ? 'selected' : ''; ?>><?= __("Open Text", "bluerabbit"); ?></option>
@@ -326,6 +327,25 @@ $options = $settings['options'] ?? [];
 				</div>
 				<input type="hidden" id="scorm-nonce-<?= $sid; ?>" value="<?= wp_create_nonce('br_scorm_upload'); ?>">
 				<input type="hidden" id="scorm-launch-url-<?= $sid; ?>" value="<?= esc_attr($scorm_url); ?>">
+			</div>
+		</div>
+
+		<!-- ═══ CASE STUDY (HTML) ═══ -->
+		<div class="br-skin-panel" data-skins="case_study_html">
+			<div class="br-form-group">
+				<label class="br-form-label"><?= __("Launch URL", "bluerabbit"); ?></label>
+				<span class="br-form-hint"><?= __("Full URL to the deployed case study's index.html", "bluerabbit"); ?></span>
+				<input class="br-input" id="cs-launch-url-<?= $sid; ?>" type="text" value="<?= esc_attr($settings['launch_url'] ?? ''); ?>">
+			</div>
+			<div class="br-form-grid br-form-grid-2">
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Pass Score", "bluerabbit"); ?></label>
+					<input class="br-input" id="cs-pass-score-<?= $sid; ?>" type="number" min="0" value="<?= esc_attr($settings['pass_score'] ?? 14); ?>">
+				</div>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("Total Questions", "bluerabbit"); ?></label>
+					<input class="br-input" id="cs-total-<?= $sid; ?>" type="number" min="1" value="<?= esc_attr($settings['total'] ?? 20); ?>">
+				</div>
 			</div>
 		</div>
 

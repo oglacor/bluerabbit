@@ -466,6 +466,38 @@
                 background: #000;
             }
 
+            // ── Case study (embedded HTML) step ─────────────────────────────────────────
+            // The vendor file is a full standalone page (its own sticky rail, its own
+            // max-width wrapper) — it's meant to occupy the whole browser viewport, not
+            // sit inside a constrained box like the SCORM player above. The wrapper
+            // breaks out of .step-content-container's max-width via position:fixed so
+            // it always covers the full window regardless of that container's width cap.
+
+            &.case-study-step-container {
+                padding: 0px;
+            }
+
+            .casestudy-wrapper {
+                position: fixed;
+                top: 50px;
+                bottom: 50px;
+                left: 0;
+                right: 0;
+                width: 100vw;
+                height: calc(100vh - 100px);
+                z-index: 1;
+            }
+
+            .casestudy-frame {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+                background: #000;
+            }
+
 
 
 			.step-rating-choices{

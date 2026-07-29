@@ -3251,6 +3251,13 @@ function brCollectStepSettings(sid) {
             var scormUrl = $('#scorm-launch-url-' + sid).val();
             if (scormUrl) settings = { scorm_launch_url: scormUrl };
             break;
+        case 'case_study_html':
+            settings = {
+                launch_url: $('#cs-launch-url-' + sid).val(),
+                pass_score: parseInt($('#cs-pass-score-' + sid).val()) || 14,
+                total: parseInt($('#cs-total-' + sid).val()) || 20
+            };
+            break;
         case 'backpack_item':
             var itemId = $('#step-bi-item-' + sid).val();
             settings = { prompt: $('#step-bi-prompt-' + sid).val(), item_id: itemId, consume_item: !!parseInt($('#step-bi-consume-' + sid).val()) };
@@ -3330,7 +3337,7 @@ function updateStep() {
 
                 var stepColorMap = {
                     'dialogue':'#1cc2eb','video':'#f7cb15','audio':'#ff9800','gallery':'#42a5f5','find_item':'#e040fb',
-                    'multiple_choice':'#7c4dff','keyphrase':'#00bcd4','cryptex':'#00bcd4','puzzle':'#9f40e2','backpack_item':'#e040fb','scorm':'#00bcd4',
+                    'multiple_choice':'#7c4dff','keyphrase':'#00bcd4','cryptex':'#00bcd4','puzzle':'#9f40e2','backpack_item':'#e040fb','scorm':'#00bcd4','case_study_html':'#00bcd4',
                     'survey_choice':'#42a5f5','survey_rating':'#f7cb15','survey_poll':'#42a5f5','open_text':'#42a5f5','upload_image':'#ff9800','upload_video':'#ff9800',
                     'jump_to_step':'#7c4dff','branch_choice':'#9f40e2',
                     'system':'#ff9800','win':'#24da98','fail':'#f44336','choose_nickname':'#7c4dff','choose_avatar':'#7c4dff'
@@ -3491,7 +3498,7 @@ function checkStepType() { brCheckStepSkin($('#step-id').val()); }
 
 var brSkinCategoryMap = {
     'dialogue':'deliver','video':'deliver','audio':'deliver','gallery':'deliver','find_item':'deliver',
-    'multiple_choice':'validate','keyphrase':'validate','cryptex':'validate','puzzle':'validate','backpack_item':'validate','scorm':'validate',
+    'multiple_choice':'validate','keyphrase':'validate','cryptex':'validate','puzzle':'validate','backpack_item':'validate','scorm':'validate','case_study_html':'validate',
     'survey_choice':'collect','survey_rating':'collect','survey_poll':'collect','open_text':'collect','upload_image':'collect','upload_video':'collect',
     'jump_to_step':'flow','branch_choice':'flow',
     'system':'deliver','win':'flow','fail':'flow','choose_nickname':'deliver','choose_avatar':'deliver'

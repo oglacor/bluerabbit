@@ -1,7 +1,7 @@
 <?php
 $step_colors = [
 	'dialogue' => '#1cc2eb', 'video' => '#f7cb15', 'audio' => '#ff9800', 'gallery' => '#42a5f5', 'find_item' => '#e040fb',
-	'multiple_choice' => '#7c4dff', 'keyphrase' => '#00bcd4', 'cryptex' => '#00bcd4', 'puzzle' => '#9f40e2', 'backpack_item' => '#e040fb', 'scorm' => '#00bcd4',
+	'multiple_choice' => '#7c4dff', 'keyphrase' => '#00bcd4', 'cryptex' => '#00bcd4', 'puzzle' => '#9f40e2', 'backpack_item' => '#e040fb', 'scorm' => '#00bcd4', 'case_study_html' => '#00bcd4',
 	'survey_choice' => '#42a5f5', 'survey_rating' => '#f7cb15', 'survey_poll' => '#42a5f5', 'open_text' => '#42a5f5', 'upload_image' => '#ff9800', 'upload_video' => '#ff9800',
 	'jump_to_step' => '#7c4dff', 'branch_choice' => '#9f40e2',
 	'system' => '#ff9800', 'win' => '#24da98', 'fail' => '#f44336', 'choose_nickname' => '#7c4dff', 'choose_avatar' => '#7c4dff',

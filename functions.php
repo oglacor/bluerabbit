@@ -1189,6 +1189,7 @@ function ajaxFunctions() {
 	wp_enqueue_script( 'ajaxFunctions', get_template_directory_uri().'/script.js', 'jquery', true);
 	wp_localize_script( 'ajaxFunctions', 'runAJAX', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
+	wp_enqueue_script( 'br-casestudy-api', get_template_directory_uri().'/js/casestudy-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 }
 
 require_once ("$dirName/classes/Notification.php");
@@ -1219,6 +1220,7 @@ require_once ("$dirName/classes/BR-Conditions.php");
 require_once ("$dirName/classes/BR-Branch.php");
 require_once ("$dirName/classes/BR-Trash.php");
 require_once ("$dirName/classes/BR-Scorm.php");
+require_once ("$dirName/classes/BR-CaseStudy.php");
 require_once ("$dirName/classes/BR-mailer.php");
 require_once ("$dirName/classes/BR-Tremendous.php");
 require_once ("$dirName/classes/BR-Stats.php");
@@ -2525,6 +2527,8 @@ add_action("wp_ajax_br_logout", [BR_Player::instance(), 'br_logout']);
 add_action("wp_ajax_br_scorm_upload", array('BR_SCORM', 'ajax_upload'));
 add_action("wp_ajax_br_scorm_save_data", array('BR_SCORM', 'ajax_save_data'));
 add_action("wp_ajax_br_scorm_reset_all", array('BR_SCORM', 'ajax_reset_all'));
+add_action("wp_ajax_br_casestudy_progress", array('BR_CaseStudy', 'ajax_progress'));
+add_action("wp_ajax_br_casestudy_complete", array('BR_CaseStudy', 'ajax_complete'));
 add_action("wp_ajax_submitRequest", [BR_Request::instance(), 'submitRequest']);
 add_action("wp_ajax_getRequests", [BR_Request::instance(), 'getRequests']);
 add_action("wp_ajax_getMyRequests", [BR_Request::instance(), 'getMyRequests']);

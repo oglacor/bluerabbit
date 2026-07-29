@@ -438,13 +438,16 @@ class BR_Step {
         return $wpdb->get_results($wpdb->prepare($sql, ...$params));
     }
 
-    public function validateStepResponse($step, $response) {
+    public function validateStepResponse($step, $response, $player_id = null) {
+        $skin = $step->step_skin ?: $step->step_type;
+        if ($skin === 'case_study_html') {
+            return $this->validateCaseStudy($step, $player_id);
+        }
+
         if (empty($step->step_correct)) return ['correct' => null, 'score' => null];
 
         $accepted = json_decode($step->step_correct, true);
         if (!is_array($accepted) || empty($accepted)) return ['correct' => null, 'score' => null];
-
-        $skin = $step->step_skin ?: $step->step_type;
 
         switch ($skin) {
             case 'keyphrase':
@@ -489,6 +492,35 @@ class BR_Step {
         }
     }
 
+    // Independently re-derives correctness from the player's actually-saved
+    // progress (br_casestudy_state_{step_id} usermeta) rather than trusting
+    // anything passed in $response — this is the case study's real security
+    // boundary. Even a forged direct call to br_complete_step for this step
+    // still gets checked against what the player really answered, not what
+    // the request claims.
+    private function validateCaseStudy($step, $player_id) {
+        if (!$player_id) return ['correct' => 0, 'score' => 0];
+
+        $settings   = $step->step_settings ? json_decode($step->step_settings, true) : [];
+        $pass_score = isset($settings['pass_score']) && $settings['pass_score'] !== '' ? (int) $settings['pass_score'] : 14;
+        $total      = isset($settings['total']) && $settings['total'] !== '' ? (int) $settings['total'] : 20;
+
+        $state_json = get_user_meta($player_id, "br_casestudy_state_{$step->step_id}", true);
+        $state = $state_json ? json_decode($state_json, true) : null;
+        $qstate = is_array($state) && isset($state['qstate']) && is_array($state['qstate']) ? $state['qstate'] : [];
+
+        $correct_count = 0;
+        foreach ($qstate as $q) {
+            if (is_array($q) && !empty($q['correct'])) $correct_count++;
+        }
+
+        $pass = $total > 0 && $correct_count >= $pass_score;
+        return [
+            'correct' => $pass ? 1 : 0,
+            'score'   => $total > 0 ? (int) round($correct_count / $total * 100) : 0,
+        ];
+    }
+
     public function completeStep($player_id, $step_id, $quest_id, $adventure_id, $response = []) {
         global $wpdb;
 
@@ -504,7 +536,7 @@ class BR_Step {
         ));
 
         $skin = $step->step_skin ?: $step->step_type;
-        $validation = $this->validateStepResponse($step, $response);
+        $validation = $this->validateStepResponse($step, $response, $player_id);
         $ps_type = $skin;
         $ps_response = !empty($response) ? json_encode($response) : null;
 
