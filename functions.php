@@ -1502,6 +1502,40 @@ function br_meta_search_players() {
 }
 add_action( 'wp_ajax_br_meta_search_players', 'br_meta_search_players' );
 
+// Triggered via direct link navigation (not AJAX/JSON) so the browser's normal
+// file-download flow handles it - same header()+fputcsv()+exit pattern as the
+// existing survey/schedule CSV downloads elsewhere in this theme. Nonce and
+// permission check still apply since this is player PII.
+function br_meta_export_csv() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_REQUEST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_die( 'Unauthorized' );
+
+	$meta   = new BR_PlayerMeta();
+	$result = $meta->get_players_with_meta( $aid, 1000000, 0 );
+
+	$adventure = BR_Adventure::instance()->getAdventure( $aid );
+	$filename  = sanitize_file_name( ( $adventure ? $adventure->adventure_title : 'adventure' ) . '-player-meta-' . date( 'Y-m-d' ) . '.csv' );
+
+	header( 'Content-Type: text/csv; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+	header( 'Pragma: no-cache' );
+	header( 'Expires: 0' );
+
+	$out = fopen( 'php://output', 'w' );
+	fputcsv( $out, array_merge( [ 'Player ID', 'Name', 'Email' ], array_values( BR_PlayerMeta::FIELDS ) ) );
+	foreach ( $result['players'] as $p ) {
+		$row = [ $p['player_id'], $p['display_name'], $p['user_email'] ];
+		foreach ( array_keys( BR_PlayerMeta::FIELDS ) as $col ) {
+			$row[] = $p[ $col ] ?? '';
+		}
+		fputcsv( $out, $row );
+	}
+	fclose( $out );
+	exit;
+}
+add_action( 'wp_ajax_br_meta_export_csv', 'br_meta_export_csv' );
+
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );
 add_action('after_switch_theme', 'theme_core_setup');

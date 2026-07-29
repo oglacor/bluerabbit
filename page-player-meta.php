@@ -76,8 +76,11 @@ window.brMeta = {
 
 	<!-- Players -->
 	<div class="br-panel">
-		<div class="br-stats-search-wrap">
+		<div class="br-stats-search-wrap br-flex-between">
 			<input type="text" class="br-input br-max-w-300" id="br-meta-player-search" placeholder="<?= esc_attr__("Search players...", "bluerabbit"); ?>">
+			<a class="br-btn" href="<?= esc_url( admin_url("admin-ajax.php") . "?action=br_meta_export_csv&adventure_id=" . (int) $adv_child_id . "&nonce=" . wp_create_nonce("br_stats_nonce") ); ?>">
+				<span class="icon icon-download"></span> <?= __("Download Full List (CSV)", "bluerabbit"); ?>
+			</a>
 		</div>
 		<table class="table transparent-bg br-stats-table" id="br-meta-player-table">
 			<thead>
