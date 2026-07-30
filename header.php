@@ -262,7 +262,17 @@
             <script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/js/hud-audio.js"></script>
         <?php } ?>
         <script type="text/javascript" src="<?php bloginfo('template_directory'); ?>/script.js"></script>
-		
+
+		<?php if (isset($adventure) && $adventure && $current_user->ID) { ?>
+		<script>
+			window.brSessionTracker = {
+				ajaxurl: '<?= admin_url("admin-ajax.php"); ?>',
+				nonce: '<?= wp_create_nonce("br_session_" . $current_user->ID); ?>',
+				adventureId: <?= (int) $adv_child_id; ?>
+			};
+		</script>
+		<?php } ?>
+
 		<?php wp_head(); ?>
 	</head>
 	<body id="body">

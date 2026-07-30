@@ -82,6 +82,18 @@ window.brStats = {
         </div>
     </div>
 
+    <!-- Time in App -->
+    <div class="br-stats-panel">
+        <h3><?= __("Time in App", "bluerabbit"); ?></h3>
+        <div class="br-stats-kpis br-stats-kpis-2" id="br-time-in-app-kpis">
+            <div class="br-stats-kpi">
+                <span class="br-stats-kpi-value">&hellip;</span>
+                <span class="br-stats-kpi-label"><?= __("Loading...", "bluerabbit"); ?></span>
+            </div>
+        </div>
+        <p class="br-stats-breakdown-note" id="br-time-in-app-estimate-note"></p>
+    </div>
+
     <!-- Manager Charts -->
     <div class="br-stats-charts-row">
         <div class="br-stats-panel br-stats-half">
@@ -292,6 +304,46 @@ window.brStats = {
         </table>
     </div>
 
+    <!-- Achievement Stats -->
+    <div class="br-stats-section-title br-stats-section-gap">
+        <span class="icon icon-achievement"></span>
+        <h2><?= __("Achievements", "bluerabbit"); ?></h2>
+    </div>
+    <div class="br-stats-panel">
+        <table class="table transparent-bg br-stats-table" id="br-achievement-stats-table">
+            <thead>
+                <tr>
+                    <td><?= __("Achievement", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("Earned", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("% of Players", "bluerabbit"); ?></td>
+                </tr>
+            </thead>
+            <tbody id="br-achievement-stats-body">
+                <tr><td colspan="3" class="text-center br-muted"><?= __("Loading...", "bluerabbit"); ?></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Item Purchase Stats -->
+    <div class="br-stats-section-title br-stats-section-gap">
+        <span class="icon icon-shop"></span>
+        <h2><?= __("Item Purchases", "bluerabbit"); ?></h2>
+    </div>
+    <div class="br-stats-panel">
+        <table class="table transparent-bg br-stats-table" id="br-item-stats-table">
+            <thead>
+                <tr>
+                    <td><?= __("Item", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("Purchases", "bluerabbit"); ?></td>
+                    <td class="text-center"><?= __("Total", "bluerabbit"); ?> <?= $bloo_label; ?></td>
+                </tr>
+            </thead>
+            <tbody id="br-item-stats-body">
+                <tr><td colspan="3" class="text-center br-muted"><?= __("Loading...", "bluerabbit"); ?></td></tr>
+            </tbody>
+        </table>
+    </div>
+
     <!-- Player Table -->
     <div class="br-stats-section-title br-stats-section-gap">
         <h2><?= __("Players", "bluerabbit"); ?></h2>
@@ -352,6 +404,14 @@ window.brStats = {
             <?php } ?>
         </div>
         <?php } ?>
+    </div>
+
+    <!-- Achievement / Item drill-down drawers -->
+    <div class="overlay-layer achievement-detail-overlay" id="achievement-detail-overlay">
+        <div id="achievement-detail-content"></div>
+    </div>
+    <div class="overlay-layer item-detail-overlay" id="item-detail-overlay">
+        <div id="item-detail-content"></div>
     </div>
 
 </div>

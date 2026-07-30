@@ -114,6 +114,11 @@ $radius:       12px;
   margin-bottom: 20px;
 }
 
+// 2-column variant (time in app)
+.br-stats-kpis-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .br-stats-kpi-eng .br-stats-kpi-value small {
   font-size: 18px;
   font-weight: 600;
@@ -213,6 +218,19 @@ $radius:       12px;
     background: rgba($br-primary, 0.15);
     border-left: 3px solid $br-primary;
   }
+}
+
+.br-stats-clickable-row {
+  cursor: pointer;
+  transition: background 0.15s;
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba($br-white, 0.04);
+    font-size: 14px;
+  }
+
+  &:hover { background: rgba($br-primary, 0.08); }
 }
 
 .br-stats-player-name {

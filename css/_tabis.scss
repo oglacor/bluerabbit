@@ -771,7 +771,9 @@ body.asset-rotating * { cursor: grabbing !important; }
 // (fixed header + scrollable body + fixed footer, slides in from the right).
 .tabi-conditions-overlay,
 .item-conditions-overlay,
-.quest-conditions-overlay {
+.quest-conditions-overlay,
+.achievement-detail-overlay,
+.item-detail-overlay {
 	position: fixed;
 	top: 0;
 	right: 0;

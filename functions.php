@@ -1190,6 +1190,7 @@ function ajaxFunctions() {
 	wp_localize_script( 'ajaxFunctions', 'runAJAX', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-casestudy-api', get_template_directory_uri().'/js/casestudy-api.js', array('jquery','ajaxFunctions'), '1.0', true);
+	wp_enqueue_script( 'br-session-tracker', get_template_directory_uri().'/js/br-session-tracker.js', array('jquery','ajaxFunctions'), '1.0', true);
 }
 
 require_once ("$dirName/classes/Notification.php");
@@ -1535,6 +1536,126 @@ function br_meta_export_csv() {
 	exit;
 }
 add_action( 'wp_ajax_br_meta_export_csv', 'br_meta_export_csv' );
+
+// ── Achievement / Item / Time-in-App stats (Stats page) ──────────────────────
+// Same template as every other br_stats_* handler above: br_stats_nonce +
+// br_stats_is_manager() gate, wp_send_json_success/error.
+
+function br_stats_achievement_breakdown() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_achievement_stats( $aid ) );
+}
+add_action( 'wp_ajax_br_stats_achievement_breakdown', 'br_stats_achievement_breakdown' );
+
+function br_stats_achievement_detail() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$achievement_id = (int) $_POST['achievement_id'];
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_achievement_detail( $aid, $achievement_id ) );
+}
+add_action( 'wp_ajax_br_stats_achievement_detail', 'br_stats_achievement_detail' );
+
+function br_stats_item_breakdown() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_item_purchase_stats( $aid ) );
+}
+add_action( 'wp_ajax_br_stats_item_breakdown', 'br_stats_item_breakdown' );
+
+function br_stats_item_detail() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$item_id = (int) $_POST['item_id'];
+	$stats = new BR_Stats();
+	wp_send_json_success( $stats->get_item_purchase_detail( $aid, $item_id ) );
+}
+add_action( 'wp_ajax_br_stats_item_detail', 'br_stats_item_detail' );
+
+function br_stats_time_in_app() {
+	check_ajax_referer( 'br_stats_nonce', 'nonce' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$stats = new BR_Stats();
+	wp_send_json_success( [
+		'real'     => $stats->get_time_in_app_stats( $aid ),
+		'estimate' => $stats->get_time_in_app_estimate( $aid ),
+	] );
+}
+add_action( 'wp_ajax_br_stats_time_in_app', 'br_stats_time_in_app' );
+
+// Player-scoped heartbeat for the time-in-app tracker (js/br-session-tracker.js).
+// NOT manager-gated - any logged-in enrolled player calls this for their OWN
+// session. The per-user dynamic nonce ('br_session_'.$user_id, same convention
+// as 'br_scorm_data_'.$user_id / 'br_casestudy_data_'.$user_id) plus scoping
+// every query to player_id=%d makes it impossible to touch another player's row.
+function br_session_ping() {
+	$user_id = get_current_user_id();
+	if ( ! $user_id || ! check_ajax_referer( 'br_session_' . $user_id, 'nonce', false ) ) {
+		wp_send_json_error( 'Unauthorized' );
+	}
+
+	global $wpdb;
+	$adventure_id = (int) $_POST['adventure_id'];
+	$session_id   = isset( $_POST['session_id'] ) ? (int) $_POST['session_id'] : 0;
+	$now          = current_time( 'mysql' );
+
+	if ( $session_id ) {
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_player_sessions WHERE session_id=%d AND player_id=%d",
+			$session_id, $user_id
+		) );
+		if ( $row ) {
+			// Cap each increment so a sleeping laptop or a long-backgrounded tab
+			// that fires one late ping can't balloon the tracked duration.
+			$elapsed = min( 90, max( 0, strtotime( $now ) - strtotime( $row->last_heartbeat ) ) );
+			$wpdb->update( "{$wpdb->prefix}br_player_sessions",
+				[ 'last_heartbeat' => $now, 'duration_seconds' => (int) $row->duration_seconds + $elapsed ],
+				[ 'session_id' => $session_id, 'player_id' => $user_id ]
+			);
+			wp_send_json_success( [ 'session_id' => $session_id ] );
+		}
+	}
+
+	// No valid existing session for this player - start a new one.
+	$wpdb->insert( "{$wpdb->prefix}br_player_sessions", [
+		'player_id'        => $user_id,
+		'adventure_id'     => $adventure_id,
+		'session_start'    => $now,
+		'last_heartbeat'   => $now,
+		'duration_seconds' => 0,
+	] );
+	wp_send_json_success( [ 'session_id' => $wpdb->insert_id ] );
+}
+add_action( 'wp_ajax_br_session_ping', 'br_session_ping' );
+
+// Guarded migration, same pattern as every other br_migrate_*_schema() in this
+// file - creates the table once, no-ops on every later 'init' once it exists.
+function br_migrate_player_sessions_schema() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$table = "{$wpdb->prefix}br_player_sessions";
+	if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) {
+		$wpdb->query( "CREATE TABLE $table (
+			`session_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`player_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL,
+			`session_start` DATETIME NOT NULL,
+			`last_heartbeat` DATETIME NOT NULL,
+			`duration_seconds` INT NOT NULL DEFAULT 0,
+			PRIMARY KEY (`session_id`),
+			KEY `player_adventure` (`player_id`, `adventure_id`)
+		) $charset_collate" );
+	}
+}
+add_action( 'init', 'br_migrate_player_sessions_schema' );
 
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );

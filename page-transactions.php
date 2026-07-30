@@ -1,5 +1,5 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<?php if($adventure && ($isGM || $isNPC)){ ?>
+<?php if($adventure && ($isGM || $isAdmin || $isNPC)){ ?>
 <?php
 $transactions = $wpdb->get_results("SELECT
 	a.player_id, a.player_display_name, a.player_email,
@@ -20,6 +20,17 @@ $type_badges = [
 	'tabi-piece' => 'br-badge-amber',
 	'gift-card'  => 'br-badge-blue',
 ];
+
+// Filter dropdown options - built from the same already-loaded result set,
+// no extra query needed.
+$item_options = [];
+$player_options = [];
+foreach ($transactions as $t) {
+	if (!isset($item_options[$t->item_id])) $item_options[$t->item_id] = $t->item_name;
+	if (!isset($player_options[$t->player_id])) $player_options[$t->player_id] = $t->player_display_name;
+}
+asort($item_options);
+asort($player_options);
 ?>
 
 <div class="br-page">
@@ -35,16 +46,30 @@ $type_badges = [
 			<div class="br-trnx-controls">
 				<!-- Filters -->
 				<div class="br-actions">
-					<button class="br-btn" onClick="$('#table-trnxs tbody tr').show();" title="<?= __('Show all', 'bluerabbit'); ?>">
+					<button class="br-btn" onClick="setTrnxQuickFilter('all');" title="<?= __('Show all', 'bluerabbit'); ?>">
 						<span class="icon icon-infinite"></span> <?= __("All", "bluerabbit"); ?>
 					</button>
-					<button class="br-btn br-btn-green" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.new').show();" title="<?= __('New only', 'bluerabbit'); ?>">
+					<button class="br-btn br-btn-green" onClick="setTrnxQuickFilter('new');" title="<?= __('New only', 'bluerabbit'); ?>">
 						<span class="icon icon-check"></span> <?= __("New", "bluerabbit"); ?>
 					</button>
-					<button class="br-btn" onClick="$('#table-trnxs tbody tr').hide(); $('#table-trnxs tbody tr.used').show();" title="<?= __('Used only', 'bluerabbit'); ?>">
+					<button class="br-btn" onClick="setTrnxQuickFilter('used');" title="<?= __('Used only', 'bluerabbit'); ?>">
 						<span class="icon icon-restore"></span> <?= __("Used", "bluerabbit"); ?>
 					</button>
 				</div>
+
+				<!-- Item / Player filters -->
+				<select class="br-input" id="trnx-filter-item">
+					<option value=""><?= __("All Items", "bluerabbit"); ?></option>
+					<?php foreach ($item_options as $iid => $iname) { ?>
+					<option value="<?= (int) $iid; ?>"><?= esc_html($iname); ?></option>
+					<?php } ?>
+				</select>
+				<select class="br-input" id="trnx-filter-player">
+					<option value=""><?= __("All Players", "bluerabbit"); ?></option>
+					<?php foreach ($player_options as $pid => $pname) { ?>
+					<option value="<?= (int) $pid; ?>"><?= esc_html($pname); ?></option>
+					<?php } ?>
+				</select>
 
 				<!-- Search -->
 				<div class="br-trnx-search">
@@ -52,17 +77,25 @@ $type_badges = [
 					<input type="text" class="br-input br-trnx-search-input" id="search-trnxs" placeholder="<?= __('Search transactions', 'bluerabbit'); ?>">
 				</div>
 				<script>
-				$('#search-trnxs').keyup(function(){
-					var valThis = $(this).val().toLowerCase();
-					if(valThis == ""){
-						$('table#table-trnxs tbody > tr').show();
-					}else{
-						$('table#table-trnxs tbody > tr').each(function(){
-							var text = $(this).text().toLowerCase();
-							(text.indexOf(valThis) >= 0) ? $(this).show() : $(this).hide();
-						});
-					}
-				});
+				var trnxQuickFilter = 'all';
+				function setTrnxQuickFilter(f) { trnxQuickFilter = f; applyTrnxFilters(); }
+				function applyTrnxFilters() {
+					var q = ($('#search-trnxs').val() || '').toLowerCase();
+					var itemFilter = $('#trnx-filter-item').val();
+					var playerFilter = $('#trnx-filter-player').val();
+					$('table#table-trnxs tbody > tr').each(function(){
+						var $row = $(this);
+						var show = true;
+						if (trnxQuickFilter === 'new' && !$row.hasClass('new')) show = false;
+						if (trnxQuickFilter === 'used' && !$row.hasClass('used')) show = false;
+						if (itemFilter && $row.attr('data-item-id') !== itemFilter) show = false;
+						if (playerFilter && $row.attr('data-player-id') !== playerFilter) show = false;
+						if (q && $row.text().toLowerCase().indexOf(q) < 0) show = false;
+						$row.toggle(show);
+					});
+				}
+				$('#search-trnxs').on('keyup', applyTrnxFilters);
+				$('#trnx-filter-item, #trnx-filter-player').on('change', applyTrnxFilters);
 				</script>
 			</div>
 		</div>
@@ -92,7 +125,7 @@ $type_badges = [
 					$spentBLOO += $iT->trnx_amount;
 					$row_class = $iT->trnx_use ? 'used' : 'new';
 				?>
-				<tr class="<?= $row_class; ?>">
+				<tr class="<?= $row_class; ?>" data-item-id="<?= (int) $iT->item_id; ?>" data-player-id="<?= (int) $iT->player_id; ?>">
 					<td>
 						<span class="br-trnx-id">#<?= $iT->trnx_id; ?></span>
 					</td>

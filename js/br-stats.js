@@ -367,6 +367,163 @@
         return h;
     }
 
+    // ── Achievement Stats + drill-down drawer ────────────
+
+    function initAchievementStats() {
+        ajax('br_stats_achievement_breakdown', {}, function(res) {
+            if (!res.success) return;
+            renderAchievementStats(res.data);
+        });
+    }
+
+    function renderAchievementStats(rows) {
+        var $body = $('#br-achievement-stats-body');
+        if (!rows || !rows.length) {
+            $body.html('<tr><td colspan="3" class="text-center br-muted">No achievements yet</td></tr>');
+            return;
+        }
+        var html = rows.map(function(r) {
+            return '<tr class="br-stats-clickable-row" onclick="openAchievementDetail(' + r.achievement_id + ')">'
+                + '<td>' + esc(r.achievement_name) + '</td>'
+                + '<td class="text-center">' + numFmt(r.earned_count) + ' / ' + numFmt(r.total_players) + '</td>'
+                + '<td class="text-center">' + r.pct + '%</td>'
+                + '</tr>';
+        }).join('');
+        $body.html(html);
+    }
+
+    function playerRowHTML(p, metaOverride) {
+        var meta = metaOverride || p.user_email || '';
+        return '<div class="br-player-card">'
+            + '<div class="br-player-avatar" style="background-image:url(' + esc(p.avatar_url) + ')"></div>'
+            + '<div class="br-player-info"><span class="br-player-name">' + esc(p.display_name) + '</span>'
+            + '<span class="br-player-meta">' + esc(meta) + '</span></div></div>';
+    }
+
+    function buildAchievementDetailHTML(d) {
+        var have = d.have || [], haveNot = d.have_not || [];
+        var h = '<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Achievement Detail</h3>'
+            + '<button class="br-close-btn" onclick="closeAchievementDetail();"><span class="icon icon-cancel white-color"></span></button></div>';
+        h += '<div class="tabi-conditions-body">';
+        h += '<div class="tabi-conditions-section"><span class="br-text-12 block grey-500">Have it (' + have.length + ')</span>';
+        h += '<div class="br-player-grid">' + (have.length ? have.map(function(p) { return playerRowHTML(p, (p.achievement_applied || '').substring(0, 10)); }).join('') : '<span class="br-text-12 grey-400">None yet</span>') + '</div></div>';
+        h += '<div class="tabi-conditions-section"><span class="br-text-12 block grey-500">Don\'t have it (' + haveNot.length + ')</span>';
+        h += '<div class="br-player-grid">' + (haveNot.length ? haveNot.map(function(p) { return playerRowHTML(p); }).join('') : '<span class="br-text-12 grey-400">Everyone has it!</span>') + '</div></div>';
+        h += '</div>';
+        return h;
+    }
+
+    window.openAchievementDetail = function(achievementId) {
+        $('#achievement-detail-content').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
+        $('#achievement-detail-overlay').addClass('active');
+        brShowDrawerBackdrop();
+        ajax('br_stats_achievement_detail', { achievement_id: achievementId }, function(res) {
+            if (!res.success) return;
+            $('#achievement-detail-content').html(buildAchievementDetailHTML(res.data));
+        });
+    };
+    window.closeAchievementDetail = function() {
+        $('#achievement-detail-overlay').removeClass('active');
+        brHideDrawerBackdrop();
+    };
+
+    // ── Item Purchase Stats + drill-down drawer ──────────
+
+    function initItemStats() {
+        ajax('br_stats_item_breakdown', {}, function(res) {
+            if (!res.success) return;
+            renderItemStats(res.data);
+        });
+    }
+
+    function renderItemStats(rows) {
+        var $body = $('#br-item-stats-body');
+        if (!rows || !rows.length) {
+            $body.html('<tr><td colspan="3" class="text-center br-muted">No items yet</td></tr>');
+            return;
+        }
+        var html = rows.map(function(r) {
+            return '<tr class="br-stats-clickable-row" onclick="openItemDetail(' + r.item_id + ')">'
+                + '<td>' + esc(r.item_name) + '</td>'
+                + '<td class="text-center">' + numFmt(r.purchase_count) + '</td>'
+                + '<td class="text-center">' + numFmt(r.total_bloo) + '</td>'
+                + '</tr>';
+        }).join('');
+        $body.html(html);
+    }
+
+    function buildItemDetailHTML(rows) {
+        var h = '<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Purchases</h3>'
+            + '<button class="br-close-btn" onclick="closeItemDetail();"><span class="icon icon-cancel white-color"></span></button></div>';
+        h += '<div class="tabi-conditions-body">';
+        if (!rows || !rows.length) {
+            h += '<span class="br-text-12 grey-400">No purchases yet</span>';
+        } else {
+            h += '<table class="table transparent-bg br-stats-table"><thead><tr><td>Player</td><td>Date</td><td class="text-center">Amount</td></tr></thead><tbody>';
+            rows.forEach(function(r) {
+                h += '<tr><td>' + esc(r.display_name) + '</td><td>' + esc(r.trnx_date) + '</td><td class="text-center">' + numFmt(r.trnx_amount) + '</td></tr>';
+            });
+            h += '</tbody></table>';
+        }
+        h += '</div>';
+        return h;
+    }
+
+    window.openItemDetail = function(itemId) {
+        $('#item-detail-content').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
+        $('#item-detail-overlay').addClass('active');
+        brShowDrawerBackdrop();
+        ajax('br_stats_item_detail', { item_id: itemId }, function(res) {
+            if (!res.success) return;
+            $('#item-detail-content').html(buildItemDetailHTML(res.data));
+        });
+    };
+    window.closeItemDetail = function() {
+        $('#item-detail-overlay').removeClass('active');
+        brHideDrawerBackdrop();
+    };
+
+    // ── Time in App ───────────────────────────────────────
+
+    function fmtDuration(seconds) {
+        seconds = parseInt(seconds) || 0;
+        if (seconds < 60) return seconds + 's';
+        var m = Math.floor(seconds / 60);
+        if (m < 60) return m + 'm ' + (seconds % 60) + 's';
+        var h = Math.floor(m / 60);
+        return h + 'h ' + (m % 60) + 'm';
+    }
+
+    function initTimeInApp() {
+        ajax('br_stats_time_in_app', {}, function(res) {
+            if (!res.success) return;
+            renderTimeInApp(res.data);
+        });
+    }
+
+    function renderTimeInApp(d) {
+        var real = d.real || {};
+        var est  = d.estimate || {};
+        var $kpis = $('#br-time-in-app-kpis');
+
+        if (!real.has_data) {
+            $kpis.html('<div class="br-stats-kpi"><span class="br-stats-kpi-value">&mdash;</span>'
+                + '<span class="br-stats-kpi-label">Collecting data - check back soon</span></div>');
+        } else {
+            var h = '';
+            h += '<div class="br-stats-kpi"><span class="br-stats-kpi-value">' + fmtDuration(real.avg_session_seconds) + '</span>'
+                + '<span class="br-stats-kpi-label">Avg. Session Length</span></div>';
+            h += '<div class="br-stats-kpi accent"><span class="br-stats-kpi-value">' + fmtDuration(real.avg_player_total_seconds) + '</span>'
+                + '<span class="br-stats-kpi-label">Avg. Total Time / Player</span></div>';
+            $kpis.html(h);
+        }
+
+        var $note = $('#br-time-in-app-estimate-note');
+        $note.text(est.has_data
+            ? 'Estimated over the last 90 days (approximate, based on the activity log - undercounts idle time): ~' + fmtDuration(est.avg_session_seconds) + ' avg session'
+            : '');
+    }
+
     // ── Player Panel (AJAX swap) ─────────────────────────
 
     function loadPlayerPanel(userId) {
@@ -556,6 +713,9 @@
             initQuestFunnel();
             initXpDistribution();
             initActivityChart();
+            initAchievementStats();
+            initItemStats();
+            initTimeInApp();
 
             if (cfg.segmentBreakdown) renderSegmentBreakdown(cfg.segmentBreakdown);
             $('#br-segment-dimension').on('change', function() {

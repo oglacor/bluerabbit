@@ -1103,4 +1103,231 @@ class BR_Stats {
             $adventure_id
         ), ARRAY_A );
     }
+
+    // ── Achievement stats ────────────────────────────────────
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // How many enrolled players have earned each achievement, adventure-wide.
+    // Same aggregate manage-achievements.php already computes ad hoc
+    // (achievement_award_counts), generalized/parameterized for the Stats page.
+    public function get_achievement_stats( int $adventure_id ): array {
+        global $wpdb;
+
+        $total_players = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
+            WHERE adventure_id = %d AND player_adventure_status = 'in' AND player_adventure_role = 'player'",
+            $adventure_id
+        ) );
+
+        // Count only holders who are CURRENTLY enrolled active players (padv.player_id),
+        // not every br_player_achievement row (pa.player_id) - a GM/NPC can hold an
+        // achievement badge too, and counting them here would disagree with
+        // get_achievement_detail()'s have/have-not split, which is built from the
+        // same enrolled-player-only roster.
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT
+                a.achievement_id, a.achievement_name, a.achievement_badge, a.achievement_color,
+                COUNT(padv.player_id) AS earned_count
+            FROM {$wpdb->prefix}br_achievements a
+            LEFT JOIN {$wpdb->prefix}br_player_achievement pa
+                ON pa.achievement_id = a.achievement_id AND pa.adventure_id = %d
+            LEFT JOIN {$wpdb->prefix}br_player_adventure padv
+                ON padv.player_id = pa.player_id AND padv.adventure_id = pa.adventure_id
+                AND padv.player_adventure_status = 'in' AND padv.player_adventure_role = 'player'
+            WHERE a.adventure_id = %d AND a.achievement_status = 'publish'
+            GROUP BY a.achievement_id
+            ORDER BY earned_count DESC",
+            [ $adventure_id, $adventure_id ]
+        ), ARRAY_A );
+
+        foreach ( $rows as &$r ) {
+            $r['earned_count']  = (int) $r['earned_count'];
+            $r['total_players'] = $total_players;
+            $r['pct']           = $total_players > 0 ? round( ( $r['earned_count'] / $total_players ) * 100 ) : 0;
+        }
+
+        return $rows;
+    }
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Splits the enrolled roster into who has/hasn't earned one achievement,
+    // for the Stats page drill-down drawer.
+    public function get_achievement_detail( int $adventure_id, int $achievement_id ): array {
+        global $wpdb;
+
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT
+                pa.player_id, u.display_name, u.user_email, ach.achievement_applied
+            FROM {$wpdb->prefix}br_player_adventure pa
+            LEFT JOIN {$wpdb->users} u ON pa.player_id = u.ID
+            LEFT JOIN {$wpdb->prefix}br_player_achievement ach
+                ON ach.player_id = pa.player_id AND ach.adventure_id = pa.adventure_id AND ach.achievement_id = %d
+            WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+            ORDER BY u.display_name ASC",
+            [ $achievement_id, $adventure_id ]
+        ), ARRAY_A );
+
+        $have = [];
+        $have_not = [];
+        foreach ( $rows as $r ) {
+            $r['avatar_url'] = get_avatar_url( $r['player_id'], [ 'size' => 32 ] );
+            if ( $r['achievement_applied'] ) {
+                $have[] = $r;
+            } else {
+                $have_not[] = $r;
+            }
+        }
+
+        return [ 'have' => $have, 'have_not' => $have_not ];
+    }
+
+    // ── Item purchase stats ──────────────────────────────────
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Purchases per item, adventure-wide - generalizes the single-item count
+    // already used ad hoc in page-assign-item.php to every item in one query.
+    public function get_item_purchase_stats( int $adventure_id ): array {
+        global $wpdb;
+
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT
+                i.item_id, i.item_name, i.item_type,
+                COUNT(t.trnx_id) AS purchase_count,
+                COALESCE(SUM(t.trnx_amount), 0) AS total_bloo
+            FROM {$wpdb->prefix}br_items i
+            LEFT JOIN {$wpdb->prefix}br_transactions t
+                ON t.object_id = i.item_id AND t.adventure_id = %d AND t.trnx_status = 'publish'
+                AND t.trnx_type IN ('consumable','key','reward','tabi-piece','gift-card')
+            WHERE i.adventure_id = %d
+            GROUP BY i.item_id
+            ORDER BY purchase_count DESC",
+            [ $adventure_id, $adventure_id ]
+        ), ARRAY_A );
+
+        foreach ( $rows as &$r ) {
+            $r['item_id']        = (int) $r['item_id'];
+            $r['purchase_count'] = (int) $r['purchase_count'];
+            $r['total_bloo']     = (int) $r['total_bloo'];
+        }
+
+        return $rows;
+    }
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Individual purchase rows for one item, for the Stats page drill-down drawer.
+    public function get_item_purchase_detail( int $adventure_id, int $item_id ): array {
+        global $wpdb;
+
+        return $wpdb->get_results( $wpdb->prepare(
+            "SELECT
+                t.trnx_id, t.trnx_date, t.trnx_amount, t.player_id,
+                u.display_name, u.user_email
+            FROM {$wpdb->prefix}br_transactions t
+            LEFT JOIN {$wpdb->users} u ON t.player_id = u.ID
+            WHERE t.adventure_id = %d AND t.object_id = %d AND t.trnx_status = 'publish'
+                AND t.trnx_type IN ('consumable','key','reward','tabi-piece','gift-card')
+            ORDER BY t.trnx_date DESC",
+            [ $adventure_id, $item_id ]
+        ), ARRAY_A );
+    }
+
+    // ── Time in app ───────────────────────────────────────────
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Real, heartbeat-based averages from br_player_sessions (js/br-session-tracker.js
+    // + br_session_ping). has_data is false when the table has nothing yet for this
+    // adventure - expected immediately after this ships, since the table starts empty.
+    public function get_time_in_app_stats( int $adventure_id ): array {
+        global $wpdb;
+
+        $session_count = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_sessions WHERE adventure_id = %d",
+            $adventure_id
+        ) );
+        if ( ! $session_count ) {
+            return [ 'has_data' => false, 'avg_session_seconds' => 0, 'avg_player_total_seconds' => 0, 'session_count' => 0, 'player_count' => 0 ];
+        }
+
+        $avg_session = (float) $wpdb->get_var( $wpdb->prepare(
+            "SELECT AVG(duration_seconds) FROM {$wpdb->prefix}br_player_sessions WHERE adventure_id = %d",
+            $adventure_id
+        ) );
+
+        $per_player   = $wpdb->get_col( $wpdb->prepare(
+            "SELECT SUM(duration_seconds) FROM {$wpdb->prefix}br_player_sessions WHERE adventure_id = %d GROUP BY player_id",
+            $adventure_id
+        ) );
+        $player_count = count( $per_player );
+        $avg_total    = $player_count > 0 ? array_sum( $per_player ) / $player_count : 0;
+
+        return [
+            'has_data'                 => true,
+            'avg_session_seconds'      => (int) round( $avg_session ),
+            'avg_player_total_seconds' => (int) round( $avg_total ),
+            'session_count'            => $session_count,
+            'player_count'             => $player_count,
+        ];
+    }
+
+    // Portable: swap $wpdb for PDO to migrate.
+    // Best-effort RETROACTIVE estimate from br_activity_log - the only existing
+    // second-precision, high-volume timestamp (written on every page load via the
+    // 'login'/'adventure' activity, plus ~229 other gameplay/admin call sites).
+    // Clusters a player's consecutive log timestamps into a "session" whenever the
+    // gap is <= $gap_minutes; a single isolated event contributes nothing (a page
+    // view alone doesn't establish a duration). This measures time BETWEEN LOGGED
+    // ACTIONS, not true presence - it undercounts idle/reading time and must always
+    // be shown clearly labeled as approximate, never blended with the real
+    // heartbeat-based average above.
+    public function get_time_in_app_estimate( int $adventure_id, int $days = 90, int $gap_minutes = 20 ): array {
+        global $wpdb;
+
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, log_date FROM {$wpdb->prefix}br_activity_log
+            WHERE adventure_id = %d AND log_date >= DATE_SUB(NOW(), INTERVAL %d DAY)
+            ORDER BY player_id ASC, log_date ASC",
+            [ $adventure_id, $days ]
+        ), ARRAY_A );
+
+        if ( ! $rows ) {
+            return [ 'has_data' => false, 'avg_session_seconds' => 0, 'session_count' => 0 ];
+        }
+
+        $gap_seconds    = $gap_minutes * 60;
+        $session_totals = [];
+        $current_player = null;
+        $cluster_start  = null;
+        $cluster_last   = null;
+
+        foreach ( $rows as $r ) {
+            if ( $r['player_id'] !== $current_player ) {
+                if ( $cluster_start !== null ) {
+                    $span = strtotime( $cluster_last ) - strtotime( $cluster_start );
+                    if ( $span > 0 ) $session_totals[] = $span;
+                }
+                $current_player = $r['player_id'];
+                $cluster_start  = $r['log_date'];
+                $cluster_last   = $r['log_date'];
+                continue;
+            }
+            $gap = strtotime( $r['log_date'] ) - strtotime( $cluster_last );
+            if ( $gap > $gap_seconds ) {
+                $span = strtotime( $cluster_last ) - strtotime( $cluster_start );
+                if ( $span > 0 ) $session_totals[] = $span;
+                $cluster_start = $r['log_date'];
+            }
+            $cluster_last = $r['log_date'];
+        }
+        if ( $cluster_start !== null ) {
+            $span = strtotime( $cluster_last ) - strtotime( $cluster_start );
+            if ( $span > 0 ) $session_totals[] = $span;
+        }
+
+        $count = count( $session_totals );
+        return [
+            'has_data'            => $count > 0,
+            'avg_session_seconds' => $count > 0 ? (int) round( array_sum( $session_totals ) / $count ) : 0,
+            'session_count'       => $count,
+        ];
+    }
 }
