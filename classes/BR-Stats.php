@@ -141,11 +141,15 @@ class BR_Stats {
     // Portable: swap $wpdb for PDO to migrate.
     public function get_player_guild( int $user_id, int $adventure_id ): array {
         global $wpdb;
+        // Stats are players-only by default (no GM/NPC/Owner) - the pa join carries
+        // the role/status filter, and COUNT(pa.player_id) (not pg2.player_id) means a
+        // GM/NPC who happens to be in the guild contributes neither to member_count
+        // nor to the xp/bloo sums.
         $guild = $wpdb->get_row( $wpdb->prepare(
             "SELECT
                 g.guild_id, g.guild_name, g.guild_logo, g.guild_color,
                 g.guild_capacity,
-                COUNT(pg2.player_id) AS member_count,
+                COUNT(pa.player_id) AS member_count,
                 COALESCE(SUM(pa.player_xp), 0) AS total_xp,
                 COALESCE(SUM(pa.player_bloo), 0) AS total_bloo
             FROM {$wpdb->prefix}br_player_guild pg
@@ -153,6 +157,7 @@ class BR_Stats {
             LEFT JOIN {$wpdb->prefix}br_player_guild pg2 ON g.guild_id = pg2.guild_id
             LEFT JOIN {$wpdb->prefix}br_player_adventure pa
                 ON pg2.player_id = pa.player_id AND pa.adventure_id = g.adventure_id
+                AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
             WHERE pg.player_id = %d AND pg.adventure_id = %d AND g.guild_status = 'publish'
             GROUP BY g.guild_id
             LIMIT 1",
@@ -167,6 +172,7 @@ class BR_Stats {
             LEFT JOIN {$wpdb->prefix}br_player_guild pg ON g.guild_id = pg.guild_id
             LEFT JOIN {$wpdb->prefix}br_player_adventure pa
                 ON pg.player_id = pa.player_id AND pa.adventure_id = g.adventure_id
+                AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
             WHERE g.adventure_id = %d AND g.guild_status = 'publish'
             GROUP BY g.guild_id
             ORDER BY total_xp DESC",
@@ -1084,19 +1090,22 @@ class BR_Stats {
     }
 
     // Portable: swap $wpdb for PDO to migrate.
-    // Reuses the same guild leaderboard pattern from page-guilds.php
+    // Reuses the same guild leaderboard pattern from page-guilds.php.
+    // Players-only by default (COUNT(pa.player_id), not pg.player_id) - see
+    // get_player_guild() above for the same fix and reasoning.
     public function get_guild_leaderboard( int $adventure_id ): array {
         global $wpdb;
         return $wpdb->get_results( $wpdb->prepare(
             "SELECT
                 g.guild_id, g.guild_name, g.guild_logo, g.guild_color, g.guild_capacity,
-                COUNT(pg.player_id) AS member_count,
+                COUNT(pa.player_id) AS member_count,
                 COALESCE(SUM(pa.player_xp), 0) AS total_xp,
                 COALESCE(SUM(pa.player_bloo), 0) AS total_bloo
             FROM {$wpdb->prefix}br_guilds g
             LEFT JOIN {$wpdb->prefix}br_player_guild pg ON g.guild_id = pg.guild_id
             LEFT JOIN {$wpdb->prefix}br_player_adventure pa
                 ON pg.player_id = pa.player_id AND pa.adventure_id = g.adventure_id
+                AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
             WHERE g.adventure_id = %d AND g.guild_status = 'publish'
             GROUP BY g.guild_id
             ORDER BY total_xp DESC",
@@ -1189,6 +1198,10 @@ class BR_Stats {
     public function get_item_purchase_stats( int $adventure_id ): array {
         global $wpdb;
 
+        // Players-only by default: the EXISTS clause in the join (not a WHERE
+        // filter) excludes GM/NPC/Owner purchases from the count/total while still
+        // showing an item with zero real-player purchases as 0 rather than
+        // disappearing entirely (a WHERE filter would behave like an INNER JOIN).
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT
                 i.item_id, i.item_name, i.item_type,
@@ -1198,6 +1211,11 @@ class BR_Stats {
             LEFT JOIN {$wpdb->prefix}br_transactions t
                 ON t.object_id = i.item_id AND t.adventure_id = %d AND t.trnx_status = 'publish'
                 AND t.trnx_type IN ('consumable','key','reward','tabi-piece','gift-card')
+                AND EXISTS (
+                    SELECT 1 FROM {$wpdb->prefix}br_player_adventure pa
+                    WHERE pa.player_id = t.player_id AND pa.adventure_id = t.adventure_id
+                      AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+                )
             WHERE i.adventure_id = %d
             GROUP BY i.item_id
             ORDER BY purchase_count DESC",
@@ -1218,6 +1236,7 @@ class BR_Stats {
     public function get_item_purchase_detail( int $adventure_id, int $item_id ): array {
         global $wpdb;
 
+        // Players-only by default - see get_item_purchase_stats() above.
         return $wpdb->get_results( $wpdb->prepare(
             "SELECT
                 t.trnx_id, t.trnx_date, t.trnx_amount, t.player_id,
@@ -1226,6 +1245,11 @@ class BR_Stats {
             LEFT JOIN {$wpdb->users} u ON t.player_id = u.ID
             WHERE t.adventure_id = %d AND t.object_id = %d AND t.trnx_status = 'publish'
                 AND t.trnx_type IN ('consumable','key','reward','tabi-piece','gift-card')
+                AND EXISTS (
+                    SELECT 1 FROM {$wpdb->prefix}br_player_adventure pa
+                    WHERE pa.player_id = t.player_id AND pa.adventure_id = t.adventure_id
+                      AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+                )
             ORDER BY t.trnx_date DESC",
             [ $adventure_id, $item_id ]
         ), ARRAY_A );
@@ -1240,8 +1264,17 @@ class BR_Stats {
     public function get_time_in_app_stats( int $adventure_id ): array {
         global $wpdb;
 
+        // Players-only by default - the heartbeat tracker (js/br-session-tracker.js)
+        // fires for ANY logged-in visitor with an adventure in scope, GM/NPC/Owner
+        // included, so every query here needs the same role/status EXISTS guard.
+        $role_guard = "EXISTS (
+            SELECT 1 FROM {$wpdb->prefix}br_player_adventure pa
+            WHERE pa.player_id = s.player_id AND pa.adventure_id = s.adventure_id
+              AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+        )";
+
         $session_count = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_sessions WHERE adventure_id = %d",
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_sessions s WHERE s.adventure_id = %d AND $role_guard",
             $adventure_id
         ) );
         if ( ! $session_count ) {
@@ -1249,12 +1282,12 @@ class BR_Stats {
         }
 
         $avg_session = (float) $wpdb->get_var( $wpdb->prepare(
-            "SELECT AVG(duration_seconds) FROM {$wpdb->prefix}br_player_sessions WHERE adventure_id = %d",
+            "SELECT AVG(duration_seconds) FROM {$wpdb->prefix}br_player_sessions s WHERE s.adventure_id = %d AND $role_guard",
             $adventure_id
         ) );
 
         $per_player   = $wpdb->get_col( $wpdb->prepare(
-            "SELECT SUM(duration_seconds) FROM {$wpdb->prefix}br_player_sessions WHERE adventure_id = %d GROUP BY player_id",
+            "SELECT SUM(duration_seconds) FROM {$wpdb->prefix}br_player_sessions s WHERE s.adventure_id = %d AND $role_guard GROUP BY s.player_id",
             $adventure_id
         ) );
         $player_count = count( $per_player );
@@ -1282,10 +1315,18 @@ class BR_Stats {
     public function get_time_in_app_estimate( int $adventure_id, int $days = 90, int $gap_minutes = 20 ): array {
         global $wpdb;
 
+        // Players-only by default - the 'login'/'adventure' activity (and every other
+        // logged action) fires for GM/NPC/Owner visits too, so the same role/status
+        // guard used throughout this class applies here via EXISTS.
         $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT player_id, log_date FROM {$wpdb->prefix}br_activity_log
-            WHERE adventure_id = %d AND log_date >= DATE_SUB(NOW(), INTERVAL %d DAY)
-            ORDER BY player_id ASC, log_date ASC",
+            "SELECT al.player_id, al.log_date FROM {$wpdb->prefix}br_activity_log al
+            WHERE al.adventure_id = %d AND al.log_date >= DATE_SUB(NOW(), INTERVAL %d DAY)
+              AND EXISTS (
+                  SELECT 1 FROM {$wpdb->prefix}br_player_adventure pa
+                  WHERE pa.player_id = al.player_id AND pa.adventure_id = al.adventure_id
+                    AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+              )
+            ORDER BY al.player_id ASC, al.log_date ASC",
             [ $adventure_id, $days ]
         ), ARRAY_A );
 
