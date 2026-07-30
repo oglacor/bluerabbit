@@ -15,36 +15,12 @@ function br_email_compose_page(): void {
 		  ORDER BY adventure_title ASC"
 	);
 
-	$notice = '';
-	if ( isset( $_GET['br_sent'] ) ) {
-		$sent   = (int) $_GET['br_sent'];
-		$failed = (int) ( $_GET['br_failed'] ?? 0 );
-		$queued = (int) ( $_GET['br_queued'] ?? 0 );
-		$parts = [];
-		if ( $queued && ! $sent && ! $failed ) {
-			$parts[] = sprintf( _n( '%d email queued for background delivery', '%d emails queued for background delivery', $queued, 'bluerabbit' ), $queued );
-			$parts[] = __( 'check the Send Log for delivery status', 'bluerabbit' );
-		} else {
-			if ( $sent )   $parts[] = sprintf( _n( '%d email sent', '%d emails sent', $sent, 'bluerabbit' ), $sent );
-			if ( $failed ) $parts[] = sprintf( _n( '%d failed', '%d failed', $failed, 'bluerabbit' ), $failed );
-			if ( $queued ) $parts[] = sprintf( _n( '%d queued via background job', '%d queued via background jobs', $queued, 'bluerabbit' ), $queued );
-		}
-		$notice = '<div class="notice notice-success is-dismissible"><p>' . implode( ' &bull; ', $parts ) . '</p></div>';
-	}
-	if ( isset( $_GET['br_error'] ) ) {
-		$msg = sanitize_text_field( urldecode( $_GET['br_error'] ) );
-		$notice = '<div class="notice notice-error"><p>' . esc_html( $msg ) . '</p></div>';
-	}
-
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'BR Email — Compose & Send', 'bluerabbit' ); ?></h1>
-		<?php echo $notice; ?>
+		<div id="br_compose_notice"></div>
 
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-			id="br_compose_form">
-			<?php wp_nonce_field( 'br_send_adventure_email', 'br_compose_nonce' ); ?>
-			<input type="hidden" name="action" value="br_send_adventure_email">
+		<form id="br_compose_form" onsubmit="return false;">
 
 			<table class="form-table" role="presentation">
 
@@ -109,49 +85,73 @@ function br_email_compose_page(): void {
 					<?php esc_html_e( '&#128065; Preview Email', 'bluerabbit' ); ?>
 				</button>
 				&nbsp;
-				<button type="submit" name="br_confirm_send" value="1" class="button button-primary"
-					onclick="return confirm('<?php
-						esc_attr_e( 'Send this email to all enrolled users in the selected adventure?', 'bluerabbit' );
-					?>');">
+				<button type="button" id="br_send_btn" class="button button-primary">
 					<?php esc_html_e( '&#9993; Send Email', 'bluerabbit' ); ?>
 				</button>
+				<span id="br_send_progress" style="margin-left:12px;display:none;font-weight:600;"></span>
 			</p>
 
 		</form>
 	</div>
+
+	<script>
+	jQuery(function($){
+		function getBody(){
+			return ( typeof tinyMCE !== 'undefined' && tinyMCE.get('br_email_body') )
+				? tinyMCE.get('br_email_body').getContent()
+				: $('#br_email_body').val();
+		}
+
+		function pollBatch( campaignId, total ){
+			$.post( ajaxurl, { action: 'br_email_send_batch', nonce: brEmail.nonce, campaign_id: campaignId }, function(r){
+				if ( ! r.success ) {
+					$('#br_send_progress').text( 'Error: ' + ( r.data && r.data.message || 'send failed' ) );
+					return;
+				}
+				var remaining = r.data.remaining;
+				var done = total - remaining;
+				$('#br_send_progress').text( done + ' / ' + total + ' processed…' );
+				if ( remaining > 0 ) {
+					setTimeout( function(){ pollBatch( campaignId, total ); }, 50 );
+				} else {
+					$('#br_send_progress').text( 'Done — ' + total + ' processed. See the Send Log for sent/failed counts.' );
+					$('#br_send_btn').prop('disabled', false);
+				}
+			}).fail(function(){
+				// A single dropped request never loses data (every send is logged
+				// immediately) - just try the same batch again.
+				setTimeout( function(){ pollBatch( campaignId, total ); }, 2000 );
+			});
+		}
+
+		$('#br_send_btn').on('click', function(){
+			var adventureId = $('#br_adventure_id').val();
+			var subject     = $('#br_subject').val();
+			var body        = getBody();
+			if ( ! adventureId || ! subject || ! body ) {
+				$('#br_compose_notice').html('<div class="notice notice-error"><p><?php echo esc_js( __( 'Adventure, subject and body are all required.', 'bluerabbit' ) ); ?></p></div>');
+				return;
+			}
+			if ( ! confirm( '<?php echo esc_js( __( 'Send this email to all enrolled users in the selected adventure?', 'bluerabbit' ) ); ?>' ) ) return;
+
+			$('#br_send_btn').prop('disabled', true);
+			$('#br_compose_notice').html('');
+			$('#br_send_progress').show().text('Starting…');
+
+			$.post( ajaxurl, {
+				action: 'br_email_start_campaign', nonce: brEmail.nonce,
+				adventure_id: adventureId, subject: subject, body: body
+			}, function(r){
+				if ( ! r.success ) {
+					$('#br_send_progress').hide();
+					$('#br_send_btn').prop('disabled', false);
+					$('#br_compose_notice').html('<div class="notice notice-error"><p>' + ( r.data && r.data.message || 'Failed to start campaign' ) + '</p></div>');
+					return;
+				}
+				pollBatch( r.data.campaign_id, r.data.total );
+			});
+		});
+	});
+	</script>
 	<?php
-}
-
-// ── Send handler ──────────────────────────────────────────────────────────────
-
-add_action( 'admin_post_br_send_adventure_email', 'br_email_handle_send' );
-function br_email_handle_send(): void {
-	if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
-	check_admin_referer( 'br_send_adventure_email', 'br_compose_nonce' );
-
-	$adventure_id = (int) ( $_POST['br_adventure_id'] ?? 0 );
-	$subject      = sanitize_text_field( $_POST['br_subject']    ?? '' );
-	$body         = wp_kses_post( $_POST['br_email_body']         ?? '' );
-
-	if ( ! $adventure_id || ! $subject || ! $body ) {
-		wp_redirect( add_query_arg(
-			[ 'page' => 'br_email_compose', 'br_error' => rawurlencode( 'Adventure, subject and body are all required.' ) ],
-			admin_url( 'admin.php' )
-		) );
-		exit;
-	}
-
-	$mailer = new BR_Mailer();
-	$result = $mailer->send_to_adventure( $adventure_id, $subject, $body );
-
-	wp_redirect( add_query_arg(
-		[
-			'page'      => 'br_email_compose',
-			'br_sent'   => $result['sent'],
-			'br_failed' => $result['failed'],
-			'br_queued' => $result['queued'],
-		],
-		admin_url( 'admin.php' )
-	) );
-	exit;
 }

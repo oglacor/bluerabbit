@@ -19,6 +19,7 @@ $players = $wpdb->get_results("
 			<span class="icon icon-upload"></span> <?= __("Upload file", "bluerabbit"); ?>
 		</button>
 	</div>
+	<span id="bulk-ach-progress" class="br-form-hint" style="display:none;font-weight:600;"></span>
 </div>
 
 <!-- Search + Actions Bar -->

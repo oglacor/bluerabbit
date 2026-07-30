@@ -460,6 +460,16 @@ class BR_Achievement {
         die();
     }
 
+    // Step 1 of 2 - validates the achievement/adventure and bulk-inserts one
+    // row per email into br_achievement_bulk_queue (status 'pending'), then
+    // returns immediately. Nothing is assigned here. The client polls
+    // processBulkAchievementBatch() repeatedly afterwards, a few rows at a
+    // time, until nothing is left pending. This used to do all the work
+    // (player lookup + insert per row) inline in one request, which reliably
+    // hit real hosts' execution-time limits on large CSVs with nothing
+    // logged for whatever the request never got to - same failure mode
+    // BR_Mailer::start_campaign() documents for the bulk email sender, fixed
+    // the same way: persist first, then process in small confirmed steps.
     public function bulkAssignAchievement(){
         global $wpdb;
         $data = ['success' => false];
@@ -493,17 +503,80 @@ class BR_Achievement {
             echo json_encode($data); die();
         }
 
-        if ($adventure->adventure_gmt) { date_default_timezone_set($adventure->adventure_gmt); }
-        $today = date('Y-m-d H:i:s');
-
-        $assigned     = 0;
-        $already_has  = 0;
-        $not_found    = 0;
-        $assigned_ids = [];
-
+        $emails = [];
         foreach ($raw_emails as $raw) {
             $email = sanitize_email(strtolower(trim($raw)));
-            if (!$email) continue;
+            if ($email) $emails[] = $email;
+        }
+        if (empty($emails)) {
+            $data['message'] = $notification->pop(__('No valid email addresses found','bluerabbit'), 'red', 'cancel');
+            echo json_encode($data); die();
+        }
+
+        $now          = current_time('mysql');
+        $values       = [];
+        $placeholders = [];
+        foreach ($emails as $email) {
+            $placeholders[] = "(%d, %d, %s, 'pending', %s)";
+            array_push($values, $achievement_id, $adv_child_id, $email, $now);
+        }
+        // Chunk the insert - a very large CSV could otherwise exceed
+        // max_allowed_packet / placeholder limits in one query.
+        foreach (array_chunk($placeholders, 500) as $i => $chunk) {
+            $chunk_values = array_slice($values, $i * 500 * 4, count($chunk) * 4);
+            $wpdb->query($wpdb->prepare(
+                "INSERT INTO {$wpdb->prefix}br_achievement_bulk_queue (achievement_id, adventure_id, email, status, created_at) VALUES " . implode(', ', $chunk),
+                $chunk_values
+            ));
+        }
+
+        $data['success']        = true;
+        $data['queue_ready']    = true;
+        $data['total']          = count($emails);
+        $data['achievement_id'] = $achievement_id;
+        $data['adventure_id']   = $adv_child_id;
+        echo json_encode($data);
+        die();
+    }
+
+    // Step 2 of 2 - processes the next small batch of 'pending' rows for this
+    // achievement/adventure, one at a time, committing each row's outcome to
+    // br_achievement_bulk_queue immediately (never move to the next row until
+    // the current one's result is confirmed and saved). Called repeatedly by
+    // the browser's polling loop until 'remaining' is 0. Same player
+    // lookup/enrollment/already-has logic that used to be inline in
+    // bulkAssignAchievement() above.
+    public function processBulkAchievementBatch(){
+        global $wpdb;
+        $data = ['success' => false];
+        $limit = 10;
+
+        $achievement_id = intval($_POST['achievement_id'] ?? 0);
+        $adventure_id   = intval($_POST['adventure_id'] ?? 0);
+
+        if (!$achievement_id || !$adventure_id) {
+            $data['message'] = 'Missing data';
+            echo json_encode($data); die();
+        }
+
+        $adventure = $wpdb->get_row($wpdb->prepare(
+            "SELECT adventure_gmt FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id
+        ));
+        if ($adventure && $adventure->adventure_gmt) { date_default_timezone_set($adventure->adventure_gmt); }
+        $today = date('Y-m-d H:i:s');
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT queue_id, email FROM {$wpdb->prefix}br_achievement_bulk_queue
+             WHERE achievement_id=%d AND adventure_id=%d AND status='pending'
+             ORDER BY queue_id ASC LIMIT %d",
+            $achievement_id, $adventure_id, $limit
+        ));
+
+        $assigned = 0; $already_has = 0; $not_found = 0; $assigned_ids = [];
+
+        foreach ($rows as $row) {
+            $email  = $row->email;
+            $status = 'not_found';
 
             // Player must exist and be enrolled in this adventure
             $player = $wpdb->get_row($wpdb->prepare(
@@ -512,42 +585,57 @@ class BR_Achievement {
                    ON p.player_id = pa.player_id AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
                  WHERE p.player_email = %s
                  LIMIT 1",
-                $adv_child_id, $email
+                $adventure_id, $email
             ));
 
-            if (!$player) { $not_found++; continue; }
+            if ($player) {
+                // Already has this achievement -- keep it, do nothing
+                $has_it = $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND player_id=%d AND adventure_id=%d",
+                    $achievement_id, $player->player_id, $adventure_id
+                ));
 
-            // Already has this achievement -- keep it, do nothing
-            $has_it = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND player_id=%d AND adventure_id=%d",
-                $achievement_id, $player->player_id, $adv_child_id
-            ));
+                if ($has_it) {
+                    $status = 'already_has';
+                    $already_has++;
+                } else {
+                    $wpdb->query($wpdb->prepare(
+                        "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d, %d, %d, %s)",
+                        $achievement_id, $player->player_id, $adventure_id, $today
+                    ));
+                    $wpdb->query($wpdb->prepare(
+                        "UPDATE {$wpdb->prefix}br_player_adventure SET achievement_id=%d WHERE player_id=%d AND adventure_id=%d",
+                        $achievement_id, $player->player_id, $adventure_id
+                    ));
+                    BR_Activity::instance()->logActivity($adventure_id, 'earned', 'achievement', '', $player->player_id, $achievement_id);
+                    $status = 'assigned';
+                    $assigned++;
+                    $assigned_ids[] = $player->player_id;
+                }
+            } else {
+                $not_found++;
+            }
 
-            if ($has_it) { $already_has++; continue; }
-
-            // Assign
-            $wpdb->query($wpdb->prepare(
-                "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d, %d, %d, %s)",
-                $achievement_id, $player->player_id, $adv_child_id, $today
-            ));
-            $wpdb->query($wpdb->prepare(
-                "UPDATE {$wpdb->prefix}br_player_adventure SET achievement_id=%d WHERE player_id=%d AND adventure_id=%d",
-                $achievement_id, $player->player_id, $adv_child_id
-            ));
-
-            $assigned++;
-            $assigned_ids[] = $player->player_id;
-            BR_Activity::instance()->logActivity($adv_child_id, 'earned', 'achievement', '', $player->player_id, $achievement_id);
+            $wpdb->update(
+                "{$wpdb->prefix}br_achievement_bulk_queue",
+                ['status' => $status, 'processed_at' => current_time('mysql')],
+                ['queue_id' => $row->queue_id],
+                ['%s', '%s'],
+                ['%d']
+            );
         }
 
-        $msg = sprintf(
-            __('%d assigned, %d already had it, %d not found / not enrolled','bluerabbit'),
-            $assigned, $already_has, $not_found
-        );
+        $remaining = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_achievement_bulk_queue WHERE achievement_id=%d AND adventure_id=%d AND status='pending'",
+            $achievement_id, $adventure_id
+        ));
+
         $data['success']      = true;
+        $data['assigned']     = $assigned;
+        $data['already_has']  = $already_has;
+        $data['not_found']    = $not_found;
         $data['assigned_ids'] = $assigned_ids;
-        $data['just_notify']  = true;
-        $data['message']      = $notification->pop($msg, $assigned > 0 ? 'green' : 'orange', 'achievement');
+        $data['remaining']    = $remaining;
         echo json_encode($data);
         die();
     }

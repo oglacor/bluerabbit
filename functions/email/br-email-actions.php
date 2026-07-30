@@ -13,14 +13,14 @@ function br_email_handle_retry(): void {
 		$mailer = new BR_Mailer();
 		$result = $mailer->retry_campaign( $cid );
 
-		// Go back to the campaign's Failed tab.
-		$back = (int) ( $_GET['br_back_campaign'] ?? $cid );
+		// Requeued items become "pending" again - go to the Missing tab and
+		// use "Resume Sending" there to actually redrive them (see
+		// send_next_batch()'s doc comment for why this isn't synchronous here).
 		wp_redirect( add_query_arg( [
-			'page'            => 'br_email_log',
-			'campaign_id'     => $back,
-			'tab'             => 'failed',
-			'br_retried'      => $result['sent'],
-			'br_retry_failed' => $result['failed'],
+			'page'         => 'br_email_log',
+			'campaign_id'  => $cid,
+			'tab'          => 'missing',
+			'br_requeued'  => $result['requeued'],
 		], admin_url( 'admin.php' ) ) );
 		exit;
 	}
@@ -59,46 +59,10 @@ function br_email_handle_csv_download(): void {
 		check_admin_referer( 'br_csv_missing_' . $cid );
 		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Forbidden', 403 );
 
-		$campaign = $wpdb->get_row( $wpdb->prepare(
-			"SELECT adventure_id FROM {$wpdb->prefix}br_email_campaigns WHERE campaign_id = %d",
-			$cid
-		) );
-		if ( ! $campaign ) wp_die( 'Campaign not found.', 404 );
-
-		$adv_id = (int) $campaign->adventure_id;
-
-		// All enrolled players (no opt-out exclusion — show everyone).
-		$enrolled_csv = $wpdb->get_col( $wpdb->prepare(
-			"SELECT pa.player_id
-			   FROM {$wpdb->prefix}br_player_adventure pa
-			  WHERE pa.adventure_id            = %d
-			    AND pa.player_adventure_status = 'in'",
-			$adv_id
-		) );
-
-		$reached_csv = $wpdb->get_col( $wpdb->prepare(
-			"SELECT DISTINCT user_id FROM {$wpdb->prefix}br_email_log WHERE campaign_id = %d",
-			$cid
-		) );
-
-		$missing_csv = array_values( array_diff( $enrolled_csv, $reached_csv ) );
-
-		$rows = [];
-		if ( ! empty( $missing_csv ) ) {
-			$ph        = implode( ',', array_fill( 0, count( $missing_csv ), '%d' ) );
-			$user_rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT display_name, user_email
-					   FROM {$wpdb->users}
-					  WHERE ID IN ( {$ph} )
-					  ORDER BY display_name",
-					...$missing_csv
-				)
-			);
-			foreach ( $user_rows as $u ) {
-				$rows[] = [ 'display_name' => $u->display_name, 'user_email' => $u->user_email ];
-			}
-		}
+		$mailer = new BR_Mailer();
+		$rows   = array_map( function ( $u ) {
+			return [ 'display_name' => $u->display_name, 'user_email' => $u->user_email ];
+		}, $mailer->get_missing_recipients( $cid ) );
 
 		br_email_output_csv( "missing-campaign-{$cid}.csv", $rows );
 	}

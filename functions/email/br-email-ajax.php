@@ -79,45 +79,11 @@ function br_email_ajax_missing_recipients(): void {
 	check_ajax_referer( 'br_email_ajax', 'nonce' );
 	if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( [ 'message' => 'Forbidden' ], 403 );
 
-	global $wpdb;
-	$campaign_id  = (int) ( $_POST['campaign_id']  ?? 0 );
-	$adventure_id = (int) ( $_POST['adventure_id'] ?? 0 );
+	$campaign_id = (int) ( $_POST['campaign_id'] ?? 0 );
+	if ( ! $campaign_id ) wp_send_json_error( [ 'message' => 'Missing parameters.' ] );
 
-	if ( ! $campaign_id || ! $adventure_id ) {
-		wp_send_json_error( [ 'message' => 'Missing parameters.' ] );
-	}
-
-	// Step 1: ALL enrolled players — including opted-out, so count is always accurate.
-	$enrolled = $wpdb->get_col( $wpdb->prepare(
-		"SELECT pa.player_id
-		   FROM {$wpdb->prefix}br_player_adventure pa
-		  WHERE pa.adventure_id            = %d
-		    AND pa.player_adventure_status = 'in'",
-		$adventure_id
-	) );
-
-	// Step 2: Everyone who has ANY log entry for this campaign (sent OR failed).
-	$reached = $wpdb->get_col( $wpdb->prepare(
-		"SELECT DISTINCT user_id FROM {$wpdb->prefix}br_email_log WHERE campaign_id = %d",
-		$campaign_id
-	) );
-
-	// Step 3: Subtract — these are players who never received an attempt.
-	$missing_ids = array_values( array_diff( $enrolled, $reached ) );
-
-	$users = [];
-	if ( ! empty( $missing_ids ) ) {
-		$placeholders = implode( ',', array_fill( 0, count( $missing_ids ), '%d' ) );
-		$users = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT ID AS player_id, user_email, display_name
-				   FROM {$wpdb->users}
-				  WHERE ID IN ( {$placeholders} )
-				  ORDER BY display_name",
-				...$missing_ids
-			), ARRAY_A
-		);
-	}
+	$mailer = new BR_Mailer();
+	$users  = $mailer->get_missing_recipients( $campaign_id );
 
 	$csv_url = wp_nonce_url(
 		add_query_arg( [ 'br_email_csv_missing' => $campaign_id ], admin_url( 'admin.php' ) ),
@@ -129,4 +95,84 @@ function br_email_ajax_missing_recipients(): void {
 		'users'   => $users,
 		'csv_url' => $csv_url,
 	] );
+}
+
+// ── AJAX: start a campaign (creates the campaign + persists the exact
+//    recipient list, but sends nothing — the caller then polls
+//    br_email_send_batch repeatedly until 'remaining' is 0) ──────────────────
+
+add_action( 'wp_ajax_br_email_start_campaign', 'br_email_ajax_start_campaign' );
+function br_email_ajax_start_campaign(): void {
+	check_ajax_referer( 'br_email_ajax', 'nonce' );
+
+	$current_user = wp_get_current_user();
+	$adventure_id = (int) ( $_POST['adventure_id'] ?? 0 );
+
+	$allowed = current_user_can( 'manage_options' )
+		|| ( $adventure_id && br_email_user_can_send( $current_user->ID, $adventure_id ) );
+	if ( ! $allowed ) wp_send_json_error( [ 'message' => 'Forbidden' ], 403 );
+
+	$subject    = sanitize_text_field( wp_unslash( $_POST['subject'] ?? '' ) );
+	$body       = wp_kses_post( wp_unslash( $_POST['body'] ?? '' ) );
+	$recipients = sanitize_text_field( $_POST['recipients'] ?? 'all' );
+
+	if ( ! $adventure_id || ! $subject || ! $body ) {
+		wp_send_json_error( [ 'message' => __( 'Adventure, subject and body are all required.', 'bluerabbit' ) ] );
+	}
+
+	global $wpdb;
+	$adventure = $wpdb->get_row( $wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d AND adventure_status = 'publish'",
+		$adventure_id
+	) );
+	if ( ! $adventure ) wp_send_json_error( [ 'message' => __( 'Adventure not found.', 'bluerabbit' ) ] );
+
+	$mailer = new BR_Mailer();
+
+	$sender_name  = sanitize_text_field( wp_unslash( $_POST['sender_name']  ?? '' ) );
+	$sender_email = sanitize_email( wp_unslash( $_POST['sender_email'] ?? '' ) );
+	if ( $sender_name && $sender_email ) {
+		$mailer->set_sender_override( $sender_name . ' · ' . $adventure->adventure_title, $sender_email, $sender_name );
+	}
+	$mailer->set_sender_id( $current_user->ID );
+
+	$all_users = $mailer->get_adventure_users( $adventure_id );
+
+	if ( $recipients !== 'all' ) {
+		$player_ids = array_filter( array_map( 'intval', explode( ',', $recipients ) ) );
+		if ( empty( $player_ids ) ) wp_send_json_error( [ 'message' => __( 'No recipients selected.', 'bluerabbit' ) ] );
+		$id_set = array_flip( $player_ids );
+		$users  = array_values( array_filter( $all_users, function ( $u ) use ( $id_set ) {
+			return isset( $id_set[ (int) $u['player_id'] ] );
+		} ) );
+	} else {
+		$users = $all_users;
+	}
+
+	if ( empty( $users ) ) wp_send_json_error( [ 'message' => __( 'No eligible recipients found.', 'bluerabbit' ) ] );
+
+	$result = $mailer->start_campaign( $users, $adventure_id, $subject, $body );
+	wp_send_json_success( $result );
+}
+
+// ── AJAX: send the next small batch for a campaign (polled repeatedly) ───────
+
+add_action( 'wp_ajax_br_email_send_batch', 'br_email_ajax_send_batch' );
+function br_email_ajax_send_batch(): void {
+	check_ajax_referer( 'br_email_ajax', 'nonce' );
+
+	$campaign_id = (int) ( $_POST['campaign_id'] ?? 0 );
+	if ( ! $campaign_id ) wp_send_json_error( [ 'message' => 'Missing campaign_id' ] );
+
+	$campaign = BR_Mailer::get_campaign( $campaign_id );
+	if ( ! $campaign ) wp_send_json_error( [ 'message' => 'Campaign not found' ] );
+
+	$current_user = wp_get_current_user();
+	$allowed = current_user_can( 'manage_options' )
+		|| br_email_user_can_send( $current_user->ID, (int) $campaign->adventure_id );
+	if ( ! $allowed ) wp_send_json_error( [ 'message' => 'Forbidden' ], 403 );
+
+	$mailer = new BR_Mailer();
+	$result = $mailer->send_next_batch( $campaign_id );
+	wp_send_json_success( $result );
 }

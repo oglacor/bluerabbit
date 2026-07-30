@@ -396,6 +396,32 @@ jQuery(function($){
 	});
 
 	// ── Send ──
+	var logUrl = '<?php echo esc_js( add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log' ], get_permalink() ) ); ?>';
+
+	function pollBatch( campaignId, total ){
+		$.post(brEmailFront.ajaxurl,{ action:'br_email_send_batch', nonce:brEmailFront.nonce, campaign_id:campaignId },function(r){
+			if(!r.success){
+				showStatus('<span class="icon icon-cancel"></span> '+(r.data&&r.data.message||'<?php esc_attr_e("Send failed.","bluerabbit");?>'),'red');
+				$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
+				return;
+			}
+			var remaining = r.data.remaining, done = total - remaining;
+			showStatus('<span class="icon icon-rotate"></span> '+done+' / '+total+' processed…','orange');
+			if(remaining>0){
+				setTimeout(function(){ pollBatch(campaignId,total); }, 50);
+			} else {
+				$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
+				showStatus('<span class="icon icon-check"></span> '+total+' processed &mdash; <a href="'+logUrl+'" class="br-notif-status-link">View Send Log</a>','green');
+				if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
+				else $('#br_notif_body').val('');
+				$('#br-notif-subject').val('');
+			}
+		}).fail(function(){
+			// A dropped request never loses data (every send is logged immediately) - just retry.
+			setTimeout(function(){ pollBatch(campaignId,total); }, 2000);
+		});
+	}
+
 	$('#br-notif-send-btn').on('click', function(){
 		var subject=$.trim($('#br-notif-subject').val()), body=getEditorBody(), recipients=getRecipients();
 		var $so=$('#br-notif-sender option:selected');
@@ -406,20 +432,17 @@ jQuery(function($){
 			: '<?php esc_attr_e('Send this email to the selected players?','bluerabbit');?>';
 		if(!confirm(msg)) return;
 		$('#br-notif-send-btn').prop('disabled',true); $('#br-notif-spinner').show();
+		showStatus('<span class="icon icon-rotate"></span> <?php esc_attr_e("Starting…","bluerabbit");?>','orange');
 		$.post(brEmailFront.ajaxurl,{
-			action:'br_send_notification_email', nonce:brEmailFront.nonce,
+			action:'br_email_start_campaign', nonce:brEmailFront.nonce,
 			adventure_id:<?php echo (int)$adv_parent_id;?>, subject:subject, body:body,
 			recipients:recipients, sender_name:$so.data('name'), sender_email:$so.data('email')
 		},function(r){
-			$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
 			if(r.success){
-				var logUrl='<?php echo esc_js( add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log' ], get_permalink() ) ); ?>';
-				showStatus('<span class="icon icon-check"></span> '+r.data.message+' &mdash; <a href="'+logUrl+'" class="br-notif-status-link">View Send Log</a>','green');
-				if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
-				else $('#br_notif_body').val('');
-				$('#br-notif-subject').val('');
+				pollBatch( r.data.campaign_id, r.data.total );
 			} else {
-				showStatus('<span class="icon icon-cancel"></span> '+(r.data.message||'<?php esc_attr_e("Send failed.","bluerabbit");?>'),'red');
+				$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
+				showStatus('<span class="icon icon-cancel"></span> '+(r.data&&r.data.message||'<?php esc_attr_e("Send failed.","bluerabbit");?>'),'red');
 			}
 		}).fail(function(){
 			$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();

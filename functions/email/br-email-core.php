@@ -29,6 +29,19 @@ function br_email_maybe_migrate(): void {
 	if ( ! $row ) {
 		$wpdb->query( "ALTER TABLE {$log_table} ADD COLUMN campaign_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0 AFTER sender_id" );
 	}
+
+	// Exact recipient list per campaign — the authoritative "who is this
+	// campaign for" set. Needed because a campaign can target a specific
+	// group/guild subset, not just every enrolled player in the adventure;
+	// "pending" (and the "missing" tab) is targets MINUS logged, not
+	// "everyone enrolled" minus logged, or a group-restricted send would
+	// wrongly show everyone outside the group as missing.
+	$targets_table = "{$wpdb->prefix}br_email_campaign_targets";
+	$wpdb->query( "CREATE TABLE IF NOT EXISTS {$targets_table} (
+		campaign_id BIGINT(20) UNSIGNED NOT NULL,
+		player_id BIGINT(20) UNSIGNED NOT NULL,
+		PRIMARY KEY (campaign_id, player_id)
+	) {$charset}" );
 }
 
 // ── Admin menu ────────────────────────────────────────────────────────────────

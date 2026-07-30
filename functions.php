@@ -2102,6 +2102,33 @@ function br_migrate_tremendous_schema() {
 }
 add_action('init', 'br_migrate_tremendous_schema');
 
+// Bulk achievement-award-by-CSV queue (see BR_Achievement::bulkAssignAchievement()/
+// processBulkAchievementBatch()). Uploading a large CSV and assigning every row
+// synchronously in one request reliably hit real hosts' execution-time limits
+// with nothing logged for the rows never reached - same failure mode as the old
+// bulk email sender (see BR_Mailer::start_campaign()'s doc comment). The fix is
+// the same shape: persist every row up front with a status, then process a few
+// rows at a time via repeated small AJAX calls until nothing is left pending.
+function br_migrate_achievement_bulk_queue_schema() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$table = "{$wpdb->prefix}br_achievement_bulk_queue";
+	if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) {
+		$wpdb->query( "CREATE TABLE $table (
+			`queue_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`achievement_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL,
+			`email` VARCHAR(255) NOT NULL,
+			`status` ENUM('pending','assigned','already_has','not_found') NOT NULL DEFAULT 'pending',
+			`created_at` DATETIME NOT NULL,
+			`processed_at` DATETIME NULL,
+			PRIMARY KEY (`queue_id`),
+			KEY `idx_batch` (`achievement_id`, `adventure_id`, `status`)
+		) $charset_collate" );
+	}
+}
+add_action( 'init', 'br_migrate_achievement_bulk_queue_schema' );
+
 function br_save_ai_api_key() {
 	global $wpdb;
 	$n = new Notification();
@@ -2586,6 +2613,7 @@ add_action("wp_ajax_triggerAchievements", [BR_Achievement::instance(), 'triggerA
 add_action("wp_ajax_triggerGuild", [BR_Guild::instance(), 'triggerGuild']);
 add_action("wp_ajax_bulkAssignGuild", [BR_Guild::instance(), 'bulkAssignGuild']);
 add_action("wp_ajax_bulkAssignAchievement", [BR_Achievement::instance(), 'bulkAssignAchievement']);
+add_action("wp_ajax_bulkAssignAchievementBatch", [BR_Achievement::instance(), 'processBulkAchievementBatch']);
 add_action("wp_ajax_resetTransactions", [BR_Transaction::instance(), 'resetTransactions']);
 add_action("wp_ajax_resetDemoAdventurePlayer", [BR_Transaction::instance(), 'resetDemoAdventurePlayer']);
 add_action("wp_ajax_resetPlayerPassword", [BR_Player::instance(), 'resetPlayerPassword']);

@@ -175,18 +175,10 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 		$campaign_id
 	) );
 
-	// Missing: all enrolled minus any log entry
-	$enrolled_ids = $wpdb->get_col( $wpdb->prepare(
-		"SELECT player_id FROM {$wpdb->prefix}br_player_adventure
-		  WHERE adventure_id = %d AND player_adventure_status = 'in'",
-		$adv_id
-	) );
-	$reached_ids  = $wpdb->get_col( $wpdb->prepare(
-		"SELECT DISTINCT user_id FROM {$log_table} WHERE campaign_id = %d",
-		$campaign_id
-	) );
-	$missing_ids   = array_values( array_diff( $enrolled_ids, $reached_ids ) );
-	$missing_count = count( $missing_ids );
+	// Missing: campaign targets minus any log entry (NOT "everyone enrolled" -
+	// a campaign can target a specific group/guild subset, see BR_Mailer::get_missing_recipients()).
+	$mailer        = new BR_Mailer();
+	$missing_count = $mailer->count_pending( $campaign_id );
 
 	// ── Tab data ────────────────────────────────────────────────────────────
 
@@ -223,18 +215,7 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 	} elseif ( $tab === 'missing' ) {
 		$tab_total = $missing_count;
 		$tab_pages = max( 1, (int) ceil( $tab_total / $per_page ) );
-		$page_ids  = array_slice( $missing_ids, $offset, $per_page );
-
-		if ( ! empty( $page_ids ) ) {
-			$ph  = implode( ',', array_fill( 0, count( $page_ids ), '%d' ) );
-			$tab_rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT display_name, user_email FROM {$wpdb->users}
-					  WHERE ID IN ( {$ph} ) ORDER BY display_name",
-					...$page_ids
-				)
-			);
-		}
+		$tab_rows  = $mailer->get_missing_recipients( $campaign_id, $per_page, $offset );
 	}
 
 	// ── Render ──────────────────────────────────────────────────────────────
@@ -402,14 +383,21 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 						); ?>
 					</span>
 					<?php if ( $missing_count ) : ?>
-					<a href="<?php echo esc_url( wp_nonce_url(
-						add_query_arg( [ 'br_email_csv_missing' => $campaign_id ], admin_url( 'admin.php' ) ),
-						'br_csv_missing_' . $campaign_id
-					) ); ?>" class="button button-small">
-						&#128196; <?php esc_html_e( 'Download CSV', 'bluerabbit' ); ?>
-					</a>
+					<div style="display:flex;gap:8px">
+						<button type="button" id="br_resume_send_btn" class="button button-primary button-small"
+							data-campaign-id="<?php echo (int) $campaign_id; ?>" data-total="<?php echo (int) $missing_count; ?>">
+							&#9654; <?php esc_html_e( 'Resume Sending', 'bluerabbit' ); ?>
+						</button>
+						<a href="<?php echo esc_url( wp_nonce_url(
+							add_query_arg( [ 'br_email_csv_missing' => $campaign_id ], admin_url( 'admin.php' ) ),
+							'br_csv_missing_' . $campaign_id
+						) ); ?>" class="button button-small">
+							&#128196; <?php esc_html_e( 'Download CSV', 'bluerabbit' ); ?>
+						</a>
+					</div>
 					<?php endif; ?>
 				</div>
+				<span id="br_resume_progress" style="display:none;font-weight:600;"></span>
 				<?php if ( empty( $tab_rows ) ) : ?>
 					<p style="color:#46b450">&#10003; <?php esc_html_e( 'All enrolled players have been reached.', 'bluerabbit' ); ?></p>
 				<?php else : ?>
@@ -448,18 +436,57 @@ function br_email_log_campaign_detail( int $campaign_id ): void {
 
 		</div>
 	</div>
+
+	<script>
+	jQuery(function($){
+		$('#br_resume_send_btn').on('click', function(){
+			var $btn = $(this).prop('disabled', true);
+			var campaignId = $btn.data('campaign-id');
+			var total      = $btn.data('total');
+			var $progress  = $('#br_resume_progress').show();
+
+			function poll(){
+				$.post( ajaxurl, { action: 'br_email_send_batch', nonce: brEmail.nonce, campaign_id: campaignId }, function(r){
+					if ( ! r.success ) {
+						$progress.text( 'Error: ' + ( r.data && r.data.message || 'send failed' ) );
+						return;
+					}
+					var remaining = r.data.remaining;
+					var done = total - remaining;
+					$progress.text( done + ' / ' + total + ' processed…' );
+					if ( remaining > 0 ) {
+						setTimeout( poll, 50 );
+					} else {
+						$progress.text( 'Done. Reloading…' );
+						location.reload();
+					}
+				}).fail(function(){
+					setTimeout( poll, 2000 );
+				});
+			}
+			poll();
+		});
+	});
+	</script>
 	<?php
 }
 
 // ── Shared: retry notice ──────────────────────────────────────────────────────
 
 function br_email_retry_notice(): string {
-	if ( ! isset( $_GET['br_retried'] ) ) return '';
-	$retried      = (int) $_GET['br_retried'];
-	$retry_failed = (int) ( $_GET['br_retry_failed'] ?? 0 );
-	$parts = [];
-	if ( $retried )      $parts[] = sprintf( _n( '%d email re-sent', '%d emails re-sent', $retried, 'bluerabbit' ), $retried );
-	if ( $retry_failed ) $parts[] = sprintf( _n( '%d failed again', '%d failed again', $retry_failed, 'bluerabbit' ), $retry_failed );
-	if ( ! $parts ) return '';
-	return '<div class="notice notice-info is-dismissible"><p>' . implode( ' &bull; ', $parts ) . '</p></div>';
+	if ( isset( $_GET['br_requeued'] ) ) {
+		$n = (int) $_GET['br_requeued'];
+		if ( ! $n ) return '';
+		return '<div class="notice notice-info is-dismissible"><p>' .
+			sprintf( _n( '%d email requeued — click "Resume Sending" below to redrive it.', '%d emails requeued — click "Resume Sending" below to redrive them.', $n, 'bluerabbit' ), $n ) .
+			'</p></div>';
+	}
+	if ( isset( $_GET['br_retried'] ) ) {
+		$retried = (int) $_GET['br_retried'];
+		if ( ! $retried ) return '';
+		return '<div class="notice notice-info is-dismissible"><p>' .
+			sprintf( _n( '%d email re-sent', '%d emails re-sent', $retried, 'bluerabbit' ), $retried ) .
+			'</p></div>';
+	}
+	return '';
 }

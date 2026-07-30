@@ -5976,6 +5976,43 @@ function assignBulkUsersToGuild() {
     };
     reader.readAsText(fileInput.files[0]);
 }
+////////////////////////////////////////// brRunBatchPoll ////////////////////////////////////////////
+// Generic "process a small batch -> report progress -> repeat until remaining
+// is 0" driver, shared by any bulk operation that queues work server-side and
+// processes it a few rows at a time (achievement CSV assignment today). Never
+// moves to the next batch until the current one's response is confirmed, and
+// a dropped/failed request just retries the same batch rather than losing
+// progress - every row's outcome is already committed to the DB by the time
+// the response comes back.
+function brRunBatchPoll(ajaxData, total, onProgress, onDone, onError) {
+    function poll() {
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: ajaxData,
+            method: 'POST',
+            success: function (json_text) {
+                var r;
+                try { r = JSON.parse(json_text); } catch (e) { r = null; }
+                if (!r || !r.success) {
+                    if (onError) onError(r);
+                    return;
+                }
+                var remaining = r.remaining || 0;
+                if (onProgress) onProgress(r, total - remaining, total);
+                if (remaining > 0) {
+                    setTimeout(poll, 50);
+                } else if (onDone) {
+                    onDone(r);
+                }
+            },
+            error: function () {
+                setTimeout(poll, 2000);
+            }
+        });
+    }
+    poll();
+}
+
 ////////////////////////////////////////// assignBulkUsersToAchievement ////////////////////////////////////////////
 function assignBulkUsersToAchievement() {
     var fileInput = document.getElementById('the_csv_file_with_players');
@@ -5997,7 +6034,7 @@ function assignBulkUsersToAchievement() {
             alert('No valid email addresses found in the file.');
             return;
         }
-        showLoader();
+        var $progress = $('#bulk-ach-progress').show().text('Uploading ' + emails.length + ' emails…');
         jQuery.ajax({
             url: runAJAX.ajaxurl,
             data: {
@@ -6008,16 +6045,32 @@ function assignBulkUsersToAchievement() {
             },
             method: 'POST',
             success: function (json_text) {
-                displayAjaxResponse(json_text);
                 var d = JSON.parse(json_text);
-                if (d.success && d.assigned_ids) {
-                    d.assigned_ids.forEach(function (pid) {
-                        $('#player-achievement-' + pid).addClass('active');
-                    });
+                if (!d.success) {
+                    displayAjaxResponse(json_text);
+                    $progress.hide();
+                    return;
                 }
-                fileInput.value = '';
+                var total = d.total;
+                brRunBatchPoll(
+                    { action: 'bulkAssignAchievementBatch', achievement_id: d.achievement_id, adventure_id: d.adventure_id },
+                    total,
+                    function (r, done) {
+                        $progress.text(done + ' / ' + total + ' processed…');
+                        (r.assigned_ids || []).forEach(function (pid) {
+                            $('#player-achievement-' + pid).addClass('active');
+                        });
+                    },
+                    function (r) {
+                        $progress.text('Done: ' + total + ' processed.');
+                    },
+                    function () {
+                        $progress.text('Error processing batch — reload and try again.');
+                    }
+                );
             }
         });
+        fileInput.value = '';
     };
     reader.readAsText(fileInput.files[0]);
 }

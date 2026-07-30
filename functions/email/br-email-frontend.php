@@ -35,97 +35,12 @@ function br_email_user_can_send( int $user_id, int $adventure_id ): bool {
 }
 
 // ── Frontend: AJAX send handler ───────────────────────────────────────────────
-
-add_action( 'wp_ajax_br_send_notification_email', 'br_email_handle_notification_send' );
-function br_email_handle_notification_send(): void {
-	check_ajax_referer( 'br_email_ajax', 'nonce' );
-
-	$current_user = wp_get_current_user();
-	$adventure_id = (int) ( $_POST['adventure_id'] ?? 0 );
-
-	if ( ! $adventure_id || ! $current_user->ID ) {
-		wp_send_json_error( [ 'message' => __( 'Missing adventure context.', 'bluerabbit' ) ] );
-	}
-
-	if ( ! br_email_user_can_send( $current_user->ID, $adventure_id ) ) {
-		wp_send_json_error( [ 'message' => __( 'You do not have permission to send emails for this adventure.', 'bluerabbit' ) ] );
-	}
-
-	$subject    = sanitize_text_field( wp_unslash( $_POST['subject'] ?? '' ) );
-	$body       = wp_kses_post( wp_unslash( $_POST['body'] ?? '' ) );
-	$recipients = sanitize_text_field( $_POST['recipients'] ?? 'all' );
-
-	if ( ! $subject || ! $body ) {
-		wp_send_json_error( [ 'message' => __( 'Subject and body are required.', 'bluerabbit' ) ] );
-	}
-
-	global $wpdb;
-	$adventure = $wpdb->get_row( $wpdb->prepare(
-		"SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d AND adventure_status = 'publish'",
-		$adventure_id
-	) );
-
-	if ( ! $adventure ) {
-		wp_send_json_error( [ 'message' => __( 'Adventure not found.', 'bluerabbit' ) ] );
-	}
-
-	$sender_name  = sanitize_text_field( wp_unslash( $_POST['sender_name']  ?? '' ) );
-	$sender_email = sanitize_email( wp_unslash( $_POST['sender_email'] ?? '' ) );
-	if ( ! $sender_name || ! $sender_email ) {
-		$sender_name  = $current_user->display_name;
-		$sender_email = $current_user->user_email;
-	}
-
-	$from_name      = $sender_name . ' · ' . $adventure->adventure_title;
-	$reply_to_email = $sender_email;
-	$reply_to_name  = $sender_name;
-
-	$mailer = new BR_Mailer();
-	$mailer->set_sender_override( $from_name, $reply_to_email, $reply_to_name );
-	$mailer->set_sender_id( $current_user->ID );
-
-	$all_users = $mailer->get_adventure_users( $adventure_id );
-
-	if ( $recipients !== 'all' ) {
-		$player_ids = array_map( 'intval', explode( ',', $recipients ) );
-		$player_ids = array_filter( $player_ids );
-		if ( empty( $player_ids ) ) {
-			wp_send_json_error( [ 'message' => __( 'No recipients selected.', 'bluerabbit' ) ] );
-		}
-		$id_set = array_flip( $player_ids );
-		$users  = array_values( array_filter( $all_users, function ( $u ) use ( $id_set ) {
-			return isset( $id_set[ (int) $u['player_id'] ] );
-		} ) );
-	} else {
-		$users = $all_users;
-	}
-
-	if ( empty( $users ) ) {
-		wp_send_json_error( [ 'message' => __( 'No eligible recipients found.', 'bluerabbit' ) ] );
-	}
-
-	$result = $mailer->send_to_users( $users, $adventure_id, $subject, $body );
-
-	$parts = [];
-	if ( $result['queued'] && ! $result['sent'] && ! $result['failed'] ) {
-		$parts[] = sprintf(
-			_n( '%d email queued for delivery', '%d emails queued for delivery', $result['queued'], 'bluerabbit' ),
-			$result['queued']
-		);
-		$parts[] = __( 'check the Send Log for status', 'bluerabbit' );
-	} else {
-		if ( $result['sent'] )   $parts[] = sprintf( _n( '%d email sent', '%d emails sent', $result['sent'], 'bluerabbit' ), $result['sent'] );
-		if ( $result['failed'] ) $parts[] = sprintf( '%d failed', $result['failed'] );
-		if ( $result['queued'] ) $parts[] = sprintf( '%d queued', $result['queued'] );
-	}
-
-	wp_send_json_success( [
-		'sent'    => $result['sent'],
-		'failed'  => $result['failed'],
-		'queued'  => $result['queued'],
-		'message' => implode( ' · ', $parts ),
-	] );
-}
+//
+// Campaign creation + batch sending now go through the shared
+// br_email_start_campaign / br_email_send_batch handlers in br-email-ajax.php
+// (used by both this frontend page and the wp-admin compose page), so a
+// single request never has to send the whole list itself - see
+// BR_Mailer::start_campaign()'s doc comment for why.
 
 // ── Frontend: CSV downloads ───────────────────────────────────────────────────
 
@@ -176,28 +91,8 @@ function br_email_frontend_csv_handler(): void {
 		check_admin_referer( 'br_fe_csv_missing_' . $cid );
 		if ( ! br_email_user_can_send( $user_id, $adv_id ) ) wp_die( 'Forbidden', 403 );
 
-		$enrolled = $wpdb->get_col( $wpdb->prepare(
-			"SELECT player_id FROM {$wpdb->prefix}br_player_adventure
-			  WHERE adventure_id = %d AND player_adventure_status = 'in'",
-			$adv_id
-		) );
-		$reached  = $wpdb->get_col( $wpdb->prepare(
-			"SELECT DISTINCT user_id FROM {$wpdb->prefix}br_email_log WHERE campaign_id = %d",
-			$cid
-		) );
-		$missing  = array_values( array_diff( $enrolled, $reached ) );
-
-		$rows = [];
-		if ( ! empty( $missing ) ) {
-			$ph   = implode( ',', array_fill( 0, count( $missing ), '%d' ) );
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT display_name, user_email FROM {$wpdb->users}
-					  WHERE ID IN ( {$ph} ) ORDER BY display_name",
-					...$missing
-				)
-			);
-		}
+		$mailer = new BR_Mailer();
+		$rows   = $mailer->get_missing_recipients( $cid );
 		br_email_output_csv( "missing-campaign-{$cid}.csv", $rows );
 	}
 }
@@ -219,13 +114,14 @@ function br_email_frontend_retry_handler(): void {
 		$mailer = new BR_Mailer();
 		$result = $mailer->retry_campaign( $cid );
 
+		// Requeued items become "pending" again - land on the Missing tab,
+		// where "Resume Sending" actually redrives them.
 		$back = add_query_arg( [
 			'adventure_id' => $adv_id,
 			'view'         => 'log',
 			'log_campaign' => $cid,
-			'log_tab'      => 'failed',
-			'retried'      => $result['sent'],
-			'retry_failed' => $result['failed'],
+			'log_tab'      => 'missing',
+			'requeued'     => $result['requeued'],
 		], get_permalink( (int) $_GET['back_post'] ) );
 
 		wp_redirect( $back );
@@ -352,17 +248,11 @@ function br_email_frontend_log_detail( int $campaign_id, int $adv_id, string $lo
 		$campaign_id
 	) );
 
-	$enrolled_ids = $wpdb->get_col( $wpdb->prepare(
-		"SELECT player_id FROM {$wpdb->prefix}br_player_adventure
-		  WHERE adventure_id = %d AND player_adventure_status = 'in'",
-		$adv_id
-	) );
-	$reached_ids  = $wpdb->get_col( $wpdb->prepare(
-		"SELECT DISTINCT user_id FROM {$log_table} WHERE campaign_id = %d",
-		$campaign_id
-	) );
-	$missing_ids   = array_values( array_diff( $enrolled_ids, $reached_ids ) );
-	$missing_count = count( $missing_ids );
+	// Campaign targets minus any log entry - NOT "everyone enrolled" minus
+	// logged, since a campaign can target a specific group/guild subset
+	// (see BR_Mailer::get_missing_recipients()).
+	$mailer        = new BR_Mailer();
+	$missing_count = $mailer->count_pending( $campaign_id );
 
 	// Tab data
 	$tab_rows  = [];
@@ -396,30 +286,23 @@ function br_email_frontend_log_detail( int $campaign_id, int $adv_id, string $lo
 	} elseif ( $tab === 'missing' ) {
 		$tab_total = $missing_count;
 		$tab_pages = max( 1, (int) ceil( $tab_total / $per_page ) );
-		$page_ids  = array_slice( $missing_ids, $offset, $per_page );
-		if ( ! empty( $page_ids ) ) {
-			$ph       = implode( ',', array_fill( 0, count( $page_ids ), '%d' ) );
-			$tab_rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT display_name, user_email FROM {$wpdb->users}
-					  WHERE ID IN ( {$ph} ) ORDER BY display_name",
-					...$page_ids
-				)
-			);
-		}
+		$tab_rows  = $mailer->get_missing_recipients( $campaign_id, $per_page, $offset );
 	}
 
-	// Retry notice
+	// Retry / requeue notice
 	$notice = '';
-	if ( isset( $_GET['retried'] ) ) {
-		$parts = [];
-		$re    = (int) $_GET['retried'];
-		$rf    = (int) ( $_GET['retry_failed'] ?? 0 );
-		if ( $re ) $parts[] = sprintf( _n( '%d re-sent', '%d re-sent', $re, 'bluerabbit' ), $re );
-		if ( $rf ) $parts[] = sprintf( _n( '%d failed again', '%d failed again', $rf, 'bluerabbit' ), $rf );
-		if ( $parts ) {
+	if ( isset( $_GET['requeued'] ) ) {
+		$n = (int) $_GET['requeued'];
+		if ( $n ) {
 			$notice = '<div id="br-notif-status" class="br-notif-status" style="display:block;background:rgba(28,194,235,0.08);border:1px solid rgba(28,194,235,0.25);color:#1cc2eb">'
-				. implode( ' &bull; ', $parts ) . '</div>';
+				. sprintf( _n( '%d requeued — click "Resume Sending" below to redrive it.', '%d requeued — click "Resume Sending" below to redrive them.', $n, 'bluerabbit' ), $n )
+				. '</div>';
+		}
+	} elseif ( isset( $_GET['retried'] ) ) {
+		$re = (int) $_GET['retried'];
+		if ( $re ) {
+			$notice = '<div id="br-notif-status" class="br-notif-status" style="display:block;background:rgba(28,194,235,0.08);border:1px solid rgba(28,194,235,0.25);color:#1cc2eb">'
+				. sprintf( _n( '%d re-sent', '%d re-sent', $re, 'bluerabbit' ), $re ) . '</div>';
 		}
 	}
 
@@ -553,14 +436,21 @@ function br_email_frontend_log_detail( int $campaign_id, int $adv_id, string $lo
 					<?php printf( esc_html__( '%d enrolled players not yet reached.', 'bluerabbit' ), $missing_count ); ?>
 				</span>
 				<?php if ( $missing_count ) : ?>
-				<a href="<?php echo esc_url( wp_nonce_url(
-					add_query_arg( [ 'br_fe_csv_missing' => $campaign_id, 'adv_id' => $adv_id ], get_permalink( $post_id ) ),
-					'br_fe_csv_missing_' . $campaign_id
-				) ); ?>" class="br-btn br-stats-btn-sm">
-					&#128196; <?php esc_html_e( 'Download CSV', 'bluerabbit' ); ?>
-				</a>
+				<div class="br-actions br-gap-6">
+					<button type="button" id="br-fe-resume-btn" class="br-btn br-btn-green br-stats-btn-sm"
+						data-campaign-id="<?php echo (int) $campaign_id; ?>" data-total="<?php echo (int) $missing_count; ?>">
+						<span class="icon icon-check"></span> <?php esc_html_e( 'Resume Sending', 'bluerabbit' ); ?>
+					</button>
+					<a href="<?php echo esc_url( wp_nonce_url(
+						add_query_arg( [ 'br_fe_csv_missing' => $campaign_id, 'adv_id' => $adv_id ], get_permalink( $post_id ) ),
+						'br_fe_csv_missing_' . $campaign_id
+					) ); ?>" class="br-btn br-stats-btn-sm">
+						&#128196; <?php esc_html_e( 'Download CSV', 'bluerabbit' ); ?>
+					</a>
+				</div>
 				<?php endif; ?>
 			</div>
+			<span id="br-fe-resume-progress" class="br-notif-log-hint" style="display:none"></span>
 			<?php if ( empty( $tab_rows ) ) : ?>
 				<p class="br-notif-log-hint">&#10003; <?php esc_html_e( 'All enrolled players have been reached.', 'bluerabbit' ); ?></p>
 			<?php else : ?>
@@ -579,6 +469,38 @@ function br_email_frontend_log_detail( int $campaign_id, int $adv_id, string $lo
 				</tbody>
 			</table>
 			<?php endif; ?>
+
+			<script>
+			jQuery(function($){
+				$('#br-fe-resume-btn').on('click', function(){
+					var $btn = $(this).prop('disabled', true);
+					var campaignId = $btn.data('campaign-id');
+					var total      = $btn.data('total');
+					var $progress  = $('#br-fe-resume-progress').show();
+
+					function poll(){
+						$.post( brEmailFront.ajaxurl, { action: 'br_email_send_batch', nonce: brEmailFront.nonce, campaign_id: campaignId }, function(r){
+							if ( ! r.success ) {
+								$progress.text( 'Error: ' + ( r.data && r.data.message || 'send failed' ) );
+								return;
+							}
+							var remaining = r.data.remaining;
+							var done = total - remaining;
+							$progress.text( done + ' / ' + total + ' processed…' );
+							if ( remaining > 0 ) {
+								setTimeout( poll, 50 );
+							} else {
+								$progress.text( 'Done. Reloading…' );
+								location.reload();
+							}
+						}).fail(function(){
+							setTimeout( poll, 2000 );
+						});
+					}
+					poll();
+				});
+			});
+			</script>
 
 		<?php endif; ?>
 

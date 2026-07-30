@@ -9,9 +9,11 @@ class BR_Mailer {
 	private int    $sender_id   = 0;
 	private int    $campaign_id = 0;
 
-	private const CIPHER       = 'AES-256-CBC';
-	private const RATE_PER_SEC = 4;
-	private const BATCH_SIZE   = 100;
+	private const CIPHER          = 'AES-256-CBC';
+	private const POLL_BATCH_SIZE = 10;
+	private const SEND_DELAY_MS   = 200;
+	private const MAX_ATTEMPTS    = 3;
+	private const RETRY_DELAY_MS  = [ 500, 1500 ];
 
 	public function __construct() {
 		$raw            = get_option( 'br_email_settings', [] );
@@ -79,6 +81,35 @@ class BR_Mailer {
 			"SELECT * FROM {$wpdb->prefix}br_email_campaigns WHERE campaign_id = %d",
 			$campaign_id
 		) );
+	}
+
+	// Persists the exact recipient set for a campaign — the authoritative
+	// "who is this for" list a group/guild-restricted send needs, so
+	// "pending"/"missing" is never computed against the whole adventure roster.
+	private function store_campaign_targets( int $campaign_id, array $users ): void {
+		global $wpdb;
+		$targets_table = "{$wpdb->prefix}br_email_campaign_targets";
+
+		$values        = [];
+		$placeholders  = [];
+		foreach ( $users as $u ) {
+			$player_id = (int) ( $u['player_id'] ?? 0 );
+			if ( ! $player_id ) continue;
+			$placeholders[] = '(%d, %d)';
+			$values[]       = $campaign_id;
+			$values[]       = $player_id;
+		}
+		if ( empty( $placeholders ) ) return;
+
+		// Chunk the insert - a very large recipient list could otherwise
+		// exceed max_allowed_packet / placeholder limits in one query.
+		foreach ( array_chunk( $placeholders, 500 ) as $i => $chunk ) {
+			$chunk_values = array_slice( $values, $i * 500 * 2, count( $chunk ) * 2 );
+			$wpdb->query( $wpdb->prepare(
+				"INSERT IGNORE INTO {$targets_table} (campaign_id, player_id) VALUES " . implode( ', ', $chunk ),
+				$chunk_values
+			) );
+		}
 	}
 
 	// ── Adventure users ───────────────────────────────────────────────────────
@@ -213,101 +244,186 @@ HTML;
 			}
 		}
 
-		$response = wp_remote_post( $endpoint, [
-			'headers' => [
-				'Authorization' => 'Bearer ' . $this->api_key,
-				'Content-Type'  => 'application/json',
-			],
-			'body'    => wp_json_encode( $payload ),
-			'timeout' => 15,
-		] );
+		$success = false;
+		$detail  = '';
+		$attempt = 0;
 
-		if ( is_wp_error( $response ) ) {
-			$detail  = 'WP_Error: ' . $response->get_error_message();
-			$success = false;
-		} else {
-			$code    = (int) wp_remote_retrieve_response_code( $response );
-			$r_body  = wp_remote_retrieve_body( $response );
-			$success = $code < 300;
-			$detail  = $success ? '' : "HTTP {$code}: {$r_body}";
+		// Retry transient failures (rate limits, brief network blips) inline
+		// before giving up - most single-item failures in practice are
+		// transient, so this meaningfully tightens the delivery guarantee
+		// without depending on a human clicking "Retry" later.
+		while ( $attempt < self::MAX_ATTEMPTS ) {
+			$attempt++;
+
+			$response = wp_remote_post( $endpoint, [
+				'headers' => [
+					'Authorization' => 'Bearer ' . $this->api_key,
+					'Content-Type'  => 'application/json',
+				],
+				'body'    => wp_json_encode( $payload ),
+				'timeout' => 15,
+			] );
+
+			if ( is_wp_error( $response ) ) {
+				$detail = 'WP_Error: ' . $response->get_error_message();
+			} else {
+				$code   = (int) wp_remote_retrieve_response_code( $response );
+				$r_body = wp_remote_retrieve_body( $response );
+				if ( $code < 300 ) {
+					$success = true;
+					$detail  = '';
+					break;
+				}
+				$detail = "HTTP {$code}: {$r_body}";
+			}
+
+			if ( $attempt < self::MAX_ATTEMPTS ) {
+				usleep( self::RETRY_DELAY_MS[ $attempt - 1 ] * 1000 );
+			}
+		}
+
+		if ( ! $success && $attempt > 1 ) {
+			$detail = "(failed after {$attempt} attempts) {$detail}";
 		}
 
 		$this->log_send( $user_id, $adventure_id, $subject, $success ? 'sent' : 'failed', $detail );
 		return $success;
 	}
 
-	// ── Bulk send (with rate limiting) ────────────────────────────────────────
+	// ── Campaign creation (fast - no sending happens here) ────────────────────
 
-	public function send_to_users( array $users, int $adventure_id, string $subject, string $body ): array {
-		global $wpdb;
-
-		$adv = $wpdb->get_row( $wpdb->prepare(
-			"SELECT adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
-			$adventure_id
-		) );
-		$this->settings['_adventure_name'] = $adv ? $adv->adventure_title : '';
-
+	// Creates the campaign row and persists the exact recipient list, but
+	// sends nothing - actual delivery is driven afterwards by repeated small
+	// send_next_batch() calls from the browser (see functions/email/br-email-ajax.php).
+	// This is the fix for the "170/234 delivered" bug: a single request/cron
+	// tick trying to send a whole campaign (throttled + real network latency
+	// per recipient) reliably exceeded real hosts' execution-time limits and
+	// silently dropped whatever hadn't sent yet, with no record and no retry.
+	public function start_campaign( array $users, int $adventure_id, string $subject, string $body ): array {
 		if ( ! $this->campaign_id ) {
 			$this->campaign_id = $this->create_campaign( $adventure_id, $subject, $body, count( $users ) );
 		}
-
-		if ( empty( $users ) ) {
-			return [ 'sent' => 0, 'failed' => 0, 'queued' => 0 ];
+		if ( ! empty( $users ) ) {
+			$this->store_campaign_targets( $this->campaign_id, $users );
 		}
-
-		// Queue ALL recipients — never block the web request with bulk sending,
-		// which would time out PHP and produce incomplete, inaccurate counts.
-		$job_key = 'br_email_batch_' . uniqid( '', true );
-		set_transient( $job_key, [
-			'users'        => $users,
-			'subject'      => $subject,
-			'body'         => $body,
-			'adventure_id' => $adventure_id,
-			'settings'     => $this->settings,
-			'sender_id'    => $this->sender_id,
-			'campaign_id'  => $this->campaign_id,
-		], 2 * HOUR_IN_SECONDS );
-		wp_schedule_single_event( time(), 'br_email_batch_send', [ $job_key ] );
-		spawn_cron();
-
-		return [ 'sent' => 0, 'failed' => 0, 'queued' => count( $users ) ];
+		return [ 'campaign_id' => $this->campaign_id, 'total' => count( $users ) ];
 	}
 
-	public function send_to_adventure( int $adventure_id, string $subject, string $body ): array {
-		return $this->send_to_users( $this->get_adventure_users( $adventure_id ), $adventure_id, $subject, $body );
+	public function start_campaign_for_adventure( int $adventure_id, string $subject, string $body ): array {
+		return $this->start_campaign( $this->get_adventure_users( $adventure_id ), $adventure_id, $subject, $body );
+	}
+
+	// ── Pending recipients (targets minus anything already logged) ───────────
+
+	public function get_pending_batch( int $campaign_id, int $limit = self::POLL_BATCH_SIZE ): array {
+		global $wpdb;
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT t.player_id, u.user_email, u.display_name
+			   FROM {$wpdb->prefix}br_email_campaign_targets t
+			   JOIN {$wpdb->users} u ON u.ID = t.player_id
+			  WHERE t.campaign_id = %d
+			    AND NOT EXISTS (
+			        SELECT 1 FROM {$wpdb->prefix}br_email_log l
+			         WHERE l.campaign_id = t.campaign_id AND l.user_id = t.player_id
+			    )
+			  ORDER BY u.display_name
+			  LIMIT %d",
+			$campaign_id, $limit
+		), ARRAY_A );
+		return $rows ?: [];
+	}
+
+	// Paginated version of get_pending_batch(), for the Missing tab / CSV
+	// exports - same "targets minus logged" definition, just with an offset
+	// and no implied "process these now" intent.
+	public function get_missing_recipients( int $campaign_id, int $limit = 0, int $offset = 0 ): array {
+		global $wpdb;
+		$sql = "SELECT t.player_id, u.display_name, u.user_email
+			   FROM {$wpdb->prefix}br_email_campaign_targets t
+			   JOIN {$wpdb->users} u ON u.ID = t.player_id
+			  WHERE t.campaign_id = %d
+			    AND NOT EXISTS (
+			        SELECT 1 FROM {$wpdb->prefix}br_email_log l
+			         WHERE l.campaign_id = t.campaign_id AND l.user_id = t.player_id
+			    )
+			  ORDER BY u.display_name";
+		$args = [ $campaign_id ];
+		if ( $limit > 0 ) {
+			$sql   .= ' LIMIT %d OFFSET %d';
+			$args[] = $limit;
+			$args[] = $offset;
+		}
+		return $wpdb->get_results( $wpdb->prepare( $sql, $args ) ) ?: [];
+	}
+
+	public function count_pending( int $campaign_id ): int {
+		global $wpdb;
+		return (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*)
+			   FROM {$wpdb->prefix}br_email_campaign_targets t
+			  WHERE t.campaign_id = %d
+			    AND NOT EXISTS (
+			        SELECT 1 FROM {$wpdb->prefix}br_email_log l
+			         WHERE l.campaign_id = t.campaign_id AND l.user_id = t.player_id
+			    )",
+			$campaign_id
+		) );
+	}
+
+	// ── Send the next small batch for a campaign (called repeatedly by the
+	//    browser's polling loop until 'remaining' is 0) ───────────────────────
+
+	public function send_next_batch( int $campaign_id, int $limit = self::POLL_BATCH_SIZE ): array {
+		$campaign = self::get_campaign( $campaign_id );
+		if ( ! $campaign ) return [ 'sent' => 0, 'failed' => 0, 'remaining' => 0 ];
+
+		global $wpdb;
+		$adv = $wpdb->get_row( $wpdb->prepare(
+			"SELECT adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
+			$campaign->adventure_id
+		) );
+		$this->settings['_adventure_name'] = $adv ? $adv->adventure_title : '';
+		$this->campaign_id = $campaign_id;
+		if ( ! $this->sender_id ) $this->sender_id = (int) $campaign->sender_id;
+
+		$batch = $this->get_pending_batch( $campaign_id, $limit );
+
+		$sent = 0; $failed = 0;
+		foreach ( $batch as $i => $user ) {
+			$html = $this->render_template( $this->settings, $campaign->subject, $campaign->body, $user );
+			$ok   = $this->send( $user['user_email'], $user['display_name'], $campaign->subject, $html, (int) $user['player_id'], (int) $campaign->adventure_id );
+			$ok ? $sent++ : $failed++;
+			if ( $i < count( $batch ) - 1 ) usleep( self::SEND_DELAY_MS * 1000 );
+		}
+
+		return [ 'sent' => $sent, 'failed' => $failed, 'remaining' => $this->count_pending( $campaign_id ) ];
 	}
 
 	// ── Retry failed emails in a campaign ─────────────────────────────────────
 
+	// Clears the failed flag so these recipients become "pending" again -
+	// they're picked back up by the normal send_next_batch() polling loop
+	// (started via the "Resume Sending" button), not resent synchronously
+	// here, since a campaign can have far more failures than one request
+	// should try to resend at once.
 	public function retry_campaign( int $campaign_id ): array {
 		global $wpdb;
 
 		$campaign = self::get_campaign( $campaign_id );
-		if ( ! $campaign ) return [ 'sent' => 0, 'failed' => 0, 'queued' => 0 ];
+		if ( ! $campaign ) return [ 'requeued' => 0 ];
 
-		$failed_users = $wpdb->get_results( $wpdb->prepare(
-			"SELECT l.log_id, l.user_id, u.user_email, u.display_name
-			   FROM {$wpdb->prefix}br_email_log l
-			   JOIN {$wpdb->users} u ON u.ID = l.user_id
-			  WHERE l.campaign_id = %d AND l.status = 'failed'",
+		$failed_count = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}br_email_log WHERE campaign_id = %d AND status = 'failed'",
 			$campaign_id
-		), ARRAY_A );
-
-		if ( empty( $failed_users ) ) return [ 'sent' => 0, 'failed' => 0, 'queued' => 0 ];
+		) );
+		if ( ! $failed_count ) return [ 'requeued' => 0 ];
 
 		$wpdb->query( $wpdb->prepare(
 			"DELETE FROM {$wpdb->prefix}br_email_log WHERE campaign_id = %d AND status = 'failed'",
 			$campaign_id
 		) );
 
-		$users = array_map( function ( $f ) {
-			return [ 'player_id' => $f['user_id'], 'user_email' => $f['user_email'], 'display_name' => $f['display_name'] ];
-		}, $failed_users );
-
-		$this->campaign_id = $campaign_id;
-		$this->sender_id   = (int) $campaign->sender_id;
-
-		return $this->send_to_users( $users, (int) $campaign->adventure_id, $campaign->subject, $campaign->body );
+		return [ 'requeued' => $failed_count ];
 	}
 
 	public function retry_single( int $log_id ): bool {
@@ -341,61 +457,6 @@ HTML;
 		return $this->send( $entry->user_email, $entry->display_name, $campaign->subject, $html, (int) $entry->user_id, (int) $campaign->adventure_id );
 	}
 
-	// ── Cron batch processor ──────────────────────────────────────────────────
-
-	public static function process_batch( string $job_key ): void {
-		$data = get_transient( $job_key );
-		if ( ! $data || ! is_array( $data ) ) return;
-		delete_transient( $job_key );
-
-		$mailer              = new self();
-		$mailer->settings    = $data['settings'];
-		$mailer->api_key     = self::decrypt_key( $data['settings']['api_key'] ?? '' );
-		$mailer->service     = $data['settings']['email_service'] ?? 'resend';
-		$mailer->sender_id   = (int) ( $data['sender_id']   ?? 0 );
-		$mailer->campaign_id = (int) ( $data['campaign_id'] ?? 0 );
-
-		$users        = $data['users'];
-		$subject      = $data['subject'];
-		$body         = $data['body'];
-		$adventure_id = (int) $data['adventure_id'];
-
-		$batch = array_slice( $users, 0, self::BATCH_SIZE );
-		$queue = array_slice( $users, self::BATCH_SIZE );
-
-		global $wpdb;
-		$adv = $wpdb->get_row( $wpdb->prepare(
-			"SELECT adventure_title FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
-			$adventure_id
-		) );
-		$mailer->settings['_adventure_name'] = $adv ? $adv->adventure_title : '';
-
-		$rate_count = 0;
-		$rate_start = microtime( true );
-
-		foreach ( $batch as $user ) {
-			$html = $mailer->render_template( $mailer->settings, $subject, $body, $user );
-			$mailer->send( $user['user_email'], $user['display_name'], $subject, $html, (int) $user['player_id'], $adventure_id );
-
-			$rate_count++;
-			if ( $rate_count >= self::RATE_PER_SEC ) {
-				$elapsed = microtime( true ) - $rate_start;
-				if ( $elapsed < 1.0 ) {
-					usleep( (int) ( ( 1.05 - $elapsed ) * 1_000_000 ) );
-				}
-				$rate_start = microtime( true );
-				$rate_count = 0;
-			}
-		}
-
-		if ( ! empty( $queue ) ) {
-			$next_key = 'br_email_batch_' . uniqid( '', true );
-			set_transient( $next_key, array_merge( $data, [ 'users' => $queue ] ), 2 * HOUR_IN_SECONDS );
-			wp_schedule_single_event( time(), 'br_email_batch_send', [ $next_key ] );
-			spawn_cron();
-		}
-	}
-
 	// ── Logging ───────────────────────────────────────────────────────────────
 
 	private function log_send( int $user_id, int $adventure_id, string $subject, string $status, string $detail = '' ): void {
@@ -422,5 +483,3 @@ HTML;
 		return wp_hash( $user_id . ':' . $email . ':optout' );
 	}
 }
-
-add_action( 'br_email_batch_send', [ 'BR_Mailer', 'process_batch' ] );
