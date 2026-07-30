@@ -861,5 +861,45 @@ body.asset-rotating * { cursor: grabbing !important; }
 	background: rgba(4, 22, 30, 0.5);
 }
 
+// ═══════════════════════════════════════════════════════════
+// Modernized Tabi Collection (page-tabis.php)
+// ═══════════════════════════════════════════════════════════
+
+.br-tabi-collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.br-tabi-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.05);
+  border: 1px solid $br-border;
+}
+
+.br-tabi-piece {
+  position: absolute;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: grayscale(100%);
+    opacity: 0.3;
+    transition: filter 0.3s, opacity 0.3s;
+  }
+
+  &.br-tabi-piece-owned img {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba($br-primary, 0.6));
+  }
+}
+
 // ==================== END TABI ====================
 

@@ -36,68 +36,77 @@ asort($player_options);
 <div class="br-page">
 
 	<!-- Header -->
+	<div class="br-panel br-page-header">
+		<div class="br-page-header-avatar"><span class="icon icon-transactions"></span></div>
+		<div class="br-flex-1">
+			<div class="br-page-subtitle"><?= esc_html($adventure->adventure_title); ?></div>
+			<h1 class="br-page-title"><?= __("Transactions","bluerabbit"); ?></h1>
+		</div>
+	</div>
+
+	<!-- Nav -->
+	<div class="br-tabs" id="item-shop-nav">
+		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/item-shop/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-basket"></span> <?= __("Shop","bluerabbit"); ?></a>
+		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/backpack/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-backpack"></span> <?= __("Backpack","bluerabbit"); ?></a>
+		<a class="br-tab-btn" href="<?= get_bloginfo('url')."/tabis/?adventure_id=$adventure->adventure_id"; ?>"><span class="icon icon-sabotage"></span> <?= __("Tabis","bluerabbit"); ?></a>
+		<span class="br-tab-btn active"><span class="icon icon-transactions"></span> <?= __("Transactions","bluerabbit"); ?></span>
+	</div>
+
+	<!-- Filters -->
 	<div class="br-panel">
-		<div class="br-trnx-header">
-			<h3 class="br-panel-title br-m0">
-				<span class="icon icon-transactions"></span>
-				<?= __("Transactions", "bluerabbit"); ?>
-			</h3>
-
-			<div class="br-trnx-controls">
-				<!-- Filters -->
-				<div class="br-actions">
-					<button class="br-btn" onClick="setTrnxQuickFilter('all');" title="<?= __('Show all', 'bluerabbit'); ?>">
-						<span class="icon icon-infinite"></span> <?= __("All", "bluerabbit"); ?>
-					</button>
-					<button class="br-btn br-btn-green" onClick="setTrnxQuickFilter('new');" title="<?= __('New only', 'bluerabbit'); ?>">
-						<span class="icon icon-check"></span> <?= __("New", "bluerabbit"); ?>
-					</button>
-					<button class="br-btn" onClick="setTrnxQuickFilter('used');" title="<?= __('Used only', 'bluerabbit'); ?>">
-						<span class="icon icon-restore"></span> <?= __("Used", "bluerabbit"); ?>
-					</button>
-				</div>
-
-				<!-- Item / Player filters -->
-				<select class="br-input" id="trnx-filter-item">
-					<option value=""><?= __("All Items", "bluerabbit"); ?></option>
-					<?php foreach ($item_options as $iid => $iname) { ?>
-					<option value="<?= (int) $iid; ?>"><?= esc_html($iname); ?></option>
-					<?php } ?>
-				</select>
-				<select class="br-input" id="trnx-filter-player">
-					<option value=""><?= __("All Players", "bluerabbit"); ?></option>
-					<?php foreach ($player_options as $pid => $pname) { ?>
-					<option value="<?= (int) $pid; ?>"><?= esc_html($pname); ?></option>
-					<?php } ?>
-				</select>
-
-				<!-- Search -->
-				<div class="br-trnx-search">
-					<span class="icon icon-search br-trnx-search-icon"></span>
-					<input type="text" class="br-input br-trnx-search-input" id="search-trnxs" placeholder="<?= __('Search transactions', 'bluerabbit'); ?>">
-				</div>
-				<script>
-				var trnxQuickFilter = 'all';
-				function setTrnxQuickFilter(f) { trnxQuickFilter = f; applyTrnxFilters(); }
-				function applyTrnxFilters() {
-					var q = ($('#search-trnxs').val() || '').toLowerCase();
-					var itemFilter = $('#trnx-filter-item').val();
-					var playerFilter = $('#trnx-filter-player').val();
-					$('table#table-trnxs tbody > tr').each(function(){
-						var $row = $(this);
-						var show = true;
-						if (trnxQuickFilter === 'new' && !$row.hasClass('new')) show = false;
-						if (trnxQuickFilter === 'used' && !$row.hasClass('used')) show = false;
-						if (itemFilter && $row.attr('data-item-id') !== itemFilter) show = false;
-						if (playerFilter && $row.attr('data-player-id') !== playerFilter) show = false;
-						if (q && $row.text().toLowerCase().indexOf(q) < 0) show = false;
-						$row.toggle(show);
-					});
-				}
-				$('#search-trnxs').on('keyup', applyTrnxFilters);
-				$('#trnx-filter-item, #trnx-filter-player').on('change', applyTrnxFilters);
-				</script>
+		<div class="br-trnx-controls">
+			<div class="br-actions">
+				<button class="br-btn" onClick="setTrnxQuickFilter('all');" title="<?= __('Show all', 'bluerabbit'); ?>">
+					<span class="icon icon-infinite"></span> <?= __("All", "bluerabbit"); ?>
+				</button>
+				<button class="br-btn br-btn-green" onClick="setTrnxQuickFilter('new');" title="<?= __('New only', 'bluerabbit'); ?>">
+					<span class="icon icon-check"></span> <?= __("New", "bluerabbit"); ?>
+				</button>
+				<button class="br-btn" onClick="setTrnxQuickFilter('used');" title="<?= __('Used only', 'bluerabbit'); ?>">
+					<span class="icon icon-restore"></span> <?= __("Used", "bluerabbit"); ?>
+				</button>
 			</div>
+
+			<!-- Item / Player filters -->
+			<select class="br-input" id="trnx-filter-item">
+				<option value=""><?= __("All Items", "bluerabbit"); ?></option>
+				<?php foreach ($item_options as $iid => $iname) { ?>
+				<option value="<?= (int) $iid; ?>"><?= esc_html($iname); ?></option>
+				<?php } ?>
+			</select>
+			<select class="br-input" id="trnx-filter-player">
+				<option value=""><?= __("All Players", "bluerabbit"); ?></option>
+				<?php foreach ($player_options as $pid => $pname) { ?>
+				<option value="<?= (int) $pid; ?>"><?= esc_html($pname); ?></option>
+				<?php } ?>
+			</select>
+
+			<!-- Search -->
+			<div class="br-trnx-search">
+				<span class="icon icon-search br-trnx-search-icon"></span>
+				<input type="text" class="br-input br-trnx-search-input" id="search-trnxs" placeholder="<?= __('Search transactions', 'bluerabbit'); ?>">
+			</div>
+			<script>
+			var trnxQuickFilter = 'all';
+			function setTrnxQuickFilter(f) { trnxQuickFilter = f; applyTrnxFilters(); }
+			function applyTrnxFilters() {
+				var q = ($('#search-trnxs').val() || '').toLowerCase();
+				var itemFilter = $('#trnx-filter-item').val();
+				var playerFilter = $('#trnx-filter-player').val();
+				$('table#table-trnxs tbody > tr').each(function(){
+					var $row = $(this);
+					var show = true;
+					if (trnxQuickFilter === 'new' && !$row.hasClass('new')) show = false;
+					if (trnxQuickFilter === 'used' && !$row.hasClass('used')) show = false;
+					if (itemFilter && $row.attr('data-item-id') !== itemFilter) show = false;
+					if (playerFilter && $row.attr('data-player-id') !== playerFilter) show = false;
+					if (q && $row.text().toLowerCase().indexOf(q) < 0) show = false;
+					$row.toggle(show);
+				});
+			}
+			$('#search-trnxs').on('keyup', applyTrnxFilters);
+			$('#trnx-filter-item, #trnx-filter-player').on('change', applyTrnxFilters);
+			</script>
 		</div>
 	</div>
 
@@ -192,13 +201,6 @@ asort($player_options);
 </div>
 
 <style>
-.br-trnx-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	flex-wrap: wrap;
-	gap: 12px;
-}
 .br-trnx-controls {
 	display: flex;
 	align-items: center;
@@ -227,7 +229,7 @@ asort($player_options);
 	color: rgba(255,255,255,0.25);
 }
 @media (max-width: 768px) {
-	.br-trnx-header { flex-direction: column; align-items: flex-start; }
+	.br-trnx-controls { flex-direction: column; align-items: flex-start; }
 	.br-input { width: 100%; }
 }
 </style>
