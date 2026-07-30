@@ -416,7 +416,11 @@
     window.openAchievementDetail = function(achievementId) {
         $('#achievement-detail-content').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
         $('#achievement-detail-overlay').addClass('active');
-        brShowDrawerBackdrop();
+        // .main-content (site-wide layout wrapper) is position:relative with its
+        // own z-index, which traps this drawer in a local stacking context - the
+        // shared backdrop must join that SAME context (not just get appended to
+        // <body>) or it renders on top of the drawer regardless of z-index.
+        brShowDrawerBackdrop($('#achievement-detail-overlay').parent());
         ajax('br_stats_achievement_detail', { achievement_id: achievementId }, function(res) {
             if (!res.success) return;
             $('#achievement-detail-content').html(buildAchievementDetailHTML(res.data));
@@ -472,7 +476,8 @@
     window.openItemDetail = function(itemId) {
         $('#item-detail-content').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
         $('#item-detail-overlay').addClass('active');
-        brShowDrawerBackdrop();
+        // Same stacking-context fix as openAchievementDetail() above.
+        brShowDrawerBackdrop($('#item-detail-overlay').parent());
         ajax('br_stats_item_detail', { item_id: itemId }, function(res) {
             if (!res.success) return;
             $('#item-detail-content').html(buildItemDetailHTML(res.data));
