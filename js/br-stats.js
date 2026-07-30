@@ -414,7 +414,7 @@
     }
 
     window.openAchievementDetail = function(achievementId) {
-        $('#achievement-detail-content').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
+        $('#achievement-detail-overlay').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
         $('#achievement-detail-overlay').addClass('active');
         // .main-content (site-wide layout wrapper) is position:relative with its
         // own z-index, which traps this drawer in a local stacking context - the
@@ -423,7 +423,7 @@
         brShowDrawerBackdrop($('#achievement-detail-overlay').parent());
         ajax('br_stats_achievement_detail', { achievement_id: achievementId }, function(res) {
             if (!res.success) return;
-            $('#achievement-detail-content').html(buildAchievementDetailHTML(res.data));
+            $('#achievement-detail-overlay').html(buildAchievementDetailHTML(res.data));
         });
     };
     window.closeAchievementDetail = function() {
@@ -474,13 +474,13 @@
     }
 
     window.openItemDetail = function(itemId) {
-        $('#item-detail-content').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
+        $('#item-detail-overlay').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
         $('#item-detail-overlay').addClass('active');
         // Same stacking-context fix as openAchievementDetail() above.
         brShowDrawerBackdrop($('#item-detail-overlay').parent());
         ajax('br_stats_item_detail', { item_id: itemId }, function(res) {
             if (!res.success) return;
-            $('#item-detail-content').html(buildItemDetailHTML(res.data));
+            $('#item-detail-overlay').html(buildItemDetailHTML(res.data));
         });
     };
     window.closeItemDetail = function() {

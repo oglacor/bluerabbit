@@ -407,12 +407,13 @@ window.brStats = {
     </div>
 
     <!-- Achievement / Item drill-down drawers -->
-    <div class="overlay-layer achievement-detail-overlay" id="achievement-detail-overlay">
-        <div id="achievement-detail-content"></div>
-    </div>
-    <div class="overlay-layer item-detail-overlay" id="item-detail-overlay">
-        <div id="item-detail-content"></div>
-    </div>
+    <!-- No wrapper div inside: .tabi-conditions-header/.tabi-conditions-body must be
+         DIRECT children of this flex container for the header-fixed/body-scrolls
+         layout to work - an extra unstyled wrapper div here breaks that (the wrapper
+         becomes the flex item instead, growing to fit all content instead of the
+         body scrolling internally). -->
+    <div class="overlay-layer achievement-detail-overlay" id="achievement-detail-overlay"></div>
+    <div class="overlay-layer item-detail-overlay" id="item-detail-overlay"></div>
 
 </div>
 <?php } ?>
