@@ -798,6 +798,47 @@ body.asset-rotating * { cursor: grabbing !important; }
 	&.active { visibility: visible; opacity: 1; }
 }
 
+// Guild roster drill-down (page-guilds.php leaderboard) - a wide data table
+// rather than a narrow list, so it gets its own centered/inset modal instead
+// of joining the right-edge slide-in drawers above. Same header/body chrome
+// classes (.tabi-conditions-header/-body) are still reused for consistency.
+.guild-roster-overlay {
+	position: fixed;
+	top: 40px;
+	right: 40px;
+	bottom: 40px;
+	left: 40px;
+	width: auto;
+	height: auto;
+	max-width: none;
+	max-height: none;
+	overflow: hidden;
+	background: rgba(4, 22, 30, 0.97);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(28, 194, 235, 0.18);
+	border-radius: 12px;
+	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	z-index: 300;
+	visibility: hidden;
+	opacity: 0;
+	transition: opacity 0.15s;
+
+	&.active { visibility: visible; opacity: 1; }
+}
+
+@media (max-width: 768px) {
+	.guild-roster-overlay {
+		top: 12px;
+		right: 12px;
+		bottom: 12px;
+		left: 12px;
+	}
+}
+
 .tabi-conditions-header {
 	display: flex;
 	align-items: center;

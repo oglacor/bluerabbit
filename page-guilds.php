@@ -89,6 +89,9 @@
         </ul>
     </div>
     <?php } ?>
+
+    <div class="overlay-layer guild-roster-overlay" id="guild-roster-overlay"></div>
+    <input type="hidden" id="guild_roster_nonce" value="<?= wp_create_nonce('br_guild_roster_nonce'); ?>"/>
 </div>
 	<div class="container boxed max-w-1200 wrap">
 		<div class="highlight">

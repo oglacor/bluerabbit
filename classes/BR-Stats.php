@@ -1113,6 +1113,220 @@ class BR_Stats {
         ), ARRAY_A );
     }
 
+    // Portable: swap $wpdb for PDO to migrate.
+    // Full player-detail roster for one guild - the guild-roster-modal.php drawer
+    // launched from page-guilds.php's leaderboard. Same bulk-then-score-in-PHP
+    // engagement pattern as get_adventure_engagement() (one global bucket) and
+    // get_engagement_by_segment() (grouped by player_meta dimension) - this is a
+    // 4th variant, scoped to one guild's members and returning a per-player score
+    // instead of only an aggregate. journey_pct uses get_all_players()'s cheap
+    // bulk-count pattern, not BR_Progression::getPlayerProgress() (too expensive
+    // per-row, and it side-effect-writes player_xp on every call).
+    public function get_guild_roster( int $adventure_id, int $guild_id ): array {
+        global $wpdb;
+
+        $empty = [
+            'guild' => null, 'players' => [], 'quests' => [], 'achievements' => [],
+            'player_post_by_id' => [], 'player_achievements_by_id' => [], 'grade_scale' => 'none',
+            'xp_label' => 'XP', 'bloo_label' => 'Bloo',
+        ];
+
+        $guild = $wpdb->get_row( $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_guilds WHERE guild_id=%d AND adventure_id=%d",
+            $guild_id, $adventure_id
+        ) );
+        if ( ! $guild ) return $empty;
+
+        // This AJAX handler doesn't run through header.php, so the page-level
+        // $xp_label/$bloo_label/$adventure globals page-players.php relies on
+        // aren't available here - fetch what's needed directly.
+        $adventure_row = $wpdb->get_row( $wpdb->prepare(
+            "SELECT adventure_parent, adventure_grade_scale, adventure_xp_label, adventure_bloo_label FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d",
+            $adventure_id
+        ) );
+        $adv_parent_id = ( $adventure_row && $adventure_row->adventure_parent ) ? $adventure_row->adventure_parent : $adventure_id;
+        $grade_scale   = $adventure_row->adventure_grade_scale ?? 'none';
+        $xp_label      = $adventure_row->adventure_xp_label ?: 'XP';
+        $bloo_label    = $adventure_row->adventure_bloo_label ?: 'Bloo';
+
+        // 1 - players in this guild (level/xp/bloo/last_login + display info,
+        // same br_players fields page-players.php's name cell already uses)
+        $players = $wpdb->get_results( $wpdb->prepare(
+            "SELECT
+                pa.player_id, pa.player_level, pa.player_xp, pa.player_bloo, pa.player_last_login,
+                b.player_first, b.player_last, b.player_nickname, b.player_display_name, b.player_picture, b.player_email
+            FROM {$wpdb->prefix}br_player_guild pg
+            INNER JOIN {$wpdb->prefix}br_player_adventure pa
+                ON pg.player_id = pa.player_id AND pa.adventure_id = pg.adventure_id
+            LEFT JOIN {$wpdb->prefix}br_players b ON pa.player_id = b.player_id
+            WHERE pg.guild_id = %d AND pg.adventure_id = %d
+              AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+            ORDER BY pa.player_xp DESC",
+            $guild_id, $adventure_id
+        ), ARRAY_A );
+
+        if ( empty( $players ) ) {
+            $empty['guild']       = $guild;
+            $empty['grade_scale'] = $grade_scale;
+            $empty['xp_label']    = $xp_label;
+            $empty['bloo_label']  = $bloo_label;
+            return $empty;
+        }
+
+        $pids = array_column( $players, 'player_id' );
+        $ph   = implode( ',', array_fill( 0, count( $pids ), '%d' ) );
+
+        // 2 - last activity-log date per player
+        $log_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, MAX(log_date) AS last_log FROM {$wpdb->prefix}br_activity_log
+            WHERE adventure_id = %d AND player_id IN ($ph) GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $log_map = [];
+        foreach ( $log_rows as $r ) $log_map[ $r['player_id'] ] = $r['last_log'];
+
+        // 3 - total published quest count, adventure-wide (not guild-only, so
+        // journey_pct/completion and the progression component stay comparable
+        // across guilds)
+        $total_q = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission')",
+            $adv_parent_id
+        ) );
+
+        // 4 - completions per player (bulk, guild-scoped)
+        $comp_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, COUNT(*) AS done FROM {$wpdb->prefix}br_player_posts
+            WHERE adventure_id = %d AND player_id IN ($ph) GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $comp_map = [];
+        foreach ( $comp_rows as $r ) $comp_map[ $r['player_id'] ] = (int) $r['done'];
+
+        // 5 - recent completions (30d)
+        $rec_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, COUNT(*) AS done FROM {$wpdb->prefix}br_player_posts
+            WHERE adventure_id = %d AND player_id IN ($ph) AND pp_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $rec_map = [];
+        foreach ( $rec_rows as $r ) $rec_map[ $r['player_id'] ] = (int) $r['done'];
+
+        // 6 - max level, adventure-wide (same reasoning as total_q above)
+        $max_lvl = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT MAX(player_level) FROM {$wpdb->prefix}br_player_adventure
+            WHERE adventure_id = %d AND player_adventure_status = 'in' AND player_adventure_role = 'player'",
+            $adventure_id
+        ) );
+
+        // 7 - transaction counts per player
+        $txn_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, COUNT(*) AS cnt FROM {$wpdb->prefix}br_transactions
+            WHERE adventure_id = %d AND player_id IN ($ph) GROUP BY player_id",
+            $adventure_id, ...$pids
+        ), ARRAY_A );
+        $txn_map = [];
+        foreach ( $txn_rows as $r ) $txn_map[ $r['player_id'] ] = (int) $r['cnt'];
+
+        // ── Score every player in PHP (same 5-component formula as
+        // get_adventure_engagement()/get_player_engagement()) ──
+        $now = time();
+        foreach ( $players as &$p ) {
+            $pid = $p['player_id'];
+            $has_login = ! empty( $p['player_last_login'] ) && strtotime( $p['player_last_login'] ) > 0;
+            $has_log   = isset( $log_map[ $pid ] );
+
+            if ( ! $has_login && ! $has_log ) {
+                $p['engagement_score']  = 0;
+                $p['engagement_bucket'] = 'never_logged_in';
+            } else {
+                $login_ts = $has_login ? strtotime( $p['player_last_login'] ) : 0;
+                $log_ts   = $has_log   ? strtotime( $log_map[ $pid ] )       : 0;
+                $days     = max( 0, ( $now - max( $login_ts, $log_ts ) ) / 86400 );
+                if      ( $days <= 1 )  $rec = 25;
+                elseif  ( $days <= 3 )  $rec = 22;
+                elseif  ( $days <= 7 )  $rec = 18;
+                elseif  ( $days <= 14 ) $rec = 12;
+                elseif  ( $days <= 30 ) $rec = 6;
+                else                    $rec = max( 0, round( 25 - $days / 10 ) );
+
+                $rd  = $rec_map[ $pid ] ?? 0;
+                $frq = $total_q > 0 ? (int) round( min( 1, $rd / max( 1, $total_q * 0.3 ) ) * 25 ) : 0;
+
+                $dn  = $comp_map[ $pid ] ?? 0;
+                $cmp = $total_q > 0 ? (int) round( ( $dn / $total_q ) * 25 ) : 0;
+
+                $prg = $max_lvl > 0 ? (int) round( ( (int) $p['player_level'] / $max_lvl ) * 15 ) : 0;
+                $eco = min( 10, (int) round( ( $txn_map[ $pid ] ?? 0 ) * 2 ) );
+
+                $score = $rec + $frq + $cmp + $prg + $eco;
+
+                if      ( $score >= 80 ) $bucket = 'on_fire';
+                elseif  ( $score >= 60 ) $bucket = 'active';
+                elseif  ( $score >= 40 ) $bucket = 'moderate';
+                elseif  ( $score >= 20 ) $bucket = 'cooling_off';
+                else                     $bucket = 'dormant';
+
+                $p['engagement_score']  = $score;
+                $p['engagement_bucket'] = $bucket;
+            }
+
+            $dn = $comp_map[ $pid ] ?? 0;
+            $p['journey_pct'] = $total_q > 0 ? round( ( $dn / $total_q ) * 100, 1 ) : 0;
+        }
+        unset( $p );
+
+        // Same quest/achievement/completion data page-players.php builds
+        // (page-players.php:49-93), scoped to this guild's players for the two
+        // per-player lookup maps.
+        $quests = $wpdb->get_results( $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND quest_type IN ('quest','challenge','mission','survey') AND quest_status = 'publish'
+            ORDER BY quest_order",
+            $adv_parent_id
+        ) );
+
+        $achievements = BR_Achievement::instance()->getAchievements( $adv_parent_id );
+        $achievements = isset( $achievements['publish'] ) ? $achievements['publish'] : [];
+
+        $player_posts = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, quest_id, pp_grade FROM {$wpdb->prefix}br_player_posts
+            WHERE adventure_id = %d AND player_id IN ($ph)
+            UNION
+            SELECT player_id, quest_id, attempt_grade FROM {$wpdb->prefix}br_challenge_attempts
+            WHERE adventure_id = %d AND attempt_status = 'success' AND player_id IN ($ph)",
+            array_merge( [ $adventure_id ], $pids, [ $adventure_id ], $pids )
+        ) );
+
+        $player_achievements = $wpdb->get_results( $wpdb->prepare(
+            "SELECT player_id, achievement_id FROM {$wpdb->prefix}br_player_achievement
+            WHERE adventure_id = %d AND player_id IN ($ph)",
+            array_merge( [ $adventure_id ], $pids )
+        ) );
+
+        $player_post_by_id = [];
+        foreach ( $player_posts as $pp ) {
+            $player_post_by_id[ $pp->quest_id ][ $pp->player_id ]['grade'] = $pp->pp_grade;
+        }
+        $player_achievements_by_id = [];
+        foreach ( $player_achievements as $pa ) {
+            $player_achievements_by_id[ $pa->achievement_id ][ $pa->player_id ] = $pa->player_id;
+        }
+
+        return [
+            'guild'                     => $guild,
+            'players'                   => $players,
+            'quests'                    => $quests,
+            'achievements'              => $achievements,
+            'player_post_by_id'         => $player_post_by_id,
+            'player_achievements_by_id' => $player_achievements_by_id,
+            'grade_scale'               => $grade_scale,
+            'xp_label'                  => $xp_label,
+            'bloo_label'                => $bloo_label,
+        ];
+    }
+
     // ── Achievement stats ────────────────────────────────────
 
     // Portable: swap $wpdb for PDO to migrate.

@@ -244,14 +244,15 @@ class BR_Guild {
                 $sql = "INSERT INTO {$wpdb->prefix}br_player_guild (guild_id, player_id, adventure_id) VALUES (%d,%d,%d); ";
                 $sql = $wpdb->prepare ($sql,$the_guild_id,$player_id, $adventure_id);
                 $wpdb->query($sql);
-                $last_query = print_r($wpdb->last_query,true);
                 $sql = "UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=%d WHERE player_id=%d AND adventure_id=%d";
                 $sql = $wpdb->prepare ($sql,$the_guild_id,$player_id, $adventure_id);
                 $wpdb->query($sql);
-                $last_query .= print_r($wpdb->last_query,true);
 
-                return print_r($last_query);
+                // Was `return print_r($last_query);` - leftover debugging that echoed the
+                // raw SQL into whatever response was being built (corrupting JSON on any
+                // AJAX path that assigns a guild) and left the log line below unreachable.
                 BR_Activity::instance()->logActivity($adventure_id,'assigned','guild',"",$player_id, $the_guild_id);
+                return true;
             }else{
 
             }

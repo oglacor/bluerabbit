@@ -398,6 +398,477 @@ class BR_Player {
         die();
     }
 
+    ///////////////////////////// STREAMED CSV PLAYER IMPORT /////////////////////////////
+    // Front-end driven importer (page-new-adventure.php). The browser parses the whole
+    // CSV - there is no server-side row cap - and posts it back a few rows at a time, so
+    // a file with thousands of players never trips max_execution_time and the operator
+    // watches every row land in a live terminal. Each request is self-contained and
+    // idempotent: re-sending a row that already succeeded reports 'already' instead of
+    // duplicating it, which is what makes the automatic repair sweep safe.
+
+    // Only an administrator, the adventure's owner or one of its GMs may import.
+    private function canManageAdventurePlayers($adventure_id){
+        global $wpdb;
+        $user = wp_get_current_user();
+        if (!$user || !$user->ID) return false;
+        if (in_array('administrator', (array)$user->roles)) return true;
+
+        $adventure = $wpdb->get_row($wpdb->prepare(
+            "SELECT adventure_owner FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id
+        ));
+        if (!$adventure) return false;
+        if ($adventure->adventure_owner == $user->ID) return true;
+
+        $role = $wpdb->get_var($wpdb->prepare(
+            "SELECT player_adventure_role FROM {$wpdb->prefix}br_player_adventure
+             WHERE adventure_id=%d AND player_id=%d AND player_adventure_status='in'",
+            $adventure_id, $user->ID
+        ));
+        return $role == 'gm';
+    }
+
+    // The CSV keys on email, so a nickname collision with a *different* account is
+    // resolved by suffixing rather than failing the row - the operator sees the
+    // substitution in the terminal and in the downloadable report.
+    private function uniqueNickname($nickname, $email){
+        $nickname = sanitize_user($nickname, true);
+        if ($nickname === '') {
+            $parts = explode('@', $email);
+            $nickname = sanitize_user($parts[0], true);
+        }
+        if ($nickname === '') $nickname = 'player';
+        $nickname = substr($nickname, 0, 50);
+
+        if (!username_exists($nickname)) return $nickname;
+        $base = substr($nickname, 0, 44);
+        for ($i = 2; $i < 9999; $i++) {
+            $try = $base . '-' . $i;
+            if (!username_exists($try)) return $try;
+        }
+        return $base . '-' . wp_generate_password(4, false);
+    }
+
+    // Guild assignment runs through third-party-ish code that has historically
+    // echoed debug output; anything it prints would land in the middle of this
+    // endpoint's JSON, so swallow whatever escapes.
+    private function assignGuildQuietly($player_id, $adventure_id){
+        ob_start();
+        BR_Guild::instance()->assignGuild($player_id, $adventure_id);
+        ob_end_clean();
+    }
+
+    public function importPlayersBatch(){
+        global $wpdb;
+        $data = ['success' => false, 'results' => []];
+
+        $nonce        = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $rows         = isset($_POST['rows']) ? (array)$_POST['rows'] : [];
+
+        if (!wp_verify_nonce($nonce, 'br_import_players_nonce')) {
+            $data['message'] = __('Session expired — reload the page and start the import again.','bluerabbit');
+            echo json_encode($data); die();
+        }
+        if (!$this->canManageAdventurePlayers($adventure_id)) {
+            $data['message'] = __("You don't have permission to import players into this adventure.",'bluerabbit');
+            echo json_encode($data); die();
+        }
+
+        $adventure = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id
+        ));
+        if (!$adventure) {
+            $data['message'] = __('Adventure not found.','bluerabbit');
+            echo json_encode($data); die();
+        }
+
+        foreach ($rows as $raw) {
+            $data['results'][] = $this->importOnePlayer((array)$raw, $adventure);
+        }
+        $data['success'] = true;
+        echo json_encode($data);
+        die();
+    }
+
+    private function importOnePlayer($raw, $adventure){
+        global $wpdb;
+        $adventure_id = $adventure->adventure_id;
+
+        $index        = intval($raw['index'] ?? 0);
+        $raw_email    = trim($raw['email'] ?? '');
+        $email        = sanitize_email(strtolower($raw_email));
+        $raw_nickname = trim($raw['nickname'] ?? '');
+
+        $result = [
+            'index'         => $index,
+            'email'         => $raw_email,
+            'nickname'      => $raw_nickname,
+            'password'      => '',
+            'status'        => 'failed',
+            'detail'        => '',
+            'player_id'     => 0,
+            'guild'         => '',
+            'guild_created' => false,
+        ];
+
+        if (!$email || !is_email($email)) {
+            $result['detail'] = __('Invalid email address','bluerabbit');
+            return $result;
+        }
+        $result['email'] = $email;
+
+        // ── Existing account: enrol it, never touch its profile ──────────────
+        $user = get_user_by('email', $email);
+        if ($user) {
+            $result['player_id'] = $user->ID;
+            $result['nickname']  = $user->user_login;
+
+            $enrollment = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}br_player_adventure WHERE player_id=%d AND adventure_id=%d",
+                $user->ID, $adventure_id
+            ));
+            if ($enrollment && $enrollment->player_adventure_status == 'in') {
+                $result['status'] = 'already';
+                $result['detail'] = __('Already enrolled','bluerabbit');
+                // Still honour the Guild column - re-uploading a file with guilds
+                // filled in is exactly how you'd assign guilds to people who are
+                // already enrolled.
+                $this->applyImportGuild($result, $raw, $adventure);
+                return $result;
+            }
+            if ($enrollment) {
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE {$wpdb->prefix}br_player_adventure SET player_adventure_status='in'
+                     WHERE player_id=%d AND adventure_id=%d", $user->ID, $adventure_id
+                ));
+            } else {
+                $wpdb->query($wpdb->prepare(
+                    "INSERT INTO {$wpdb->prefix}br_player_adventure (adventure_id, player_id, player_adventure_status, player_adventure_role)
+                     VALUES (%d,%d,'in','player')", $adventure_id, $user->ID
+                ));
+            }
+            // An account can exist in wp_users without ever having had a br_players
+            // profile row (older imports, manual creation) - backfill it if missing.
+            $this->ensurePlayerProfile($user->ID, $email, $user->user_login, $raw);
+
+            $result['status'] = 'enrolled';
+            $result['detail'] = __('Existing account enrolled','bluerabbit');
+
+            // A named guild wins over the adventure's random assign-on-login.
+            if (!$this->applyImportGuild($result, $raw, $adventure) && $adventure->adventure_has_guilds) {
+                $this->assignGuildQuietly($user->ID, $adventure_id);
+            }
+            BR_Activity::instance()->logActivity($adventure_id,'enrolled','player','CSV import',$user->ID);
+
+            return $result;
+        }
+
+        // ── New account ─────────────────────────────────────────────────────
+        $password = (string)($raw['password'] ?? '');
+        $password = trim($password);
+        $generated_password = false;
+        if ($password === '') {
+            $password = wp_generate_password(10, false);
+            $generated_password = true;
+        } elseif (strlen($password) > 50) {
+            $password = substr($password, 0, 50);
+        }
+
+        $nickname = $this->uniqueNickname($raw_nickname, $email);
+        $notes    = [];
+        $wanted   = substr(sanitize_user($raw_nickname, true), 0, 50);
+        if ($raw_nickname !== '' && $nickname !== $wanted) {
+            $notes[] = sprintf(__('nickname taken, used %s','bluerabbit'), $nickname);
+        }
+        if ($generated_password) $notes[] = __('password generated','bluerabbit');
+
+        $firstname = sanitize_text_field($raw['firstname'] ?? '');
+        $lastname  = sanitize_text_field($raw['lastname'] ?? '');
+        $lang      = sanitize_text_field($raw['lang'] ?? '');
+
+        $new_user_id = wp_insert_user([
+            'user_login'      => $nickname,
+            'user_pass'       => $password,
+            'user_email'      => $email,
+            'user_registered' => date('Y-m-d H:i:s'),
+            'display_name'    => $nickname,
+            'first_name'      => $firstname,
+            'last_name'       => $lastname,
+            'role'            => 'br_player',
+        ]);
+
+        if (is_wp_error($new_user_id) || !$new_user_id) {
+            $result['nickname'] = $nickname;
+            $result['detail']   = is_wp_error($new_user_id)
+                ? $new_user_id->get_error_message()
+                : __('Could not create the user','bluerabbit');
+            return $result;
+        }
+
+        if ($lang) update_user_meta($new_user_id, 'locale', $lang);
+
+        $profile_pic_default = get_bloginfo('template_directory')."/images/no-profile.png";
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}br_players
+             (`player_id`,`player_email`,`player_password`,`player_display_name`,`player_lang`,`player_picture`,`player_nickname`,`player_first`,`player_last`)
+             VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s)",
+            $new_user_id, $email, 'none', $nickname, $lang, $profile_pic_default, $nickname, $firstname, $lastname
+        ));
+        $this->savePlayerWorkMeta($new_user_id, $raw);
+
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}br_player_adventure (adventure_id, player_id, player_adventure_status, player_adventure_role)
+             VALUES (%d,%d,'in','player')", $adventure_id, $new_user_id
+        ));
+        BR_Activity::instance()->logActivity($adventure_id,'registered','new-player','CSV import',$new_user_id);
+
+        $result['status']    = 'created';
+        $result['player_id'] = $new_user_id;
+        $result['nickname']  = $nickname;
+        $result['password']  = $password;
+        $result['detail']    = $notes ? implode(', ', $notes) : __('Registered','bluerabbit');
+
+        // A named guild wins over the adventure's random assign-on-login.
+        if (!$this->applyImportGuild($result, $raw, $adventure) && $adventure->adventure_has_guilds) {
+            $this->assignGuildQuietly($new_user_id, $adventure_id);
+        }
+        return $result;
+    }
+
+    ////////////////////////////// CSV GUILD COLUMN //////////////////////////////
+    // A Guild cell names the guild the player belongs to. If that guild already
+    // exists in the adventure the player joins it; if it doesn't, it is created
+    // first. Blank cell = leave guilds alone entirely.
+    //
+    // Returns true when the row named a guild (whether or not it resolved), so the
+    // caller knows to skip the adventure's random assign-on-login.
+    private function applyImportGuild(&$result, $raw, $adventure){
+        $guild_name = trim($raw['guild'] ?? '');
+        if ($guild_name === '' || !$result['player_id']) return false;
+
+        $guild = $this->resolveGuildForImport($guild_name, $adventure);
+        if (!$guild) {
+            $result['detail'] .= ' · ' . sprintf(__('guild "%s" could not be created','bluerabbit'), $guild_name);
+            return true;
+        }
+
+        $this->attachPlayerToGuild($result['player_id'], $guild['guild_id'], $adventure->adventure_id);
+
+        $result['guild']         = $guild['name'];
+        $result['guild_created'] = $guild['created'];
+        if ($guild['created']) {
+            $note = sprintf(__('guild %s created','bluerabbit'), $guild['name']);
+        } elseif (!empty($guild['restored'])) {
+            $note = sprintf(__('guild %s restored','bluerabbit'), $guild['name']);
+        } else {
+            $note = sprintf(__('guild %s','bluerabbit'), $guild['name']);
+        }
+        $result['detail'] .= ' · ' . $note;
+        return true;
+    }
+
+    // Match is case- and whitespace-insensitive (the column collation is already
+    // case-insensitive, so only the whitespace needs normalising). Repeated names
+    // inside one file therefore resolve to the same guild instead of creating one
+    // per row, and re-running the same file creates nothing new.
+    private function resolveGuildForImport($guild_name, $adventure){
+        global $wpdb;
+        $adventure_id = $adventure->adventure_id;
+
+        $name = trim(preg_replace('/\s+/u', ' ', wp_strip_all_tags($guild_name)));
+        if ($name === '') return null;
+        $name = mb_substr($name, 0, 190);
+
+        $guild = $wpdb->get_row($wpdb->prepare(
+            "SELECT guild_id, guild_name, guild_status FROM {$wpdb->prefix}br_guilds
+             WHERE adventure_id=%d AND TRIM(guild_name)=%s
+             ORDER BY (guild_status='publish') DESC, guild_id ASC LIMIT 1",
+            $adventure_id, $name
+        ));
+        if ($guild) {
+            // Naming a trashed guild in the file means you want it back - reviving it
+            // beats both silently filing players into an invisible guild and creating
+            // a second guild with the same name.
+            $restored = false;
+            if ($guild->guild_status != 'publish') {
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE {$wpdb->prefix}br_guilds SET guild_status='publish' WHERE guild_id=%d",
+                    $guild->guild_id
+                ));
+                BR_Activity::instance()->logActivity($adventure_id,'update','guild','CSV import restored',$guild->guild_id);
+                $restored = true;
+            }
+            return [
+                'guild_id' => (int)$guild->guild_id,
+                'name'     => $guild->guild_name,
+                'created'  => false,
+                'restored' => $restored,
+            ];
+        }
+
+        // Auto-created guilds get a placeholder badge and a rotating colour so a
+        // freshly imported adventure doesn't come out as a wall of identical tiles.
+        $palette  = ['#1cc2eb','#24da98','#f7cb15','#9f40e2','#ff9800','#00bcd4','#e91e63','#8bc34a','#7c4dff','#ff5722'];
+        $existing = (int)$wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_guilds WHERE adventure_id=%d", $adventure_id
+        ));
+        $color = $palette[$existing % count($palette)];
+        $code  = str_shuffle(BR_Utils::instance()->random_str(12, '1234567890abcdefghijkls') . get_current_user_id());
+        $logo  = get_bloginfo('template_directory') . "/images/no-image.png";
+
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}br_guilds
+             (adventure_id, guild_name, guild_logo, guild_color, guild_status, guild_code, guild_group, guild_capacity, assign_on_login, guild_members)
+             VALUES (%d,%s,%s,%s,'publish',%s,'',0,0,0)",
+            $adventure_id, $name, $logo, $color, $code
+        ));
+        $guild_id = (int)$wpdb->insert_id;
+        if (!$guild_id) return null;
+
+        BR_Activity::instance()->logActivity($adventure_id,'add','guild','CSV import',$guild_id);
+        return ['guild_id' => $guild_id, 'name' => $name, 'created' => true];
+    }
+
+    // br_player_adventure.player_guild holds a single guild, so the CSV is treated
+    // as authoritative: the named guild replaces any other membership this player
+    // had in this adventure, keeping both tables in agreement.
+    private function attachPlayerToGuild($player_id, $guild_id, $adventure_id){
+        global $wpdb;
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}br_player_guild
+             WHERE adventure_id=%d AND player_id=%d AND guild_id<>%d",
+            $adventure_id, $player_id, $guild_id
+        ));
+        $wpdb->query($wpdb->prepare(
+            "INSERT IGNORE INTO {$wpdb->prefix}br_player_guild (adventure_id, guild_id, player_id, guild_enroll_date)
+             VALUES (%d,%d,%d,%s)",
+            $adventure_id, $guild_id, $player_id, current_time('mysql')
+        ));
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=%d WHERE player_id=%d AND adventure_id=%d",
+            $guild_id, $player_id, $adventure_id
+        ));
+    }
+
+    // Backfill only - an account that already has a profile keeps whatever is in it,
+    // because the same person can be imported into several adventures by different
+    // organizations and the newest CSV is not automatically the truth.
+    private function ensurePlayerProfile($player_id, $email, $nickname, $raw){
+        global $wpdb;
+        $has_profile = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_players WHERE player_id=%d", $player_id
+        ));
+        if (!$has_profile) {
+            $profile_pic_default = get_bloginfo('template_directory')."/images/no-profile.png";
+            $wpdb->query($wpdb->prepare(
+                "INSERT INTO {$wpdb->prefix}br_players
+                 (`player_id`,`player_email`,`player_password`,`player_display_name`,`player_lang`,`player_picture`,`player_nickname`,`player_first`,`player_last`)
+                 VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s)",
+                $player_id, $email, 'none', $nickname,
+                sanitize_text_field($raw['lang'] ?? ''), $profile_pic_default, $nickname,
+                sanitize_text_field($raw['firstname'] ?? ''), sanitize_text_field($raw['lastname'] ?? '')
+            ));
+        }
+        $this->savePlayerWorkMeta($player_id, $raw, true);
+    }
+
+    // $fill_only leaves any column that already holds a value untouched.
+    private function savePlayerWorkMeta($player_id, $raw, $fill_only = false){
+        global $wpdb;
+        $map = [
+            'player_gender'     => 'gender',
+            'work_level'        => 'work_level',
+            'work_function'     => 'work_function',
+            'work_sub_function' => 'work_sub_function',
+            'job_profile'       => 'job_profile',
+            'business_pillar'   => 'buisness_pillar',
+            'work_cluster'      => 'work_cluster',
+            'work_country'      => 'work_country',
+            'work_location'     => 'work_location',
+        ];
+        $values = [];
+        foreach ($map as $column => $key) {
+            $values[$column] = sanitize_text_field($raw[$key] ?? '');
+        }
+        if (!array_filter($values)) return;
+
+        $existing = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_player_meta WHERE player_id=%d LIMIT 1", $player_id
+        ));
+        if (!$existing) {
+            $columns = array_keys($map);
+            $wpdb->query($wpdb->prepare(
+                "INSERT INTO {$wpdb->prefix}br_player_meta (`player_id`,`".implode('`,`', $columns)."`)
+                 VALUES (%d,".implode(',', array_fill(0, count($columns), '%s')).")",
+                array_merge([$player_id], array_values($values))
+            ));
+            return;
+        }
+        $sets = []; $params = [];
+        foreach ($values as $column => $value) {
+            if ($value === '') continue;
+            if ($fill_only && !empty($existing->$column)) continue;
+            $sets[] = "`$column`=%s";
+            $params[] = $value;
+        }
+        if (!$sets) return;
+        $params[] = $existing->player_meta_id;
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_player_meta SET ".implode(', ', $sets)." WHERE player_meta_id=%d",
+            $params
+        ));
+    }
+
+    // Post-sweep audit: the browser sends back every email it tried to import and gets
+    // told which ones are genuinely registered AND enrolled right now, so it can re-run
+    // the stragglers instead of trusting its own per-batch bookkeeping.
+    public function verifyImportedPlayers(){
+        global $wpdb;
+        $data = ['success' => false, 'enrolled' => [], 'missing' => []];
+
+        $nonce        = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $raw_emails   = isset($_POST['emails']) ? (array)$_POST['emails'] : [];
+
+        if (!wp_verify_nonce($nonce, 'br_import_players_nonce')) {
+            $data['message'] = __('Session expired — reload the page and start the import again.','bluerabbit');
+            echo json_encode($data); die();
+        }
+        if (!$this->canManageAdventurePlayers($adventure_id)) {
+            $data['message'] = __("You don't have permission to import players into this adventure.",'bluerabbit');
+            echo json_encode($data); die();
+        }
+
+        $emails = [];
+        foreach ($raw_emails as $raw) {
+            $email = sanitize_email(strtolower(trim($raw)));
+            if ($email) $emails[$email] = true;
+        }
+        $emails = array_keys($emails);
+        if (!$emails) {
+            $data['success'] = true;
+            echo json_encode($data); die();
+        }
+
+        $placeholders = implode(',', array_fill(0, count($emails), '%s'));
+        $found = $wpdb->get_col($wpdb->prepare(
+            "SELECT LOWER(u.user_email) FROM {$wpdb->prefix}users u
+             JOIN {$wpdb->prefix}br_player_adventure pa
+               ON pa.player_id = u.ID AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
+             WHERE LOWER(u.user_email) IN ($placeholders)",
+            array_merge([$adventure_id], $emails)
+        ));
+
+        $found_map = array_flip($found);
+        foreach ($emails as $email) {
+            if (isset($found_map[$email])) $data['enrolled'][] = $email;
+            else                           $data['missing'][]  = $email;
+        }
+        $data['success'] = true;
+        echo json_encode($data);
+        die();
+    }
+
     public function enrollUser() {
         global $wpdb;
         $current_user = wp_get_current_user();

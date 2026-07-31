@@ -755,12 +755,39 @@ $image_types = array(
 		?>
 		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Enrolled Players","bluerabbit"); ?> <span class="br-badge"><?= count($players); ?></span></h3>
 
+		<?php
+		// Two encodings of the same strings: esc_js for the inline handler (JS string
+		// literal) and esc_attr for data-confirm, which brRewireRoleButtons reads back
+		// as plain text when it re-arms a row after a role change.
+		$gm_confirm_js      = esc_js(__("Grant GM?","bluerabbit"));
+		$npc_confirm_js     = esc_js(__("Make NPC?","bluerabbit"));
+		$remove_confirm_js  = esc_js(__("Remove?","bluerabbit"));
+		$gm_confirm_attr    = esc_attr(__("Grant GM?","bluerabbit"));
+		$npc_confirm_attr   = esc_attr(__("Make NPC?","bluerabbit"));
+		$role_counts = ['player'=>0,'gm'=>0,'npc'=>0];
+		foreach($players as $p){
+			$r = $p->player_adventure_role ?: 'player';
+			if(isset($role_counts[$r])) $role_counts[$r]++;
+		}
+		?>
 		<div class="br-adv-enrolled-toolbar">
-			<input type="text" class="br-input br-adv-enrolled-search" id="search-enrolled-players" placeholder="<?= __("Search players...","bluerabbit"); ?>">
+			<input type="text" class="br-input br-adv-enrolled-search" id="search-enrolled-players" placeholder="<?= __("Search by name, nickname, email or ID...","bluerabbit"); ?>">
+			<select class="br-input br-adv-enrolled-filter" id="filter-enrolled-role">
+				<option value=""><?= __("All roles","bluerabbit"); ?></option>
+				<option value="player"><?= __("Players","bluerabbit"); ?> (<?= $role_counts['player']; ?>)</option>
+				<option value="gm"><?= __("GMs","bluerabbit"); ?> (<?= $role_counts['gm']; ?>)</option>
+				<option value="npc"><?= __("NPCs","bluerabbit"); ?> (<?= $role_counts['npc']; ?>)</option>
+			</select>
+			<select class="br-input br-adv-enrolled-filter" id="enrolled-per-page">
+				<option value="30">30 <?= __("per page","bluerabbit"); ?></option>
+				<option value="60">60 <?= __("per page","bluerabbit"); ?></option>
+				<option value="120">120 <?= __("per page","bluerabbit"); ?></option>
+				<option value="500">500 <?= __("per page","bluerabbit"); ?></option>
+			</select>
 			<span class="br-adv-enrolled-count"><span id="enrolled-visible-count"><?= count($players); ?></span> / <?= count($players); ?> <?= __("players","bluerabbit"); ?></span>
 		</div>
 
-		<table class="br-table">
+		<table class="br-table br-adv-players-table">
 			<thead>
 				<tr>
 					<th><?= __("ID","bluerabbit"); ?></th>
@@ -775,93 +802,71 @@ $image_types = array(
 			</thead>
 			<tbody id="players-list">
 				<?php foreach($players as $play){ ?>
-					<?php $player_role = $play->player_adventure_role;  ?>
+					<?php
+					$player_role = $play->player_adventure_role ?: 'player';
+					$is_owner    = $play->player_id == $adventure->adventure_owner;
+					$set_role    = "setPlayerAdventureRole($adventure->adventure_id, $play->player_id,";
+					?>
 					<tr id="player-row-<?= $play->player_id; ?>" class="<?= "role-$player_role"; ?>"
+						data-role="<?= esc_attr($player_role); ?>"
 						data-search="<?= esc_attr(strtolower($play->player_id.' '.$play->user_login.' '.$play->player_first.' '.$play->player_last.' '.$play->player_email)); ?>">
-						<td><?= $play->player_id; ?></td>
-						<td><?= $play->user_login; ?></td>
-						<td><?= $play->player_first; ?></td>
-						<td><?= $play->player_last; ?></td>
-						<td><?= $play->player_email; ?></td>
-						<td>
-							<a target="_blank" href="<?= get_bloginfo('url')."/player-work/?adventure_id=$adventure->adventure_id&player_id=$play->player_id"; ?>">
+						<td class="br-adv-id-cell"><?= $play->player_id; ?></td>
+						<td><?= esc_html($play->user_login); ?></td>
+						<td><?= esc_html($play->player_first); ?></td>
+						<td><?= esc_html($play->player_last); ?></td>
+						<td class="br-adv-email-cell"><?= esc_html($play->player_email); ?></td>
+						<td class="br-text-center">
+							<a class="br-icon-link" target="_blank" title="<?= esc_attr__("Open this player's work","bluerabbit"); ?>"
+								href="<?= get_bloginfo('url')."/player-work/?adventure_id=$adventure->adventure_id&player_id=$play->player_id"; ?>">
 								<span class="icon icon-document"></span>
 							</a>
 						</td>
 						<td class="roles">
-							<?php if($play->player_id != $adventure->adventure_owner){ ?>
-								<button class="form-ui role-button-player"  <?php if($player_role !='player'){ ?> onClick="setPlayerAdventureRole(<?= "$adventure->adventure_id, $play->player_id, 'player'"; ?>);"  <?php } ?>  >
-									<span class="icon icon-check"></span>
-									<?= __("Player","bluerabbit"); ?>
-								</button>
-								<?php if($config['multiple_gms']['value']>0){  ?>
-									<button class="form-ui role-button-gm"  <?php if($player_role != 'gm'){ ?> onClick="showOverlay('#confirm-gm-<?= $play->player_id; ?>');"  <?php } ?> >
-										<span class="icon icon-star"></span>
-										<?= __("GM","bluerabbit"); ?>
+							<?php if(!$is_owner){ ?>
+								<div class="br-role-switch">
+									<button type="button" class="br-role-btn role-button-player" data-confirm=""
+										<?php if($player_role !='player'){ ?>onClick="<?= $set_role; ?>'player');"<?php } ?>>
+										<?= __("Player","bluerabbit"); ?>
 									</button>
-									<div class="confirm-action overlay-layer" id="confirm-gm-<?= $play->player_id; ?>">
-										<button class="form-ui white-bg" onClick="setPlayerAdventureRole(<?= "$adventure->adventure_id, $play->player_id, 'gm'"; ?>);">
-											<span class="icon-group">
-												<span class="br-icon-btn br-icon-btn-teal">
-													<span class="icon icon-activity white-color"></span>
-												</span>
-												<span class="icon-content">
-													<span class="line teal-400 br-text-18 w900"><?= __("Grant superpowers?","bluerabbit"); ?></span>
-												</span>
-											</span>
+									<?php if($config['multiple_gms']['value']>0){ ?>
+										<button type="button" class="br-role-btn role-button-gm" data-confirm="<?= $gm_confirm_attr; ?>"
+											<?php if($player_role != 'gm'){ ?>onClick="brConfirmInline(this,'<?= $gm_confirm_js; ?>',function(){ <?= $set_role; ?>'gm'); });"<?php } ?>>
+											<?= __("GM","bluerabbit"); ?>
 										</button>
-										<button class="br-close-btn" onClick="hideAllOverlay();">
-											<span class="icon icon-cancel white-color"></span>
-										</button>
-									</div>
-								<?php } ?>
-								<button class="form-ui role-button-npc" <?php if($player_role != 'npc'){ ?> onClick="setPlayerAdventureRole(<?= "$adventure->adventure_id, $play->player_id, 'npc'"; ?>);"  <?php } ?>  >
-									<span class="icon icon-carrot"></span>
-									<?= __("NPC","bluerabbit"); ?>
-								</button>
+									<?php } ?>
+									<button type="button" class="br-role-btn role-button-npc" data-confirm="<?= $npc_confirm_attr; ?>"
+										<?php if($player_role != 'npc'){ ?>onClick="brConfirmInline(this,'<?= $npc_confirm_js; ?>',function(){ <?= $set_role; ?>'npc'); });"<?php } ?>>
+										<?= __("NPC","bluerabbit"); ?>
+									</button>
+								</div>
 							<?php }else{ ?>
-								<span class="icon icon-star amber-500"></span><strong><?= __("Owner","bluerabbit"); ?></strong>
+								<span class="br-role-owner"><span class="icon icon-star"></span> <?= __("Owner","bluerabbit"); ?></span>
 							<?php } ?>
 						</td>
 						<td>
-							<?php if($player_role != 'gm') { ?>
-								<button class="form-ui icon-sm red-bg-200 white-color" onClick="displayConfirmAction('#confirm-option-<?= $play->player_id; ?>');">
-									<?= __("Remove","bluerabbit"); ?>
-								</button>
-								<div class="confirm-action-tooltip" id="confirm-option-<?= $play->player_id; ?>">
-									<button class="form-ui white-bg" onClick="updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id, 'out'"; ?>);">
-										<span class="icon-group">
-											<span class="br-icon-btn br-icon-btn-red-dark">
-												<span class="icon icon-cancel white-color"></span>
-											</span>
-											<span class="icon-content">
-												<span class="line red-A400 br-text-18 w900"><?= __("Are you sure?","bluerabbit"); ?></span>
-											</span>
-										</span>
-									</button>
-									<button class="br-close-btn" onClick="hideAllOverlay();">
-										<span class="icon icon-cancel white-color"></span>
-									</button>
-								</div>
-								<?php if($config['allow_gm_reset_password']['value'] > 0){ ?>
-									<button class="form-ui icon-sm red-bg-200 white-color" onClick="loadContent('update-player-password',<?= $play->player_id; ?>);">
-										<?= __("Update Password","bluerabbit"); ?>
-									</button>
-								<?php } ?>
-							<?php }else{ ?>
-								<?php if($play->player_id == $adventure->adventure_owner){ ?>
-									<?= __("Owner","bluerabbit"); ?>
+							<div class="br-actions">
+								<?php if($is_owner){ ?>
+									<span class="br-role-owner"><span class="icon icon-star"></span> <?= __("Owner","bluerabbit"); ?></span>
+								<?php }elseif($player_role == 'gm'){ ?>
+									<span class="br-adv-locked-note"><?= __("GMs can't be removed","bluerabbit"); ?></span>
 								<?php }else{ ?>
-									<button class="form-ui icon-sm grey-bg-200 grey-300" disabled>
-										<?= __("Can't remove a GM","bluerabbit"); ?>
+									<button type="button" class="br-btn red br-btn-sm"
+										onClick="brConfirmInline(this,'<?= $remove_confirm_js; ?>',function(){ updatePlayerAdventureStatus(<?= "$adventure->adventure_id, $play->player_id"; ?>,'out'); });">
+										<span class="icon icon-cancel"></span> <?= __("Remove","bluerabbit"); ?>
 									</button>
+									<?php if($config['allow_gm_reset_password']['value'] > 0){ ?>
+										<button type="button" class="br-btn ghost br-btn-sm" onClick="loadContent('update-player-password',<?= $play->player_id; ?>);">
+											<span class="icon icon-lock"></span> <?= __("Password","bluerabbit"); ?>
+										</button>
+									<?php } ?>
 								<?php } ?>
-							<?php } ?>
+							</div>
 						</td>
 					</tr>
 				<?php } ?>
 			</tbody>
 		</table>
+		<div class="br-empty br-initially-hidden" id="enrolled-empty"><?= __("No players match your filters.","bluerabbit"); ?></div>
 		<div class="br-pagination" id="enrolled-pagination"></div>
 
 		<script>
@@ -869,13 +874,20 @@ $image_types = array(
 			var EPG = {
 				page:1, perPage:30,
 				render: function(){
-					var search = ($('#search-enrolled-players').val()||'').toLowerCase();
+					var search = ($('#search-enrolled-players').val()||'').toLowerCase().trim();
+					var role = $('#filter-enrolled-role').val()||'';
+					// Every term has to match, so "ana gm" narrows instead of widening.
+					var terms = search ? search.split(/\s+/) : [];
 					var $rows = $('#players-list > tr');
 					var visible = [];
 					$rows.each(function(){
-						var match = !search || ($(this).attr('data-search')||'').indexOf(search) >= 0;
-						if (match) visible.push(this);
 						this.style.display = 'none';
+						if (role && (this.getAttribute('data-role')||'') !== role) return;
+						var hay = this.getAttribute('data-search')||'';
+						for (var t = 0; t < terms.length; t++) {
+							if (hay.indexOf(terms[t]) < 0) return;
+						}
+						visible.push(this);
 					});
 					var total = visible.length;
 					var pages = Math.ceil(total / this.perPage);
@@ -884,6 +896,7 @@ $image_types = array(
 					var end = Math.min(start + this.perPage, total);
 					for (var i = start; i < end; i++) visible[i].style.display = '';
 					$('#enrolled-visible-count').text(total);
+					$('#enrolled-empty').toggleClass('br-initially-hidden', total > 0);
 					this.nav(pages);
 				},
 				nav: function(pages){
@@ -900,7 +913,13 @@ $image_types = array(
 				goTo: function(p){ this.page=p; this.render(); document.getElementById('enrolled-players').scrollIntoView({behavior:'smooth',block:'start'}); }
 			};
 			window.EPG = EPG;
-			$('#search-enrolled-players').on('keyup', function(){ EPG.page=1; EPG.render(); });
+			$('#search-enrolled-players').on('keyup search', function(){ EPG.page=1; EPG.render(); });
+			$('#filter-enrolled-role').on('change', function(){ EPG.page=1; EPG.render(); });
+			$('#enrolled-per-page').on('change', function(){
+				EPG.perPage = parseInt($(this).val(), 10) || 30;
+				EPG.page = 1;
+				EPG.render();
+			});
 			EPG.render();
 		});
 		</script>
@@ -910,38 +929,66 @@ $image_types = array(
 	<div class="br-panel">
 		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Add Players","bluerabbit"); ?></h3>
 
+		<input type="hidden" id="import_players_nonce" value="<?= wp_create_nonce('br_import_players_nonce'); ?>"/>
+
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Bulk Upload","bluerabbit"); ?></label>
+			<span class="br-form-hint"><?= __("One file, one sweep. The whole CSV is read in your browser and imported row by row — there is no row limit. Existing accounts are enrolled instead of duplicated, and the import is verified against the database when it finishes.","bluerabbit"); ?></span>
 			<a href="<?= get_bloginfo('template_directory');?>/sources/bulk-upload-users.csv" class="br-btn ghost" target="_blank">
+				<span class="icon icon-download"></span>
 				<?= __("Download CSV Template","bluerabbit"); ?>
 			</a>
+
+			<details class="br-import-columns">
+				<summary class="br-form-label"><?= __("Which columns can the file have?","bluerabbit"); ?></summary>
+				<div class="br-import-columns-body">
+					<p class="br-form-hint">
+						<?= __("Columns are matched by their header name, so the order does not matter and you can leave out any column you don't need — only Email is required. If the file has no recognisable header row it falls back to the legacy column order below.","bluerabbit"); ?>
+					</p>
+					<table class="br-table compact">
+						<thead>
+							<tr>
+								<th><?= __("Header","bluerabbit"); ?></th>
+								<th><?= __("What it does","bluerabbit"); ?></th>
+								<th><?= __("If left blank","bluerabbit"); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr><td><strong>Email</strong></td><td><?= __("Identifies the person. An existing account is enrolled, a new one is created.","bluerabbit"); ?></td><td><span class="br-import-req"><?= __("Row fails","bluerabbit"); ?></span></td></tr>
+							<tr><td>Nickname</td><td><?= __("Login username.","bluerabbit"); ?></td><td><?= __("Built from the email; a taken name gets a -2 suffix","bluerabbit"); ?></td></tr>
+							<tr><td>Password</td><td><?= __("Initial password.","bluerabbit"); ?></td><td><?= __("Generated (it's in the downloadable report)","bluerabbit"); ?></td></tr>
+							<tr><td>First Name</td><td><?= __("Given name.","bluerabbit"); ?></td><td><?= __("Empty","bluerabbit"); ?></td></tr>
+							<tr><td>Last Name</td><td><?= __("Family name.","bluerabbit"); ?></td><td><?= __("Empty","bluerabbit"); ?></td></tr>
+							<tr><td>Lang</td><td><?= __("Interface locale, e.g. en_US or es_MX.","bluerabbit"); ?></td><td><?= __("Site default","bluerabbit"); ?></td></tr>
+							<tr><td><strong>Guild</strong></td><td><?= __("Guild name. Joins it if it exists, creates it first if it doesn't.","bluerabbit"); ?></td><td><?= __("Guilds untouched","bluerabbit"); ?></td></tr>
+							<tr><td>Gender</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Work Level</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Work Function</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Work Sub Function</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Job Profile</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Business Pillar</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Work Cluster</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Work Country</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+							<tr><td>Work Location</td><td colspan="2"><?= __("Player meta","bluerabbit"); ?></td></tr>
+						</tbody>
+					</table>
+					<p class="br-form-hint">
+						<?= __("Comma, semicolon and tab separated files all work, as do quoted values, UTF-8 and Windows/Excel encodings.","bluerabbit"); ?>
+					</p>
+				</div>
+			</details>
 		</div>
 
-		<div class="br-form-group">
-			<form id="upload_bulk_users_form" class="form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
-				<label for="the_csv_file_with_users" class="br-form-label"><?= __("Select CSV File","bluerabbit"); ?></label>
-				<input type="file" name="the_csv_file_with_users" id="the_csv_file_with_users" size="20" class="br-input" />
-				<button type="button" onClick="uploadBulkUsers();" name="upload_csv" class="br-btn cyan"><?= __("Upload file","bluerabbit"); ?></button>
-			</form>
-		</div>
-
-		<table class="br-table" id="just-uploaded-users">
-			<thead>
-				<tr>
-					<td><input type="checkbox" id="select-all"></td>
-					<td><?= __("Nickname","bluerabbit"); ?></td>
-					<td><?= __("Password","bluerabbit"); ?></td>
-					<td><?= __("Email","bluerabbit"); ?></td>
-					<td><?= __("First Name","bluerabbit"); ?></td>
-					<td><?= __("Last Name","bluerabbit"); ?></td>
-					<td><?= __("Lang","bluerabbit"); ?></td>
-					<td><?= __("Status","bluerabbit"); ?></td>
-				</tr>
-			</thead>
-			<tbody id="just-uploaded-users-body">
-			</tbody>
-		</table>
-		<div class="call-to-action text-center" id="call-to-action">
+		<div class="br-import-box">
+			<label for="the_csv_file_with_users" class="br-form-label"><?= __("Select CSV File","bluerabbit"); ?></label>
+			<input type="file" accept=".csv,text/csv" name="the_csv_file_with_users" id="the_csv_file_with_users" class="br-input" onChange="brImportPickFile();" />
+			<div id="br-import-summary" class="br-import-summary"></div>
+			<div class="br-actions">
+				<button type="button" id="br-import-start" class="br-btn cyan" onClick="brStartPlayerImport();" disabled>
+					<span class="icon icon-players"></span>
+					<?= __("Start Import","bluerabbit"); ?>
+				</button>
+			</div>
 		</div>
 
 		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Add Single Player","bluerabbit"); ?></h3>
@@ -973,6 +1020,53 @@ $image_types = array(
 			</div>
 		</div>
 	</div>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<!-- IMPORT CONSOLE — live terminal for the bulk player sweep -->
+	<!-- ═══════════════════════════════════════════════════════ -->
+	<div class="br-import-overlay" id="br-import-overlay">
+		<div class="br-import-console">
+			<div class="br-import-console-head">
+				<span class="br-import-console-dots"><i></i><i></i><i></i></span>
+				<span class="br-import-console-title"><?= __("Player Import","bluerabbit"); ?></span>
+				<span class="br-import-console-progress" id="br-import-progress-text">0 / 0</span>
+			</div>
+
+			<div class="br-import-bar-track"><div class="br-import-bar" id="br-import-bar"></div></div>
+
+			<div class="br-import-stats">
+				<span class="br-import-stat br-import-stat-created">
+					<strong id="br-imp-count-created">0</strong> <?= __("created","bluerabbit"); ?>
+				</span>
+				<span class="br-import-stat br-import-stat-enrolled">
+					<strong id="br-imp-count-enrolled">0</strong> <?= __("enrolled","bluerabbit"); ?>
+				</span>
+				<span class="br-import-stat br-import-stat-failed">
+					<strong id="br-imp-count-failed">0</strong> <?= __("failed","bluerabbit"); ?>
+				</span>
+				<span class="br-import-stat br-import-stat-guilds">
+					<strong id="br-imp-count-guilds">0</strong> <?= __("guilds created","bluerabbit"); ?>
+				</span>
+			</div>
+
+			<div class="br-import-terminal" id="br-import-terminal"></div>
+
+			<div class="br-import-console-foot">
+				<button type="button" class="br-btn red" id="br-import-cancel" onClick="brCancelPlayerImport();">
+					<span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit"); ?>
+				</button>
+				<button type="button" class="br-btn ghost br-initially-hidden" id="br-import-report" onClick="brImportDownloadReport();">
+					<span class="icon icon-download"></span> <?= __("Download report","bluerabbit"); ?>
+				</button>
+				<button type="button" class="br-btn cyan br-initially-hidden" id="br-import-reload" onClick="document.location.reload();">
+					<span class="icon icon-repeat"></span> <?= __("Reload player list","bluerabbit"); ?>
+				</button>
+				<button type="button" class="br-btn ghost br-initially-hidden" id="br-import-close" onClick="brCloseImportConsole();">
+					<?= __("Close","bluerabbit"); ?>
+				</button>
+			</div>
+		</div>
 	</div>
 
 	<?php } ?>

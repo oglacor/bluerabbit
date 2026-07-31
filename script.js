@@ -6074,6 +6074,598 @@ function assignBulkUsersToAchievement() {
     };
     reader.readAsText(fileInput.files[0]);
 }
+
+////////////////////////////////////////// BULK PLAYER IMPORT ////////////////////////////////////////////
+// Front-end driven CSV import (page-new-adventure.php). The browser parses the whole
+// file - there is no 50-row server cap any more - streams it back a few rows at a
+// time and prints every row's outcome in a live terminal. When the sweep ends it asks
+// the database which addresses actually landed and automatically re-runs the ones that
+// didn't, so a single file of 1000+ players imports in one uninterrupted pass.
+
+var BRImport = {
+    rows: [],        // every parsed row, in file order
+    queue: [],       // what the current sweep still has to send
+    results: {},     // row index -> server result
+    batch: 8,
+    cursor: 0,
+    done: 0,
+    total: 0,
+    pass: 1,
+    retries: 0,
+    running: false,
+    cancelled: false,
+    counts: { created: 0, enrolled: 0, already: 0, failed: 0 },
+    t0: 0
+};
+
+// Column aliases, matched exactly against the normalised header cell (never as a
+// substring - "work sub function" must not be swallowed by "function").
+var BR_IMPORT_HEADERS = {
+    nickname:          ['nickname', 'username', 'user', 'user_login', 'userlogin', 'login', 'usuario', 'apodo'],
+    password:          ['password', 'pass', 'contrasena', 'contraseña', 'clave'],
+    email:             ['email', 'e-mail', 'mail', 'correo', 'correo electronico', 'correo electrónico'],
+    firstname:         ['first name', 'firstname', 'first_name', 'name', 'nombre', 'given name'],
+    lastname:          ['last name', 'lastname', 'last_name', 'surname', 'apellido', 'apellidos', 'family name'],
+    lang:              ['lang', 'language', 'locale', 'idioma'],
+    guild:             ['guild', 'guild name', 'guild_name', 'guildname', 'team', 'group', 'equipo', 'grupo'],
+    gender:            ['gender', 'sex', 'genero', 'género'],
+    work_level:        ['work level', 'work_level', 'worklevel', 'level', 'nivel'],
+    work_function:     ['work function', 'work_function', 'function', 'funcion', 'función'],
+    work_sub_function: ['work sub function', 'work_sub_function', 'sub function', 'subfunction', 'sub-function'],
+    job_profile:       ['job profile', 'job_profile', 'profile', 'perfil'],
+    buisness_pillar:   ['business pillar', 'buisness pillar', 'business_pillar', 'buisness_pillar', 'pillar', 'pilar'],
+    work_cluster:      ['work cluster', 'work_cluster', 'cluster'],
+    work_country:      ['work country', 'work_country', 'country', 'pais', 'país'],
+    work_location:     ['work location', 'work_location', 'location', 'ubicacion', 'ubicación', 'office']
+};
+
+// Fallback for files exported before the columns were named - this is the exact
+// layout the old server-side uploadBulkUsers() read positionally.
+var BR_IMPORT_POSITIONS = {
+    nickname: 0, password: 1, email: 2, firstname: 3, lastname: 4, lang: 5,
+    gender: 8, work_level: 9, work_function: 10, work_sub_function: 11, job_profile: 12,
+    buisness_pillar: 13, work_cluster: 14, work_country: 15, work_location: 16
+};
+
+function brEsc(s) {
+    return $('<div>').text(s === null || s === undefined ? '' : String(s)).html();
+}
+
+function brCsvCell(v) {
+    return '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
+}
+
+// Full RFC-4180 style parser: quoted fields, escaped quotes and newlines inside
+// cells all survive, and the delimiter is sniffed from the header line.
+function brParseCSV(text) {
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+    var firstLine = text.split(/\r\n|\n|\r/)[0] || '';
+    var counts = { ',': 0, ';': 0, '\t': 0 };
+    var quoted = false;
+    for (var i = 0; i < firstLine.length; i++) {
+        var ch = firstLine.charAt(i);
+        if (ch === '"') quoted = !quoted;
+        else if (!quoted && counts.hasOwnProperty(ch)) counts[ch]++;
+    }
+    var delim = ',';
+    if (counts[';'] > counts[delim]) delim = ';';
+    if (counts['\t'] > counts[delim]) delim = '\t';
+
+    var rows = [], row = [], field = '', inQuotes = false;
+    for (var p = 0; p < text.length; p++) {
+        var c = text.charAt(p);
+        if (inQuotes) {
+            if (c === '"') {
+                if (text.charAt(p + 1) === '"') { field += '"'; p++; }
+                else inQuotes = false;
+            } else field += c;
+        } else if (c === '"') {
+            inQuotes = true;
+        } else if (c === delim) {
+            row.push(field); field = '';
+        } else if (c === '\n' || c === '\r') {
+            if (c === '\r' && text.charAt(p + 1) === '\n') p++;
+            row.push(field); field = '';
+            rows.push(row); row = [];
+        } else field += c;
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+
+    return rows.filter(function (r) {
+        for (var i = 0; i < r.length; i++) { if (String(r[i]).trim() !== '') return true; }
+        return false;
+    });
+}
+
+function brImportMapRows(matrix) {
+    var headerRow = matrix[0] || [];
+    var norm = [];
+    for (var h = 0; h < headerRow.length; h++) {
+        norm.push(String(headerRow[h]).replace(/^\uFEFF/, '').trim().toLowerCase().replace(/\s+/g, ' '));
+    }
+
+    var map = {}, matched = 0;
+    Object.keys(BR_IMPORT_HEADERS).forEach(function (key) {
+        for (var i = 0; i < norm.length; i++) {
+            if (BR_IMPORT_HEADERS[key].indexOf(norm[i]) > -1) { map[key] = i; matched++; return; }
+        }
+    });
+
+    var mode, body;
+    if (map.email !== undefined) {
+        mode = 'named columns';
+        body = matrix.slice(1);
+    } else {
+        mode = 'legacy column order';
+        map = BR_IMPORT_POSITIONS;
+        matched = 0;
+        // No recognisable header, but if the legacy email column already holds an
+        // address then the first line is data and must not be thrown away.
+        body = String(headerRow[2] || '').indexOf('@') > -1 ? matrix : matrix.slice(1);
+    }
+
+    var rows = [], seen = {}, guilds = {}, duplicates = 0, invalid = 0;
+    body.forEach(function (cells) {
+        // Start every known field at '' so a column the file simply doesn't have
+        // still posts as an empty string rather than the literal "undefined".
+        var row = { index: rows.length };
+        Object.keys(BR_IMPORT_HEADERS).forEach(function (key) { row[key] = ''; });
+        Object.keys(map).forEach(function (key) {
+            var idx = map[key];
+            if (idx !== undefined && cells[idx] !== undefined) row[key] = String(cells[idx]).trim();
+        });
+        if (!row.email && !row.nickname) return;
+
+        var key = row.email.toLowerCase();
+        if (key && seen[key]) { duplicates++; return; }
+        if (key) seen[key] = true;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) invalid++;
+        if (row.guild) guilds[row.guild.replace(/\s+/g, ' ').trim().toLowerCase()] = true;
+        rows.push(row);
+    });
+
+    return {
+        rows: rows, mode: mode, matched: matched, duplicates: duplicates, invalid: invalid,
+        hasGuildColumn: map.guild !== undefined,
+        guildCount: Object.keys(guilds).length
+    };
+}
+
+function brImportPickFile() {
+    var input = document.getElementById('the_csv_file_with_users');
+    var $summary = $('#br-import-summary');
+    var $start = $('#br-import-start');
+
+    BRImport.rows = [];
+    $start.prop('disabled', true);
+
+    if (!input || !input.files || !input.files[0]) { $summary.html(''); return; }
+    var file = input.files[0];
+    $summary.html('<span class="br-import-note">' + brEsc('Reading ' + file.name + '…') + '</span>');
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var text = e.target.result;
+        // U+FFFD means the file was not UTF-8 - almost always a Windows-1252 export.
+        if (text.indexOf('\uFFFD') > -1) {
+            var legacy = new FileReader();
+            legacy.onload = function (e2) { brImportShowSummary(e2.target.result, file); };
+            legacy.readAsText(file, 'windows-1252');
+            return;
+        }
+        brImportShowSummary(text, file);
+    };
+    reader.readAsText(file);
+}
+
+function brImportShowSummary(text, file) {
+    var parsed = brImportMapRows(brParseCSV(text));
+    BRImport.rows = parsed.rows;
+
+    var $summary = $('#br-import-summary');
+    if (!parsed.rows.length) {
+        $summary.html('<span class="br-import-note br-import-note-bad">' +
+            brEsc('No usable rows found in ' + file.name + '. Check the file has an Email column.') + '</span>');
+        $('#br-import-start').prop('disabled', true);
+        return;
+    }
+
+    var html = '<div class="br-import-note br-import-note-ok"><strong>' + brEsc(file.name) + '</strong> — ' +
+        parsed.rows.length + ' players ready <span class="br-import-mode">(' + brEsc(parsed.mode) + ')</span></div>';
+    if (parsed.duplicates) {
+        html += '<div class="br-import-note br-import-note-warn">' + parsed.duplicates +
+            ' duplicate email rows will be skipped</div>';
+    }
+    if (parsed.invalid) {
+        html += '<div class="br-import-note br-import-note-warn">' + parsed.invalid +
+            ' rows have a malformed email and will be reported as failed</div>';
+    }
+    if (parsed.guildCount) {
+        html += '<div class="br-import-note">' + parsed.guildCount +
+            ' distinct guild' + (parsed.guildCount === 1 ? '' : 's') +
+            ' named — any that do not exist yet will be created</div>';
+    } else if (parsed.hasGuildColumn) {
+        html += '<div class="br-import-note">Guild column found but empty — guilds untouched</div>';
+    }
+    $summary.html(html);
+    $('#br-import-start').prop('disabled', false);
+}
+
+////////////////////////////////////////// terminal ////////////////////////////////////////////
+function brImportLog(text, cls) {
+    $('#br-import-terminal').append('<div class="br-imp-line ' + (cls || '') + '">' + brEsc(text) + '</div>');
+    brImportScroll();
+}
+
+function brImportScroll() {
+    var t = document.getElementById('br-import-terminal');
+    if (t && !BRImport.freezeScroll) t.scrollTop = t.scrollHeight;
+}
+
+function brImportLogPending(row) {
+    var id = 'br-imp-line-' + row.index;
+    var label = row.email || row.nickname || ('row ' + (row.index + 1));
+    var html = '<div class="br-imp-line br-imp-pending" id="' + id + '">' +
+        '<span class="br-imp-verb">adding</span>' +
+        '<span class="br-imp-target">' + brEsc(label) + '</span>' +
+        '<span class="br-imp-dots"></span>' +
+        '<span class="br-imp-result">…</span></div>';
+    var $existing = $('#' + id);
+    if ($existing.length) $existing.replaceWith(html);
+    else $('#br-import-terminal').append(html);
+    brImportScroll();
+}
+
+function brImportPatchLine(index, status, detail) {
+    var $line = $('#br-imp-line-' + index);
+    if (!$line.length) return;
+    var labels = {
+        created: 'done', enrolled: 'enrolled', already: 'skipped',
+        failed: 'FAILED', retry: 'retrying'
+    };
+    $line.removeClass('br-imp-pending br-imp-created br-imp-enrolled br-imp-already br-imp-failed br-imp-retry')
+        .addClass('br-imp-' + status);
+    $line.find('.br-imp-result').text(labels[status] || status);
+    $line.find('.br-imp-detail').remove();
+    if (detail) $line.append('<span class="br-imp-detail">' + brEsc(detail) + '</span>');
+}
+
+function brImportTime(seconds) {
+    if (seconds < 60) return seconds + 's';
+    var m = Math.floor(seconds / 60);
+    return m + 'm ' + (seconds % 60) + 's';
+}
+
+function brImportRecount() {
+    var c = { created: 0, enrolled: 0, already: 0, failed: 0 };
+    var guilds = {};
+    Object.keys(BRImport.results).forEach(function (k) {
+        var r = BRImport.results[k];
+        var s = r.status || 'failed';
+        if (c[s] === undefined) c[s] = 0;
+        c[s]++;
+        if (r.guild_created && r.guild) guilds[r.guild] = true;
+    });
+    BRImport.counts = c;
+    BRImport.guildsCreated = Object.keys(guilds);
+    $('#br-imp-count-created').text(c.created);
+    $('#br-imp-count-enrolled').text(c.enrolled + c.already);
+    $('#br-imp-count-failed').text(c.failed);
+    $('#br-imp-count-guilds').text(BRImport.guildsCreated.length);
+}
+
+function brImportProgress() {
+    brImportRecount();
+    var pct = BRImport.total ? Math.round((BRImport.done / BRImport.total) * 100) : 0;
+    $('#br-import-bar').css('width', pct + '%');
+
+    var elapsed = (new Date().getTime() - BRImport.t0) / 1000;
+    var rate = elapsed > 0 ? BRImport.done / elapsed : 0;
+    var text = BRImport.done + ' / ' + BRImport.total + '  ·  ' + pct + '%';
+    if (BRImport.done < BRImport.total && rate > 0) {
+        text += '  ·  ~' + brImportTime(Math.round((BRImport.total - BRImport.done) / rate)) + ' left';
+    }
+    $('#br-import-progress-text').text(text);
+}
+
+////////////////////////////////////////// runner ////////////////////////////////////////////
+function brStartPlayerImport() {
+    if (BRImport.running) return;
+    if (!BRImport.rows.length) {
+        $('#br-import-summary').html('<span class="br-import-note br-import-note-bad">' +
+            'Select a CSV file first.</span>');
+        return;
+    }
+    BRImport.running = true;
+    BRImport.cancelled = false;
+    BRImport.results = {};
+    BRImport.pass = 1;
+    BRImport.retries = 0;
+    BRImport.queue = BRImport.rows.slice();
+    BRImport.cursor = 0;
+    BRImport.done = 0;
+    BRImport.total = BRImport.queue.length;
+    BRImport.t0 = new Date().getTime();
+
+    $('#br-import-overlay').addClass('active');
+    $('#br-import-terminal').html('');
+    $('#br-import-bar').css('width', '0%');
+    // Toggle the class rather than jQuery show()/hide() - these are .br-btn
+    // (inline-flex) and an inline display would flatten the icon alignment.
+    $('#br-import-cancel').removeClass('br-initially-hidden');
+    $('#br-import-close, #br-import-report, #br-import-reload').addClass('br-initially-hidden');
+    brImportProgress();
+
+    brImportLog('BlueRabbit player import', 'br-imp-head');
+    brImportLog('adventure #' + $('#the_adventure_id').val() + ' · ' + BRImport.total +
+        ' rows queued · ' + BRImport.batch + ' per request', 'br-imp-dim');
+    brImportLog('', '');
+    brImportNextBatch();
+}
+
+function brCancelPlayerImport() {
+    if (!BRImport.running) { brCloseImportConsole(); return; }
+    BRImport.cancelled = true;
+    brImportLog('cancel requested — finishing the batch in flight…', 'br-imp-warn');
+}
+
+function brCloseImportConsole() {
+    if (BRImport.running) return;
+    $('#br-import-overlay').removeClass('active');
+}
+
+function brImportNextBatch() {
+    if (BRImport.cancelled) { brImportFinish(true); return; }
+    if (BRImport.cursor >= BRImport.queue.length) { brImportVerify(); return; }
+
+    var batch = BRImport.queue.slice(BRImport.cursor, BRImport.cursor + BRImport.batch);
+    batch.forEach(function (row) { brImportLogPending(row); });
+
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'brImportPlayersBatch',
+            nonce: $('#import_players_nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            rows: batch
+        },
+        method: 'POST',
+        timeout: 180000,
+        success: function (json_text) {
+            var d = null;
+            try { d = JSON.parse(json_text); } catch (e) { d = null; }
+            if (!d || !d.success) {
+                brImportAbort(d && d.message ? d.message : 'the server rejected the batch');
+                return;
+            }
+            BRImport.retries = 0;
+            (d.results || []).forEach(function (r) {
+                BRImport.results[r.index] = r;
+                brImportPatchLine(r.index, r.status || 'failed', r.detail || '');
+            });
+            BRImport.cursor += batch.length;
+            BRImport.done = BRImport.cursor;
+            brImportProgress();
+            setTimeout(brImportNextBatch, 30);
+        },
+        error: function (xhr, status) {
+            // Re-sending is always safe: a row that already landed comes back as
+            // 'already', so a dropped connection costs a retry, never a duplicate.
+            BRImport.retries++;
+            if (BRImport.retries > 8) {
+                brImportAbort('connection lost and 8 retries failed (' + status + ')');
+                return;
+            }
+            batch.forEach(function (row) {
+                brImportPatchLine(row.index, 'retry', 'connection lost, retry ' + BRImport.retries + '/8');
+            });
+            setTimeout(brImportNextBatch, 2000);
+        }
+    });
+}
+
+function brImportAbort(reason) {
+    brImportLog('', '');
+    brImportLog('import stopped: ' + reason, 'br-imp-bad');
+    brImportFinish(true);
+}
+
+// Nothing is trusted until the database confirms it: every address in the file is
+// checked against the enrolment table, and whatever is missing gets swept again.
+function brImportVerify() {
+    var emails = [];
+    BRImport.rows.forEach(function (r) { if (r.email) emails.push(r.email); });
+    if (!emails.length) { brImportFinish(false); return; }
+
+    brImportLog('', '');
+    brImportLog('— sweep ' + BRImport.pass + ' done · verifying ' + emails.length +
+        ' addresses against the database —', 'br-imp-head');
+
+    var chunks = [];
+    for (var i = 0; i < emails.length; i += 200) chunks.push(emails.slice(i, i + 200));
+
+    var missing = [], ci = 0, chunkRetries = 0;
+    function nextChunk() {
+        if (ci >= chunks.length) { brImportAfterVerify(missing, emails.length); return; }
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: {
+                action: 'brVerifyImportedPlayers',
+                nonce: $('#import_players_nonce').val(),
+                adventure_id: $('#the_adventure_id').val(),
+                emails: chunks[ci]
+            },
+            method: 'POST',
+            timeout: 120000,
+            success: function (json_text) {
+                var d = null;
+                try { d = JSON.parse(json_text); } catch (e) { d = null; }
+                if (!d || !d.success) {
+                    brImportAbort(d && d.message ? d.message : 'verification failed');
+                    return;
+                }
+                chunkRetries = 0;
+                missing = missing.concat(d.missing || []);
+                ci++;
+                brImportLog('verified ' + Math.min(ci * 200, emails.length) + ' / ' + emails.length, 'br-imp-dim');
+                setTimeout(nextChunk, 20);
+            },
+            error: function () {
+                chunkRetries++;
+                if (chunkRetries > 8) { brImportAbort('could not verify the import'); return; }
+                setTimeout(nextChunk, 2000);
+            }
+        });
+    }
+    nextChunk();
+}
+
+function brImportAfterVerify(missing, checked) {
+    var missingMap = {};
+    missing.forEach(function (e) { missingMap[String(e).toLowerCase()] = true; });
+
+    var retryRows = BRImport.rows.filter(function (r) {
+        return r.email && missingMap[r.email.toLowerCase()];
+    });
+
+    if (!retryRows.length) {
+        brImportLog('all ' + checked + ' addresses are registered and enrolled ✔', 'br-imp-ok');
+        brImportFinish(false);
+        return;
+    }
+    if (BRImport.pass >= 3) {
+        brImportLog(retryRows.length + ' rows still missing after 3 passes:', 'br-imp-bad');
+        retryRows.forEach(function (r) {
+            var res = BRImport.results[r.index];
+            brImportLog('  ' + r.email + ' — ' + ((res && res.detail) || 'unknown error'), 'br-imp-bad');
+        });
+        brImportFinish(false);
+        return;
+    }
+
+    // Drop the ids of the first attempt's lines so the repair sweep prints fresh
+    // ones at the bottom of the terminal instead of silently rewriting history
+    // hundreds of lines further up.
+    retryRows.forEach(function (r) { $('#br-imp-line-' + r.index).removeAttr('id'); });
+
+    BRImport.pass++;
+    BRImport.queue = retryRows;
+    BRImport.cursor = 0;
+    BRImport.done = 0;
+    BRImport.total = retryRows.length;
+    BRImport.t0 = new Date().getTime();
+    brImportLog(retryRows.length + ' rows did not land — running repair sweep ' + BRImport.pass, 'br-imp-warn');
+    brImportLog('', '');
+    setTimeout(brImportNextBatch, 200);
+}
+
+function brImportFinish(stopped) {
+    BRImport.running = false;
+    brImportRecount();
+    if (!stopped) $('#br-import-bar').css('width', '100%');
+
+    var c = BRImport.counts;
+    var processed = c.created + c.enrolled + c.already + c.failed;
+    brImportLog('', '');
+    brImportLog(stopped ? '— import stopped —' : '— import complete —', 'br-imp-head');
+    brImportLog('created  : ' + c.created + '   (new accounts)', 'br-imp-created');
+    brImportLog('enrolled : ' + c.enrolled + '   (existing accounts added to this adventure)', 'br-imp-enrolled');
+    brImportLog('skipped  : ' + c.already + '   (already in this adventure)', 'br-imp-already');
+    brImportLog('failed   : ' + c.failed, c.failed ? 'br-imp-failed' : 'br-imp-dim');
+    if (BRImport.guildsCreated && BRImport.guildsCreated.length) {
+        brImportLog('guilds   : ' + BRImport.guildsCreated.length + ' created', 'br-imp-ok');
+        BRImport.guildsCreated.forEach(function (g) { brImportLog('           + ' + g, 'br-imp-dim'); });
+    }
+    brImportLog('rows     : ' + processed + ' / ' + BRImport.rows.length + ' processed', 'br-imp-dim');
+    brImportLog('elapsed  : ' + brImportTime(Math.round((new Date().getTime() - BRImport.t0) / 1000)) +
+        ' (this sweep)', 'br-imp-dim');
+    brImportLog('', '');
+    brImportLog('Download the report to keep the generated nicknames and passwords.', 'br-imp-dim');
+
+    $('#br-import-progress-text').text(processed + ' / ' + BRImport.rows.length + ' processed');
+    $('#br-import-cancel').addClass('br-initially-hidden');
+    $('#br-import-close, #br-import-report, #br-import-reload').removeClass('br-initially-hidden');
+}
+
+function brImportDownloadReport() {
+    var lines = ['email,nickname,password,guild,status,detail'];
+    BRImport.rows.forEach(function (row) {
+        var r = BRImport.results[row.index] || { status: 'not processed', detail: '' };
+        lines.push([
+            r.email || row.email,
+            r.nickname || row.nickname,
+            r.password || '',
+            r.guild || row.guild || '',
+            r.status,
+            r.detail || ''
+        ].map(brCsvCell).join(','));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'player-import-report-adventure-' + $('#the_adventure_id').val() + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+$(window).on('beforeunload', function () {
+    if (BRImport.running) {
+        return 'A player import is still running. Leaving now will interrupt it.';
+    }
+});
+
+////////////////////////////////////////// INLINE CONFIRM ////////////////////////////////////////////
+// Two-step confirm that lives inside the button itself: the first click turns it
+// into "Sure?", the second runs the action. Replaces the old .confirm-action-tooltip
+// overlays, which reserved layout space while permanently invisible.
+function brResetConfirm($btn) {
+    if (!$btn || !$btn.length) return;
+    if ($btn.data('brOriginal') !== undefined) $btn.html($btn.data('brOriginal'));
+    if ($btn.data('brTimer')) clearTimeout($btn.data('brTimer'));
+    $btn.removeClass('br-confirming').removeData('brOriginal').removeData('brTimer');
+}
+
+function brResetAllConfirms() {
+    $('.br-confirming').each(function () { brResetConfirm($(this)); });
+}
+
+// Re-arms the role buttons of a row after a role change: every button gets its
+// handler back except the one for the role the player now holds. The confirm
+// wording comes from the button's own data-confirm so it stays translated.
+function brRewireRoleButtons($row, adventure_id, player_id, role) {
+    var call = function (r) {
+        return 'setPlayerAdventureRole(' + adventure_id + ',' + player_id + ",'" + r + "');";
+    };
+    ['player', 'gm', 'npc'].forEach(function (r) {
+        var $btn = $('button.role-button-' + r, $row);
+        if (!$btn.length) return;
+        brResetConfirm($btn);
+        var label = $btn.attr('data-confirm');
+        $btn.attr('onclick', label
+            ? "brConfirmInline(this,'" + label.replace(/'/g, "\\'") + "',function(){ " + call(r) + ' });'
+            : call(r));
+    });
+    $('button.role-button-' + role, $row).removeAttr('onclick');
+}
+
+function brConfirmInline(btn, label, fn) {
+    var $btn = $(btn);
+    if ($btn.hasClass('br-confirming')) {
+        brResetConfirm($btn);
+        fn();
+        return;
+    }
+    brResetAllConfirms();
+    $btn.data('brOriginal', $btn.html())
+        .addClass('br-confirming')
+        .html('<span class="icon icon-warning"></span> ' + brEsc(label));
+    $btn.data('brTimer', setTimeout(function () { brResetConfirm($btn); }, 4000));
+}
+
 ////////////////////////////////////////// postToWall ////////////////////////////////////////////
 function postToWall(ann_type, target_id = "") {
     let nonce = $('#nonce').val();
@@ -7951,6 +8543,36 @@ function duplicateAdventure(adventure_id = null) {
         return false;
     }
 }
+
+function openGuildRoster(guild_id) {
+    var $overlay = $('#guild-roster-overlay');
+    $overlay.html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
+    $overlay.addClass('active');
+    // Shared backdrop must join the SAME positioned ancestor as the overlay,
+    // not just <body>, or it can render on top of the overlay regardless of
+    // z-index - same gotcha documented next to the Stats page's drawers.
+    brShowDrawerBackdrop($overlay.parent());
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({
+            action: 'br_guild_roster',
+            nonce: $('#guild_roster_nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            guild_id: guild_id,
+        }),
+        method: "POST",
+        dataType: "json",
+        success: function (response) {
+            if (response && response.success) {
+                $overlay.html(response.data.html);
+            }
+        }
+    });
+}
+function closeGuildRoster() {
+    $('#guild-roster-overlay').removeClass('active');
+    brHideDrawerBackdrop();
+}
 /////////////////////// BULK CREATE /////////////////////////
 
 function bulkCreate() {
@@ -8227,13 +8849,12 @@ function displayAjaxResponse(json_data) {
     }
     if (data.role_update) {
         $("tr#player-row-" + data.player_id).fadeOut('fast', function () {
-            let adventure_id = $('#the_adventure_id').val();
-            $('button.role-button-npc', this).attr('onclick', "setPlayerAdventureRole(" + adventure_id + "," + data.player_id + ",'npc');");
-            $('button.role-button-player', this).attr('onclick', "setPlayerAdventureRole(" + adventure_id + "," + data.player_id + ",'player');");
-            $('button.role-button-gm', this).attr('onclick', "showOverlay('#confirm-gm-" + data.player_id + "');");
-
-            $('button.role-button-' + data.role_update, this).removeAttr('onclick');
-            $(this).removeClass('role-gm role-player role-npc').addClass('role-' + data.role_update).fadeIn('fast');
+            brRewireRoleButtons($(this), $('#the_adventure_id').val(), data.player_id, data.role_update);
+            $(this)
+                .removeClass('role-gm role-player role-npc')
+                .addClass('role-' + data.role_update)
+                .attr('data-role', data.role_update)
+                .fadeIn('fast');
         });
     }
 

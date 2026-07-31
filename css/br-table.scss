@@ -6613,3 +6613,451 @@ body.br-drawer-open {
   padding: 2px 4px;
   font-size: 12px;
 }
+
+// ── Guild roster modal (.guild-roster-overlay, page-guilds.php) ─────────
+// Unlike page-players.php's own roster, this table lives inside a modal that
+// can just BE the one true scroll container for both axes - no twin-table/
+// JS-scroll-sync trick needed, a plain sticky <thead> works here, as long as
+// .guild-roster-table-wrap is the ONLY element that scrolls. .tabi-conditions-body
+// (shared with the narrow drawers, where ITS OWN overflow-y:auto is exactly
+// what's wanted) is overridden here so it doesn't also try to scroll - two
+// nested scroll containers would either double-scrollbar or, worse, trap the
+// sticky thead on the wrong one (the same CSS Overflow spec trap documented
+// on page-players.php - this modal avoids it by only ever having one).
+.guild-roster-overlay .tabi-conditions-body {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.guild-roster-table-wrap {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 20px;
+
+  table.guild-roster-table {
+    thead th {
+      position: sticky;
+      top: 0;
+      background: $br-bg;
+      z-index: 2;
+    }
+
+    .br-roster-name-cell {
+      position: sticky;
+      left: 0;
+      background: $br-bg;
+      z-index: 1;
+    }
+
+    thead th.br-roster-name-cell {
+      z-index: 3;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Adventure Settings — enrolled players & bulk player import
+// (page-new-adventure.php, added 2026-07-31)
+// ═══════════════════════════════════════════════════════════
+
+// Terminal tokens — br-table.scss carries its own palette (it is compiled
+// standalone), so the HUD colours the import console uses are declared here.
+$br-term-bg:          #030f18;
+$br-term-text:        #90f3fe;
+$br-term-text-muted:  rgba(144, 243, 254, 0.6);
+
+// ── Enrolled players table ──────────────────────────────
+
+.br-adv-enrolled-filter {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 130px;
+}
+
+.br-adv-players-table {
+  td { vertical-align: middle; }
+}
+
+.br-adv-id-cell {
+  color: rgba($br-white, 0.35);
+  font-variant-numeric: tabular-nums;
+  width: 70px;
+}
+
+.br-adv-email-cell {
+  color: rgba($br-white, 0.65);
+  word-break: break-all;
+}
+
+.br-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-sm;
+  color: rgba($br-white, 0.45);
+  background: rgba($br-white, 0.05);
+  text-decoration: none;
+  transition: all 0.15s;
+
+  &:hover { color: $br-primary; background: rgba($br-primary, 0.15); }
+}
+
+.br-adv-locked-note {
+  font-size: 11px;
+  color: rgba($br-white, 0.3);
+  font-style: italic;
+}
+
+.br-role-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: $radius-pill;
+  background: rgba($br-accent, 0.15);
+  color: $br-accent;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+
+  .icon { font-size: 12px; }
+}
+
+// ── Role switch (segmented control) ─────────────────────
+// The active segment is driven by the row-level role- class, which is exactly
+// what displayAjaxResponse() swaps after a role change - no extra bookkeeping.
+
+.br-role-switch {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid rgba($br-white, 0.12);
+  border-radius: $radius-pill;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px;
+  gap: 2px;
+}
+
+.br-role-btn {
+  border: none;
+  background: transparent;
+  color: rgba($br-white, 0.4);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: $radius-pill;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  &:hover { color: $br-white; background: rgba($br-white, 0.08); }
+
+  // The armed state has to beat every role colour below.
+  &.br-confirming {
+    background: $br-amber !important;
+    color: #04161e !important;
+    .icon { font-size: 11px; }
+  }
+}
+
+tr.role-player .br-role-btn.role-button-player {
+  background: rgba($br-primary, 0.9);
+  color: $br-bg;
+  cursor: default;
+}
+
+tr.role-gm .br-role-btn.role-button-gm {
+  background: rgba($br-teal, 0.9);
+  color: $br-bg;
+  cursor: default;
+}
+
+tr.role-npc .br-role-btn.role-button-npc {
+  background: rgba($br-purple, 0.9);
+  color: $br-white;
+  cursor: default;
+}
+
+// ── Inline confirm (replaces .confirm-action-tooltip) ───
+// Zero footprint until armed: the button relabels itself in place.
+
+.br-btn.br-confirming,
+button.br-btn.br-confirming {
+  background: $br-amber;
+  border-color: $br-amber;
+  color: #04161e;
+  font-weight: 800;
+
+  &:hover { background: $br-amber; color: #04161e; opacity: 0.9; }
+}
+
+// ── Bulk import picker ──────────────────────────────────
+
+.br-import-box {
+  border: 1px dashed rgba($br-primary, 0.3);
+  border-radius: $radius;
+  background: rgba($br-primary, 0.04);
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .br-input[type="file"] { margin-bottom: 10px; }
+}
+
+.br-import-summary {
+  margin: 4px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.br-import-note {
+  font-size: 13px;
+  color: rgba($br-white, 0.6);
+
+  &.br-import-note-ok   { color: $br-green; }
+  &.br-import-note-warn { color: $br-amber; }
+  &.br-import-note-bad  { color: $br-red; }
+}
+
+.br-import-mode {
+  color: rgba($br-white, 0.35);
+  font-size: 12px;
+}
+
+// ── Import console (live terminal) ──────────────────────
+
+.br-import-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(2, 10, 14, 0.88);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  &.active { display: flex; }
+}
+
+.br-import-console {
+  width: min(900px, 96vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: $br-term-bg;
+  border: 1px solid rgba($br-primary, 0.4);
+  border-radius: $radius;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.br-import-console-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba($br-primary, 0.15);
+  flex-shrink: 0;
+}
+
+.br-import-console-dots {
+  display: inline-flex;
+  gap: 6px;
+
+  i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba($br-white, 0.15);
+
+    &:nth-child(1) { background: rgba($br-red, 0.6); }
+    &:nth-child(2) { background: rgba($br-amber, 0.6); }
+    &:nth-child(3) { background: rgba($br-green, 0.6); }
+  }
+}
+
+.br-import-console-title {
+  @include condensed-heading(15px, 800);
+  color: $br-white;
+}
+
+.br-import-console-progress {
+  margin-left: auto;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: $br-term-text-muted;
+}
+
+.br-import-bar-track {
+  height: 4px;
+  background: rgba($br-white, 0.06);
+  flex-shrink: 0;
+}
+
+.br-import-bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, $br-primary, $br-green);
+  transition: width 0.25s ease-out;
+}
+
+.br-import-stats {
+  display: flex;
+  gap: 18px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba($br-white, 0.06);
+  flex-shrink: 0;
+}
+
+.br-import-stat {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba($br-white, 0.35);
+
+  strong {
+    display: inline-block;
+    min-width: 1.5em;
+    font-size: 16px;
+    font-weight: 800;
+    margin-right: 4px;
+  }
+
+  &.br-import-stat-created  strong { color: $br-green; }
+  &.br-import-stat-enrolled strong { color: $br-primary; }
+  &.br-import-stat-failed   strong { color: $br-red; }
+}
+
+.br-import-terminal {
+  flex: 1;
+  min-height: 240px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  background: #020b10;
+  font-family: "Courier New", Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: $br-term-text-muted;
+}
+
+.br-imp-line {
+  display: flex;
+  align-items: baseline;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 1.7em;
+}
+
+.br-imp-verb {
+  color: rgba($br-white, 0.3);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.br-imp-target {
+  color: $br-term-text;
+  flex-shrink: 0;
+}
+
+// Leader dots that stretch to fill whatever room is left on the line.
+.br-imp-dots {
+  flex: 1 1 auto;
+  min-width: 20px;
+  margin: 0 8px 4px;
+  border-bottom: 1px dotted rgba($br-primary, 0.25);
+}
+
+.br-imp-result {
+  flex-shrink: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-imp-detail {
+  flex-shrink: 0;
+  margin-left: 10px;
+  font-size: 11.5px;
+  color: rgba($br-white, 0.3);
+}
+
+.br-imp-pending  .br-imp-result { color: $br-amber; }
+.br-imp-retry    .br-imp-result { color: $br-orange; }
+.br-imp-created  .br-imp-result { color: $br-green; }
+.br-imp-enrolled .br-imp-result { color: $br-primary; }
+.br-imp-already  .br-imp-result { color: rgba($br-white, 0.3); }
+.br-imp-failed   .br-imp-result { color: $br-red; }
+
+.br-imp-created  .br-imp-target { color: rgba($br-term-text, 0.9); }
+.br-imp-already  .br-imp-target { color: rgba($br-white, 0.25); }
+.br-imp-failed   .br-imp-target { color: $br-red; }
+
+.br-imp-head {
+  color: $br-primary;
+  font-weight: 700;
+}
+
+.br-imp-dim  { color: rgba($br-white, 0.3); }
+.br-imp-ok   { color: $br-green; font-weight: 700; }
+.br-imp-warn { color: $br-amber; font-weight: 700; }
+.br-imp-bad  { color: $br-red; font-weight: 700; }
+
+.br-import-console-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba($br-white, 0.06);
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .br-import-stats { flex-wrap: wrap; gap: 10px; }
+  .br-import-console-foot { flex-wrap: wrap; }
+  .br-imp-detail { display: none; }
+}
+
+// ── CSV column reference (collapsible) ──────────────────
+
+.br-import-columns {
+  margin-top: 12px;
+
+  summary {
+    cursor: pointer;
+    display: inline-block;
+    color: $br-primary;
+    user-select: none;
+
+    &:hover { color: $br-white; }
+  }
+}
+
+.br-import-columns-body {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid rgba($br-white, 0.08);
+  border-radius: $radius-sm;
+  background: rgba(0, 0, 0, 0.2);
+  overflow-x: auto;
+
+  .br-table td { font-size: 12px; }
+}
+
+.br-import-req {
+  color: $br-red;
+  font-weight: 700;
+}
+
+.br-import-stat.br-import-stat-guilds strong { color: $br-purple; }

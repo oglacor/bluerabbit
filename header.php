@@ -23,12 +23,12 @@
 	}
 	if(isset($adventure_id)){
 		$adventure = BR_Adventure::instance()->getAdventure($adventure_id);
-        $adv_child_id = $adventure->adventure_id;
-        $adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
-		$adv_settings = BR_Config::instance()->getSettings($adv_parent_id);
 
-		
 		if($adventure){
+			$adv_child_id = $adventure->adventure_id;
+			$adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
+			$adv_settings = BR_Config::instance()->getSettings($adv_parent_id);
+
 			if(!empty($adventure->adventure_gmt) && in_array($adventure->adventure_gmt, timezone_identifiers_list())){
 				date_default_timezone_set($adventure->adventure_gmt);
 			}else{
@@ -122,7 +122,14 @@
 				'my_work' => isset($adv_settings['my_work_bg']['value']) ? $adv_settings['my_work_bg']['value'] : $config['my_work_bg']['value'],
 			);
 		}else{
+			// adventure_id was given in the URL but didn't resolve to anything this
+			// user can see (doesn't exist, isn't published, or they're not enrolled)
+			// - getAdventure() used to be dereferenced unconditionally right after
+			// this call, which crashed the whole request with a fatal error instead
+			// of ever reaching this branch. Send them to the 404 page instead.
 			unset($_SESSION['adventure']);
+			wp_redirect( home_url('/404') );
+			exit;
 		}
 	}else{
 		$current_player = BR_Player::instance()->getPlayerData($current_user->ID);

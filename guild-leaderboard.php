@@ -10,8 +10,9 @@ for($ll=1;$ll<30;$ll++){
     }
 }
 $is_my_guild_row = isset($user_guild_id) && $lg->guild_id == $user_guild_id;
+$can_view_roster = $isGM || $isAdmin || $isNPC;
 ?>
-<li class="card<?= $is_my_guild_row ? ' is-my-guild' : ''; ?>" id="guild-lb-<?= $lg->guild_id; ?>">
+<li class="card<?= $can_view_roster ? ' guild-lb-clickable' : ''; ?><?= $is_my_guild_row ? ' is-my-guild' : ''; ?>" id="guild-lb-<?= $lg->guild_id; ?>" <?= $can_view_roster ? 'onclick="openGuildRoster(' . $lg->guild_id . ');"' : ''; ?>>
     <div class="guild-rank"><?= $loop_index + 1; ?></div>
     <div class="guild-lb-badge">
         <img src="<?= $lg->guild_logo; ?>" class="badge">

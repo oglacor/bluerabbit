@@ -1176,8 +1176,21 @@ add_filter( 'ajax_query_attachments_args','filter_media' );
 //------------------------------------- AJAX -------------------------------------//
 //................................................................................//
 
+// Cache-buster for the hand-written assets: bumping the theme Version header is
+// what makes browsers pick up a new script.js / br-table.css.
+function br_asset_version() {
+	static $v = null;
+	if ( $v === null ) {
+		$v = wp_get_theme( get_template() )->get( 'Version' );
+		if ( ! $v ) $v = '1.0';
+	}
+	return $v;
+}
+
 function ajaxFunctions() {
-	wp_enqueue_script( 'ajaxFunctions', get_template_directory_uri().'/script.js', 'jquery', true);
+	// in_footer stays false - script.js has always loaded in the head and inline
+	// <script> blocks in the templates call into it directly.
+	wp_enqueue_script( 'ajaxFunctions', get_template_directory_uri().'/script.js', array('jquery'), br_asset_version(), false);
 	wp_localize_script( 'ajaxFunctions', 'runAJAX', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-casestudy-api', get_template_directory_uri().'/js/casestudy-api.js', array('jquery','ajaxFunctions'), '1.0', true);
@@ -1303,17 +1316,17 @@ function br_color_attr( string $color, string $type = 'bg', bool $declaration_on
 }
 
 function br_stats_enqueue_assets() {
-	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
-	wp_enqueue_style( 'br-notify', get_template_directory_uri() . '/css/br-notify.css', [], '1.0' );
+	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], br_asset_version() );
+	wp_enqueue_style( 'br-notify', get_template_directory_uri() . '/css/br-notify.css', [], br_asset_version() );
 	if ( is_page('login') ) {
-		wp_enqueue_style( 'br-auth', get_template_directory_uri() . '/css/br-auth.css', ['br-table'], '1.0' );
+		wp_enqueue_style( 'br-auth', get_template_directory_uri() . '/css/br-auth.css', ['br-table'], br_asset_version() );
 	}
 	if ( is_page('stats') ) {
-		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], '1.0' );
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
 		wp_enqueue_script( 'br-stats', get_template_directory_uri() . '/js/br-stats.js', ['jquery'], '1.0', true );
 	}
 	if ( is_page('milestone-funnel') ) {
-		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], '1.0' );
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
 		wp_enqueue_script( 'br-milestone-funnel', get_template_directory_uri() . '/js/br-milestone-funnel.js', ['jquery'], '1.0', true );
 	}
 }
@@ -1427,8 +1440,8 @@ add_action( 'wp_ajax_br_stats_player_panel', 'br_stats_player_panel' );
 
 function br_meta_manager_enqueue_assets() {
 	if ( is_page( 'player-meta' ) ) {
-		wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], '1.0' );
-		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', [ 'br-table' ], '1.0' );
+		wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], br_asset_version() );
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', [ 'br-table' ], br_asset_version() );
 		wp_enqueue_script( 'br-meta-manager', get_template_directory_uri() . '/js/br-meta-manager.js', [ 'jquery' ], '1.0', true );
 	}
 }
@@ -1569,6 +1582,27 @@ function br_stats_item_detail() {
 	wp_send_json_success( $stats->get_item_purchase_detail( $aid, $item_id ) );
 }
 add_action( 'wp_ajax_br_stats_item_detail', 'br_stats_item_detail' );
+
+// Guild roster drill-down modal (page-guilds.php's leaderboard). Its own nonce
+// rather than br_stats_nonce - page-guilds.php doesn't load br-stats.js's
+// nonce/config and shouldn't need to, for one small feature. Reuses
+// br_stats_is_manager() as-is since the access policy is identical (any
+// GM/NPC/Admin, any guild).
+function br_guild_roster() {
+	if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'br_guild_roster_nonce' ) ) wp_send_json_error( 'Unauthorized' );
+	$aid = (int) $_POST['adventure_id'];
+	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
+	$guild_id = (int) $_POST['guild_id'];
+	$stats = new BR_Stats();
+	$data = $stats->get_guild_roster( $aid, $guild_id );
+	if ( ! $data['guild'] ) wp_send_json_error( 'Guild not found' );
+	extract( $data );
+	ob_start();
+	include( get_template_directory() . '/guild-roster-modal.php' );
+	$html = ob_get_clean();
+	wp_send_json_success( [ 'html' => $html ] );
+}
+add_action( 'wp_ajax_br_guild_roster', 'br_guild_roster' );
 
 function br_stats_time_in_app() {
 	check_ajax_referer( 'br_stats_nonce', 'nonce' );
@@ -2556,6 +2590,8 @@ add_action("wp_ajax_checkUserDataExists", [BR_Player::instance(), 'checkUserData
 add_action("wp_ajax_enrollUser", [BR_Player::instance(), 'enrollUser']);
 add_action("wp_ajax_uploadBulkUsers", [BR_Player::instance(), 'uploadBulkUsers']);
 add_action("wp_ajax_bulkEnrollUsers", [BR_Player::instance(), 'bulkEnrollUsers']);
+add_action("wp_ajax_brImportPlayersBatch", [BR_Player::instance(), 'importPlayersBatch']);
+add_action("wp_ajax_brVerifyImportedPlayers", [BR_Player::instance(), 'verifyImportedPlayers']);
 add_action("wp_ajax_uploadBulkSpeakers", [BR_Session::instance(), 'uploadBulkSpeakers']);
 add_action("wp_ajax_uploadBulkSessions", [BR_Session::instance(), 'uploadBulkSessions']);
 add_action("wp_ajax_uploadBulkQuests", [BR_Quest::instance(), 'uploadBulkQuests']);

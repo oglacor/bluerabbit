@@ -1,1 +1,3 @@
-Nickname,Password,Email,First Name,Last Name,Lang,Status
+Nickname,Password,Email,First Name,Last Name,Lang,Guild,Gender,Work Level,Work Function,Work Sub Function,Job Profile,Business Pillar,Work Cluster,Work Country,Work Location
+ana.lopez,Welcome2026,ana.lopez@example.com,Ana,Lopez,es_MX,Cikarang,F,L3,Operations,Logistics,Analyst,Retail,LATAM,Mexico,CDMX
+bob.smith,,bob.smith@example.com,Bob,Smith,en_US,Bac Ninh,M,L4,Sales,Field,Representative,Corporate,APAC,Vietnam,Hanoi
