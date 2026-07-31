@@ -23,6 +23,7 @@
 
 <div class="br-journey-manager">
 <input type="hidden" id="bulk-guild-nonce" value="<?= wp_create_nonce('br_bulk_guild_nonce'); ?>" />
+<input type="hidden" id="guild-leader-nonce" value="<?= wp_create_nonce('br_guild_leader_nonce'); ?>" />
 
 <!-- Published Guilds -->
 <?php if(isset($guilds['publish'])){ ?>
@@ -58,6 +59,7 @@
 		</script>
 	</div>
 
+	<?php if($canEdit){ ?>
 	<div class="br-bulk-bar" id="guild-bulk-publish">
 		<span class="br-bulk-count"><strong id="guild-bulk-count-publish">0</strong> <?php _e("selected","bluerabbit"); ?></span>
 		<button class="br-btn amber br-btn-sm" onClick="brConfirmInline(this,'<?= $c_draft; ?>',function(){ brBulkGuildStatus('publish','draft'); });">
@@ -67,20 +69,22 @@
 			<span class="icon icon-trash"></span> <?php _e("Move to trash","bluerabbit"); ?>
 		</button>
 	</div>
+	<?php } ?>
 
 	<table class="br-table" id="guild-table-publish">
 		<thead>
 			<tr>
-				<th class="text-center br-guild-pick-cell">
+				<?php if($canEdit){ ?><th class="text-center br-guild-pick-cell">
 					<input type="checkbox" id="guild-check-all-publish" onChange="brGuildToggleAll('publish', this);">
-				</th>
+				</th><?php } ?>
 				<th><?php _e("Logo","bluerabbit"); ?></th>
 				<th><?php _e("Color","bluerabbit"); ?></th>
 				<th><?php _e("Name","bluerabbit"); ?></th>
 				<th><?php _e("Link","bluerabbit"); ?></th>
 				<th><?php _e("Group","bluerabbit"); ?></th>
+				<th><?php _e("Leader","bluerabbit"); ?></th>
 				<th><?php _e("Capacity","bluerabbit"); ?></th>
-				<th class="text-center"><?php _e("Actions","bluerabbit"); ?></th>
+				<?php if($canEdit){ ?><th class="text-center"><?php _e("Actions","bluerabbit"); ?></th><?php } ?>
 			</tr>
 		</thead>
 		<tbody>
@@ -93,9 +97,10 @@
 			}
 			?>
 			<tr class="guild" id="guild-<?= $g->guild_id;?>">
-				<td class="text-center br-guild-pick-cell">
+				<?php if($canEdit){ ?><td class="text-center br-guild-pick-cell">
 					<input type="checkbox" class="br-guild-pick" data-scope="publish" value="<?= $g->guild_id; ?>">
-				</td>
+				</td><?php } ?>
+					<?php if($canEdit){ ?>
 				<td class="badge">
 					<input type="hidden" value="<?= $g->guild_logo; ?>" id="the_guild_badge-<?= $g->guild_id; ?>">
 					<button class="br-guild-badge-btn" onClick="showWPUpload('the_guild_badge-<?= $g->guild_id; ?>','a','guild',<?= $g->guild_id; ?>);" id="the_guild_badge-<?= $g->guild_id; ?>_thumb" style="background-image: url(<?= $g->guild_logo; ?>);">
@@ -114,22 +119,58 @@
 						<?php include (TEMPLATEPATH . '/component-set-color.php'); ?>
 					</div>
 				</td>
+				<?php }else{ ?>
+				<td class="badge">
+					<span class="br-guild-badge-btn br-guild-badge-static" style="background-image: url(<?= $g->guild_logo; ?>);"></span>
+				</td>
 				<td>
-					<input type="text" class="br-input" id="the_title-guild-<?= $g->guild_id; ?>" value="<?= esc_attr($g->guild_name); ?>" onChange="setTitle(<?= $g->guild_id; ?>,'guild');">
+					<span class="br-guild-color-btn" <?= br_color_attr($g->guild_color) ?>><span class="icon icon-guild"></span></span>
+				</td>
+				<?php } ?>
+				<td>
+					<?php if($canEdit){ ?>
+						<input type="text" class="br-input" id="the_title-guild-<?= $g->guild_id; ?>" value="<?= esc_attr($g->guild_name); ?>" onChange="setTitle(<?= $g->guild_id; ?>,'guild');">
+					<?php }else{ ?>
+						<strong><?= esc_html($g->guild_name); ?></strong>
+					<?php } ?>
 					<input type="hidden" class="guild-id" value="<?= $g->guild_id; ?>">
 				</td>
 				<td>
 					<input type="text" readonly class="br-input" value="<?php echo get_bloginfo('url')."/guild-enroll/?adventure_id=$adventure->adventure_id&t=$g->guild_code"; ?>">
 				</td>
 				<td>
-					<input type="text" class="br-input" id="the_guild_group-<?= $g->guild_id; ?>" value="<?= esc_attr($g->guild_group); ?>" onChange="setGuildGroup(<?= $g->guild_id; ?>);">
+					<?php if($canEdit){ ?>
+						<input type="text" class="br-input" id="the_guild_group-<?= $g->guild_id; ?>" value="<?= esc_attr($g->guild_group); ?>" onChange="setGuildGroup(<?= $g->guild_id; ?>);">
+					<?php }else{ ?>
+						<span class="br-adv-locked-note"><?= esc_html($g->guild_group ?: '—'); ?></span>
+					<?php } ?>
+				</td>
+				<td>
+					<?php $g_members = BR_Guild::instance()->getGuildMembers($adventure->adventure_id, $g->guild_id); ?>
+					<?php if($g_members){ ?>
+						<select class="br-input br-guild-leader-select" id="the_guild_leader-<?= $g->guild_id; ?>" onChange="setGuildLeader(<?= $g->guild_id; ?>);">
+							<option value="0"><?= __("No leader","bluerabbit"); ?></option>
+							<?php foreach($g_members as $m){ ?>
+								<option value="<?= $m->player_id; ?>" <?= $g->guild_leader == $m->player_id ? 'selected' : ''; ?>>
+									<?= esc_html($m->player_display_name ?: trim($m->player_first.' '.$m->player_last) ?: $m->player_email); ?>
+								</option>
+							<?php } ?>
+						</select>
+					<?php }else{ ?>
+						<span class="br-adv-locked-note"><?= __("No members yet","bluerabbit"); ?></span>
+					<?php } ?>
 				</td>
 				<td>
 					<div class="br-input-row">
 						<span class="br-badge-amber"><?= "$g->guild_current_capacity /"; ?></span>
-						<input type="text" class="br-input" id="the_guild_capacity-<?= $g->guild_id; ?>" value="<?= esc_attr($g->guild_capacity); ?>" onChange="setGuildCapacity(<?= $g->guild_id; ?>);">
+						<?php if($canEdit){ ?>
+							<input type="text" class="br-input" id="the_guild_capacity-<?= $g->guild_id; ?>" value="<?= esc_attr($g->guild_capacity); ?>" onChange="setGuildCapacity(<?= $g->guild_id; ?>);">
+						<?php }else{ ?>
+							<span class="br-adv-locked-note"><?= esc_html($g->guild_capacity ?: '∞'); ?></span>
+						<?php } ?>
 					</div>
 				</td>
+				<?php if($canEdit){ ?>
 				<td class="text-center">
 					<div class="br-actions br-actions-center">
 						<a href="<?php echo get_bloginfo('url')."/new-guild/?adventure_id=$adventure->adventure_id&guild_id=$g->guild_id";?>" class="br-btn br-btn-green br-btn-sm" title="<?= esc_attr__("Edit","bluerabbit"); ?>">
@@ -149,6 +190,7 @@
 						</button>
 					</div>
 				</td>
+				<?php } ?>
 			</tr>
 		<?php } ?>
 		</tbody>
@@ -160,12 +202,12 @@
 			<span class="icon icon-guild"></span>
 			<h3><?php _e("No guilds found","bluerabbit"); ?></h3>
 		</div>
-		<?php echo BR_Utils::instance()->addNewButton(__("Add New Guild","bluerabbit"),'light-green', 'guild', $adventure->adventure_id); ?>
+		<?php if($canEdit) echo BR_Utils::instance()->addNewButton(__("Add New Guild","bluerabbit"),'light-green', 'guild', $adventure->adventure_id); ?>
 	</div>
 <?php } ?>
 
 <!-- Draft Guilds -->
-<?php if(isset($guilds['draft'])){ ?>
+<?php if($canEdit && isset($guilds['draft'])){ ?>
 <div class="br-panel">
 	<div class="br-panel-title">
 		<span class="icon icon-guild"></span>
@@ -223,7 +265,7 @@
 		</tbody>
 	</table>
 </div>
-<?php }else{ ?>
+<?php }elseif($canEdit){ ?>
 	<div class="br-panel">
 		<div class="br-empty">
 			<span class="icon icon-guild"></span>
@@ -233,7 +275,7 @@
 <?php } ?>
 
 <!-- Trashed Guilds -->
-<?php if(isset($guilds['trash'])){ ?>
+<?php if($canEdit && isset($guilds['trash'])){ ?>
 <div class="br-panel">
 	<div class="br-panel-title">
 		<span class="icon icon-trash"></span>
@@ -301,7 +343,7 @@
 		</tbody>
 	</table>
 </div>
-<?php }else{ ?>
+<?php }elseif($canEdit){ ?>
 	<div class="br-panel">
 		<div class="br-empty">
 			<span class="icon icon-trash"></span>

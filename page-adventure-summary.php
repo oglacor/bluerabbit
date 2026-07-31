@@ -1,6 +1,14 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
+<?php
+// This page lays out the entire adventure - every milestone, its rewards and its
+// gating - so it is a staff view. It had no guard at all, which meant any
+// enrolled player could read the whole design by URL.
+if(!$canViewAdmin){ ?>
+	<script>document.location.href="<?php bloginfo('url'); ?>/404";</script>
+	<?php include (get_stylesheet_directory() . '/footer.php'); exit;
+} ?>
 
-<?php 
+<?php
 	$order='quest_order, mech_level, mech_start_date, quest_title';
 	$questsSummary = BR_Quest::instance()->getQuests($adventure->adventure_id,'',"blog-post' AND quest_type!='lore");
 

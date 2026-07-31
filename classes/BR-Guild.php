@@ -350,6 +350,102 @@ class BR_Guild {
         return $result;
     }
 
+    //////////////////////////// GUILD LEADER ////////////////////////////
+    // A named member of the guild. Deliberately carries no privileges yet - the
+    // point is to let the role be assigned now so it can be given powers later
+    // (rename the guild, change its logo, manage its members). This is the one
+    // guild change an NPC is allowed to make, so it does its own role check
+    // rather than reusing canManageGuilds().
+    public function setGuildLeader(){
+        global $wpdb;
+        $data = ['success' => false];
+        $n = new Notification();
+
+        $nonce        = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $guild_id     = intval($_POST['guild_id'] ?? 0);
+        $player_id    = intval($_POST['player_id'] ?? 0);
+
+        if (!wp_verify_nonce($nonce, 'br_guild_leader_nonce')) {
+            $data['message'] = $n->pop(__('Session expired — reload the page','bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+        // GMs and NPCs both; a plain player cannot appoint a leader.
+        if (!BR_Access::instance()->canViewAdmin($adventure_id)) {
+            $data['message'] = $n->pop(__("You don't have permission to set a guild leader",'bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        $guild = $wpdb->get_row($wpdb->prepare(
+            "SELECT guild_id, guild_name FROM {$wpdb->prefix}br_guilds WHERE guild_id=%d AND adventure_id=%d",
+            $guild_id, $adventure_id
+        ));
+        if (!$guild) {
+            $data['message'] = $n->pop(__('Guild not found','bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        // Clearing the leader is a valid choice.
+        if (!$player_id) {
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$wpdb->prefix}br_guilds SET guild_leader=NULL WHERE guild_id=%d", $guild_id
+            ));
+            BR_Activity::instance()->logActivity($adventure_id,'update','guild-leader','cleared',$guild_id);
+            $data['success']     = true;
+            $data['just_notify'] = true;
+            $data['leader_id']   = 0;
+            $data['message']     = $n->pop(__('Guild leader cleared','bluerabbit'),'amber','guild');
+            echo json_encode($data); die();
+        }
+
+        // The leader has to actually be in the guild - otherwise the label means
+        // nothing and the future permissions built on it would be nonsense.
+        $is_member = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_guild
+             WHERE adventure_id=%d AND guild_id=%d AND player_id=%d",
+            $adventure_id, $guild_id, $player_id
+        ));
+        if (!$is_member) {
+            $data['message'] = $n->pop(__('That player is not a member of this guild','bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_guilds SET guild_leader=%d WHERE guild_id=%d", $player_id, $guild_id
+        ));
+        BR_Activity::instance()->logActivity($adventure_id,'update','guild-leader','',$guild_id,$player_id);
+
+        $name = $wpdb->get_var($wpdb->prepare(
+            "SELECT player_display_name FROM {$wpdb->prefix}br_players WHERE player_id=%d", $player_id
+        ));
+        $data['success']     = true;
+        $data['just_notify'] = true;
+        $data['leader_id']   = $player_id;
+        $data['message']     = $n->pop(
+            sprintf(__('%s leads %s','bluerabbit'), $name ?: __('Player','bluerabbit'), $guild->guild_name),
+            'green','guild'
+        );
+        echo json_encode($data);
+        die();
+    }
+
+    // Members of a guild, for the leader picker.
+    public function getGuildMembers($adventure_id, $guild_id){
+        global $wpdb;
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT p.player_id, p.player_display_name, p.player_first, p.player_last, p.player_email
+             FROM {$wpdb->prefix}br_player_guild pg
+             JOIN {$wpdb->prefix}br_players p ON p.player_id = pg.player_id
+             WHERE pg.adventure_id=%d AND pg.guild_id=%d
+             ORDER BY p.player_display_name ASC",
+            $adventure_id, $guild_id
+        ));
+    }
+
     //////////////////////////// BULK STATUS CHANGE ////////////////////////////
     // manage-guilds.php can hold hundreds of guilds (a CSV import with a Guild
     // column creates one per distinct name), so trashing them one row at a time

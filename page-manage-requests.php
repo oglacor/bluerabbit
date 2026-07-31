@@ -1,6 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
-<?php if($isGM || $isAdmin){ ?>
+<?php if($canViewAdmin){ // NPCs read requests; the status buttons inside are GM-only ?>
 	<div class="container">
 		<div class="body-ui w-full white-bg">
 			<?php include(get_template_directory().'/manage-requests.php'); ?>

@@ -49,6 +49,16 @@
 			}elseif($adventure->player_adventure_role == 'npc'){
 				$isNPC = true;
 			}
+
+			// Capability flags every template should use instead of re-deriving
+			// the rules from the raw role booleans. An NPC has "surveillance"
+			// access: they see everything a GM sees and play the adventure like
+			// any other player, but they never edit content, never add or remove
+			// users and never send mail. Enforcement lives in classes/BR-Access.php.
+			$canViewAdmin     = $isAdmin || $isGM || $isNPC;  // read the admin pages
+			$canEdit          = $isAdmin || $isGM;            // create/change content
+			$canManagePlayers = $isAdmin || $isGM;            // add/remove/roles
+			$canSendEmail     = $isAdmin || $isGM;            // actually dispatch mail
 			
 			/* PLAYER RESET STARTS*/
 			$playerReset = BR_Progression::instance()->getPlayerProgress($adv_child_id, $current_user->ID);
@@ -189,6 +199,16 @@
 		$add_from_template = true;
 		$add_adventure = true;
 	}
+
+	// Defined unconditionally so no template has to guard against them being
+	// unset (pages reached without an adventure in scope still read them).
+	if(!isset($isNPC))            $isNPC = false;
+	if(!isset($isGM))             $isGM = false;
+	if(!isset($isAdmin))          $isAdmin = false;
+	$canViewAdmin     = $isAdmin || $isGM || $isNPC;
+	$canEdit          = $isAdmin || $isGM;
+	$canManagePlayers = $isAdmin || $isGM;
+	$canSendEmail     = $isAdmin || $isGM;
 	if(is_page('adventure')){
 		$bg = isset($adv_settings['journey_bg']['value']) != '' ? $adv_settings['journey_bg']['value'] : $config['journey_bg']['value'];
 	}elseif(is_page('item-shop')){

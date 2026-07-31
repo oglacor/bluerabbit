@@ -1,4 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
+<?php if(!($isGM || $isAdmin)){ ?>
+<script>document.location.href="<?php bloginfo('url'); ?>/404";</script>
+<?php include (get_stylesheet_directory() . '/footer.php'); exit; } ?>
+
 <?php
 $new_survey_quest_id = br_require_id('questID', false);
 $quest = $new_survey_quest_id ? $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE adventure_id=$adventure_id AND quest_id=$new_survey_quest_id") : null;

@@ -6666,6 +6666,27 @@ function brConfirmInline(btn, label, fn) {
     $btn.data('brTimer', setTimeout(function () { brResetConfirm($btn); }, 4000));
 }
 
+////////////////////////////////////////// GUILD LEADER ////////////////////////////////////////////
+// The one guild change an NPC is allowed to make, so it has its own endpoint and
+// its own nonce rather than riding on updateGuild.
+function setGuildLeader(guild_id) {
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'setGuildLeader',
+            nonce: $('#guild-leader-nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            guild_id: guild_id,
+            player_id: $('#the_guild_leader-' + guild_id).val()
+        },
+        method: 'POST',
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
 ////////////////////////////////////////// GUILD BULK ACTIONS ////////////////////////////////////////////
 // manage-guilds.php. A CSV import with a Guild column can create hundreds of
 // guilds at once, so every table there supports selecting rows and moving the

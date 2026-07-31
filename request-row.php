@@ -34,6 +34,7 @@ $time_ago = human_time_diff(strtotime($req->request_date), current_time('timesta
 				</div>
 			<?php } ?>
 
+			<?php if(!empty($canEdit)){ // NPCs read requests but never action them ?>
 			<div class="br-req-actions-wrap">
 				<textarea class="br-input" id="admin-note-<?= $req->request_id; ?>" rows="2" placeholder="<?= __("Admin note (optional)","bluerabbit"); ?>"><?= esc_html($req->request_admin_note); ?></textarea>
 				<div class="br-actions br-req-actions-bar">
@@ -59,6 +60,7 @@ $time_ago = human_time_diff(strtotime($req->request_date), current_time('timesta
 					<?php } ?>
 				</div>
 			</div>
+			<?php } ?>
 		</div>
 	</div>
 </div>

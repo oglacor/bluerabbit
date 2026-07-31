@@ -5,8 +5,11 @@
 
 include ( get_stylesheet_directory() . '/header.php' );
 
+// Sending is GM/owner/admin. NPCs get the Send Log only: they are supervisors,
+// so they need to see what went out to whom without being able to dispatch mail.
 $can_send = isset( $adventure ) && $adventure
 	&& ( $isGM || $isOwner || current_user_can( 'manage_options' ) );
+$can_view_log = isset( $adventure ) && $adventure && ( $can_send || ! empty( $isNPC ) );
 
 if ( ! isset( $adventure_id ) || ! $adventure_id ) :
 ?>
@@ -18,7 +21,7 @@ if ( ! isset( $adventure_id ) || ! $adventure_id ) :
 	</div>
 </div>
 
-<?php elseif ( ! $can_send ) : ?>
+<?php elseif ( ! $can_view_log ) : ?>
 
 <div class="br-page">
 	<div class="br-panel br-notif-denied">
@@ -59,6 +62,10 @@ $log_campaign_count = (int) $wpdb->get_var( $wpdb->prepare(
 
 $compose_url = add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'compose' ], get_permalink() );
 $log_url     = add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log' ],     get_permalink() );
+
+// Someone who cannot send has nothing to do on the compose view, so pin them to
+// the log regardless of what the query string asks for.
+if ( ! $can_send ) { $view = 'log'; }
 ?>
 
 <div class="br-page br-page-narrow">
@@ -80,10 +87,16 @@ $log_url     = add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log
 
 	<!-- View tabs: Compose / Send Log -->
 	<div class="br-notif-view-tabs">
+		<?php if ( $can_send ) : ?>
 		<a href="<?php echo esc_url( $compose_url ); ?>"
 		   class="br-notif-view-tab <?php echo $view !== 'log' ? 'active' : ''; ?>">
 			<span class="icon icon-document"></span> <?php esc_html_e( 'Compose', 'bluerabbit' ); ?>
 		</a>
+		<?php else : ?>
+		<span class="br-notif-view-tab br-notif-view-tab-note">
+			<span class="icon icon-lock"></span> <?php esc_html_e( 'View only', 'bluerabbit' ); ?>
+		</span>
+		<?php endif; ?>
 		<a href="<?php echo esc_url( $log_url ); ?>"
 		   class="br-notif-view-tab <?php echo $view === 'log' ? 'active' : ''; ?>">
 			<span class="icon icon-list"></span> <?php esc_html_e( 'Send Log', 'bluerabbit' ); ?>

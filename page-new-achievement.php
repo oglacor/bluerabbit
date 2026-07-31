@@ -1,6 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php
-if($adventure && ($isGM || $isAdmin || $isNPC)){
+// Authoring screen - GM/admin only. NPCs review achievements and who earned
+// them through /achievements and /assign-achievement instead.
+if($adventure && ($isGM || $isAdmin)){
 	$achievement_id = br_require_id('achievement_id', false) ?: 0;
 	$paths = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."br_achievements WHERE adventure_id=$adv_parent_id AND achievement_display!='badge' AND achievement_status='publish' AND achievement_id != $achievement_id ");
 	$a = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."br_achievements WHERE achievement_id=$achievement_id AND achievement_status='publish'");

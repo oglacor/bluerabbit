@@ -225,6 +225,68 @@
 						</span>
 					</a>
 				</li>
+
+				<!-- Surveillance: everything below is read-only for an NPC. The
+				     server refuses any write from them regardless (BR_Access). -->
+				<li class="nav-header">
+					<?= __("Surveillance","bluerabbit"); ?>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/stats/?adventure_id=$adv_child_id";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-stats.png" alt=""/></span>
+							<span class="label"><?= __("Stats","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/adventure-summary/?adventure_id=$adv_child_id";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-summary.png" alt=""/></span>
+							<span class="label"><?= __("Adventure Summary","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/review-player-posts/?adventure_id=$adv_child_id";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-journal.png" alt=""/></span>
+							<span class="label"><?= __("Player Work","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/transactions/?adventure_id=$adv_child_id";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-bloo.png" alt=""/></span>
+							<span class="label"><?= __("Transactions","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/manage-requests/?adventure_id=$adv_child_id";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-tools.png" alt=""/></span>
+							<span class="label"><?= __("Player Requests","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/email-notifications/?adventure_id=$adv_child_id";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-tools.png" alt=""/></span>
+							<span class="label"><?= __("Sent Emails","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
+				<li class="nav-button">
+					<a class="" href="<?= get_bloginfo('url')."/manage-adventure/?adventure_id=$adv_parent_id&manage=guilds";?>">
+						<span class="content">
+							<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-guild.png" alt=""/></span>
+							<span class="label"><?= __("Guild Leaders","bluerabbit"); ?></span>
+						</span>
+					</a>
+				</li>
 			</ul>
 		</nav>
 	</div>

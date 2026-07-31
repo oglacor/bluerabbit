@@ -7137,3 +7137,27 @@ button.br-btn.br-confirming {
   background-size: cover;
   background-position: center;
 }
+
+// ── NPC / view-only surfaces ─────────────────────────────
+// (role management, 2026-07-31)
+
+.br-guild-leader-select {
+  min-width: 150px;
+}
+
+// Static stand-ins rendered where a GM would get an editable control.
+.br-guild-badge-static {
+  cursor: default;
+  opacity: 0.75;
+
+  &:hover { border-color: rgba($br-white, 0.12); }
+}
+
+.br-notif-view-tab-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba($br-white, 0.4);
+  font-style: italic;
+  cursor: default;
+}

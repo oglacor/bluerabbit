@@ -1,4 +1,12 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
+<?php
+// Staff-only, and it had no guard whatsoever. NPCs may read the roster;
+// everything that adds, removes or re-roles a player is gated on $canManagePlayers
+// below and refused server-side by BR_Access for NPCs.
+if(!$canViewAdmin){ ?>
+	<script>document.location.href="<?php bloginfo('url'); ?>/404";</script>
+	<?php include (get_stylesheet_directory() . '/footer.php'); exit;
+} ?>
 <h1 class="padding-10 font condensed white-color w900 uppercase _20 light-blue-bg-800">
 	<?= __('Manage players in','bluerabbit')." <strong>$adventure->adventure_title</strong>"; ?>
 </h1>
@@ -25,6 +33,7 @@
 					</button>
 
 				</li>
+				<?php if($canManagePlayers){ ?>
 				<li class="block">
 					<button class="form-ui w-full relative tab-button overflow-hidden" id="add-manually-players-list-tab-button" onClick="switchTabs('#tab-group','#add-manually-players-list');">
 						<span class="icon icon-document foreground relative"></span>
@@ -34,6 +43,7 @@
 					</button>
 
 				</li>
+				<?php } ?>
 				<li class="block text-center">
 					<a href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adv_child_id";?>" class="form-ui light-green-bg-200 green-900 font w300 _18 w-full">
 						<span class="icon icon-journey"></span> <?= __('Back to the journey','bluerabbit'); ?>
@@ -114,7 +124,9 @@
 											</td>
 
 											<td>
-												<?php if(BR_Utils::instance()->user_has_role($play->player_id,'br_player')){ ?>
+												<?php if(!$canManagePlayers){ ?>
+													<span class="br-adv-locked-note"><?= __("View only","bluerabbit"); ?></span>
+												<?php }elseif(BR_Utils::instance()->user_has_role($play->player_id,'br_player')){ ?>
 													<button class="form-ui icon-sm red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?= $play->player_id; ?>');">
 														<?= __("Remove Player","bluerabbit"); ?>
 													</button>
@@ -138,7 +150,7 @@
 														<?= __("Can't remove","bluerabbit"); ?>
 													</button>
 												<?php } ?>
-												<?php if($config['allow_gm_reset_password']['value'] > 0){ ?>
+												<?php if($canManagePlayers && $config['allow_gm_reset_password']['value'] > 0){ ?>
 													<button class="form-ui icon-sm red-bg-200 white-color" onClick="loadContent('update-player-password',<?= $play->player_id; ?>);">
 														<?= __("Update Password","bluerabbit"); ?>
 													</button>
@@ -207,6 +219,9 @@
 											<td><?= $play->player_email; ?></td>
 
 											<td>
+												<?php if(!$canManagePlayers){ ?>
+													<span class="br-adv-locked-note"><?= __("View only","bluerabbit"); ?></span>
+												<?php }else{ ?>
 												<button class="form-ui icon-sm red-bg-200 white-color" onClick="showOverlay('#confirm-option-<?= $play->player_id; ?>');">
 													<?= __("Activate Player","bluerabbit"); ?>
 												</button>
@@ -225,6 +240,7 @@
 														<span class="icon icon-cancel white-color"></span>
 													</button>
 												</div>
+												<?php } ?>
 											</td>
 										</tr>
 									<?php } ?>
@@ -234,6 +250,7 @@
 					</div>
 				</div>
 			</div>
+			<?php if($canManagePlayers){ // adding users is GM-only; NPCs never see these panels ?>
 			<div class="tab max-w-1200 padding-10" id="add-manually-players-list">
 				<div class="highlight padding-10 grey-bg-200 h-60" id="add-players">
 					<div class="icon-group">
@@ -327,6 +344,7 @@
 					</div>
 				</div>
 			</div>
+			<?php } ?>
 		</div>
 	</div>
 </div>

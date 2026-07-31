@@ -1,4 +1,8 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
+<?php if(!($isGM || $isAdmin)){ ?>
+<script>document.location.href="<?php bloginfo('url'); ?>/404";</script>
+<?php include (get_stylesheet_directory() . '/footer.php'); exit; } ?>
+
 <?php
 $enc_id = br_require_id('enc_id', false);
 if ($enc_id) {

@@ -1,7 +1,12 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
-<?php if($isGM || $isAdmin){ ?>
-	<?php $manage = isset($_GET['manage']) ? $_GET['manage'] : 'journey'; ?>
+<?php
+	$manage = isset($_GET['manage']) ? $_GET['manage'] : 'journey';
+	// NPCs get exactly one tab here: Guilds, and read-only apart from appointing a
+	// guild leader. Everything else under Manage Adventure is content authoring.
+	$npc_manage_ok = !empty($isNPC) && $manage === 'guilds';
+?>
+<?php if($isGM || $isAdmin || $npc_manage_ok){ ?>
 	<?php
 	$manage_base = get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=";
 	$manage_tabs = [
@@ -22,6 +27,7 @@
 	?>
 	<div class="br-tabs br-tabs-sticky">
 		<?php foreach($manage_tabs as $tab){ ?>
+			<?php if($npc_manage_ok && $tab['key'] !== 'guilds') continue; ?>
 			<?php if($tab['show']){ ?>
 				<?php if($manage === $tab['key']){ ?>
 					<button class="br-tab-btn active">

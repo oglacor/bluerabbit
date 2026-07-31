@@ -376,6 +376,7 @@ $sql = "
 		`guild_code` VARCHAR(50) NULL DEFAULT '',
 		`guild_group` VARCHAR(255) NULL DEFAULT '',
 		`guild_members` INT NULL DEFAULT 0,
+		`guild_leader` BIGINT NULL DEFAULT NULL,
 		`assign_on_login` TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (`guild_id`) )$charset_collate;
 
@@ -1198,6 +1199,7 @@ function ajaxFunctions() {
 }
 
 require_once ("$dirName/classes/Notification.php");
+require_once ("$dirName/classes/BR-Access.php");
 require_once ("$dirName/classes/BR-Utils.php");
 require_once ("$dirName/classes/BR-Config.php");
 require_once ("$dirName/classes/BR-Activity.php");
@@ -1703,6 +1705,14 @@ function br_migrate_tabi_tables() {
 	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_tabis LIKE 'tabi_as_category'");
 	if (empty($col)) {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_tabis ADD COLUMN `tabi_as_category` TINYINT NULL DEFAULT 0");
+	}
+
+	// Guild leader - a named member of the guild. Carries no privileges yet; it
+	// exists so the role can be assigned now and given powers (rename the guild,
+	// change its logo, manage its members) later.
+	$col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}br_guilds LIKE 'guild_leader'");
+	if (empty($col)) {
+		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_guilds ADD COLUMN `guild_leader` BIGINT NULL DEFAULT NULL");
 	}
 
 	$table = $wpdb->prefix . 'br_tabi_prerequisites';
@@ -2700,6 +2710,11 @@ add_action("wp_ajax_setCategory", [BR_Adventure::instance(), 'setCategory']);
 add_action("wp_ajax_setGuildGroup", [BR_Guild::instance(), 'setGuildGroup']);
 add_action("wp_ajax_setGuildCapacity", [BR_Guild::instance(), 'setGuildCapacity']);
 add_action("wp_ajax_brBulkGuildStatus", [BR_Guild::instance(), 'bulkGuildStatus']);
+add_action("wp_ajax_setGuildLeader", [BR_Guild::instance(), 'setGuildLeader']);
+
+// Runs before admin-ajax.php dispatches, so an NPC is refused at the door for
+// every action that is not on BR_Access::NPC_ALLOWED. See classes/BR-Access.php.
+add_action('admin_init', [BR_Access::instance(), 'guardAjax'], 1);
 add_action("wp_ajax_setDisplayStyle", [BR_Adventure::instance(), 'setDisplayStyle']);
 add_action("wp_ajax_setDimensions", [BR_Tabi::instance(), 'setDimensions']);
 add_action("wp_ajax_setTabiOnJourney", [BR_Tabi::instance(), 'setTabiOnJourney']);
