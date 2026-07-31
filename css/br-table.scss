@@ -6416,36 +6416,127 @@ body.br-drawer-open {
 .br-icon-green    { color: $br-green; }     // #24da98
 .br-icon-purple   { color: $br-purple; }    // #9f40e2
 
-// ── page-players.php roster spreadsheet (added 2026-07-08, WP-side) ──
+// ── page-players.php roster spreadsheet (added 2026-07-08, WP-side;
+//    reworked 2026-07-30 for full-width page-level scroll;
+//    reworked again 2026-07-31 - see note below) ──
 
-.br-table-scroll {
-  overflow-x: auto;
+// Full-width variant of .br-page - page-players.php only. Everything else
+// keeps using .br-page (centered, max-width:1440px) unchanged.
+.br-page-full {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 50px 24px 50px;
+  position: relative;
+  color: $br-white;
+}
+
+// A real CSS limitation, confirmed empirically (real mouse-wheel scroll +
+// getBoundingClientRect, not just computed-style inspection): per the CSS
+// Overflow spec, ANY element with overflow-x != visible becomes a "scroll
+// container" - and position:sticky descendants stick relative to their
+// NEAREST scroll-container ancestor, even one that never actually has
+// anything to scroll vertically. So a horizontally-scrolling wrapper around
+// the whole table permanently traps a sticky <thead>'s vertical stickiness
+// to itself (which never scrolls), regardless of whether its height is
+// capped - it silently never sticks to the real page scroll. There is no
+// pure-CSS way to scroll only one axis of a box while letting position:sticky
+// on the OTHER axis pass through to an ancestor.
+//
+// Fix: split the header out into its own element that never sits inside any
+// overflow-x:auto box, so ITS OWN position:sticky is untrapped and sticks to
+// the true page scroll. Horizontal scrolling stays scoped to just the body
+// table (not the whole document - important, since the site's top nav is
+// position:sticky with no horizontal offset of its own and would otherwise
+// scroll away sideways with the page). JS keeps the header's horizontal
+// scroll position and column widths mirrored to the body table's.
+//
+// Structure (see page-players.php):
+//   .br-roster-wrap
+//     .br-roster-head-scroll (sticky top:50px, overflow-x:hidden - clips,
+//         no visible scrollbar, scrollLeft driven by JS)
+//       table#roster-head-table (header row only)
+//     .br-roster-scroll (overflow-x:auto but its own scrollbar hidden; no
+//         height cap, so vertical scroll passes through to the page)
+//       table#roster-table (body rows only, no thead)
+//     .br-roster-scrollbar-track (sticky bottom:50px - the one VISIBLE
+//         horizontal scrollbar, always reachable regardless of table height)
+
+.br-roster-wrap {
   width: 100%;
 }
 
-// overflow-x:auto above forces overflow-y to compute to auto too (per
-// spec, an axis can't stay "visible" while its sibling axis isn't) -
-// that silently makes it a scrolling container of its own, so a plain
-// sticky thead would stick to ITS scrollport, which never actually
-// scrolls internally (the page scrolls instead). Giving it a bounded
-// height turns it into a real self-scrolling grid so the sticky header
-// has something to stick within - top:0 of this box, not top:50px of
-// the page.
+.br-roster-head-scroll {
+  position: sticky;
+  top: 50px; // clears the site's sticky top nav (header.super-header, 50px)
+  overflow-x: hidden;
+  overflow-y: hidden;
+  background: $br-bg;
+  z-index: 7;
+  border-bottom: 2px solid $br-border;
+}
+
+// overflow-x stays functionally scrollable (mouse drag, trackpad, shift+wheel
+// all still work) but its own native scrollbar is hidden - it sits at the
+// bottom of this div's box, which is the bottom of the WHOLE table, easily
+// thousands of pixels down the page and effectively unreachable. The one
+// visible/usable scrollbar is .br-roster-scrollbar-track below, pinned to
+// the bottom of the viewport instead.
 .br-roster-scroll {
-  max-height: calc(100vh - 260px);
-  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // legacy Edge
+  &::-webkit-scrollbar { display: none; } // Chrome/Safari
+}
+
+// Always-reachable horizontal scrollbar, pinned to the bottom of the
+// viewport (above the site's fixed bottom taskbar, 50px tall) regardless of
+// how tall the table/page is. Kept in 3-way sync with the head/body tables
+// via JS in page-players.php - dragging this, or scrolling the table itself,
+// moves all three together.
+.br-roster-scrollbar-track {
+  position: sticky;
+  bottom: 50px;
+  height: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: rgba($br-white, 0.06);
+  border-top: 1px solid $br-border;
+  border-bottom: 1px solid $br-border;
+  z-index: 7;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.35);
+
+  div {
+    height: 1px;
+  }
+
+  // Explicit thumb styling so this reads as an obvious, always-visible
+  // scrollbar against the dark theme rather than a faint native strip
+  // that could blend in.
+  scrollbar-color: $br-primary rgba($br-white, 0.06); // Firefox
+
+  &::-webkit-scrollbar {
+    height: 18px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: $br-primary;
+    border-radius: 9px;
+    border: 4px solid transparent;
+    background-clip: content-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: lighten($br-primary, 10%);
+    background-clip: content-box;
+  }
 }
 
 .br-roster-table {
   th, td {
     white-space: nowrap;
-  }
-
-  thead th {
-    position: sticky;
-    top: 0;
-    z-index: 4;
-    background: $br-bg;
   }
 
   .br-roster-name-cell {
@@ -6466,14 +6557,23 @@ body.br-drawer-open {
 
 .br-roster-col-header {
   text-align: center;
-  min-width: 60px;
+  min-width: 40px;
+  height: 140px;
+  vertical-align: bottom;
+  padding-bottom: 8px;
+}
 
-  img {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    object-fit: cover;
-  }
+.br-roster-col-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 130px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba($br-white, 0.85);
 }
 
 .br-roster-cell {
@@ -6488,6 +6588,15 @@ body.br-drawer-open {
 .br-roster-cell-pending {
   color: rgba($br-white, 0.2);
   font-size: 18px;
+}
+
+.br-roster-cell-validating {
+  display: inline-block;
+  color: $br-orange;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .br-roster-grade-input {
