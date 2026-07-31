@@ -1,23 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php if($adventure){ ?>
 <?php
-	if($isGM || $isAdmin || $isNPC ){
-		$guilds = $wpdb->get_results("SELECT 
-		
-		guilds.*, COUNT(guild_players.player_id) AS guild_current_capacity 
-		
-		FROM {$wpdb->prefix}br_guilds guilds
-		
-		LEFT JOIN {$wpdb->prefix}br_player_guild guild_players 
-		ON guilds.guild_id=guild_players.guild_id
-		
-		WHERE guilds.adventure_id=$adv_child_id AND guilds.guild_status='publish'
-		GROUP BY guilds.guild_id ORDER BY guilds.guild_id ASC
-		");
-	}else{
-		$allguilds = BR_Guild::instance()->getGuilds($adv_child_id);
-		$guilds = $allguilds['publish'];
-	}
 	$my_guild_list = BR_Guild::instance()->getMyGuilds($adv_child_id);
 
 	if($use_leaderboard){
@@ -150,36 +133,6 @@
 					<?php } ?>
 				</span>
 			</div>
-		</div>
-		<div class="body-ui w-full">
-			<?php if(($isGM || $isAdmin || $isNPC) && $guilds){ ?>
-				<div class="content white-color">
-					<table class="table transparent-bg">
-						<thead>
-							<tr>
-								<td><?php _e("#","bluerabbit"); ?></td>
-								<td><?php _e("Name","bluerabbit"); ?></td>
-								<td><?php _e("Link","bluerabbit"); ?></td>
-								<td class="text-center"><?php _e("XP","bluerabbit"); ?></td>
-								<td class="text-center"><?php _e("BLOO","bluerabbit"); ?></td>
-								<td class="text-center"><?php _e("Enrolled","bluerabbit"); ?></td>
-							</tr>
-						</thead>
-						<tbody>
-							<?php foreach($guilds as $key=>$g){ ?>
-								<tr class="transparent-bg">
-									<td><?= $key+1; ?> </td>
-									<td><?= $g->guild_name; ?> </td>
-									<td><?= get_bloginfo('url')."/guild-enroll/?adventure_id=$adventure->adventure_id&t=$g->guild_code"; ?> </td>
-									<td class="text-center"><?= $g->guild_xp;  ?></td>
-									<td class="text-center"><?= $g->guild_bloo; ?></td>
-									<td class="text-center"><?= "$g->guild_current_capacity / $g->guild_capacity"; ?></td>
-								</tr>
-							<?php } ?>
-						</tbody>
-					</table>
-				</div>
-			<?php } ?>
 		</div>
 		<br class="clear">
 		<?php if ($isGM){ ?> <input type="hidden" id="trash-nonce" value="<?= wp_create_nonce('trash_nonce'); ?>"/> <?php } ?>
