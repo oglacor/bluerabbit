@@ -6,7 +6,6 @@
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
 			<div class="center">
-				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
 				<?php if ($audio_url) { ?>
 				<div class="hud-audio-player" id="audio-player-step-<?= $step->step_id; ?>">
 					<audio id="audio-el-step-<?= $step->step_id; ?>" src="<?= esc_attr($audio_url); ?>" preload="metadata"></audio>

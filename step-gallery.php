@@ -1,7 +1,7 @@
 <?php $settings = $step->step_settings ? json_decode($step->step_settings, true) : []; $images = $settings['images'] ?? []; ?>
 <div class="step <?= $i==0 ? 'active' : ''; ?>" id="step-<?= $step->step_order; ?>">
 	<?php include (TEMPLATEPATH . "/steps-background.php"); ?>
-	<div class="step-content-container step-gallery">
+	<div class="step-content-container step-gallery open-field">
 		<div class="dialogue-box">
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
