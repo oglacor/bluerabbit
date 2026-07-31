@@ -250,9 +250,6 @@ foreach($award_counts_qry as $row){
 										</td>
 										<td>
 											<a href="<?php echo get_bloginfo('url')."/new-achievement/?adventure_id=$adventure->adventure_id&achievement_id=$a->achievement_id";?>" class="br-action-link edit"><span class="icon icon-edit"></span></a>
-											<?php if($a->achievement_parent){ ?>
-											<button class="br-btn br-btn-amber" type="button" onClick="breakParent(<?= $a->achievement_id; ?>, 'achievement');"><?= __("Break Parent","bluerabbit"); ?></button>
-											<?php } ?>
 										</td>
 										<td>
 											<div class="br-actions">

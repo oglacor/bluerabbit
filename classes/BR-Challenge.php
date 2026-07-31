@@ -158,25 +158,6 @@ class BR_Challenge {
                 $data['question_updated']=$q_text;
                 $data['just_notify'] =true;
                 BR_Activity::instance()->logActivity($adventure_id,'update','survey-question','',$quest_id,$id);
-
-                $adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-                if($adventure->adventure_type=='template'){
-                    $children_update = "UPDATE {$wpdb->prefix}br_survey_questions SET
-
-                    survey_question_text=%s,
-                    survey_question_image=%s,
-                    survey_question_description=%s,
-                    survey_question_range=%d,
-                    survey_question_display=%s
-
-                    WHERE survey_question_parent= $id AND survey_question_id!=$id";
-
-                    $children_update = $wpdb->query( $wpdb->prepare($children_update, $q_text, $q_image, $q_description, $q_range, $q_display));
-
-                    BR_Activity::instance()->logActivity($adventure_id,'update','survey-question-children','',$quest_id,$id);
-                }
-
-
             }else{
                 $data['success']=false;
                 $msg_content = __('Error','bluerabbit');
@@ -295,15 +276,6 @@ class BR_Challenge {
                 $msg_content = __('Option Updated','bluerabbit');
                 $data['message'] = $notification->pop($msg_content,'green');
                 BR_Activity::instance()->logActivity($adventure_id,'update','survey-question-option','', $option_id);
-
-                $adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-                if($adventure->adventure_type=='template'){
-                    $children_update = "UPDATE {$wpdb->prefix}br_survey_options SET survey_option_text=%s, survey_option_image=%s WHERE survey_option_parent= $option_id AND survey_option_id!=$option_id";
-
-                    $children_update = $wpdb->query( $wpdb->prepare($children_update, $o_text, $o_image));
-
-                    BR_Activity::instance()->logActivity($adventure_id,'update','survey-question-option-children','',$option_id);
-                }
             }else{
                 $msg_content = __('Error','bluerabbit');
                 $data['message'] = $notification->pop($msg_content,'red','cancel');
@@ -331,21 +303,6 @@ class BR_Challenge {
                 $msg_content = __('Option Updated','bluerabbit');
                 $data['message'] = $notification->pop($msg_content,'green');
                 BR_Activity::instance()->logActivity($adventure_id,'update','challenge-question-option','', $option_id);
-
-                $adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-                if($adventure->adventure_type=='template'){
-                    $children_update = "UPDATE {$wpdb->prefix}br_challenge_answers SET answer_value=%s, answer_image=%s , answer_correct=%d WHERE answer_id!=$option_id AND answer_parent=$option_id";
-
-                    $children_update = $wpdb->query( $wpdb->prepare($children_update, $o_text, $o_image, $o_correct));
-
-                    $questions_query = "UPDATE {$wpdb->prefix}br_challenge_questions SET question_type='$question_type'
-                    WHERE question_parent=$question_id AND question_id!=$question_id";
-                    $qs_insert = $wpdb->query( $wpdb->prepare($questions_query));
-
-                    BR_Activity::instance()->logActivity($adventure_id,'update','challenge-question-option-children','',$option_id);
-                }
-
-
             }else{
                 $msg_content = __('Error','bluerabbit');
                 $data['message'] = $notification->pop($msg_content,'red','cancel');
@@ -403,8 +360,8 @@ class BR_Challenge {
         $the_order = $_POST['the_order'];
         $count = 0;
         foreach($the_order as $k=>$id){
-            $sql = "UPDATE {$wpdb->prefix}br_survey_questions SET survey_question_order=%d WHERE (survey_question_id=%d) OR survey_question_parent=%d";
-            $sql = $wpdb->prepare ($sql,$k,$id,$id);
+            $sql = "UPDATE {$wpdb->prefix}br_survey_questions SET survey_question_order=%d WHERE survey_question_id=%d";
+            $sql = $wpdb->prepare ($sql,$k,$id);
             $result = $wpdb->query($sql);
         }
         if($k+1 >= count($the_order)){

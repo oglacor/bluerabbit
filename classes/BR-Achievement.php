@@ -15,8 +15,8 @@ class BR_Achievement {
         $the_order = $_POST['the_order'];
         $count = 0;
         foreach($the_order as $k=>$id){
-            $sql = "UPDATE {$wpdb->prefix}br_achievements SET achievement_order=%d WHERE (achievement_id=%d AND adventure_id=%d) OR achievement_parent=%d";
-            $sql = $wpdb->prepare ($sql,$k,$id,$adventure_id,$id);
+            $sql = "UPDATE {$wpdb->prefix}br_achievements SET achievement_order=%d WHERE achievement_id=%d AND adventure_id=%d";
+            $sql = $wpdb->prepare ($sql,$k,$id,$adventure_id);
             $result = $wpdb->query($sql);
         }
         if($k+1 >= count($the_order)){

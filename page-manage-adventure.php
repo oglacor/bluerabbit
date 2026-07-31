@@ -67,7 +67,6 @@
 	<input type="hidden" id="display-style-nonce" value="<?php echo wp_create_nonce('display_style_nonce'); ?>" />
 	<input type="hidden" id="quest-type-nonce" value="<?php echo wp_create_nonce('quest_type_nonce'); ?>" />
 	<input type="hidden" id="set-speaker-nonce" value="<?php echo wp_create_nonce('speaker_nonce'); ?>" />
-	<input type="hidden" id="break-parent-nonce" value="<?php echo wp_create_nonce('break_parent_nonce'); ?>" />
 <?php }else{ ?>
 	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
 <?php } ?>

@@ -115,7 +115,6 @@ $sql = "
 		`achievement_id` BIGINT NOT NULL AUTO_INCREMENT,
 		`adventure_id` BIGINT NOT NULL,
 		`org_id` BIGINT NULL,
-		`achievement_parent` BIGINT NULL,
 		`achievement_name` VARCHAR(255) NULL,
 		`achievement_xp` INT NULL,
 		`achievement_bloo` INT NULL,
@@ -268,7 +267,6 @@ $sql = "
 		`answer_correct` TINYINT NOT NULL DEFAULT 0,
 		`answer_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
 		`ref_id` VARCHAR(8) NULL,
-		`answer_parent` BIGINT NULL,
 	PRIMARY KEY (`answer_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_challenge_attempts (
@@ -300,7 +298,6 @@ $sql = "
 		`question_type` VARCHAR(20) NOT NULL DEFAULT 'single',
 		`question_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
 		`ref_id` VARCHAR(8) NULL,
-		`question_parent` BIGINT NULL,
 	PRIMARY KEY (`question_id`) )$charset_collate;
 
 	CREATE TABLE {$wpdb->prefix}br_config (
@@ -394,7 +391,6 @@ $sql = "
 		`adventure_id` BIGINT NOT NULL,
 		`org_id` BIGINT NULL,
 		`ref_id` VARCHAR(8) NULL,
-		`item_parent` BIGINT NULL,
 		`item_post_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		`item_post_modified` DATETIME DEFAULT CURRENT_TIMESTAMP,
 		`item_status` VARCHAR(20) NOT NULL DEFAULT 'publish',
@@ -434,7 +430,6 @@ $sql = "
 		`quest_id` BIGINT NOT NULL,
 		`adventure_id` BIGINT NOT NULL,
 		`ref_id` VARCHAR(8) NULL,
-		`objective_parent` BIGINT NULL ,
 		`objective_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		`objective_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 		`objective_keyword` VARCHAR(150) NULL,
@@ -621,7 +616,6 @@ $sql = "
 		`adventure_id` BIGINT NOT NULL,
 		`org_id` BIGINT NULL,
    		`tabi_id` BIGINT NULL,
-		`quest_parent` BIGINT NULL,
 		`achievement_id` BIGINT NULL DEFAULT 0,
 		`quest_date_posted` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		`quest_date_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -734,7 +728,6 @@ $sql = "
 		`quest_id` BIGINT NOT NULL,
 		`adventure_id` BIGINT NOT NULL,
 		`ref_id` VARCHAR(8) NULL,
-		`step_parent` BIGINT NULL,
 	PRIMARY KEY (`step_id`) )$charset_collate;
 	
 	CREATE TABLE {$wpdb->prefix}br_step_buttons (
@@ -771,7 +764,6 @@ $sql = "
 		`survey_option_image` TEXT NULL,
 		`survey_option_status` VARCHAR(20) NULL DEFAULT 'publish',
 		`survey_question_id` BIGINT NOT NULL,
-		`survey_option_parent` BIGINT NULL,
 		`ref_id` VARCHAR(8) NULL,
 	PRIMARY KEY (`survey_option_id`) )$charset_collate;
 
@@ -786,7 +778,6 @@ $sql = "
 		`survey_question_range` INT NULL,
 		`survey_question_order` INT NOT NULL DEFAULT 0,
 		`survey_question_description` LONGTEXT NULL,
-		`survey_question_parent` BIGINT NULL,
 		`ref_id` VARCHAR(8) NULL,
 	PRIMARY KEY (`survey_question_id`) )$charset_collate;
 
@@ -2129,6 +2120,39 @@ function br_migrate_achievement_bulk_queue_schema() {
 }
 add_action( 'init', 'br_migrate_achievement_bulk_queue_schema' );
 
+// Removes the abandoned "template cascade" lineage columns (quest_parent,
+// achievement_parent, item_parent, step_parent, objective_parent,
+// survey_question_parent, survey_option_parent, question_parent, answer_parent).
+// These predate the current adventure_type/adventure_parent live-sharing template
+// model - a child adventure was meant to get its own duplicated rows linked back to
+// the template's originals via these columns, so editing the template could cascade
+// to every child's copy. That approach was superseded before children ever actually
+// got duplicated rows through it, so the cascade code only ever updated other rows
+// within the SAME adventure (never real template->child editing), and has been
+// removed. Dropping the columns outright now that nothing reads or writes them.
+function br_migrate_drop_parent_cascade_columns() {
+	global $wpdb;
+	$drops = [
+		'br_quests'             => 'quest_parent',
+		'br_achievements'       => 'achievement_parent',
+		'br_items'               => 'item_parent',
+		'br_steps'               => 'step_parent',
+		'br_objectives'          => 'objective_parent',
+		'br_survey_questions'    => 'survey_question_parent',
+		'br_survey_options'      => 'survey_option_parent',
+		'br_challenge_questions' => 'question_parent',
+		'br_challenge_answers'   => 'answer_parent',
+	];
+	foreach ($drops as $table => $column) {
+		$full_table = $wpdb->prefix . $table;
+		$exists = $wpdb->get_results("SHOW COLUMNS FROM {$full_table} LIKE '{$column}'");
+		if (!empty($exists)) {
+			$wpdb->query("ALTER TABLE {$full_table} DROP COLUMN `{$column}`");
+		}
+	}
+}
+add_action('init', 'br_migrate_drop_parent_cascade_columns');
+
 function br_save_ai_api_key() {
 	global $wpdb;
 	$n = new Notification();
@@ -2297,7 +2321,6 @@ function br_run_milestone_migration() {
 			'step_correct'         => $step_correct,
 			'step_mistake_message' => !empty($o->objective_success_message) ? $o->objective_success_message : null,
 			'step_required'        => 1,
-			'step_parent'          => $o->objective_parent,
 			'step_ep_reward'       => (int) $o->ep_cost,
 		]);
 		$obj_migrated++;
@@ -2433,7 +2456,6 @@ function br_run_milestone_migration() {
 			'step_order'   => $sq->survey_question_order,
 			'step_status'  => $sq->survey_question_status,
 			'step_settings'=> json_encode($settings),
-			'step_parent'  => $sq->survey_question_parent,
 			'step_required'=> 1,
 		]);
 		$sq_migrated++;
@@ -2577,6 +2599,7 @@ add_action("wp_ajax_addPlayerToOrg", [BR_Organization::instance(), 'addPlayerToO
 add_action("wp_ajax_setPlayerOrgCapabilities", [BR_Organization::instance(), 'setPlayerOrgCapabilities']);
 add_action("wp_ajax_previewTemplate", [BR_Adventure::instance(), 'previewTemplate']);
 add_action("wp_ajax_createChildAdventure", [BR_Adventure::instance(), 'createChildAdventure']);
+add_action("wp_ajax_duplicateAdventure", [BR_Adventure::instance(), 'duplicateAdventure']);
 add_action("wp_ajax_updateGuild", [BR_Guild::instance(), 'updateGuild']);
 add_action("wp_ajax_updateBlocker", [BR_Blocker::instance(), 'updateBlocker']);
 add_action("wp_ajax_payBlocker", [BR_Blocker::instance(), 'payBlocker']);
@@ -2661,7 +2684,6 @@ add_action("wp_ajax_deleteAchievementCode", [BR_Achievement::instance(), 'delete
 add_action("wp_ajax_duplicateQuests", [BR_Quest::instance(), 'duplicateQuests']);
 add_action("wp_ajax_duplicateQuest", [BR_Quest::instance(), 'duplicateQuest']);
 add_action("wp_ajax_duplicateRow", [BR_Quest::instance(), 'duplicateRow']);
-add_action("wp_ajax_breakParent", [BR_Adventure::instance(), 'breakParent']);
 add_action("wp_ajax_updatePrevLevel", [BR_Player::instance(), 'updatePrevLevel']);
 add_action("wp_ajax_rateQuest", [BR_Quest::instance(), 'rateQuest']);
 add_action("wp_ajax_failQuest", [BR_Quest::instance(), 'failQuest']);

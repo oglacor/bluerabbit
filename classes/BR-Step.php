@@ -223,27 +223,6 @@ class BR_Step {
             $data['message'] = $notification->pop($msg_content,'deep-purple','progression');
             BR_Activity::instance()->logActivity($adventure_id, 'update', 'step','',  $step_id);
             $data['just_notify'] =true;
-            $adventure = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=$adventure_id");
-            if($adventure->adventure_type=='template'){
-                $wpdb->update("{$wpdb->prefix}br_steps", [
-                    'step_modified'          => $today,
-                    'step_title'             => $step_title,
-                    'step_content'           => $step_content,
-                    'step_type'              => $step_type,
-                    'step_skin'              => $step_skin,
-                    'step_character_image'   => $step_character_image,
-                    'step_background'        => $step_background,
-                    'step_achievement_group' => $step_achievement_group,
-                    'step_attach'            => $step_attach,
-                    'step_character_name'    => $step_character_name,
-                    'step_image'             => $step_image,
-                    'step_settings'          => $step_settings,
-                    'step_correct'           => $step_correct,
-                    'step_mistake_message'   => $step_mistake_message,
-                    'step_required'          => $step_required,
-                ], ['step_parent' => $updated_step->step_id]);
-                BR_Activity::instance()->logActivity($adventure_id, 'update', 'step-children','',  $step_id);
-            }
         }else{
             $data['success']=false;
             $msg_content = __('Step not found','bluerabbit');

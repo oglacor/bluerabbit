@@ -231,20 +231,31 @@ class BR_Utils {
             QR_ECLEVEL_H, 40
         );
 
-        if($args['logo']){
-            $QR = imagecreatefrompng($file_path);
-            $logo = imagecreatefromstring(file_get_contents($args['logo']));
-            $QR_width = imagesx($QR);
-            $QR_height = imagesy($QR);
-            $logo_width = imagesx($logo);
-            $logo_height = imagesy($logo);
-            $logo_qr_width = $QR_width/5;
-            $scale = $logo_width/$logo_qr_width;
-            $logo_qr_height = $logo_height/$scale;
-            $logo_x = ($QR_width - $logo_qr_width) / 2;
-            $logo_y = ($QR_height - $logo_qr_height) / 2;
-            imagecopyresampled($QR, $logo, $logo_x, $logo_y, 0, 0, $logo_qr_width, $logo_qr_height, $logo_width, $logo_height);
-            imagepng($QR,$file_path);
+        if(!empty($args['logo'])){
+            // A dead/unreachable logo URL (broken media link, network hiccup, host
+            // returning an HTML error page instead of image bytes) must not blow up the
+            // whole QR generation - the plain QR code QRcode::png() already wrote above
+            // is still perfectly valid/scannable without the badge watermark, so on any
+            // failure here we just skip the overlay instead of fataling downstream on
+            // imagesx()/imagesy() being called with `false`.
+            $QR = @imagecreatefrompng($file_path);
+            $logo_data = @file_get_contents($args['logo']);
+            $logo = $logo_data ? @imagecreatefromstring($logo_data) : false;
+            if($QR && $logo){
+                $QR_width = imagesx($QR);
+                $QR_height = imagesy($QR);
+                $logo_width = imagesx($logo);
+                $logo_height = imagesy($logo);
+                $logo_qr_width = $QR_width/5;
+                $scale = $logo_width/$logo_qr_width;
+                $logo_qr_height = $logo_height/$scale;
+                $logo_x = ($QR_width - $logo_qr_width) / 2;
+                $logo_y = ($QR_height - $logo_qr_height) / 2;
+                imagecopyresampled($QR, $logo, $logo_x, $logo_y, 0, 0, $logo_qr_width, $logo_qr_height, $logo_width, $logo_height);
+                imagepng($QR,$file_path);
+                imagedestroy($logo);
+            }
+            if($QR){ imagedestroy($QR); }
         }
 
         if(file_exists($file_path)){

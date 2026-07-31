@@ -15,8 +15,8 @@ class BR_Quest {
 		$the_order = $_POST['the_order'];
 		$count = 0;
 		foreach($the_order as $k=>$id){
-			$sql = "UPDATE {$wpdb->prefix}br_quests SET quest_order=%d WHERE (quest_id=%d AND adventure_id=%d) OR quest_parent=%d";
-			$sql = $wpdb->prepare ($sql,$k,$id,$adventure_id,$id);
+			$sql = "UPDATE {$wpdb->prefix}br_quests SET quest_order=%d WHERE quest_id=%d AND adventure_id=%d";
+			$sql = $wpdb->prepare ($sql,$k,$id,$adventure_id);
 			$result = $wpdb->query($sql);
 		}
 		if($k+1 >= count($the_order)){
@@ -238,27 +238,6 @@ class BR_Quest {
 						BR_Activity::instance()->logActivity($adventure_id,'update','quest','',$quest_id);
 					}
 					$data['message'] .= '<h1><strong>'.$quest_title.'</strong></h1> <h4><strong>'.__("Quest Inserted Successfully!","bluerabbit").'</strong></h4> <h5>'.__("click to close","bluerabbit").'</h5>';
-
-					if($adventure->adventure_type=='template'){
-						//Check for children and update them
-
-						$children_update = "UPDATE {$wpdb->prefix}br_quests SET
-							`quest_status`=%s, `quest_title`=%s, `quest_content`=%s, `quest_success_message`=%s, `quest_secondary_headline`=%s, `quest_color`=%s,  `quest_icon`=%s,
-							`quest_date_modified`=%s, `quest_relevance`=%s,
-							`mech_level`=%d, `mech_xp`=%d, `mech_bloo`=%d, `mech_ep`=%d, `mech_badge`=%s,
-							`mech_deadline`=%s, `mech_start_date`=%s, `mech_deadline_cost`=%d, `mech_unlock_cost`=%d,
-							`mech_min_words`=%d, `mech_min_links`=%d, `mech_min_images`=%d,
-							`mech_max_attempts`=%d, `mech_free_attempts`=%d, `mech_attempt_cost`=%d, `mech_questions_to_display`=%d, `mech_answers_to_win`=%d, `mech_time_limit`=%d, `mech_show_answers`=%d
-							WHERE `quest_parent`=$quest_id AND `quest_id` != $quest_id
-						";
-						$children_update = $wpdb->prepare($children_update, $quest_status, $quest_title, $quest_content, $quest_success_message, $quest_secondary_headline, $quest_color, $quest_icon, $today, $quest_relevance,
-						$quest_mechs['mech_level'], $quest_mechs['mech_xp'], $quest_mechs['mech_bloo'], $quest_mechs['mech_ep'], $quest_mechs['mech_badge'],
-						$quest_mechs['mech_deadline'], $quest_mechs['mech_start_date'], $quest_mechs['mech_deadline_cost'], $quest_mechs['mech_unlock_cost'],
-						$quest_mechs['mech_min_words'], $quest_mechs['mech_min_links'], $quest_mechs['mech_min_images'],
-						$quest_mechs['mech_max_attempts'], $quest_mechs['mech_free_attempts'], $quest_mechs['mech_attempt_cost'], $quest_mechs['mech_questions_to_display'], $quest_mechs['mech_answers_to_win'], $quest_mechs['mech_time_limit'], $quest_mechs['mech_show_answers']);
-						$wpdb->query($children_update);
-						BR_Activity::instance()->logActivity($adventure_id,'update','quest-children','',$quest_id);
-					}
 				}else{
 					$data['message'] = '<h1><strong>'.$quest_title.'</strong></h1> <h4><strong>'.__("Data Base Error. Can't insert/update quest","bluerabbit").'</strong></h4> <h5>'.__("contact admin please, click to close","bluerabbit").'</h5>';
 					$data['message'].="<br><br><br>";
@@ -1264,13 +1243,13 @@ class BR_Quest {
 				$questions[$qs->question_id]['answers'][$qs->answer_id]['answer_image']=$qs->answer_image;
 				$questions[$qs->question_id]['answers'][$qs->answer_id]['answer_correct']=$qs->answer_correct;
 			}
-			$questions_query = "INSERT INTO {$wpdb->prefix}br_challenge_questions (quest_id, question_title, question_image, question_type, question_parent) VALUES ";
+			$questions_query = "INSERT INTO {$wpdb->prefix}br_challenge_questions (quest_id, question_title, question_image, question_type) VALUES ";
 			$values = array();
 			$place_holders = array();
 			foreach($questions as $qs){
 				$q_title_str = stripslashes_deep($qs['title']);
-				array_push($values, $new_quest_id, $q_title_str, $qs['image'], $qs['type'], $qs['question_id']);
-				$place_holders[] = "(%d, %s, %s, %s, %d)";
+				array_push($values, $new_quest_id, $q_title_str, $qs['image'], $qs['type']);
+				$place_holders[] = "(%d, %s, %s, %s)";
 			}
 			$questions_query .= implode(', ', $place_holders);
 			///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the answers and insert from there.
@@ -1279,14 +1258,14 @@ class BR_Quest {
 
 
 			///////////// ANSWERS DUPLICATION >>>
-			$answers_query = "INSERT INTO {$wpdb->prefix}br_challenge_answers (quest_id, question_id,  answer_value, answer_image, answer_correct, answer_parent) VALUES ";
+			$answers_query = "INSERT INTO {$wpdb->prefix}br_challenge_answers (quest_id, question_id,  answer_value, answer_image, answer_correct) VALUES ";
 			$a_values = array();
 			$a_place_holders = array();
 			foreach($questions as $question_key=>$qs){
 				foreach($qs['answers'] as $answer_key=>$a){
 					$a_title_str = stripslashes_deep($a['answer_value']);
-					array_push($a_values, $new_quest_id, $question_first_id, $a_title_str, $a['answer_image'], $a['answer_correct'],$a['answer_id'] );
-					$a_place_holders[] = "(%d, %d, %s, %s, %d, %d)";
+					array_push($a_values, $new_quest_id, $question_first_id, $a_title_str, $a['answer_image'], $a['answer_correct']);
+					$a_place_holders[] = "(%d, %d, %s, %s, %d)";
 				}
 				$question_first_id++;
 			}
@@ -1303,7 +1282,7 @@ class BR_Quest {
 			// Duplicate Quest Steps
 
 			$steps_query = "INSERT INTO {$wpdb->prefix}br_steps
-			(`step_title`, `step_content`, `step_image`, `step_character_image`, `step_character_name`, `step_background`, `step_type`,  `step_attach`, `step_achievement_group`, `step_order`, `step_next`, `step_status`, `step_settings`, `step_item`, `quest_id`, `adventure_id`, `step_parent`) VALUES ";
+			(`step_title`, `step_content`, `step_image`, `step_character_image`, `step_character_name`, `step_background`, `step_type`,  `step_attach`, `step_achievement_group`, `step_order`, `step_next`, `step_status`, `step_settings`, `step_item`, `quest_id`, `adventure_id`) VALUES ";
 			$values = array();
 			$place_holders = array();
 			foreach($all_steps as $step){
@@ -1323,10 +1302,9 @@ class BR_Quest {
 					$step->step_settings,
 					(int) $step->step_item,
 					(int) $new_quest_id,
-					(int) $adventure_id,
-					(int) $step->step_id
+					(int) $adventure_id
 				);
-				$place_holders[] = "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %d, %s, %s, %d, %d, %d, %d)";
+				$place_holders[] = "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %d, %s, %s, %d, %d, %d)";
 			}
 			$steps_query .= implode(', ', $place_holders);
 			$steps_insert = $wpdb->query( $wpdb->prepare("$steps_query ", $values));
@@ -1374,29 +1352,29 @@ class BR_Quest {
 				$questions[$qs->survey_question_id]['options'][$qs->survey_option_id]['image']=$qs->survey_option_image;
 			}
 
-			$questions_query = "INSERT INTO {$wpdb->prefix}br_survey_questions (survey_id, survey_question_text, survey_question_image, survey_question_type, survey_question_order, survey_question_description, survey_question_display, survey_question_range, survey_question_parent) VALUES ";
+			$questions_query = "INSERT INTO {$wpdb->prefix}br_survey_questions (survey_id, survey_question_text, survey_question_image, survey_question_type, survey_question_order, survey_question_description, survey_question_display, survey_question_range) VALUES ";
 			$values = array();
 			$place_holders = array();
 			foreach($questions as $qs){
 				$q_title_str = stripslashes_deep($qs['text']);
 				$q_desc_str = stripslashes_deep($qs['desc']);
-				array_push($values,$new_quest_id, $q_title_str, $qs['image'], $qs['type'], $qs['order'], $q_desc_str, $qs['display'], $qs['range'], $qs['question_id']);
-				$place_holders[] = "(%d, %s, %s, %s, %d, %s, %s, %d, %d)";
+				array_push($values,$new_quest_id, $q_title_str, $qs['image'], $qs['type'], $qs['order'], $q_desc_str, $qs['display'], $qs['range']);
+				$place_holders[] = "(%d, %s, %s, %s, %d, %s, %s, %d)";
 			}
 			$questions_query .= implode(', ', $place_holders);
 			///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the options and insert from there.
 			$qs_insert = $wpdb->query( $wpdb->prepare("$questions_query ", $values));
 			$question_first_id = $wpdb->insert_id;
 			///////////// ANSWERS DUPLICATION >>>
-			$options_query = "INSERT INTO {$wpdb->prefix}br_survey_options (survey_id, survey_question_id,  survey_option_text, survey_option_image, survey_option_parent) VALUES ";
+			$options_query = "INSERT INTO {$wpdb->prefix}br_survey_options (survey_id, survey_question_id,  survey_option_text, survey_option_image) VALUES ";
 			$o_values = array();
 			$o_place_holders = array();
 			foreach($questions as $question_key=>$qs){
 				foreach($qs['options'] as $option_key=>$o){
 
 					$o_title_str = stripslashes_deep($o['text']);
-					array_push($o_values, $new_quest_id, $question_first_id, $o_title_str, $o['image'], $o['option_id']);
-					$o_place_holders[] = "(%d, %d, %s, %s, %d)";
+					array_push($o_values, $new_quest_id, $question_first_id, $o_title_str, $o['image']);
+					$o_place_holders[] = "(%d, %d, %s, %s)";
 				}
 				$question_first_id++;
 			}
@@ -1406,12 +1384,12 @@ class BR_Quest {
 		}elseif($quest->quest_type == 'mission'){
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','mission',"",$quest_id);
 			$all_objectives = $wpdb->get_results(" SELECT * FROM {$wpdb->prefix}br_objectives WHERE quest_id=$quest_id AND objective_status='publish' ORDER BY objective_order");
-			$objectives_query = "INSERT INTO {$wpdb->prefix}br_objectives  (`quest_id`, `adventure_id`, `objective_order`, `ep_cost`, `blog_post_id`, `objective_date`, `objective_modified`, `objective_keyword`, `objective_content`, `objective_success_message`, `objective_type`, `objective_status`, `objective_parent`) VALUES ";
+			$objectives_query = "INSERT INTO {$wpdb->prefix}br_objectives  (`quest_id`, `adventure_id`, `objective_order`, `ep_cost`, `blog_post_id`, `objective_date`, `objective_modified`, `objective_keyword`, `objective_content`, `objective_success_message`, `objective_type`, `objective_status`) VALUES ";
 			$values = array();
 			$place_holders = array();
 			foreach($all_objectives as $objs){
-				array_push($values, $new_quest_id, $adventure_id, $objs->objective_order, $objs->ep_cost, $objs->blog_post_id, $objs->objective_date, $objs->objective_modified, $objs->objective_keyword, $objs->objective_content, $objs->objective_success_message, $objs->objective_type, $objs->objective_status, $objs->objective_id );
-				$place_holders[] = "(%d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d)";
+				array_push($values, $new_quest_id, $adventure_id, $objs->objective_order, $objs->ep_cost, $objs->blog_post_id, $objs->objective_date, $objs->objective_modified, $objs->objective_keyword, $objs->objective_content, $objs->objective_success_message, $objs->objective_type, $objs->objective_status);
+				$place_holders[] = "(%d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s)";
 			}
 			$objectives_query .= implode(', ', $place_holders);
 			///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the options and insert from there.
@@ -1748,22 +1726,22 @@ class BR_Quest {
 			if(isset($from_template)){
 				$clone_sql = "
 					INSERT INTO {$wpdb->prefix}br_achievements
-					(`adventure_id`, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`, `achievement_parent`, `ref_id`)
+					(`adventure_id`, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`, `ref_id`)
 					SELECT
-					%d, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`, %d, `ref_id`
+					%d, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`, `ref_id`
 					FROM  {$wpdb->prefix}br_achievements WHERE `achievement_id` = %d;
 				";
-				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id, $id));
+				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id));
 			}else{
 				$clone_sql = "
 					INSERT INTO {$wpdb->prefix}br_achievements
-					(`adventure_id`, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`,`achievement_parent`, `ref_id`)
+					(`adventure_id`, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`, `ref_id`)
 					SELECT
-					%d, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`,%d, %s
+					%d, `achievement_name`, `achievement_xp`, `achievement_bloo`, `achievement_ep`, `achievement_max`, `achievement_deadline`, `achievement_badge`, `achievement_display`, `achievement_group`, `achievement_color`, `achievement_status`, `achievement_code`, `achievement_content`, `achievement_order`, %s
 					FROM  {$wpdb->prefix}br_achievements WHERE `achievement_id` = %d;
 				";
 				$ref_id = BR_Utils::instance()->random_str(8,'1234567890abcdef');
-				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id, $ref_id, $id));
+				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $ref_id, $id));
 			}
 			$clone_id=$wpdb->insert_id;
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','achievement',"",$id);
@@ -1773,27 +1751,27 @@ class BR_Quest {
 				$clone_sql = "
 					INSERT INTO {$wpdb->prefix}br_items
 
-					(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `item_parent`, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` )
+					(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` )
 
 					SELECT
-					%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, %d, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility`
+					%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility`
 
 					FROM  {$wpdb->prefix}br_items WHERE `item_id` = %d;
 				";
-				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id, $id));
+				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id));
 			}else{
 				$clone_sql = "
 					INSERT INTO {$wpdb->prefix}br_items
 
-					(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `item_parent`,`ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` )
+					(`adventure_id`, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, `ref_id`, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility` )
 
 					SELECT
-					%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`,%d, %s, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility`
+					%d, `item_status`, `item_author`, `item_name`, `item_description`, `item_secret_description`, `item_cost`, `item_type`, `item_badge`, `item_secret_badge`, `item_stock`, `item_player_max`, `item_level`, `item_category`, `item_order`, `item_deadline`, `item_start_date`, %s, `tabi_id`, `item_x`, `item_y`, `item_z`, `item_scale`, `item_rotation`, `item_visibility`
 
 					FROM  {$wpdb->prefix}br_items WHERE `item_id` = %d;
 				";
 				$ref_id = BR_Utils::instance()->random_str(8,'1234567890abcdef');
-				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $id, $ref_id, $id));
+				$clone_insert = $wpdb->query( $wpdb->prepare($clone_sql, $adventure_id, $ref_id, $id));
 			}
 			$clone_id=$wpdb->insert_id;
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','item',"",$id);

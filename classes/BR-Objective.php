@@ -136,13 +136,6 @@ class BR_Objective {
             BR_Activity::instance()->logActivity($objective->adventure_id, 'update', 'objective','', $objective->objective_id);
             $updated_objective = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_objectives WHERE objective_id=$objective->objective_id");
 
-            if($objective->adventure_type=='template'){
-                $children_update = "UPDATE {$wpdb->prefix}br_objectives SET `objective_modified`=%s, `objective_content`=%s, `objective_keyword`=%s,`objective_success_message`=%s, `ep_cost`=%d WHERE objective_parent=$objective->objective_id AND objective_id!=$objective->objective_id";
-
-                $children_update = $wpdb->query( $wpdb->prepare("$children_update ", $today, $content, $keyword, $success_message, $objective_data['objective_ep_cost']));
-
-                BR_Activity::instance()->logActivity($objective->adventure_id, 'update', 'objective-children','', $objective->objective_id);
-            }
             $data['objective'] = $updated_objective;
             $data['success']=true;
             $msg_content = __('Objective updated','bluerabbit');

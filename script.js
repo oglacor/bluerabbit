@@ -7811,30 +7811,6 @@ function duplicateQuest(quest_id = 0, adventure_id = $("#adventure_target").val(
 }
 
 
-///////////////////////// break parent  //////////////////
-
-function breakParent(id, type) {
-    let nonce = $("#break-parent-nonce").val();
-    let adventure_id = $("#the_adventure_id").val();
-    showLoader('small');
-    jQuery.ajax({
-        url: runAJAX.ajaxurl,
-        data: ({
-            action: 'breakParent',
-            type: type,
-            id: id,
-            adventure_id: adventure_id,
-            nonce: nonce
-        }),
-        method: "POST",
-        success: function (data_received) {
-            displayAjaxResponse(data_received);
-        }
-    });
-}
-
-
-
 /////////////////////// REMOVE FROM LIBRARY /////////////////////////
 
 function removeFromLibrary(id = 0, type) {
@@ -7941,6 +7917,28 @@ function createChildAdventure(adventure_id = null) {
             url: runAJAX.ajaxurl,
             data: ({
                 action: 'createChildAdventure',
+                nonce: nonce,
+                adventure_id: adventure_id,
+            }),
+            method: "POST",
+            success: function (json_text) {
+                displayAjaxResponse(json_text);
+            }
+        });
+    } else {
+        return false;
+    }
+}
+
+function duplicateAdventure(adventure_id = null) {
+
+    if (adventure_id) {
+        showLoader();
+        let nonce = $("#duplicate_adventure_nonce").val();
+        jQuery.ajax({
+            url: runAJAX.ajaxurl,
+            data: ({
+                action: 'duplicateAdventure',
                 nonce: nonce,
                 adventure_id: adventure_id,
             }),

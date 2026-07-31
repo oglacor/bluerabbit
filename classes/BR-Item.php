@@ -16,8 +16,8 @@ class BR_Item {
         $the_order = $_POST['the_order'];
         $count = 0;
         foreach($the_order as $k=>$id){
-            $sql = "UPDATE {$wpdb->prefix}br_items SET item_order=%d WHERE (item_id=%d AND adventure_id=%d) OR item_parent=%d";
-            $sql = $wpdb->prepare ($sql, $k, $id, $adventure_id, $id);
+            $sql = "UPDATE {$wpdb->prefix}br_items SET item_order=%d WHERE item_id=%d AND adventure_id=%d";
+            $sql = $wpdb->prepare ($sql, $k, $id, $adventure_id);
             $result = $wpdb->query($sql);
         }
         if($k+1 >= count($the_order)){
@@ -283,15 +283,6 @@ class BR_Item {
                         BR_Activity::instance()->logActivity($adventure_id,'update','item',$item_type,$item_id);
                     }
                     $data['message'] .= '<h1><strong>'.$item_name.'</strong></h1> <h4><strong>'.__("Item Updated!","bluerabbit").'</strong></h4> <h5>'.__("click to close","bluerabbit").'</h5>';
-
-                    $children_update = "UPDATE {$wpdb->prefix}br_items SET item_cost=%d, item_stock=%d, item_player_max=%d, item_level=%d, item_post_modified=%s, item_status=%s, item_name=%s, item_description=%s, item_type=%s, item_badge=%s, item_secret_badge=%s, item_secret_description=%s, item_category_id=%d, item_start_date=%s, item_deadline=%s
-                    WHERE `item_parent`=$new_item_id AND item_id!=$new_item_id";
-
-                    $children_update = $wpdb->query( $wpdb->prepare("$children_update ",$item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_status, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $item_start_date, $item_deadline));
-
-                    BR_Activity::instance()->logActivity($adventure_id,'update','item-children',$item_type,$item_id);
-
-
                 }else{
                     $data['message'] .= '<h1><span class="icon icon-cancel solid-red"></span></h1> <h4><strong>'.__("Data Base Error. Can't insert item","bluerabbit").'</strong></h4> <h5>'.__("contact admin please, click to close","bluerabbit").'</h5>';
                 }
