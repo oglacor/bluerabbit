@@ -6666,6 +6666,19 @@ function brConfirmInline(btn, label, fn) {
     $btn.data('brTimer', setTimeout(function () { brResetConfirm($btn); }, 4000));
 }
 
+////////////////////////////////////////// BR TAB PANELS ////////////////////////////////////////////
+// Show one .br-panel-group inside a container and mark its .br-tab-btn active.
+// Self-contained on the br-* classes rather than the legacy .tabs/.tab styles,
+// so a page using it does not depend on _content.scss.
+function brSwitchPanel(groupSelector, panelSelector, btn) {
+    $(groupSelector).children('.br-panel-group').addClass('br-initially-hidden');
+    $(panelSelector).removeClass('br-initially-hidden');
+    if (btn) {
+        $(btn).closest('.br-tabs').find('.br-tab-btn').removeClass('active');
+        $(btn).addClass('active');
+    }
+}
+
 ////////////////////////////////////////// GUILD LEADER ////////////////////////////////////////////
 // The one guild change an NPC is allowed to make, so it has its own endpoint and
 // its own nonce rather than riding on updateGuild.

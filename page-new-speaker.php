@@ -9,7 +9,7 @@ $speaker = $new_speaker_id ? $wpdb->get_row($wpdb->prepare(
 	"SELECT * FROM {$wpdb->prefix}br_speakers WHERE speaker_id = %d", $new_speaker_id
 )) : null;
 $is_edit = ($adventure && $speaker);
-$the_roles    = ['br_npc', 'br_game_master', 'administrator'];
+$the_roles    = ['br_game_master', 'administrator'];
 $speakerUsers = get_users(['role__in' => $the_roles]);
 ?>
 
@@ -41,7 +41,6 @@ $speakerUsers = get_users(['role__in' => $the_roles]);
 					<?php
 					if ($at->roles[0] == 'administrator') echo ' | Admin';
 					elseif ($at->roles[0] == 'br_game_master') echo ' | GM';
-					elseif ($at->roles[0] == 'br_npc') echo ' | NPC';
 					?>
 				</option>
 				<?php } ?>

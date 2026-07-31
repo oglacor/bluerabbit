@@ -8,10 +8,18 @@
 				$rank = isset($myRank) ? $myRank->achievement_name : $adventure->adventure_nickname;
 				$rankColor = isset($myRank) ? $myRank->achievement_color : $adventure->adventure_color;
 				
-				if($roles[0]=='br_npc'){
-					include (TEMPLATEPATH . '/nav-npc.php'); 
+				// Pick the nav on the PER-ADVENTURE role, not the WordPress account
+				// role. This used to test $roles[0]=='br_npc', which meant someone
+				// given the NPC seat in an adventure (player_adventure_role='npc')
+				// while holding an ordinary br_player account got the standard nav
+				// and never saw the surveillance pages they are entitled to - and,
+				// the other way round, a br_npc account acting as GM somewhere lost
+				// the GM tools. nav.php already gates its Admin Tools on
+				// $isGM || $isAdmin, so plain players still get the player-only view.
+				if(!empty($isNPC)){
+					include (TEMPLATEPATH . '/nav-npc.php');
 				}else{
-					include (TEMPLATEPATH . '/nav.php'); 
+					include (TEMPLATEPATH . '/nav.php');
 				}
 
 			}else{

@@ -55,7 +55,6 @@
 					'options' => array(
 						array("admin",__("Administrator","bluerabbit")),
 						array("gm",__("Game Masters","bluerabbit")),
-						array("npc",__("Non Player Characters","bluerabbit")),
 						array("all",__("Everyone","bluerabbit")),
 					),
 				),
@@ -65,7 +64,6 @@
 					'options' => array(
 						array("admin",__("Administrator","bluerabbit")),
 						array("gm",__("Game Masters","bluerabbit")),
-						array("npc",__("Non Player Characters","bluerabbit")),
 						array("all",__("Everyone","bluerabbit")),
 					),
 				),
@@ -513,7 +511,6 @@
 					$role_config_map = array(
 						'administrator'   => __("Administrator","bluerabbit"),
 						'br_game_master'  => __("Game Master","bluerabbit"),
-						'br_npc'          => __("NPC","bluerabbit"),
 						'br_player'       => __("Player","bluerabbit"),
 						'default'         => __("Default (fallback)","bluerabbit"),
 					);

@@ -1,6 +1,6 @@
 <div class="step <?= $i==0 ? 'active' : ''; ?>" id="step-<?= $step->step_order; ?>">
 	<?php include (TEMPLATEPATH . "/steps-background.php"); ?>
-	<div class="step-content-container open-field">
+	<div class="step-content-container step-video">
 		<div class="dialogue-box" id="step-content-text-<?=$step->step_order;?>">
 			<div class="corner-tl"></div>
 			<div class="edge-top"></div>
@@ -9,7 +9,7 @@
 			<div class="edge-left"></div>
 			<div class="center">
 				<div class="step-content-text-editor editor" id="step-content-text-<?=$step->step_id;?>">
-                    <video id="step-content-text-<?=$step->step_id;?>-video" class="step-video <?= strstr($mime['type'], "video") ? 'active' : ''; ?>" controls>
+                    <video id="step-content-text-<?=$step->step_id;?>-video" class="step-video-element <?= strstr($mime['type'], "video") ? 'active' : ''; ?>" controls>
                         <source src="<?= $step->step_image; ?>">
                     </video>
 				</div>

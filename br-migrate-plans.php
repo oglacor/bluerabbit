@@ -158,7 +158,6 @@ br_log('Step 4: Seeding role default plan mappings in br_config...');
 $role_defaults = array(
     'role_default_plan_administrator'    => array('label' => 'Default plan for Administrators',    'value' => 'enterprise'),
     'role_default_plan_br_game_master'   => array('label' => 'Default plan for Game Masters',      'value' => 'pro'),
-    'role_default_plan_br_npc'           => array('label' => 'Default plan for NPCs',              'value' => 'pro'),
     'role_default_plan_br_player'        => array('label' => 'Default plan for Players',           'value' => 'basic'),
     'role_default_plan_default'          => array('label' => 'Default plan (fallback)',             'value' => 'basic'),
 );
@@ -214,7 +213,7 @@ foreach ($players as $player) {
     $plan_key = 'basic';
     if ($role == 'administrator') {
         $plan_key = 'enterprise';
-    } elseif ($role == 'br_game_master' || $role == 'br_npc') {
+    } elseif ($role == 'br_game_master') { // br_npc was retired into br_game_master
         $plan_key = 'pro';
     }
 

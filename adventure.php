@@ -84,7 +84,7 @@ $adv_color = $adv->adventure_color ? $adv->adventure_color : 'blue-grey';
 				<?php } ?>
 			</div>
 
-			<?php if(($isOwner || $isGM) && ($roles[0] != 'br_npc')){ ?>
+			<?php if($isOwner || $isGM){ ?>
 				<div class="adventure-actions">
 					<div class="adventure-enroll-code blue-grey-bg-700 white-color" onClick="copyTextFrom(<?= "'#adventure-link-$adv->adventure_id'"; ?>);">
 						<div class="button-icon">

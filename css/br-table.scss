@@ -7161,3 +7161,22 @@ button.br-btn.br-confirming {
   font-style: italic;
   cursor: default;
 }
+
+// ── Manage Players (page-manage-players.php, restyled 2026-07-31) ──
+
+.br-mp-header-actions {
+  margin-left: auto;
+}
+
+// Actions parked on the right of a panel title (e.g. the Manage Players link
+// next to "Enrolled Players" in Adventure Settings).
+.br-panel-title-actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 6px;
+}
+
+// A tab's worth of panels. Hidden/shown by brSwitchPanel().
+.br-panel-group {
+  display: block;
+}

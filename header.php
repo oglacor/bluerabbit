@@ -154,11 +154,11 @@
 					$add_from_template = true;
 				}
 			}else if($new_adv_ft == 'npc'){
-				if($roles[0] == 'br_game_master' || $roles[0] == 'br_npc'){
+				if($roles[0] == 'br_game_master'){
 					$add_from_template = true;
 				}
 			}else if($new_adv_ft == 'all'){
-				if($roles[0] == 'br_game_master' || $roles[0] == 'br_npc' || $roles[0] == 'br_player'){
+				if($roles[0] == 'br_game_master' || $roles[0] == 'br_player'){
 					$add_from_template = true;
 				}
 			}else{
@@ -172,11 +172,11 @@
 					$add_adventure = true;
 				}
 			}else if($new_adv_cap == 'npc'){
-				if($roles[0] == 'br_game_master' || $roles[0] == 'br_npc'){
+				if($roles[0] == 'br_game_master'){
 					$add_adventure = true;
 				}
 			}else if($new_adv_cap == 'all'){
-				if($roles[0] == 'br_game_master' || $roles[0] == 'br_npc' || $roles[0] == 'br_player'){
+				if($roles[0] == 'br_game_master' || $roles[0] == 'br_player'){
 					$add_adventure = true;
 				}
 			}else{

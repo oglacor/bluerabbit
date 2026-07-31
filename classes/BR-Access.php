@@ -125,8 +125,7 @@ class BR_Access {
      * With no adventure named there is nothing to scope to, and simply allowing
      * the request would hand every NPC a trivial bypass: drop adventure_id from
      * the payload and the gate stops applying. So the no-adventure case fails
-     * closed - anyone holding an NPC seat anywhere (or the account-level br_npc
-     * role) is treated as an NPC. Nothing legitimate is lost, because every
+     * closed - anyone holding an NPC seat anywhere is treated as an NPC. Nothing legitimate is lost, because every
      * action that genuinely has no adventure_id (logout, own profile, hexad) is
      * on the allowlist and never reaches this check.
      */
@@ -144,8 +143,6 @@ class BR_Access {
             }
         }
         if ($adventure_id) return $this->isNpc($adventure_id, $user->ID);
-
-        if (in_array('br_npc', (array)$user->roles)) return true;
 
         return (bool)$wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure

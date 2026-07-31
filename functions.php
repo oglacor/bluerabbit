@@ -80,10 +80,14 @@ function theme_core_setup(){
 		'edit_private_pages' => 0,
 		'read_private_pages' => 0,
 	);
+	// Two account roles, and they exist only to answer "can this account run
+	// adventures at all". What someone may actually do comes from their plan
+	// (br_plans.plan_key) and, inside a given adventure, from
+	// player_adventure_role. br_npc used to be a third role here with the exact
+	// same capabilities as these two - see br_retire_npc_role().
 	$player = add_role('br_player', __('Player','bluerabbit'),$roles_args); /// Plays the adventures they are enrolled into.
-	$game_master = add_role('br_game_master', __('Game Master','bluerabbit'),$roles_args ); /// Manages everything within the organization they are part of.
-	$npc = add_role('br_npc', __('NPC','bluerabbit'),$roles_args ); /// Teachers, instructors, facilitators > Can clone adventures from their organization pool. Can't edit the adventure itself, but can see the settings. We need a new state for disabling all settings and prevent the manage adventure page from NPCs.
-	
+	$game_master = add_role('br_game_master', __('Game Master','bluerabbit'),$roles_args ); /// Runs adventures: owns them, edits content, manages players.
+
 	if ( null !== $player ) {
 		echo '<div class="updated notice"><p>Player Role Created</p></div>';
 	}else{
@@ -93,11 +97,6 @@ function theme_core_setup(){
 		echo '<div class="updated notice"><p>Game Master Role Created</p></div>';
 	}else{
 		echo '<div class="updated notice"><p>Game Master Role Not Created. Already exist.</p></div>';
-	}
-	if ( null !== $npc ) {
-		echo '<div class="updated notice"><p>Non-Player Character Role Created</p></div>';
-	}else{
-		echo '<div class="updated notice"><p>Non-Player Character Role Not Created. Already exist.</p></div>';
 	}
 	global $wpdb;
 	$enrolled = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_players WHERE player_id=1");
@@ -977,7 +976,6 @@ $sql = "
 	$role_defaults = array(
 		'role_default_plan_administrator' => array('label'=>'Default plan for Administrators',    'value'=>'enterprise'),
 		'role_default_plan_br_game_master'=> array('label'=>'Default plan for Game Masters',      'value'=>'pro'),
-		'role_default_plan_br_npc'        => array('label'=>'Default plan for NPCs',              'value'=>'pro'),
 		'role_default_plan_br_player'     => array('label'=>'Default plan for Players',           'value'=>'basic'),
 		'role_default_plan_default'       => array('label'=>'Default plan (fallback)',             'value'=>'basic'),
 	);
@@ -1691,6 +1689,59 @@ add_action( 'init', 'br_migrate_player_sessions_schema' );
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );
 add_action('after_switch_theme', 'theme_core_setup');
+
+/**
+ * Retire the br_npc WordPress role.
+ *
+ * br_npc, br_game_master and br_player were all registered with an identical
+ * capability array, so the account role never granted any permission of its own -
+ * what a person may do is decided by their plan (br_plans.plan_key, read as
+ * $f_role by every feature gate) and by their per-adventure role
+ * (player_adventure_role: gm / npc / player, enforced in BR_Access). br_npc was
+ * therefore a third label for "staff" that carried no meaning and had to be
+ * repeated at every role check.
+ *
+ * Anyone still holding it becomes a Game Master. Both roles already defaulted to
+ * the 'pro' plan (role_default_plan_br_npc / _br_game_master), so nobody's plan
+ * changes. The per-adventure NPC seat is untouched - that is the real
+ * surveillance role and it stays.
+ */
+function br_retire_npc_role() {
+	if ( get_option( 'br_npc_role_retired' ) ) return;
+
+	$moved = 0;
+	if ( get_role( 'br_npc' ) ) {
+		// get_users() by role is reliable here; the capability meta is serialized,
+		// so a LIKE query against usermeta would be fragile.
+		$npcs = get_users( array( 'role' => 'br_npc', 'fields' => array( 'ID' ) ) );
+		foreach ( $npcs as $u ) {
+			$user = new WP_User( $u->ID );
+			$user->remove_role( 'br_npc' );
+			if ( ! in_array( 'br_game_master', (array) $user->roles, true ) ) {
+				$user->add_role( 'br_game_master' );
+			}
+			$moved++;
+		}
+		remove_role( 'br_npc' );
+	}
+
+	// The stored value for these two settings could be 'npc', a tier that no
+	// longer exists; it meant "GMs and NPCs", which is now just "GMs".
+	global $wpdb;
+	foreach ( array( 'add_new_adventure', 'add_adventure_from_template' ) as $cfg ) {
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->prefix}br_config SET config_value='gm' WHERE config_name=%s AND config_value='npc'",
+			$cfg
+		) );
+	}
+	$wpdb->query( "DELETE FROM {$wpdb->prefix}br_config WHERE config_name='role_default_plan_br_npc'" );
+
+	update_option( 'br_npc_role_retired', 1 );
+	if ( $moved ) {
+		error_log( "BlueRabbit: retired br_npc role, moved $moved user(s) to br_game_master" );
+	}
+}
+add_action( 'init', 'br_retire_npc_role', 20 );
 
 function br_migrate_tabi_tables() {
 	global $wpdb;

@@ -1,5 +1,9 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
-<?php if(isset($isGM) || isset($isNPC) || isset($isAdmin)){ ?>
+<?php
+// Was isset($isGM) || isset($isNPC) || isset($isAdmin) - header.php defines all
+// three for every logged-in user (as false for plain players), so isset() was
+// always true and this roster was readable by anyone enrolled in the adventure.
+if($canViewAdmin){ ?>
 			<?php
 			if(isset($_GET['order'])){
 				if($_GET['order'] == 'xp'){

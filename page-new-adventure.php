@@ -301,7 +301,7 @@ $image_types = array(
 						   $the_owner = $current_user->ID;
 					   }
 					?>
-					<?php $the_roles = array('br_npc','br_game_master','administrator'); ?>
+					<?php $the_roles = array('br_game_master','administrator'); ?>
 					<?php $allTeachers = get_users(array('role__in'=>$the_roles)); ?>
 					<select id="the_adventure_owner" class="br-input">
 						<?php foreach($allTeachers as $at){ ?>
@@ -312,8 +312,6 @@ $image_types = array(
 									echo " | Admin";
 								}elseif($at->roles[0] =='br_game_master'){
 									echo " | GM";
-								}elseif($at->roles[0] =='br_npc'){
-									echo " | NPC";
 								}
 								?>
 							</option>
@@ -753,7 +751,15 @@ $image_types = array(
 			");
 		}
 		?>
-		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Enrolled Players","bluerabbit"); ?> <span class="br-badge"><?= count($players); ?></span></h3>
+		<h3 class="br-panel-title">
+			<span class="icon icon-players"></span> <?= __("Enrolled Players","bluerabbit"); ?>
+			<span class="br-badge"><?= count($players); ?></span>
+			<span class="br-actions br-panel-title-actions">
+				<a class="br-btn ghost br-btn-sm" href="<?= get_bloginfo('url')."/manage-players/?adventure_id=$adventure->adventure_id"; ?>">
+					<span class="icon icon-player"></span> <?= __("Manage Players","bluerabbit"); ?>
+				</a>
+			</span>
+		</h3>
 
 		<?php
 		// Two encodings of the same strings: esc_js for the inline handler (JS string
@@ -1022,52 +1028,8 @@ $image_types = array(
 	</div>
 	</div>
 
-	<!-- ═══════════════════════════════════════════════════════ -->
-	<!-- IMPORT CONSOLE — live terminal for the bulk player sweep -->
-	<!-- ═══════════════════════════════════════════════════════ -->
-	<div class="br-import-overlay" id="br-import-overlay">
-		<div class="br-import-console">
-			<div class="br-import-console-head">
-				<span class="br-import-console-dots"><i></i><i></i><i></i></span>
-				<span class="br-import-console-title"><?= __("Player Import","bluerabbit"); ?></span>
-				<span class="br-import-console-progress" id="br-import-progress-text">0 / 0</span>
-			</div>
-
-			<div class="br-import-bar-track"><div class="br-import-bar" id="br-import-bar"></div></div>
-
-			<div class="br-import-stats">
-				<span class="br-import-stat br-import-stat-created">
-					<strong id="br-imp-count-created">0</strong> <?= __("created","bluerabbit"); ?>
-				</span>
-				<span class="br-import-stat br-import-stat-enrolled">
-					<strong id="br-imp-count-enrolled">0</strong> <?= __("enrolled","bluerabbit"); ?>
-				</span>
-				<span class="br-import-stat br-import-stat-failed">
-					<strong id="br-imp-count-failed">0</strong> <?= __("failed","bluerabbit"); ?>
-				</span>
-				<span class="br-import-stat br-import-stat-guilds">
-					<strong id="br-imp-count-guilds">0</strong> <?= __("guilds created","bluerabbit"); ?>
-				</span>
-			</div>
-
-			<div class="br-import-terminal" id="br-import-terminal"></div>
-
-			<div class="br-import-console-foot">
-				<button type="button" class="br-btn red" id="br-import-cancel" onClick="brCancelPlayerImport();">
-					<span class="icon icon-cancel"></span> <?= __("Cancel","bluerabbit"); ?>
-				</button>
-				<button type="button" class="br-btn ghost br-initially-hidden" id="br-import-report" onClick="brImportDownloadReport();">
-					<span class="icon icon-download"></span> <?= __("Download report","bluerabbit"); ?>
-				</button>
-				<button type="button" class="br-btn cyan br-initially-hidden" id="br-import-reload" onClick="document.location.reload();">
-					<span class="icon icon-repeat"></span> <?= __("Reload player list","bluerabbit"); ?>
-				</button>
-				<button type="button" class="br-btn ghost br-initially-hidden" id="br-import-close" onClick="brCloseImportConsole();">
-					<?= __("Close","bluerabbit"); ?>
-				</button>
-			</div>
-		</div>
-	</div>
+	<!-- Live terminal for the bulk import; shared with page-manage-players.php -->
+	<?php include (get_stylesheet_directory() . '/import-console.php'); ?>
 
 	<?php } ?>
 

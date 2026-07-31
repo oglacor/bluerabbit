@@ -789,6 +789,23 @@
 				justify-content: center;
 				flex-direction: column;
 			}
+			&.step-video{
+				align-items: center;
+				justify-content: center;
+				flex-direction: column;
+				width: 100%; 
+				max-height: 50vh;
+				video{
+					width: 100%;
+					max-width: 100%;
+					height: auto;
+				}
+				.dialogue-box{
+					.center{
+						max-height: none;
+					}
+				}
+			}
 			&.open-field{
 				align-items: center;
 				justify-content: center;
@@ -801,15 +818,6 @@
 				.step-content{
 					max-height: 50%;
 					overflow-y: scroll;
-				}
-				.step-video{
-					width: 100%;
-					max-height: 50vh;
-					video{
-						width: 100%;
-						max-width: 100%;
-						height: auto;
-					}
 				}
 				.step-content-text-editor{
 					min-height: 230px;
