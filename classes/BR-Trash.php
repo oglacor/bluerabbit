@@ -226,6 +226,25 @@ class BR_Trash {
                 $sql = "UPDATE {$wpdb->prefix}br_blockers SET blocker_status=%s WHERE blocker_status='trash' AND adventure_id=%d";
                 $sql = $wpdb->prepare ($sql,'delete', $adventure_id);
             }elseif($type == 'guild'){
+                // Free the members first: player_adventure.player_guild is what
+                // assignGuild() checks before handing out a guild, so leaving it
+                // pointing at a deleted guild locks those players out of ever being
+                // assigned one again.
+                $trashed_guilds = $wpdb->get_col($wpdb->prepare(
+                    "SELECT guild_id FROM {$wpdb->prefix}br_guilds WHERE guild_status='trash' AND adventure_id=%d",
+                    $adventure_id
+                ));
+                if ($trashed_guilds) {
+                    $in = implode(',', array_map('intval', $trashed_guilds));
+                    $wpdb->query($wpdb->prepare(
+                        "UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=NULL
+                         WHERE adventure_id=%d AND player_guild IN ($in)", $adventure_id
+                    ));
+                    $wpdb->query($wpdb->prepare(
+                        "DELETE FROM {$wpdb->prefix}br_player_guild WHERE adventure_id=%d AND guild_id IN ($in)",
+                        $adventure_id
+                    ));
+                }
                 $sql = "UPDATE {$wpdb->prefix}br_guilds SET guild_status=%s WHERE guild_status='trash' AND adventure_id=%d";
                 $sql = $wpdb->prepare ($sql,'delete',$adventure_id);
             }elseif($type == 'item'){

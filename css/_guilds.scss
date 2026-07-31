@@ -20,6 +20,18 @@
             padding: 24px;
             position: relative;
             overflow: hidden;
+            &.guild-lb-clickable {
+                cursor: pointer;
+                transition: border-color 0.2s ease, transform 0.15s ease;
+                &:hover {
+                    border-color: rgba($new-colors-yellow, 0.6);
+                    transform: translateY(-2px);
+                }
+            }
+            &.is-my-guild {
+                border-color: $new-colors-blue;
+                box-shadow: 0 0 0 1px rgba($new-colors-blue, 0.4);
+            }
             .my-guild-card-bg {
                 position: absolute;
                 top: 0; left: 0;
@@ -140,79 +152,89 @@
         .hud-title {
             margin-bottom: 20px;
         }
-        ul.cards.guilds {
+        ul.cards.guilds.guild-leaderboard-top5 {
             display: flex;
             flex-direction: column;
             gap: 12px;
             list-style: none;
             padding: 0;
-            margin: 0;
-            li.card {
-                display: flex;
-                align-items: center;
-                background: $new-colors-dark-blue-400;
-                border: 1px solid rgba($new-colors-blue, 0.2);
-                border-radius: 10px;
-                padding: 12px 20px;
-                gap: 20px;
-                width: auto;
-                margin: 0;
-                text-align: left;
-                transition: border-color 0.2s ease;
-                &:hover {
-                    border-color: rgba($new-colors-blue, 0.5);
-                }
-                &.is-my-guild {
-                    border-left: 4px solid $new-colors-blue;
-                }
-                .guild-rank {
-                    min-width: 56px;
-                    font-size: 2.8rem;
+            margin: 0 0 24px;
+            .guild-lb-card {
+                .guild-lb-rank-ribbon {
+                    position: absolute;
+                    top: 0;
+                    left: 24px;
+                    min-width: 40px;
+                    padding: 2px 10px 6px;
+                    background: $new-colors-yellow;
+                    color: $new-colors-dark-blue-400;
                     font-family: $preospe-font;
-                    color: $white;
+                    font-size: 1.3rem;
                     text-align: center;
-                    line-height: 1;
-                    flex-shrink: 0;
+                    line-height: 1.2;
+                    border-radius: 0 0 8px 8px;
+                    z-index: 3;
                 }
-                .guild-lb-badge {
-                    flex-shrink: 0;
+            }
+        }
+
+        .guild-leaderboard-table-wrap {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            .guild-leaderboard-table {
+                tbody tr {
+                    &.guild-lb-clickable { cursor: pointer; }
+                    &.is-my-guild { box-shadow: inset 4px 0 0 $new-colors-blue; }
+                }
+                .guild-lb-table-rank {
+                    font-family: $preospe-font;
+                    font-size: 1.1rem;
+                    width: 40px;
+                }
+                .guild-lb-table-badge {
+                    width: 48px;
                     img.badge {
-                        width: 64px;
-                        height: 64px;
+                        width: 36px;
+                        height: 36px;
                         object-fit: cover;
-                        border-radius: 0;
-                        border: none;
+                        display: block;
                         clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
                     }
                 }
-                .guild-lb-info {
-                    flex: 1;
-                    min-width: 0;
-                    .guild-lb-name {
-                        font-family: $preospe-font;
-                        font-size: 1.1rem;
-                        text-transform: uppercase;
-                        color: $white;
-                        margin-bottom: 4px;
-                    }
-                    .guild-lb-stats {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 4px 16px;
-                        .guild-lb-stat {
-                            font-size: 0.78rem;
-                            .stat-label {
-                                color: rgba($white, 0.5);
-                            }
-                            .stat-value {
-                                font-weight: 700;
-                                color: $white;
-                                &.teal { color: $new-colors-green; }
-                                &.blue { color: $new-colors-blue; }
-                                &.yellow { color: $new-colors-yellow; }
-                            }
-                        }
-                    }
+                .guild-lb-table-name {
+                    font-family: $preospe-font;
+                    text-transform: uppercase;
+                    font-size: 0.95rem;
+                }
+            }
+        }
+
+        .guild-leaderboard-pagination {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            .guild-lb-page {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 32px;
+                height: 32px;
+                padding: 0 8px;
+                border-radius: 6px;
+                border: 1px solid rgba($new-colors-blue, 0.3);
+                color: $white;
+                font-size: 0.85rem;
+                text-decoration: none;
+                transition: all 0.15s ease;
+                &:hover {
+                    border-color: rgba($new-colors-blue, 0.6);
+                }
+                &.active {
+                    background: $new-colors-blue;
+                    border-color: $new-colors-blue;
+                    color: $new-colors-dark-blue-400;
+                    font-weight: 700;
                 }
             }
         }

@@ -18,8 +18,9 @@
 		$allguilds = BR_Guild::instance()->getGuilds($adv_child_id);
 		$guilds = $allguilds['publish'];
 	}
+	$my_guild_list = BR_Guild::instance()->getMyGuilds($adv_child_id);
+
 	if($use_leaderboard){
-		$limit = isset($_GET['limit']) ? $_GET['limit'] : 10;
 		$leaderboard_guilds = $wpdb->get_results("
 			SELECT 
 				guilds.*, 
@@ -53,12 +54,22 @@
 			$guild_xp_update .=" ON DUPLICATE KEY UPDATE guild_xp=VALUES(guild_xp)";
 			$guild_xp_update_query = $wpdb->query( $wpdb->prepare("$guild_xp_update ", $guild_xp_update_values));
 		}
-		$user_guild_id = !empty($guilds) ? $guilds[0]->guild_id : 0;
+		$user_guild_id = !empty($my_guild_list) ? $my_guild_list[0]->guild_id : 0;
 		$guild_rank_map = [];
 		foreach($leaderboard_guilds as $rank_index => $rank_guild) {
 			$guild_rank_map[$rank_guild->guild_id] = $rank_index + 1;
 		}
 		$guild_rank = $guild_rank_map[$user_guild_id] ?? 0;
+
+		// Top 5 stay as the big "My Guild"-style cards; everything else moves
+		// into a paginated table - 91 guilds in one flat list isn't usable.
+		$top_guilds = array_slice($leaderboard_guilds, 0, 5);
+		$rest_guilds = array_slice($leaderboard_guilds, 5);
+		$guild_per_page = 20;
+		$guild_total_pages = max(1, (int) ceil(count($rest_guilds) / $guild_per_page));
+		$guild_page = isset($_GET['guild_page']) ? max(1, (int) $_GET['guild_page']) : 1;
+		$guild_page = min($guild_page, $guild_total_pages);
+		$rest_guilds_page = array_slice($rest_guilds, ($guild_page - 1) * $guild_per_page, $guild_per_page);
 	}
 ?>
 
@@ -70,7 +81,7 @@
                 <span class="hud-title-label"><?= __("My Guild","bluerabbit"); ?></span>
             </h2>
         </div>
-        <?php foreach($guilds as $g){ ?>
+        <?php foreach($my_guild_list as $g){ ?>
             <?php include (TEMPLATEPATH . '/guild.php'); ?>
         <?php } ?>
     </div>
@@ -82,11 +93,43 @@
                 <span class="hud-title-label"><?= __("Leaderboard","bluerabbit"); ?></span>
             </h2>
         </div>
-        <ul class="cards guilds">
-            <?php foreach($leaderboard_guilds as $loop_index => $lg){ ?>
+        <ul class="cards guilds guild-leaderboard-top5">
+            <?php foreach($top_guilds as $loop_index => $lg){ ?>
                 <?php include (TEMPLATEPATH . '/guild-leaderboard.php'); ?>
             <?php } ?>
         </ul>
+
+        <?php if(!empty($rest_guilds)){ ?>
+        <div class="guild-leaderboard-table-wrap br-table-wrap" id="guild-leaderboard-table">
+            <table class="br-table guild-leaderboard-table">
+                <thead>
+                    <tr>
+                        <th class="text-center"><?= __("#","bluerabbit"); ?></th>
+                        <th></th>
+                        <th><?= __("Guild","bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("Members","bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("Level","bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("XP","bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("VC","bluerabbit"); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($rest_guilds_page as $row_index => $lg){
+                        $loop_index = 5 + (($guild_page - 1) * $guild_per_page) + $row_index;
+                    ?>
+                        <?php include (TEMPLATEPATH . '/guild-leaderboard-row.php'); ?>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+        <?php if($guild_total_pages > 1){ ?>
+        <div class="guild-leaderboard-pagination">
+            <?php for($p=1; $p<=$guild_total_pages; $p++){ ?>
+                <a class="guild-lb-page<?= $p == $guild_page ? ' active' : ''; ?>" href="<?= esc_url(add_query_arg('guild_page', $p)); ?>#guild-leaderboard-table"><?= $p; ?></a>
+            <?php } ?>
+        </div>
+        <?php } ?>
+        <?php } ?>
     </div>
     <?php } ?>
 

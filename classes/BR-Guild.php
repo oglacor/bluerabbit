@@ -350,6 +350,128 @@ class BR_Guild {
         return $result;
     }
 
+    //////////////////////////// BULK STATUS CHANGE ////////////////////////////
+    // manage-guilds.php can hold hundreds of guilds (a CSV import with a Guild
+    // column creates one per distinct name), so trashing them one row at a time
+    // through br_trash - which also runs resetPlayer on every single call - is not
+    // workable. This moves a whole selection in one query.
+    public function bulkGuildStatus(){
+        global $wpdb;
+        $data = ['success' => false];
+        $n = new Notification();
+
+        $nonce        = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $status       = sanitize_text_field($_POST['status'] ?? '');
+        $raw_ids      = isset($_POST['guild_ids']) ? (array)$_POST['guild_ids'] : [];
+
+        if (!wp_verify_nonce($nonce, 'br_bulk_guild_nonce')) {
+            $data['message'] = $n->pop(__('Session expired — reload the page','bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+        if (!in_array($status, ['publish','draft','trash','delete'], true)) {
+            $data['message'] = $n->pop(__('Unknown status','bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+        if (!$this->canManageGuilds($adventure_id)) {
+            $data['message'] = $n->pop(__("You don't have permission to manage this adventure's guilds",'bluerabbit'),'red','cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        $ids = [];
+        foreach ($raw_ids as $raw) { $id = intval($raw); if ($id > 0) $ids[$id] = true; }
+        $ids = array_keys($ids);
+        if (!$ids) {
+            $data['message'] = $n->pop(__('No guilds selected','bluerabbit'),'amber','warning');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $params       = array_merge([$status, $adventure_id], $ids);
+        $affected     = $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_guilds SET guild_status=%s
+             WHERE adventure_id=%d AND guild_id IN ($placeholders)",
+            $params
+        ));
+
+        // A permanently deleted guild must not leave players pointing at it:
+        // player_adventure.player_guild is what assignGuild() checks before handing
+        // out a new guild, so a dangling id would quietly lock those players out of
+        // ever being assigned one again.
+        $released = 0;
+        if ($status == 'delete') {
+            $released = $this->releaseGuildMembers($adventure_id, $ids);
+        }
+
+        foreach ($ids as $id) {
+            BR_Activity::instance()->logActivity($adventure_id, $status, 'guild', 'bulk', $id);
+        }
+
+        $labels = [
+            'publish' => __('Guilds published','bluerabbit'),
+            'draft'   => __('Guilds moved to draft','bluerabbit'),
+            'trash'   => __('Guilds moved to trash','bluerabbit'),
+            'delete'  => __('Guilds deleted','bluerabbit'),
+        ];
+        $message = $labels[$status] . ': ' . count($ids);
+        if ($released) {
+            $message .= ' · ' . sprintf(__('%d memberships released','bluerabbit'), $released);
+        }
+
+        $data['success']  = true;
+        $data['affected'] = $affected;
+        $data['released'] = $released;
+        $data['message']  = $n->pop($message, $status == 'delete' ? 'red' : 'green', 'guild');
+        $data['location'] = 'reload';
+        echo json_encode($data);
+        die();
+    }
+
+    // Drops the membership rows for the given guilds and clears the single-guild
+    // pointer on the enrolment row for anyone who was in one of them.
+    private function releaseGuildMembers($adventure_id, $ids){
+        global $wpdb;
+        if (!$ids) return 0;
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+
+        $released = (int)$wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_player_adventure SET player_guild=NULL
+             WHERE adventure_id=%d AND player_guild IN ($placeholders)",
+            array_merge([$adventure_id], $ids)
+        ));
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}br_player_guild
+             WHERE adventure_id=%d AND guild_id IN ($placeholders)",
+            array_merge([$adventure_id], $ids)
+        ));
+        return $released;
+    }
+
+    // Only an administrator, the adventure's owner or one of its GMs.
+    private function canManageGuilds($adventure_id){
+        global $wpdb;
+        $user = wp_get_current_user();
+        if (!$user || !$user->ID) return false;
+        if (in_array('administrator', (array)$user->roles)) return true;
+
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT adventure_owner FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id
+        ));
+        if (!$owner) return false;
+        if ($owner == $user->ID) return true;
+
+        $role = $wpdb->get_var($wpdb->prepare(
+            "SELECT player_adventure_role FROM {$wpdb->prefix}br_player_adventure
+             WHERE adventure_id=%d AND player_id=%d AND player_adventure_status='in'",
+            $adventure_id, $user->ID
+        ));
+        return $role == 'gm';
+    }
+
     // Source: functions/ajax.php — getAllGuilds
     public function getAllGuilds($adventure_id){
         global $wpdb; $current_user = wp_get_current_user();
@@ -363,10 +485,14 @@ class BR_Guild {
     public function getMyGuilds($adventure_id){
         global $wpdb; $current_user = wp_get_current_user();
 
-        $result = $wpdb->get_results("SELECT a.* FROM {$wpdb->prefix}br_guilds a
+        $result = $wpdb->get_results("SELECT a.*, COUNT(all_members.player_id) AS guild_current_capacity
+        FROM {$wpdb->prefix}br_guilds a
         JOIN {$wpdb->prefix}br_player_guild b
         ON a.guild_id=b.guild_id AND b.player_id=$current_user->ID
-        WHERE a.adventure_id=$adventure_id AND a.guild_status='publish' AND b.player_id=$current_user->ID");
+        LEFT JOIN {$wpdb->prefix}br_player_guild all_members
+        ON a.guild_id=all_members.guild_id
+        WHERE a.adventure_id=$adventure_id AND a.guild_status='publish' AND b.player_id=$current_user->ID
+        GROUP BY a.guild_id");
         return $result;
     }
 

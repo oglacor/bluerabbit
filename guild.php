@@ -1,4 +1,4 @@
-        <div class="my-guild-card">
+        <div class="my-guild-card guild-lb-clickable" onclick="openGuildRoster(<?= $g->guild_id; ?>);">
             <div class="my-guild-card-bg">
                 <svg class="my-guild-card-border" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 802 502">
                     <path d="M777,501H25l-24-24V25L25,1h752l24,24v452l-24,24Z"/>
@@ -48,7 +48,7 @@
                 <div class="my-guild-card-badge">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 440" class="guild-badge">
                         <defs>
-                            <clipPath id="hexClip">
+                            <clipPath id="hexClip-mg-<?= $g->guild_id; ?>">
                                 <polygon points="366.89 305.42 366.89 135.8 220 50.99 73.11 135.8 73.11 305.42 220 390.22 366.89 305.42"/>
                             </clipPath>
                         </defs>
@@ -60,7 +60,7 @@
                             href="<?= $g->guild_logo;?>"
                             width="440"
                             height="440"
-                            clip-path="url(#hexClip)"
+                            clip-path="url(#hexClip-mg-<?= $g->guild_id; ?>)"
                             preserveAspectRatio="xMidYMid slice"
                             filter="url(#softShadow)"
                         />

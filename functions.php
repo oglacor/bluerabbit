@@ -1591,8 +1591,12 @@ add_action( 'wp_ajax_br_stats_item_detail', 'br_stats_item_detail' );
 function br_guild_roster() {
 	if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'br_guild_roster_nonce' ) ) wp_send_json_error( 'Unauthorized' );
 	$aid = (int) $_POST['adventure_id'];
-	if ( ! br_stats_is_manager( $aid ) ) wp_send_json_error( 'Unauthorized' );
 	$guild_id = (int) $_POST['guild_id'];
+	if ( ! br_stats_is_manager( $aid ) ) {
+		// Not a manager - still allow a player to open their OWN guild's roster.
+		$pa = BR_Player::instance()->getPlayerAdventureData( $aid, get_current_user_id() );
+		if ( ! $pa || (int) $pa->player_guild !== $guild_id ) wp_send_json_error( 'Unauthorized' );
+	}
 	$stats = new BR_Stats();
 	$data = $stats->get_guild_roster( $aid, $guild_id );
 	if ( ! $data['guild'] ) wp_send_json_error( 'Guild not found' );
@@ -2695,6 +2699,7 @@ add_action("wp_ajax_setMagicCode", [BR_Adventure::instance(), 'setMagicCode']);
 add_action("wp_ajax_setCategory", [BR_Adventure::instance(), 'setCategory']);
 add_action("wp_ajax_setGuildGroup", [BR_Guild::instance(), 'setGuildGroup']);
 add_action("wp_ajax_setGuildCapacity", [BR_Guild::instance(), 'setGuildCapacity']);
+add_action("wp_ajax_brBulkGuildStatus", [BR_Guild::instance(), 'bulkGuildStatus']);
 add_action("wp_ajax_setDisplayStyle", [BR_Adventure::instance(), 'setDisplayStyle']);
 add_action("wp_ajax_setDimensions", [BR_Tabi::instance(), 'setDimensions']);
 add_action("wp_ajax_setTabiOnJourney", [BR_Tabi::instance(), 'setTabiOnJourney']);

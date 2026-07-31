@@ -679,9 +679,12 @@ class BR_Player {
         if ($name === '') return null;
         $name = mb_substr($name, 0, 190);
 
+        // guild_status='delete' is this codebase's permanent delete - such a guild is
+        // gone as far as the product is concerned, so a re-import must create a fresh
+        // one rather than quietly resurrecting it.
         $guild = $wpdb->get_row($wpdb->prepare(
             "SELECT guild_id, guild_name, guild_status FROM {$wpdb->prefix}br_guilds
-             WHERE adventure_id=%d AND TRIM(guild_name)=%s
+             WHERE adventure_id=%d AND TRIM(guild_name)=%s AND guild_status<>'delete'
              ORDER BY (guild_status='publish') DESC, guild_id ASC LIMIT 1",
             $adventure_id, $name
         ));

@@ -6666,6 +6666,68 @@ function brConfirmInline(btn, label, fn) {
     $btn.data('brTimer', setTimeout(function () { brResetConfirm($btn); }, 4000));
 }
 
+////////////////////////////////////////// GUILD BULK ACTIONS ////////////////////////////////////////////
+// manage-guilds.php. A CSV import with a Guild column can create hundreds of
+// guilds at once, so every table there supports selecting rows and moving the
+// whole selection in one request.
+
+function brGuildSelection(scope) {
+    var ids = [];
+    $('#guild-table-' + scope + ' .br-guild-pick:checked').each(function () {
+        ids.push($(this).val());
+    });
+    return ids;
+}
+
+function brGuildSyncBar(scope) {
+    var total = $('#guild-table-' + scope + ' .br-guild-pick').length;
+    var picked = brGuildSelection(scope).length;
+    $('#guild-bulk-count-' + scope).text(picked);
+    $('#guild-bulk-' + scope).toggleClass('active', picked > 0);
+    var $all = $('#guild-check-all-' + scope);
+    $all.prop('checked', picked > 0 && picked === total);
+    $all.prop('indeterminate', picked > 0 && picked < total);
+}
+
+function brGuildToggleAll(scope, el) {
+    // Only rows the search filter left visible, so "select all" never silently
+    // acts on guilds the operator cannot see.
+    $('#guild-table-' + scope + ' tbody > tr:visible .br-guild-pick').prop('checked', el.checked);
+    brGuildSyncBar(scope);
+}
+
+function brBulkGuildStatus(scope, status) {
+    brGuildStatusFor(brGuildSelection(scope), status);
+}
+
+// Also used for a single row's "Delete forever": permanent deletion has to go
+// through this endpoint rather than br_trash, because it is the one that also
+// releases the guild's members.
+function brGuildStatusFor(ids, status) {
+    if (!ids || !ids.length) return;
+    showLoader();
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: {
+            action: 'brBulkGuildStatus',
+            nonce: $('#bulk-guild-nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            status: status,
+            guild_ids: ids
+        },
+        method: 'POST',
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+        }
+    });
+}
+
+$(function () {
+    $(document).on('change', '.br-guild-pick', function () {
+        brGuildSyncBar($(this).attr('data-scope'));
+    });
+});
+
 ////////////////////////////////////////// postToWall ////////////////////////////////////////////
 function postToWall(ann_type, target_id = "") {
     let nonce = $('#nonce').val();
