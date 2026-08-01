@@ -20,7 +20,9 @@
 
     function ajax(action, extra, callback) {
         var data = $.extend({ action: action, nonce: cfg.nonce, adventure_id: cfg.adventureId }, extra || {});
-        $.post(cfg.ajaxurl, data, callback, 'json');
+        // Returned so callers can attach .fail() — a panel that shows a loader has to
+        // be able to clear it when the request errors, not just when it succeeds.
+        return $.post(cfg.ajaxurl, data, callback, 'json');
     }
 
     function destroyChart(key) {
@@ -36,6 +38,136 @@
 
     function numFmt(n) {
         return (parseInt(n) || 0).toLocaleString();
+    }
+
+    // ── Client-side table: search + page size + pagination + sort ────────
+    //
+    // One controller for every table on this page, so the player, achievement
+    // and item tables all behave like the enrolled-players table in
+    // page-new-adventure: the whole set is in the DOM, and search / page size /
+    // paging are applied to it in the browser. Rows opt in by carrying a
+    // data-search attribute; sortable headers carry data-sort-col +
+    // data-sort-type and read data-<col> off each row.
+    function BRStatsTable(opts) {
+        this.$body     = $('#' + opts.body);
+        this.$search   = $('#' + opts.search);
+        this.$perPage  = $('#' + opts.perPage);
+        this.$visible  = $('#' + opts.visible);
+        this.$empty    = $('#' + opts.empty);
+        this.$pager    = $('#' + opts.pager);
+        this.$table    = $('#' + opts.table);
+        this.scrollTo  = opts.scrollTo || null;
+        this.page      = 1;
+        this.perPage   = parseInt(this.$perPage.val(), 10) || 30;
+        this.sortCol   = '';
+        this.sortDir   = 'desc';
+        this.bind();
+    }
+
+    BRStatsTable.prototype.rows = function() {
+        return this.$body.children('tr[data-search]').get();
+    };
+
+    BRStatsTable.prototype.bind = function() {
+        var self = this;
+        this.$search.on('keyup search', function() { self.page = 1; self.render(); });
+        this.$perPage.on('change', function() {
+            self.perPage = parseInt($(this).val(), 10) || 30;
+            self.page = 1;
+            self.render();
+        });
+        this.$table.on('click', '.br-sortable', function() {
+            var col  = $(this).attr('data-sort-col');
+            var type = $(this).attr('data-sort-type');
+            if (self.sortCol === col) { self.sortDir = self.sortDir === 'asc' ? 'desc' : 'asc'; }
+            else { self.sortCol = col; self.sortDir = type === 'string' ? 'asc' : 'desc'; }
+
+            self.$table.find('.br-sort-icon').text('');
+            $(this).find('.br-sort-icon').text(self.sortDir === 'asc' ? ' ▲' : ' ▼');
+
+            var rows = self.rows();
+            rows.sort(function(a, b) {
+                var va = a.getAttribute('data-' + col) || '';
+                var vb = b.getAttribute('data-' + col) || '';
+                if (type === 'number') { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+                var cmp = va > vb ? 1 : (va < vb ? -1 : 0);
+                return self.sortDir === 'asc' ? cmp : -cmp;
+            });
+            rows.forEach(function(r) { self.$body.append(r); });
+            self.page = 1;
+            self.render();
+        });
+        // Paging buttons are rebuilt on every render, so the handler is delegated.
+        this.$pager.on('click', '.br-page-btn', function() {
+            var p = parseInt($(this).attr('data-page'), 10);
+            if (!p) return;
+            self.page = p;
+            self.render();
+            if (self.scrollTo) {
+                var el = document.getElementById(self.scrollTo);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    };
+
+    BRStatsTable.prototype.render = function() {
+        var terms = ($this_val(this.$search) || '').toLowerCase().trim();
+        terms = terms ? terms.split(/\s+/) : [];
+        var visible = [];
+        this.rows().forEach(function(row) {
+            row.style.display = 'none';
+            var hay = row.getAttribute('data-search') || '';
+            for (var i = 0; i < terms.length; i++) {
+                if (hay.indexOf(terms[i]) < 0) return;
+            }
+            visible.push(row);
+        });
+
+        var total = visible.length;
+        var pages = Math.max(1, Math.ceil(total / this.perPage));
+        if (this.page > pages) this.page = pages;
+        var start = (this.page - 1) * this.perPage;
+        var end   = Math.min(start + this.perPage, total);
+        for (var i = start; i < end; i++) {
+            visible[i].style.display = '';
+            var num = visible[i].querySelector('.br-row-num');
+            if (num) num.textContent = i + 1;
+        }
+
+        if (this.$visible.length) this.$visible.text(total);
+        if (this.$empty.length)   this.$empty.toggleClass('br-initially-hidden', total > 0);
+        this.renderPager(pages);
+    };
+
+    BRStatsTable.prototype.renderPager = function(pages) {
+        if (!this.$pager.length) return;
+        if (pages <= 1) { this.$pager.html(''); return; }
+        var h = '', p = this.page;
+        function btn(n, label, cls) {
+            return '<button class="br-page-btn' + (cls || '') + '" data-page="' + n + '">' + label + '</button>';
+        }
+        if (p > 1) h += btn(p - 1, '&laquo;');
+        var s = Math.max(1, p - 3), e = Math.min(pages, p + 3);
+        if (s > 1) {
+            h += btn(1, '1');
+            if (s > 2) h += '<span class="br-pagination-ellipsis">&hellip;</span>';
+        }
+        for (var i = s; i <= e; i++) h += btn(i, i, i === p ? ' active' : '');
+        if (e < pages) {
+            if (e < pages - 1) h += '<span class="br-pagination-ellipsis">&hellip;</span>';
+            h += btn(pages, pages);
+        }
+        if (p < pages) h += btn(p + 1, '&raquo;');
+        this.$pager.html(h);
+    };
+
+    function $this_val($el) { return $el.length ? $el.val() : ''; }
+
+    // ── Panel loader ─────────────────────────────────────────────────────
+    // Recalculating a segment over a 1000+ player roster takes real time, so the
+    // panel says so instead of silently showing stale numbers.
+    function panelLoading(panelId, on) {
+        $('#' + panelId).toggleClass('br-stats-loading', !!on);
     }
 
     // ── Chart.js v2 shared options ───────────────────────
@@ -224,6 +356,8 @@
 
         var coverage = document.getElementById('br-segment-coverage');
         if (coverage) coverage.textContent = data.label + ' data available for ' + data.coverage_pct + '% of players';
+        var dimLabel = document.getElementById('br-segment-dim-label');
+        if (dimLabel) dimLabel.textContent = data.label;
 
         destroyChart('segment');
         var ctx = document.getElementById('br-segment-chart');
@@ -258,9 +392,13 @@
     }
 
     function loadSegmentBreakdown(dimension) {
+        panelLoading('br-segment-panel', true);
         ajax('br_stats_segment_breakdown', { dimension: dimension }, function(res) {
+            panelLoading('br-segment-panel', false);
             if (!res.success) return;
             renderSegmentBreakdown(res.data);
+        }).fail(function() {
+            panelLoading('br-segment-panel', false);
         });
     }
 
@@ -369,27 +507,47 @@
 
     // ── Achievement Stats + drill-down drawer ────────────
 
+    var achievementTable = null;
+
     function initAchievementStats() {
+        panelLoading('br-achievement-panel', true);
         ajax('br_stats_achievement_breakdown', {}, function(res) {
+            panelLoading('br-achievement-panel', false);
             if (!res.success) return;
             renderAchievementStats(res.data);
-        });
+        }).fail(function() { panelLoading('br-achievement-panel', false); });
     }
 
     function renderAchievementStats(rows) {
         var $body = $('#br-achievement-stats-body');
+        $('#br-achievement-total').text(rows ? rows.length : 0);
         if (!rows || !rows.length) {
             $body.html('<tr><td colspan="3" class="text-center br-muted">No achievements yet</td></tr>');
+            $('#br-achievement-visible').text(0);
             return;
         }
         var html = rows.map(function(r) {
-            return '<tr class="br-stats-clickable-row" onclick="openAchievementDetail(' + r.achievement_id + ')">'
+            return '<tr class="br-stats-clickable-row" onclick="openAchievementDetail(' + r.achievement_id + ')"'
+                + ' data-search="' + esc((r.achievement_name || '').toLowerCase()) + '"'
+                + ' data-name="' + esc((r.achievement_name || '').toLowerCase()) + '"'
+                + ' data-earned="' + (parseInt(r.earned_count) || 0) + '"'
+                + ' data-pct="' + (parseFloat(r.pct) || 0) + '">'
                 + '<td>' + esc(r.achievement_name) + '</td>'
                 + '<td class="text-center">' + numFmt(r.earned_count) + ' / ' + numFmt(r.total_players) + '</td>'
                 + '<td class="text-center">' + r.pct + '%</td>'
                 + '</tr>';
         }).join('');
         $body.html(html);
+
+        if (!achievementTable) {
+            achievementTable = new BRStatsTable({
+                table: 'br-achievement-stats-table', body: 'br-achievement-stats-body',
+                search: 'br-achievement-search', perPage: 'br-achievement-per-page',
+                visible: 'br-achievement-visible', empty: 'br-achievement-empty',
+                pager: 'br-achievement-pagination'
+            });
+        }
+        achievementTable.render();
     }
 
     function playerRowHTML(p, metaOverride) {
@@ -433,27 +591,47 @@
 
     // ── Item Purchase Stats + drill-down drawer ──────────
 
+    var itemTable = null;
+
     function initItemStats() {
+        panelLoading('br-item-panel', true);
         ajax('br_stats_item_breakdown', {}, function(res) {
+            panelLoading('br-item-panel', false);
             if (!res.success) return;
             renderItemStats(res.data);
-        });
+        }).fail(function() { panelLoading('br-item-panel', false); });
     }
 
     function renderItemStats(rows) {
         var $body = $('#br-item-stats-body');
+        $('#br-item-total').text(rows ? rows.length : 0);
         if (!rows || !rows.length) {
             $body.html('<tr><td colspan="3" class="text-center br-muted">No items yet</td></tr>');
+            $('#br-item-visible').text(0);
             return;
         }
         var html = rows.map(function(r) {
-            return '<tr class="br-stats-clickable-row" onclick="openItemDetail(' + r.item_id + ')">'
+            return '<tr class="br-stats-clickable-row" onclick="openItemDetail(' + r.item_id + ')"'
+                + ' data-search="' + esc((r.item_name || '').toLowerCase()) + '"'
+                + ' data-name="' + esc((r.item_name || '').toLowerCase()) + '"'
+                + ' data-purchases="' + (parseInt(r.purchase_count) || 0) + '"'
+                + ' data-bloo="' + (parseInt(r.total_bloo) || 0) + '">'
                 + '<td>' + esc(r.item_name) + '</td>'
                 + '<td class="text-center">' + numFmt(r.purchase_count) + '</td>'
                 + '<td class="text-center">' + numFmt(r.total_bloo) + '</td>'
                 + '</tr>';
         }).join('');
         $body.html(html);
+
+        if (!itemTable) {
+            itemTable = new BRStatsTable({
+                table: 'br-item-stats-table', body: 'br-item-stats-body',
+                search: 'br-item-search', perPage: 'br-item-per-page',
+                visible: 'br-item-visible', empty: 'br-item-empty',
+                pager: 'br-item-pagination'
+            });
+        }
+        itemTable.render();
     }
 
     function buildItemDetailHTML(rows) {
@@ -463,7 +641,7 @@
         if (!rows || !rows.length) {
             h += '<span class="br-text-12 grey-400">No purchases yet</span>';
         } else {
-            h += '<table class="table transparent-bg br-stats-table"><thead><tr><td>Player</td><td>Date</td><td class="text-center">Amount</td></tr></thead><tbody>';
+            h += '<table class="br-table"><thead><tr><th>Player</th><th>Date</th><th class="text-center">Amount</th></tr></thead><tbody>';
             rows.forEach(function(r) {
                 h += '<tr><td>' + esc(r.display_name) + '</td><td>' + esc(r.trnx_date) + '</td><td class="text-center">' + numFmt(r.trnx_amount) + '</td></tr>';
             });
@@ -533,10 +711,10 @@
 
     function loadPlayerPanel(userId) {
         var $panel = $('#br-stats-player-panel');
-        $panel.css('opacity', '0.5');
+        $panel.addClass('br-stats-loading');
 
         ajax('br_stats_player_panel', { user_id: userId }, function(res) {
-            $panel.css('opacity', '1');
+            $panel.removeClass('br-stats-loading');
             if (!res.success) return;
 
             var d = res.data;
@@ -554,13 +732,15 @@
             $('html, body').animate({ scrollTop: $panel.offset().top - 80 }, 300);
             $('.br-stats-player-row').removeClass('active');
             $('.br-stats-player-row[data-uid="' + userId + '"]').addClass('active');
+        }).fail(function() {
+            $panel.removeClass('br-stats-loading');
         });
     }
 
     function buildPlayerHTML(d) {
         var s = d.summary;
         var lbl = d.labels;
-        if (!s || !s.display_name) return '<div class="br-stats-panel text-center"><p class="white-color font _18">No data available.</p></div>';
+        if (!s || !s.display_name) return '<div class="br-stats-panel text-center"><p class="br-text-18">No data available.</p></div>';
 
         var eng = d.engagement || { score: 0, level: 'dormant', breakdown: {} };
         var la  = d.last_activity || {};
@@ -663,14 +843,14 @@
 
         // SCORM
         if (d.scorm && d.scorm.length) {
-            h += '<div class="br-stats-panel"><h3>SCORM Completions</h3>';
-            h += '<table class="table transparent-bg"><thead><tr><td>Step</td><td class="text-center">Status</td></tr></thead><tbody>';
+            h += '<div class="br-stats-panel"><h3>SCORM Completions</h3><div class="br-table-scroll">';
+            h += '<table class="br-table"><thead><tr><th>Step</th><th class="text-center">Status</th></tr></thead><tbody>';
             d.scorm.forEach(function(sc) {
                 var cls = (sc.status === 'completed' || sc.status === 'passed') ? 'complete' : 'incomplete';
                 h += '<tr><td>' + esc(sc.step_title) + '</td>';
                 h += '<td class="text-center"><span class="br-stats-scorm-status ' + cls + '">' + esc(sc.status) + '</span></td></tr>';
             });
-            h += '</tbody></table></div>';
+            h += '</tbody></table></div></div>';
         }
 
         // Engagement breakdown
@@ -685,27 +865,6 @@
         return '<div class="br-stats-currency ' + cls + '">'
              + '<span class="br-stats-currency-value">' + val + '</span>'
              + '<span class="br-stats-currency-label">' + esc(label) + '</span></div>';
-    }
-
-    function renderPlayerSearchResults(players) {
-        var $tbody = $('#br-stats-player-table tbody');
-        if (!players || !players.length) {
-            $tbody.html('<tr><td colspan="6" class="text-center br-muted">No players found</td></tr>');
-            return;
-        }
-        var rows = players.map(function(p, i) {
-            return '<tr class="br-stats-player-row" data-uid="' + p.player_id + '">'
-                 + '<td class="br-row-num">' + (i + 1) + '</td>'
-                 + '<td><span class="br-stats-player-name">'
-                 +   '<img src="' + p.avatar_url + '" class="br-stats-avatar-sm" alt="">'
-                 +   esc(p.display_name) + '</span></td>'
-                 + '<td class="text-center">' + numFmt(p.player_xp) + '</td>'
-                 + '<td class="text-center">' + numFmt(p.player_bloo) + '</td>'
-                 + '<td class="text-center">' + p.completion_pct + '%</td>'
-                 + '<td class="text-center">' + esc(p.last_active_label) + '</td>'
-                 + '</tr>';
-        }).join('');
-        $tbody.html(rows);
     }
 
     // ── Init ─────────────────────────────────────────────
@@ -733,54 +892,17 @@
                 if (uid) loadPlayerPanel(uid);
             });
 
-            // Player search - queries the full roster server-side, not just the
-            // current page, since the table itself is paginated (20/page).
-            var $playerTbody = $('#br-stats-player-table tbody');
-            var originalTbodyHTML = $playerTbody.html();
-            var searchTimer = null;
-
-            $('#br-stats-player-search').on('keyup', function() {
-                var q = ($(this).val() || '').trim();
-                clearTimeout(searchTimer);
-                searchTimer = setTimeout(function() {
-                    if (!q) {
-                        $playerTbody.html(originalTbodyHTML);
-                        $('.br-stats-pagination').show();
-                        return;
-                    }
-                    ajax('br_stats_search_players', { search: q }, function(res) {
-                        if (!res.success) return;
-                        renderPlayerSearchResults(res.data.players);
-                        $('.br-stats-pagination').hide();
-                    });
-                }, 300);
-            });
-
-            // Sortable columns
-            var sortCol = '', sortDir = 'desc';
-            $(document).on('click', '#br-stats-player-table .br-sortable', function() {
-                var col  = $(this).attr('data-sort-col');
-                var type = $(this).attr('data-sort-type');
-                if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
-                else { sortCol = col; sortDir = type === 'string' ? 'asc' : 'desc'; }
-
-                $('#br-stats-player-table .br-sort-icon').text('');
-                $(this).find('.br-sort-icon').text(sortDir === 'asc' ? ' ▲' : ' ▼');
-
-                var $tbody = $('#br-stats-player-table tbody');
-                var rows = $tbody.find('tr').get();
-                rows.sort(function(a, b) {
-                    var va = $(a).attr('data-' + col) || '';
-                    var vb = $(b).attr('data-' + col) || '';
-                    if (type === 'number') { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
-                    var cmp = va > vb ? 1 : (va < vb ? -1 : 0);
-                    return sortDir === 'asc' ? cmp : -cmp;
-                });
-                $.each(rows, function(i, row) {
-                    $tbody.append(row);
-                    $(row).find('.br-row-num').text(i + 1);
-                });
-            });
+            // The whole roster is in the DOM (page-stats.php renders it in one go),
+            // so search, page size, paging and sorting are all local - no round trip
+            // per keystroke, and sorting covers every player rather than one page.
+            if ($('#br-stats-player-body').length) {
+                new BRStatsTable({
+                    table: 'br-stats-player-table', body: 'br-stats-player-body',
+                    search: 'br-stats-player-search', perPage: 'br-stats-player-per-page',
+                    visible: 'br-stats-player-visible', empty: 'br-stats-player-empty',
+                    pager: 'br-stats-player-pagination', scrollTo: 'br-stats-player-table'
+                }).render();
+            }
         }
 
         // Handle back/forward

@@ -15,12 +15,13 @@ $p_types        = $stats->get_player_type_completion($view_user_id, $adv_child_i
 $p_last         = $stats->get_player_last_activity($view_user_id, $adv_child_id);
 $p_engagement   = $stats->get_player_engagement($view_user_id, $adv_child_id);
 
-$page     = isset($_GET['pg']) ? max(1, (int)$_GET['pg']) : 1;
-$per_page = 20;
-
 if ($is_manager) {
-    $adv_summary      = $stats->get_adventure_summary($adv_child_id);
-    $all_players_data = $stats->get_all_players($adv_child_id, $per_page, ($page - 1) * $per_page);
+    $adv_summary = $stats->get_adventure_summary($adv_child_id);
+    // The whole roster is rendered at once and searched/paginated in the browser,
+    // exactly like the enrolled-players table in page-new-adventure. That keeps the
+    // count, the search and the page size in sync with each other for free, and it
+    // is what lets a GM sort the full roster instead of just the current page.
+    $all_players_data = $stats->get_all_players($adv_child_id, 100000, 0);
     $adv_tabis        = $stats->get_adventure_tabi_completion($adv_child_id);
     $adv_engagement   = $stats->get_adventure_engagement($adv_child_id);
     $adv_segment      = $stats->get_engagement_by_segment($adv_child_id, 'work_country');
@@ -265,43 +266,55 @@ window.brStats = {
     </div>
 
     <!-- Workforce Engagement (breakdown by player_meta segment) -->
-    <div class="br-stats-panel">
+    <div class="br-stats-panel br-stats-loadable" id="br-segment-panel">
         <div class="br-stats-segment-header">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                <h3 style="margin:0"><?= __("Workforce Engagement", "bluerabbit"); ?></h3>
-                <select class="br-input" id="br-segment-dimension" style="padding:4px 8px;font-size:12px;width:auto">
+            <div class="br-stats-segment-heading">
+                <!-- The dimension being charted is the whole point of this panel, so it
+                     is spelled out in the headline instead of being inferable only from
+                     the small coverage note that used to sit in the top-right corner. -->
+                <h3 class="br-m0">
+                    <?= __("Workforce Engagement", "bluerabbit"); ?>
+                    <span class="br-stats-segment-dim" id="br-segment-dim-label"><?= esc_html($adv_segment['label']); ?></span>
+                </h3>
+                <span class="br-stats-segment-coverage" id="br-segment-coverage">
+                    <?= sprintf(esc_html__("%s data available for %s%% of players", "bluerabbit"), esc_html($adv_segment['label']), $adv_segment['coverage_pct']); ?>
+                </span>
+            </div>
+            <div class="br-stats-filter-controls">
+                <label class="br-stats-inline-label" for="br-segment-dimension"><?= __("Break down by", "bluerabbit"); ?></label>
+                <select class="br-input br-stats-select-sm" id="br-segment-dimension">
                     <?php foreach (BR_Stats::SEGMENT_DIMENSIONS as $dim_key => $dim_label) { ?>
                     <option value="<?= esc_attr($dim_key); ?>" <?= $dim_key === 'work_country' ? 'selected' : ''; ?>><?= esc_html($dim_label); ?></option>
                     <?php } ?>
                 </select>
             </div>
-            <span class="br-stats-segment-coverage" id="br-segment-coverage">
-                <?= sprintf(esc_html__("%s data available for %s%% of players", "bluerabbit"), esc_html($adv_segment['label']), $adv_segment['coverage_pct']); ?>
-            </span>
         </div>
         <div class="br-stats-chart-wrap">
             <canvas id="br-segment-chart"></canvas>
         </div>
-        <table class="table transparent-bg br-stats-table" id="br-segment-table" style="margin-top:16px">
-            <thead>
-                <tr>
-                    <td><?= __("Segment", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Players", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Avg Score", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Avg Completion", "bluerabbit"); ?></td>
-                </tr>
-            </thead>
-            <tbody id="br-segment-table-body">
-                <?php foreach ($adv_segment['segments'] as $seg) { ?>
-                <tr>
-                    <td><?= esc_html($seg['label']); ?></td>
-                    <td class="text-center"><?= number_format($seg['count']); ?></td>
-                    <td class="text-center"><?= $seg['avg_score']; ?></td>
-                    <td class="text-center"><?= $seg['avg_completion_pct']; ?>%</td>
-                </tr>
-                <?php } ?>
-            </tbody>
-        </table>
+        <div class="br-table-scroll br-mt-md">
+            <table class="br-table" id="br-segment-table">
+                <thead>
+                    <tr>
+                        <th><?= __("Segment", "bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("Players", "bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("Avg Score", "bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("Avg Completion", "bluerabbit"); ?></th>
+                    </tr>
+                </thead>
+                <tbody id="br-segment-table-body">
+                    <?php foreach ($adv_segment['segments'] as $seg) { ?>
+                    <tr>
+                        <td><?= esc_html($seg['label']); ?></td>
+                        <td class="text-center"><?= number_format($seg['count']); ?></td>
+                        <td class="text-center"><?= $seg['avg_score']; ?></td>
+                        <td class="text-center"><?= $seg['avg_completion_pct']; ?>%</td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="br-stats-panel-loader"><?= __("Recalculating…", "bluerabbit"); ?></div>
     </div>
 
     <!-- Achievement Stats -->
@@ -309,19 +322,37 @@ window.brStats = {
         <span class="icon icon-achievement"></span>
         <h2><?= __("Achievements", "bluerabbit"); ?></h2>
     </div>
-    <div class="br-stats-panel">
-        <table class="table transparent-bg br-stats-table" id="br-achievement-stats-table">
-            <thead>
-                <tr>
-                    <td><?= __("Achievement", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Earned", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("% of Players", "bluerabbit"); ?></td>
-                </tr>
-            </thead>
-            <tbody id="br-achievement-stats-body">
-                <tr><td colspan="3" class="text-center br-muted"><?= __("Loading...", "bluerabbit"); ?></td></tr>
-            </tbody>
-        </table>
+    <div class="br-stats-panel br-stats-loadable" id="br-achievement-panel">
+        <div class="br-adv-enrolled-toolbar">
+            <input type="text" class="br-input br-adv-enrolled-search" id="br-achievement-search"
+                   placeholder="<?= esc_attr__("Search achievements...","bluerabbit"); ?>">
+            <select class="br-input br-adv-enrolled-filter" id="br-achievement-per-page">
+                <option value="15">15 <?= __("per page","bluerabbit"); ?></option>
+                <option value="30">30 <?= __("per page","bluerabbit"); ?></option>
+                <option value="60">60 <?= __("per page","bluerabbit"); ?></option>
+                <option value="500">500 <?= __("per page","bluerabbit"); ?></option>
+            </select>
+            <span class="br-adv-enrolled-count">
+                <span id="br-achievement-visible">0</span> / <span id="br-achievement-total">0</span>
+                <?= __("achievements","bluerabbit"); ?>
+            </span>
+        </div>
+        <div class="br-table-scroll">
+            <table class="br-table" id="br-achievement-stats-table">
+                <thead>
+                    <tr>
+                        <th class="br-sortable br-stats-sortable" data-sort-col="name" data-sort-type="string"><?= __("Achievement", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="earned" data-sort-type="number"><?= __("Earned", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="pct" data-sort-type="number"><?= __("% of Players", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="br-achievement-stats-body">
+                    <tr><td colspan="3" class="text-center br-muted"><?= __("Loading...", "bluerabbit"); ?></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="br-empty br-initially-hidden" id="br-achievement-empty"><?= __("No achievements match your search.","bluerabbit"); ?></div>
+        <div class="br-pagination" id="br-achievement-pagination"></div>
     </div>
 
     <!-- Item Purchase Stats -->
@@ -329,19 +360,37 @@ window.brStats = {
         <span class="icon icon-shop"></span>
         <h2><?= __("Item Purchases", "bluerabbit"); ?></h2>
     </div>
-    <div class="br-stats-panel">
-        <table class="table transparent-bg br-stats-table" id="br-item-stats-table">
-            <thead>
-                <tr>
-                    <td><?= __("Item", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Purchases", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Total", "bluerabbit"); ?> <?= $bloo_label; ?></td>
-                </tr>
-            </thead>
-            <tbody id="br-item-stats-body">
-                <tr><td colspan="3" class="text-center br-muted"><?= __("Loading...", "bluerabbit"); ?></td></tr>
-            </tbody>
-        </table>
+    <div class="br-stats-panel br-stats-loadable" id="br-item-panel">
+        <div class="br-adv-enrolled-toolbar">
+            <input type="text" class="br-input br-adv-enrolled-search" id="br-item-search"
+                   placeholder="<?= esc_attr__("Search items...","bluerabbit"); ?>">
+            <select class="br-input br-adv-enrolled-filter" id="br-item-per-page">
+                <option value="15">15 <?= __("per page","bluerabbit"); ?></option>
+                <option value="30">30 <?= __("per page","bluerabbit"); ?></option>
+                <option value="60">60 <?= __("per page","bluerabbit"); ?></option>
+                <option value="500">500 <?= __("per page","bluerabbit"); ?></option>
+            </select>
+            <span class="br-adv-enrolled-count">
+                <span id="br-item-visible">0</span> / <span id="br-item-total">0</span>
+                <?= __("items","bluerabbit"); ?>
+            </span>
+        </div>
+        <div class="br-table-scroll">
+            <table class="br-table" id="br-item-stats-table">
+                <thead>
+                    <tr>
+                        <th class="br-sortable br-stats-sortable" data-sort-col="name" data-sort-type="string"><?= __("Item", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="purchases" data-sort-type="number"><?= __("Purchases", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="bloo" data-sort-type="number"><?= __("Total", "bluerabbit"); ?> <?= $bloo_label; ?> <span class="br-sort-icon"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="br-item-stats-body">
+                    <tr><td colspan="3" class="text-center br-muted"><?= __("Loading...", "bluerabbit"); ?></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="br-empty br-initially-hidden" id="br-item-empty"><?= __("No items match your search.","bluerabbit"); ?></div>
+        <div class="br-pagination" id="br-item-pagination"></div>
     </div>
 
     <!-- Player Table -->
@@ -349,61 +398,65 @@ window.brStats = {
         <h2><?= __("Players", "bluerabbit"); ?></h2>
     </div>
     <div class="br-stats-panel">
-        <div class="br-stats-search-wrap">
-            <input type="text" class="br-input br-max-w-300" id="br-stats-player-search" placeholder="<?= esc_attr__("Search players...","bluerabbit"); ?>">
+        <div class="br-adv-enrolled-toolbar">
+            <input type="text" class="br-input br-adv-enrolled-search" id="br-stats-player-search"
+                   placeholder="<?= esc_attr__("Search by name or email...","bluerabbit"); ?>">
+            <select class="br-input br-adv-enrolled-filter" id="br-stats-player-per-page">
+                <option value="30">30 <?= __("per page","bluerabbit"); ?></option>
+                <option value="60">60 <?= __("per page","bluerabbit"); ?></option>
+                <option value="120">120 <?= __("per page","bluerabbit"); ?></option>
+                <option value="500">500 <?= __("per page","bluerabbit"); ?></option>
+            </select>
+            <span class="br-adv-enrolled-count">
+                <span id="br-stats-player-visible"><?= count($all_players_data['players']); ?></span>
+                / <?= count($all_players_data['players']); ?> <?= __("players","bluerabbit"); ?>
+            </span>
         </div>
-        <table class="table transparent-bg br-stats-table" id="br-stats-player-table">
-            <thead>
-                <tr>
-                    <td>#</td>
-                    <td class="br-sortable br-stats-sortable" data-sort-col="name" data-sort-type="string"><?= __("Player", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="xp" data-sort-type="number"><?= $xp_label; ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="bloo" data-sort-type="number"><?= $bloo_label; ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="completion" data-sort-type="number"><?= __("Completion", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
-                    <td class="text-center br-sortable br-stats-sortable" data-sort-col="last_active" data-sort-type="number"><?= __("Last Active", "bluerabbit"); ?> <span class="br-sort-icon"></span></td>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach($all_players_data['players'] as $idx => $ap){
-                    $login_ts = ($ap['player_last_login'] && strtotime($ap['player_last_login']) > 0) ? strtotime($ap['player_last_login']) : 0;
-                ?>
-                <tr class="br-stats-player-row<?= ($ap['player_id'] == $view_user_id) ? ' active' : ''; ?>"
-                    data-uid="<?= $ap['player_id']; ?>"
-                    data-search="<?= esc_attr(strtolower($ap['display_name'].' '.$ap['user_email'])); ?>"
-                    data-name="<?= esc_attr(strtolower($ap['display_name'])); ?>"
-                    data-xp="<?= (int)$ap['player_xp']; ?>"
-                    data-bloo="<?= (int)$ap['player_bloo']; ?>"
-                    data-completion="<?= (float)$ap['completion_pct']; ?>"
-                    data-last_active="<?= $login_ts; ?>">
-                    <td class="br-row-num"><?= ($page - 1) * $per_page + $idx + 1; ?></td>
-                    <td>
-                        <span class="br-stats-player-name">
-                            <img src="<?= esc_url(get_avatar_url($ap['player_id'], ['size' => 32])); ?>"
-                                 class="br-stats-avatar-sm" alt="">
-                            <?= esc_html($ap['display_name']); ?>
-                        </span>
-                    </td>
-                    <td class="text-center"><?= number_format($ap['player_xp']); ?></td>
-                    <td class="text-center"><?= number_format($ap['player_bloo']); ?></td>
-                    <td class="text-center"><?= $ap['completion_pct']; ?>%</td>
-                    <td class="text-center">
-                        <?= $login_ts ? BR_Utils::instance()->get_time_ago($login_ts, $adv_child_id) : '&mdash;'; ?>
-                    </td>
-                </tr>
-                <?php } ?>
-            </tbody>
-        </table>
-
-        <?php
-        $total_pages = ceil($all_players_data['total'] / $per_page);
-        if ($total_pages > 1) { ?>
-        <div class="br-stats-pagination">
-            <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-            <a href="?<?= http_build_query(array_merge($_GET, ['pg' => $i])); ?>"
-               class="br-stats-page-link<?= $i == $page ? ' active' : ''; ?>"><?= $i; ?></a>
-            <?php } ?>
+        <div class="br-table-scroll">
+            <table class="br-table br-stats-player-table" id="br-stats-player-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th class="br-sortable br-stats-sortable" data-sort-col="name" data-sort-type="string"><?= __("Player", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="xp" data-sort-type="number"><?= $xp_label; ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="bloo" data-sort-type="number"><?= $bloo_label; ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="completion" data-sort-type="number"><?= __("Completion", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                        <th class="text-center br-sortable br-stats-sortable" data-sort-col="last_active" data-sort-type="number"><?= __("Last Active", "bluerabbit"); ?> <span class="br-sort-icon"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="br-stats-player-body">
+                    <?php foreach($all_players_data['players'] as $idx => $ap){
+                        $login_ts = ($ap['player_last_login'] && strtotime($ap['player_last_login']) > 0) ? strtotime($ap['player_last_login']) : 0;
+                    ?>
+                    <tr class="br-stats-player-row<?= ($ap['player_id'] == $view_user_id) ? ' active' : ''; ?>"
+                        data-uid="<?= $ap['player_id']; ?>"
+                        data-search="<?= esc_attr(strtolower($ap['display_name'].' '.$ap['user_email'].' '.$ap['player_id'])); ?>"
+                        data-name="<?= esc_attr(strtolower($ap['display_name'])); ?>"
+                        data-xp="<?= (int)$ap['player_xp']; ?>"
+                        data-bloo="<?= (int)$ap['player_bloo']; ?>"
+                        data-completion="<?= (float)$ap['completion_pct']; ?>"
+                        data-last_active="<?= $login_ts; ?>">
+                        <td class="br-row-num"><?= $idx + 1; ?></td>
+                        <td>
+                            <span class="br-stats-player-name">
+                                <img src="<?= esc_url(get_avatar_url($ap['player_id'], ['size' => 32])); ?>"
+                                     class="br-stats-avatar-sm" alt="" loading="lazy">
+                                <?= esc_html($ap['display_name']); ?>
+                            </span>
+                        </td>
+                        <td class="text-center"><?= number_format($ap['player_xp']); ?></td>
+                        <td class="text-center"><?= number_format($ap['player_bloo']); ?></td>
+                        <td class="text-center"><?= $ap['completion_pct']; ?>%</td>
+                        <td class="text-center">
+                            <?= $login_ts ? BR_Utils::instance()->get_time_ago($login_ts, $adv_child_id) : '&mdash;'; ?>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
-        <?php } ?>
+        <div class="br-empty br-initially-hidden" id="br-stats-player-empty"><?= __("No players match your search.","bluerabbit"); ?></div>
+        <div class="br-pagination" id="br-stats-player-pagination"></div>
     </div>
 
     <!-- Achievement / Item drill-down drawers -->
@@ -637,34 +690,36 @@ window.brStats = {
     <?php if (!empty($p_scorm)) { ?>
     <div class="br-stats-panel">
         <h3><?= __("SCORM Completions", "bluerabbit"); ?></h3>
-        <table class="table transparent-bg">
-            <thead>
-                <tr>
-                    <td><?= __("Step", "bluerabbit"); ?></td>
-                    <td class="text-center"><?= __("Status", "bluerabbit"); ?></td>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($p_scorm as $sc) {
-                    $sc_class = ($sc['status'] === 'completed' || $sc['status'] === 'passed') ? 'complete' : 'incomplete';
-                ?>
-                <tr>
-                    <td><?= esc_html($sc['step_title']); ?></td>
-                    <td class="text-center">
-                        <span class="br-stats-scorm-status <?= $sc_class; ?>">
-                            <?= esc_html(ucfirst($sc['status'])); ?>
-                        </span>
-                    </td>
-                </tr>
-                <?php } ?>
-            </tbody>
-        </table>
+        <div class="br-table-scroll">
+            <table class="br-table">
+                <thead>
+                    <tr>
+                        <th><?= __("Step", "bluerabbit"); ?></th>
+                        <th class="text-center"><?= __("Status", "bluerabbit"); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($p_scorm as $sc) {
+                        $sc_class = ($sc['status'] === 'completed' || $sc['status'] === 'passed') ? 'complete' : 'incomplete';
+                    ?>
+                    <tr>
+                        <td><?= esc_html($sc['step_title']); ?></td>
+                        <td class="text-center">
+                            <span class="br-stats-scorm-status <?= $sc_class; ?>">
+                                <?= esc_html(ucfirst($sc['status'])); ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
     </div>
     <?php } ?>
 
 <?php } else { ?>
     <div class="br-stats-panel text-center">
-        <p class="white-color font _18"><?= __("No data available for this player.", "bluerabbit"); ?></p>
+        <p class="br-text-18"><?= __("No data available for this player.", "bluerabbit"); ?></p>
     </div>
 <?php } ?>
 

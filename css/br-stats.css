@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .br-stats-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -231,8 +232,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 
 .br-stats-pagination {
@@ -283,8 +283,7 @@
   height: 72px;
   border-radius: 50%;
   border: 2px solid rgba(28, 194, 235, 0.4);
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 
 .br-stats-hero-name {
@@ -501,8 +500,7 @@
   border-radius: 50%;
   margin: 0 auto 6px;
   display: block;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 .br-stats-achievement.locked img, .br-stats-achievement.locked .br-stats-achievement-placeholder {
   filter: grayscale(1) opacity(0.3);
@@ -561,8 +559,7 @@
   width: 64px;
   height: 64px;
   border-radius: 12px;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   border: 1px solid rgba(28, 194, 235, 0.2);
 }
 
@@ -712,6 +709,93 @@
   transition: opacity 0.2s ease;
 }
 
+.br-stats-loadable,
+#br-stats-player-panel {
+  position: relative;
+}
+
+.br-stats-loading {
+  position: relative;
+  pointer-events: none;
+}
+.br-stats-loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 12px;
+  background: rgba(4, 22, 30, 0.72);
+  backdrop-filter: blur(1px);
+}
+.br-stats-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 6;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border-radius: 50%;
+  border: 3px solid rgba(28, 194, 235, 0.18);
+  border-top-color: #1cc2eb;
+  animation: br-stats-spin 0.7s linear infinite;
+}
+
+@keyframes br-stats-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.br-stats-panel-loader {
+  display: none;
+}
+
+.br-stats-loading > .br-stats-panel-loader {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  margin-top: 32px;
+  text-align: center;
+  font-family: "proxima-nova-extra-condensed", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.br-stats-segment-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.br-stats-segment-heading h3 {
+  margin: 0;
+}
+
+.br-stats-segment-dim {
+  color: #1cc2eb;
+}
+.br-stats-segment-dim::before {
+  content: "—";
+  margin: 0 6px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.br-stats-player-row,
+.br-stats-clickable-row {
+  cursor: pointer;
+}
+
+.br-stats-player-table tbody td {
+  vertical-align: middle;
+}
+
 @media (max-width: 768px) {
   .br-stats-kpis {
     grid-template-columns: repeat(2, 1fr);
@@ -761,10 +845,10 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  .br-stats-table thead td:nth-child(4),
-  .br-stats-table tbody td:nth-child(4),
-  .br-stats-table thead td:nth-child(6),
-  .br-stats-table tbody td:nth-child(6) {
+  .br-stats-player-table thead th:nth-child(4),
+  .br-stats-player-table tbody td:nth-child(4),
+  .br-stats-player-table thead th:nth-child(6),
+  .br-stats-player-table tbody td:nth-child(6) {
     display: none;
   }
 }
@@ -784,4 +868,4 @@
   .br-stats-achievements-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
-}/*# sourceMappingURL=br-stats.css.map */
+}

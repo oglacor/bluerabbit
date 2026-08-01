@@ -149,6 +149,13 @@ max-width: 1440px;
 .br-table-wrap {
     background-color: rgba(11, 61, 79, 0.6);
 }
+
+// Wide tables scroll inside their own box instead of pushing the page sideways.
+.br-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .br-table { 
   width: 100%;
   border-collapse: collapse;
@@ -312,6 +319,65 @@ max-width: 1440px;
   background: rgba($br-red, 0.1);
   color: $br-red;
   border: 1px solid rgba($br-red, 0.15);
+}
+
+// Survey picks, ratings and branch choices have no right answer, so they must
+// not read as "correct" or "wrong" - they are just what the player said.
+.br-answer-neutral {
+  background: rgba($br-primary, 0.1);
+  color: rgba($br-white, 0.8);
+  border: 1px solid rgba($br-primary, 0.2);
+}
+
+// ── Step-by-step answer log (player-step-answers.php) ────
+
+.br-answer-log {
+  display: flex;
+  flex-direction: column;
+}
+
+.br-answer-text {
+  color: rgba($br-white, 0.9);
+  font-size: 15px;
+  line-height: 1.6;
+
+  p:last-child { margin-bottom: 0; }
+
+  img { max-width: 100%; height: auto; border-radius: $radius-sm; }
+}
+
+.br-answer-media {
+  display: block;
+  max-width: 420px;
+  margin-top: 4px;
+
+  img, &video { width: 100%; height: auto; border-radius: $radius-sm; }
+}
+
+video.br-answer-media {
+  width: 100%;
+  max-width: 420px;
+  border-radius: $radius-sm;
+}
+
+.br-qa-unanswered {
+  opacity: 0.5;
+}
+
+.br-qa-no-answer {
+  font-size: 13px;
+  font-style: italic;
+  color: rgba($br-white, 0.35);
+}
+
+.br-qa-attempts {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: $radius-pill;
+  background: rgba($br-amber, 0.15);
+  color: $br-amber;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 // ── Q&A block (challenge answer detail) ──────────────────
@@ -4649,6 +4715,35 @@ body.br-drawer-open {
 
 .br-stats-sortable {
   cursor: pointer;
+  user-select: none;
+
+  &:hover { color: rgba($br-white, 0.8); }
+}
+
+.br-sort-icon {
+  font-size: 10px;
+  color: $br-primary;
+}
+
+// Row counter column: fixed width so the numbers don't shift the layout as
+// paging renumbers them, and dimmed because it is an index, not data.
+.br-row-num {
+  width: 48px;
+  color: rgba($br-white, 0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.br-stats-inline-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba($br-white, 0.35);
+}
+
+.br-stats-select-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  width: auto;
 }
 
 .br-stats-kpi-small {
@@ -7179,4 +7274,157 @@ button.br-btn.br-confirming {
 // A tab's worth of panels. Hidden/shown by brSwitchPanel().
 .br-panel-group {
   display: block;
+}
+
+// ── Player Work (page-player-work.php, rebuilt 2026-08-01) ──────────────
+//
+// The page opens on a status card that mirrors the profile-box modal in
+// footer.php: rank, level, and one bar per currency. It is rebuilt here rather
+// than reusing the modal's markup because the modal is a fixed-size overlay
+// built from the old layer/utility system, and it only ever renders the
+// *current* user - this page also has to render whoever a GM is looking at.
+
+.br-pw-status-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.br-pw-status-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid rgba($br-primary, 0.4);
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.05);
+  flex-shrink: 0;
+}
+
+.br-pw-status-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.br-pw-status-name {
+  @include condensed-heading(34px, 900);
+  letter-spacing: 2px;
+  color: $br-white;
+  margin: 0;
+  line-height: 1;
+}
+
+.br-pw-status-level {
+  @include condensed-heading(16px, 700);
+  color: $br-primary;
+}
+
+.br-pw-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.br-pw-bar-legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.br-pw-bar-name {
+  @include condensed-heading(13px, 900);
+  color: rgba($br-white, 0.6);
+
+  .icon { margin-right: 4px; }
+}
+
+.br-pw-bar-value {
+  font-size: 13px;
+  color: rgba($br-white, 0.5);
+  font-variant-numeric: tabular-nums;
+
+  strong { color: $br-white; }
+}
+
+.br-pw-bar-track {
+  position: relative;
+  height: 10px;
+  border-radius: $radius-pill;
+  background: rgba($br-white, 0.08);
+  overflow: hidden;
+}
+
+.br-pw-bar-fill {
+  height: 100%;
+  border-radius: $radius-pill;
+  transition: width 0.4s ease;
+
+  &.xp   { background: linear-gradient(90deg, $br-primary, $br-purple); }
+  &.bloo { background: $br-green; }
+  &.ep   { background: $br-accent; }
+}
+
+// ── Milestone list ─────────────────────────────────────────────────────
+// Rows the player can act on are anchors; walls are plain divs. The visual
+// difference has to be obvious, because the whole point of this list is
+// "what can I go and do right now".
+
+.br-pw-milestone {
+  text-decoration: none;
+  border-radius: $radius-sm;
+  padding: 4px 8px;
+  margin: 0 -8px;
+
+  &.open {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba($br-primary, 0.1);
+
+      .br-stats-quest-title { color: $br-white; }
+    }
+  }
+
+  &.locked {
+    opacity: 0.55;
+    cursor: default;
+  }
+}
+
+.br-pw-milestone-lock {
+  font-size: 12px;
+  color: rgba($br-white, 0.35);
+  margin-left: 6px;
+}
+
+.br-pw-milestone-rewards {
+  display: inline-flex;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba($br-white, 0.45);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .icon { margin-right: 3px; opacity: 0.6; }
+}
+
+// ── Grade colouring ────────────────────────────────────────────────────
+
+.br-grade-good { color: $br-green;   font-weight: 700; }
+.br-grade-mid  { color: $br-amber;   font-weight: 700; }
+.br-grade-bad  { color: $br-red;     font-weight: 700; }
+
+@media (max-width: 768px) {
+  .br-pw-status-head { flex-direction: column; align-items: center; text-align: center; }
+  .br-pw-status-id   { align-items: center; }
+  .br-pw-milestone-rewards { display: none; }
 }

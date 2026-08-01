@@ -1321,9 +1321,12 @@ function br_stats_enqueue_assets() {
 	if ( is_page('login') ) {
 		wp_enqueue_style( 'br-auth', get_template_directory_uri() . '/css/br-auth.css', ['br-table'], br_asset_version() );
 	}
-	if ( is_page('stats') ) {
+	// player-work shows the same personal-stats block as the stats page (hero,
+	// currencies, XP-over-time and completion-by-type charts), so it needs the same
+	// two assets. br-stats.js no-ops when window.brStats is absent.
+	if ( is_page('stats') || is_page('player-work') ) {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
-		wp_enqueue_script( 'br-stats', get_template_directory_uri() . '/js/br-stats.js', ['jquery'], '1.0', true );
+		wp_enqueue_script( 'br-stats', get_template_directory_uri() . '/js/br-stats.js', ['jquery'], br_asset_version(), true );
 	}
 	if ( is_page('milestone-funnel') ) {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );

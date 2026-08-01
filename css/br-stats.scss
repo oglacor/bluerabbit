@@ -692,6 +692,107 @@ $radius:       12px;
   transition: opacity 0.2s ease;
 }
 
+// ── Panel loader ─────────────────────────────────────────
+//
+// Segment breakdowns and player panels are recomputed server-side across the
+// whole roster, which is seconds of work once an adventure has a thousand-plus
+// players. .br-stats-loading veils the panel it is on and spins, so the numbers
+// on screen are never silently stale while a new set is being calculated.
+// Built from pseudo-elements so any panel can opt in without extra markup -
+// including #br-stats-player-panel, whose innerHTML is replaced wholesale.
+
+.br-stats-loadable,
+#br-stats-player-panel {
+  position: relative;
+}
+
+.br-stats-loading {
+  position: relative;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    border-radius: $radius;
+    background: rgba($br-bg, 0.72);
+    backdrop-filter: blur(1px);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 6;
+    width: 38px;
+    height: 38px;
+    margin: -19px 0 0 -19px;
+    border-radius: 50%;
+    border: 3px solid rgba($br-primary, 0.18);
+    border-top-color: $br-primary;
+    animation: br-stats-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes br-stats-spin {
+  to { transform: rotate(360deg); }
+}
+
+// Optional label under the spinner. Hidden until its panel is loading.
+.br-stats-panel-loader {
+  display: none;
+}
+
+.br-stats-loading > .br-stats-panel-loader {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  margin-top: 32px;
+  text-align: center;
+  @include condensed-heading(13px, 700);
+  color: rgba($br-white, 0.55);
+}
+
+// ── Segment (player meta) panel ──────────────────────────
+
+.br-stats-segment-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  h3 { margin: 0; }
+}
+
+// The dimension currently charted, called out in the headline rather than left
+// to the small coverage note.
+.br-stats-segment-dim {
+  color: $br-primary;
+
+  &::before {
+    content: "—";
+    margin: 0 6px;
+    color: rgba($br-white, 0.25);
+  }
+}
+
+// ── Player table rows inside .br-table ───────────────────
+// br-table owns cell padding and borders; these only add the row affordances.
+
+.br-stats-player-row,
+.br-stats-clickable-row {
+  cursor: pointer;
+}
+
+.br-stats-player-table {
+  tbody td { vertical-align: middle; }
+}
+
 // ── Responsive ───────────────────────────────────────────
 
 @media (max-width: 768px) {
@@ -718,10 +819,12 @@ $radius:       12px;
 
   .br-stats-segment-header { flex-direction: column; align-items: flex-start; }
 
-  .br-stats-table thead td:nth-child(4),
-  .br-stats-table tbody td:nth-child(4),
-  .br-stats-table thead td:nth-child(6),
-  .br-stats-table tbody td:nth-child(6) {
+  // Drop the two least important player columns on narrow screens rather than
+  // letting the table scroll sideways for them.
+  .br-stats-player-table thead th:nth-child(4),
+  .br-stats-player-table tbody td:nth-child(4),
+  .br-stats-player-table thead th:nth-child(6),
+  .br-stats-player-table tbody td:nth-child(6) {
     display: none;
   }
 }

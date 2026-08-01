@@ -2,7 +2,9 @@
 <?php
 	$questID = br_require_id('questID');
 	$uID = br_require_id('uID', false);
-	if( $uID && $isGM){
+	// NPCs have surveillance access - they read every player's work, they just
+	// can't grade it (the grade control below is still gated on $isGM).
+	if( $uID && !empty($canViewAdmin)){
 		$player_id = $uID;
 	}else{
 		$player_id =  $current_user->ID;
@@ -75,7 +77,7 @@
 
 	<!-- Hero -->
 	<div class="br-panel br-page-header">
-		<?php if($uID && $isGM){ ?>
+		<?php if($uID && !empty($canViewAdmin)){ ?>
 		<a class="br-btn" href="<?= get_bloginfo('url')."/review-player-posts/?adventure_id=$adventure->adventure_id&questID=$q->quest_id"; ?>">
 			<span class="icon icon-arrow-left"></span> <?= __("Back to Review","bluerabbit"); ?>
 		</a>
@@ -98,7 +100,7 @@
 		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('answer-section', this)">
 			<span class="icon icon-<?= $isChallenge ? 'challenge' : 'edit'; ?>"></span>
-			<?= $isChallenge ? __("Results","bluerabbit") : __("Your Answer","bluerabbit"); ?>
+			<?= $isChallenge ? __("Results","bluerabbit") : __("Your Answers","bluerabbit"); ?>
 		</button>
 		<?php if($q->quest_content){ ?>
 		<button class="br-tab-btn" onClick="brScrollTo('instructions-section', this)">
@@ -284,7 +286,7 @@
 				<div class="br-panel">
 					<div class="br-flex br-flex-center br-mb-md">
 						<div class="br-flex-1">
-							<h3 class="br-panel-title"><span class="icon icon-edit"></span> <?= __("Your answer","bluerabbit"); ?></h3>
+							<h3 class="br-panel-title"><span class="icon icon-edit"></span> <?= __("Your answers","bluerabbit"); ?></h3>
 							<?php if($q->player_id){ ?>
 								<?php if($q->pp_date == $q->pp_modified){ ?>
 									<span class="br-text-12-muted"><?= __("Published","bluerabbit"); ?>: <strong><?= esc_html($q->pp_date); ?></strong></span>
@@ -318,9 +320,35 @@
 					</div>
 
 					<?php if($q->player_id){ ?>
-						<div class="br-tab-content">
-							<?= br_render_post_content($q->pp_content, $q->pp_date); ?>
-						</div>
+						<?php
+						// Every step of this milestone with whatever the player entered on
+						// it. pp_content alone only ever carried the open-text editor, so
+						// choices, keyphrases, ratings, uploads and poll votes never made
+						// it back to the player - the partial reads br_player_steps and
+						// renders all of them.
+						$pa_quest_id   = $q->quest_id;
+						$pa_player_id  = $player_id;
+						$pa_parent_id  = $adv_parent_id;
+						$pa_child_id   = $adv_child_id;
+						$pa_pp_content = $q->pp_content;
+						ob_start();
+						include (TEMPLATEPATH . '/player-step-answers.php');
+						$pa_output = trim(ob_get_clean());
+						?>
+						<?php if($pa_output){ ?>
+							<?= $pa_output; ?>
+							<?php // The auto-complete placeholder is a status line, not content,
+							      // so it is shown alongside the step log rather than instead of it.
+							if(trim((string)$q->pp_content) === BR_POST_AUTO_COMPLETE_TEXT){ ?>
+								<div class="br-tab-content br-mt-md">
+									<?= br_render_post_content($q->pp_content, $q->pp_date); ?>
+								</div>
+							<?php } ?>
+						<?php }else{ ?>
+							<div class="br-tab-content">
+								<?= br_render_post_content($q->pp_content, $q->pp_date); ?>
+							</div>
+						<?php } ?>
 
 						<?php if($q->pp_gm_comment){ ?>
 							<div class="br-gm-comment br-mt-md">
