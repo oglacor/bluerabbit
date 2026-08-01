@@ -7271,9 +7271,17 @@ button.br-btn.br-confirming {
   gap: 6px;
 }
 
-// A tab's worth of panels. Hidden/shown by brSwitchPanel().
+// A tab's worth of panels. Hidden/shown by brSwitchPanel(), which toggles
+// .br-initially-hidden on them.
+//
+// Deliberately sets no `display`. It used to say `display: block`, which is the
+// default for a div anyway and so bought nothing - but it is a single-class
+// selector compiled *after* `.br-initially-hidden { display: none }`, and equal
+// specificity means source order wins. The result was that brSwitchPanel could
+// add the hidden class all it liked and every panel stayed on screen. Anything
+// added here must not set `display` either; style the panels' contents instead.
 .br-panel-group {
-  display: block;
+  min-width: 0;
 }
 
 // ── Player Work (page-player-work.php, rebuilt 2026-08-01) ──────────────
