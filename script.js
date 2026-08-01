@@ -3151,12 +3151,16 @@ function brShowDrawerBackdrop($container) {
 
 function brHideDrawerBackdrop() {
     var anyOpen = $('.br-step-accordion.open').length
-        || $('.tabi-conditions-overlay.active, .item-conditions-overlay.active, .quest-conditions-overlay.active').length;
+        || $('.tabi-conditions-overlay.active, .item-conditions-overlay.active, .quest-conditions-overlay.active, .guild-roster-overlay.active, #achievement-detail-overlay.active, #item-detail-overlay.active').length;
     if (!anyOpen) {
         $('body').removeClass('br-drawer-open');
     }
 }
 
+// Closes every drawer/modal in the app that rides the shared backdrop (plus
+// the Tabi modal, which doesn't use the backdrop but is the same "escape
+// hatch" concept) - the single place the ESC handler and backdrop-click both
+// call, so no drawer family gets missed if a new one is added later.
 function brCloseTopDrawer() {
     $('.br-step-accordion.open').each(function () {
         closeStepAccordion(this.id.replace('step-accordion-', ''));
@@ -3166,6 +3170,10 @@ function brCloseTopDrawer() {
     });
     if ($('#item-conditions-overlay').hasClass('active')) { closeItemConditionsModal(); }
     if ($('#quest-conditions-overlay').hasClass('active')) { closeQuestConditionsModal(); }
+    if ($('#guild-roster-overlay').hasClass('active')) { closeGuildRoster(); }
+    if (typeof closeAchievementDetail === 'function' && $('#achievement-detail-overlay').hasClass('active')) { closeAchievementDetail(); }
+    if (typeof closeItemDetail === 'function' && $('#item-detail-overlay').hasClass('active')) { closeItemDetail(); }
+    closeTabiModal();
 }
 
 function editStep(step_id) {
@@ -9475,6 +9483,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 $(document).keyup(function (e) {
     if (e.keyCode === 27) {
+        brCloseTopDrawer();
         hideAllOverlay();
         loadSidebar();
         unloadCard();

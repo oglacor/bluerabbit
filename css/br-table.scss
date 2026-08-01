@@ -1242,9 +1242,11 @@ select.br-input {
   }
 }
 
-// Step Drawer (was an inline accordion; now an overlay so it can never be
-// mistaken for the Quest's own fixed bottom bar - see .br-drawer-backdrop
-// and body.br-drawer-open below)
+// Step Editor - a centered modal (was a 560px right-edge drawer; too narrow
+// for the button-heavy step types once content grew, and had no responsive
+// upsize - same width on a laptop and a huge monitor). Width matches
+// .br-page's own max-width so it scales the same way every other edit
+// screen in the app does.
 .br-step-accordion {
   display: none;
 
@@ -1252,26 +1254,25 @@ select.br-input {
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(560px, 92vw);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(1440px, 94vw);
+    max-height: 88vh;
     z-index: 300;
-    margin-top: 0;
     background: rgba(4, 22, 30, 0.97);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: none;
-    border-left: 1px solid rgba($br-primary, 0.18);
-    border-radius: 0;
-    box-shadow: -24px 0 48px rgba(0, 0, 0, 0.45);
-    animation: br-drawer-open 0.25s ease;
+    border: 1px solid rgba($br-primary, 0.18);
+    border-radius: $radius;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    animation: br-modal-pop 0.2s ease;
   }
 }
 
-@keyframes br-drawer-open {
-  from { opacity: 0; transform: translateX(24px); }
-  to   { opacity: 1; transform: translateX(0); }
+@keyframes br-modal-pop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 // Shared backdrop behind ANY drawer (Step drawer, or any Conditions drawer) -
@@ -1303,12 +1304,12 @@ body.br-drawer-open {
   }
 }
 
-// Step Form (fills the drawer: header/footer pinned, body scrolls)
+// Step Form (fills the modal: header/footer pinned, body scrolls)
 .br-step-form {
   color: $br-white;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   min-height: 0;
 }
 
@@ -1319,8 +1320,15 @@ body.br-drawer-open {
   align-items: center;
   gap: 10px;
   background: rgba($br-bg, 0.5);
-  border-radius: 0;
+  border-radius: $radius $radius 0 0;
   flex-shrink: 0;
+
+  // Buttons must never be squeezed out by a long step title/meta next to
+  // them - this is what made them "disappear" at a narrower effective
+  // viewport (higher zoom/DPI) before the modal had real breathing room.
+  > button {
+    flex-shrink: 0;
+  }
 }
 
 .br-step-form-icon {
@@ -1330,6 +1338,7 @@ body.br-drawer-open {
 
 .br-step-form-header-info {
   flex: 1;
+  min-width: 0;
 }
 
 .br-step-form-meta {
@@ -1374,10 +1383,13 @@ body.br-drawer-open {
 
 .br-step-form-footer {
   padding: 14px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   border-top: 1px solid rgba($br-primary, 0.12);
   background: rgba($br-bg, 0.5);
-  border-radius: 0;
+  border-radius: 0 0 $radius $radius;
   flex-shrink: 0;
 }
 

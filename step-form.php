@@ -552,6 +552,9 @@ $options = $settings['options'] ?? [];
 
 	<!-- Footer -->
 	<div class="br-step-form-footer">
+		<button class="br-btn br-btn-red" onClick="closeStepAccordion(<?= $sid; ?>);">
+			<span class="icon icon-cancel"></span> <?= __("Cancel", "bluerabbit"); ?>
+		</button>
 		<button class="br-btn br-btn-blue br-btn-submit" onClick="updateStep(<?= $sid; ?>);">
 			<span class="icon icon-check"></span> <?= __("Save Step", "bluerabbit"); ?>
 		</button>
