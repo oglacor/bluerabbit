@@ -7118,18 +7118,13 @@ function setGrade(quest_id, player_id) {
         method: "POST",
         success: function (data_received) {
             displayAjaxResponse(data_received);
-            // For quests that also use Validate/Invalidate, the server now derives
+            let data = JSON.parse(data_received);
+            // For quests that also use Validate/Invalidate, the server derives
             // validated/not-validated straight from this grade (>0 = validated) - keep
-            // the two buttons' active/disabled state in sync without a reload.
-            let gradeNum = parseFloat(grade);
-            if (!isNaN(gradeNum)) {
-                if (gradeNum > 0) {
-                    $("#validate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-green').prop('disabled', true);
-                    $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-red').prop('disabled', false);
-                } else {
-                    $("#validate-btn-" + player_id + "-" + quest_id).addClass('br-form-btn-green').prop('disabled', false);
-                    $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('br-form-btn-red').prop('disabled', true);
-                }
+            // that pair in sync without a reload. data.pp_status is only present when
+            // this quest actually has mech_validate on (see setGrade() in BR-Quest.php).
+            if (data.pp_status !== undefined) {
+                refreshValidateActions(quest_id, player_id, data.pp_status === 'publish');
             }
         }
     });
@@ -7200,6 +7195,34 @@ $(document).on('change', '.br-mech-checkbox-btn input[type="checkbox"]', functio
     $label.toggleClass(cls, this.checked);
 });
 
+// Only one of Validate/Invalidate is ever shown at a time (a post either still needs
+// validation - never reviewed or previously invalidated - or it's currently validated),
+// so state changes rebuild the whole actions container rather than toggling disabled/
+// class on two permanently-present buttons. Mirrors the PHP block in
+// page-review-player-posts.php - keep the two in sync if either changes.
+function buildValidateActionsHtml(quest_id, player_id, isValidated, showAiBtn, playerName) {
+    if (isValidated) {
+        return '<button class="br-btn red" onclick="validateQuest(' + quest_id + ',' + player_id + ",'invalidate');\" id=\"invalidate-btn-" + player_id + '-' + quest_id + '">' +
+            '<span class="icon icon-cancel"></span> Invalidate</button>';
+    }
+    let html = '<button class="br-btn green" onclick="validateQuest(' + quest_id + ',' + player_id + ",'validate');\" id=\"validate-btn-" + player_id + '-' + quest_id + '">' +
+        '<span class="icon icon-check"></span> Validate</button>';
+    if (showAiBtn) {
+        html += '<button class="br-btn" title="Ask the A.I. validator for a second opinion on this answer" ' +
+            'onclick="reviewValidateWithAI(' + quest_id + ',' + player_id + ",'" + (playerName || '').replace(/'/g, "\\'") + "');\" id=\"ai-recheck-btn-" + player_id + '-' + quest_id + '">' +
+            '<span class="icon icon-data"></span> Validate with A.I.</button>';
+    }
+    return html;
+}
+
+function refreshValidateActions(quest_id, player_id, isValidated) {
+    let $container = $('#validate-actions-' + player_id + '-' + quest_id);
+    if (!$container.length) { return; }
+    let showAiBtn = $container.data('show-ai') == 1;
+    let playerName = $container.data('player-name') || '';
+    $container.html(buildValidateActionsHtml(quest_id, player_id, isValidated, showAiBtn, playerName));
+}
+
 function validateQuest(quest_id, player_id, validate_action) {
     let nonce = $("#grade_nonce").val();
     let adventure_id = $("#the_adventure_id").val();
@@ -7219,17 +7242,11 @@ function validateQuest(quest_id, player_id, validate_action) {
             displayAjaxResponse(data_received);
             let data = JSON.parse(data_received);
             // The server keeps an already-set grade as-is (Validate/Invalidate no longer
-            // force it to a flat 100/0) - reflect whatever grade it actually resolved to,
-            // not just what this button click implies.
-            let grade = data.grade;
-            if (grade > 0) {
-                $("#validate-btn-" + player_id + "-" + quest_id).removeClass('green').prop('disabled', true);
-                $("#invalidate-btn-" + player_id + "-" + quest_id).addClass('red').prop('disabled', false);
-            } else {
-                $("#validate-btn-" + player_id + "-" + quest_id).addClass('green').prop('disabled', false);
-                $("#invalidate-btn-" + player_id + "-" + quest_id).removeClass('red').prop('disabled', true);
-            }
-            $("#the_post_grade_" + quest_id + "_" + player_id).val(grade);
+            // force it to a flat 100/0), so a graded-then-invalidated post can still have
+            // grade > 0 - pp_status (not the grade value) is what actually says which
+            // button should show.
+            refreshValidateActions(quest_id, player_id, data.pp_status === 'publish');
+            $("#the_post_grade_" + quest_id + "_" + player_id).val(data.grade);
         }
     });
 }
@@ -7255,8 +7272,28 @@ function closeAiValidateModal() {
     brHideDrawerBackdrop();
 }
 
-function renderAiVerdict(data) {
+// The percentage grade an AI grade suggestion snaps to when this adventure grades in
+// letters, so it lands on an option the <select> in the row actually has - mirrors the
+// breakpoints in page-review-player-posts.php's own letter-grade <select>.
+function aiSnapGradeToScale(grade, scale) {
+    if (scale === 'letters') {
+        let breakpoints = [100, 91.75, 83.25, 75, 66.75, 58.25, 50, 25, 0];
+        for (let i = 0; i < breakpoints.length; i++) {
+            if (grade >= breakpoints[i]) { return breakpoints[i]; }
+        }
+        return 0;
+    }
+    return Math.max(0, Math.min(100, Math.round(grade)));
+}
+
+// Stashed rather than round-tripped through onclick attribute strings, since the
+// suggested comment is free text (AI output) and building an inline onclick out of
+// arbitrary text is exactly the kind of thing that breaks on a stray quote.
+var aiLastSuggestion = null;
+
+function renderAiVerdict(data, quest_id, player_id) {
     if (!data.success) {
+        aiLastSuggestion = null;
         $('#ai-validate-overlay-body').html(
             '<div class="br-ai-verdict">' +
                 '<div class="br-ai-verdict-icon invalid"><span class="icon icon-cancel"></span></div>' +
@@ -7271,14 +7308,85 @@ function renderAiVerdict(data) {
     let reason = data.reason ? aiEscapeHtml(data.reason) : (valid ? 'No issues found.' : "The A.I. didn't give a specific reason.");
     let strictnessLabel = aiStrictnessLabels[data.strictness] || 'Standard';
 
+    let hasGrade = data.grade_scale && data.grade_scale !== 'none' && data.suggested_grade !== null && data.suggested_grade !== undefined;
+    let snappedGrade = hasGrade ? aiSnapGradeToScale(data.suggested_grade, data.grade_scale) : null;
+    let suggestedComment = data.suggested_comment || '';
+    let hasSuggestion = hasGrade || !!suggestedComment;
+
+    aiLastSuggestion = { grade: hasGrade ? snappedGrade : null, comment: suggestedComment };
+
+    let suggestionBlock = '';
+    if (hasSuggestion) {
+        suggestionBlock = '<div class="br-ai-suggestion">' +
+            (hasGrade ? '<div class="br-ai-suggestion-grade"><span class="br-ai-suggestion-label">Suggested grade</span><strong>' + snappedGrade + '</strong></div>' : '') +
+            (suggestedComment ? '<div class="br-ai-suggestion-comment"><span class="br-ai-suggestion-label">Suggested comment</span>' + aiEscapeHtml(suggestedComment) + '</div>' : '') +
+        '</div>';
+    }
+
+    // Two ways to act on this: validate exactly as-is (green), or accept the A.I.'s
+    // grade/comment suggestion into the row's own fields first (orange). Available
+    // either way - a GM can decide to validate even on a borderline verdict.
+    let actionsBlock = '<div class="br-ai-verdict-actions">' +
+        '<button class="br-btn green" onclick="validateQuest(' + quest_id + ',' + player_id + ",'validate'); closeAiValidateModal();\">" +
+            '<span class="icon icon-check"></span> Validate</button>' +
+        (hasSuggestion
+            ? '<button class="br-btn orange" onclick="reviewValidateWithSuggestion(' + quest_id + ',' + player_id + ');">' +
+                '<span class="icon icon-check"></span> Validate with Suggestion</button>'
+            : '') +
+    '</div>';
+
     $('#ai-validate-overlay-body').html(
         '<div class="br-ai-verdict">' +
             '<div class="br-ai-verdict-icon ' + (valid ? 'valid' : 'invalid') + '"><span class="icon ' + (valid ? 'icon-check' : 'icon-question') + '"></span></div>' +
             '<div class="br-ai-verdict-headline">' + headline + '</div>' +
             '<div class="br-ai-verdict-reason">' + reason + '</div>' +
             '<div class="br-ai-verdict-meta">Strictness: ' + strictnessLabel + '</div>' +
+            suggestionBlock +
+            actionsBlock +
         '</div>'
     );
+}
+
+// Applies the AI's suggested grade/comment to this row's own fields (chaining the same
+// setGrade/setPostComment endpoints the row's inputs already use), then validates.
+function reviewValidateWithSuggestion(quest_id, player_id) {
+    if (!aiLastSuggestion) { return; }
+    let nonce = $("#grade_nonce").val();
+    let adventure_id = $("#the_adventure_id").val();
+    let grade = aiLastSuggestion.grade;
+    let comment = aiLastSuggestion.comment;
+
+    let steps = [];
+    if (grade !== null) {
+        steps.push(function (next) {
+            jQuery.ajax({
+                url: runAJAX.ajaxurl, method: 'POST',
+                data: { action: 'setGrade', quest_id: quest_id, player_id: player_id, adventure_id: adventure_id, grade: grade, nonce: nonce },
+                success: next
+            });
+        });
+    }
+    if (comment) {
+        steps.push(function (next) {
+            jQuery.ajax({
+                url: runAJAX.ajaxurl, method: 'POST',
+                data: { action: 'setPostComment', quest_id: quest_id, player_id: player_id, adventure_id: adventure_id, comment: comment, nonce: nonce },
+                success: next
+            });
+        });
+    }
+
+    function runStep(i) {
+        if (i >= steps.length) {
+            if (grade !== null) { $("#the_post_grade_" + quest_id + "_" + player_id).val(grade); }
+            if (comment) { $("#the_post_comment_" + quest_id + "_" + player_id).val(comment); }
+            validateQuest(quest_id, player_id, 'validate');
+            closeAiValidateModal();
+            return;
+        }
+        steps[i](function () { runStep(i + 1); });
+    }
+    runStep(0);
 }
 
 function reviewValidateWithAI(quest_id, player_id, player_name) {
@@ -7303,11 +7411,11 @@ function reviewValidateWithAI(quest_id, player_id, player_name) {
         success: function (data_received) {
             let data = (typeof data_received === 'string') ? JSON.parse(data_received) : data_received;
             $btn.prop('disabled', false);
-            renderAiVerdict(data);
+            renderAiVerdict(data, quest_id, player_id);
         },
         error: function () {
             $btn.prop('disabled', false);
-            renderAiVerdict({ success: false, error: 'Something went wrong talking to the A.I. service - try again.' });
+            renderAiVerdict({ success: false, error: 'Something went wrong talking to the A.I. service - try again.' }, quest_id, player_id);
         }
     });
 }
@@ -7319,8 +7427,9 @@ function reviewValidateWithAI(quest_id, player_id, player_name) {
 // leave-alone on a fail) is already here and works today.
 function reviewValidateAllPendingWithAI(quest_id) {
     let pending = [];
+    // A Validate button only exists in the DOM at all when that post still needs
+    // validation - see buildValidateActionsHtml() - so its mere presence is "pending".
     $('button[id^="validate-btn-"]').each(function () {
-        if (this.disabled) { return; }
         let rest = this.id.replace('validate-btn-', '');
         let dash = rest.lastIndexOf('-');
         let pid = rest.substring(0, dash), qid = rest.substring(dash + 1);

@@ -797,6 +797,7 @@ class BR_Quest {
 					"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%f, pp_status=%s WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
 					$grade, $pp_status, $quest_id, $player_id, $adventure_id
 				);
+				$data['pp_status'] = $pp_status;
 			}else{
 				$sql = $wpdb->prepare(
 					"UPDATE {$wpdb->prefix}br_player_posts SET pp_grade=%f WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
@@ -895,6 +896,7 @@ class BR_Quest {
 			$wpdb->query($sql);
 			$data['success'] = true;
 			$data['grade'] = $grade;
+			$data['pp_status'] = $pp_status;
 			$data['message'] = $notification->pop($msg, $notif_color, $notif_icon);
 			$data['just_notify'] = true;
 			$data['new_grade_nonce'] = wp_create_nonce('br_grade_nonce');
@@ -1143,7 +1145,7 @@ class BR_Quest {
 
             $plain_text = wp_strip_all_tags($answer);
             if(trim($plain_text) === ''){
-                $verdicts[] = ['valid' => false, 'reason' => __('No answer found for this step.','bluerabbit')];
+                $verdicts[] = ['valid' => false, 'reason' => __('No answer found for this step.','bluerabbit'), 'grade' => null, 'comment' => ''];
                 continue;
             }
             $word_count = str_word_count($plain_text);
@@ -1160,14 +1162,14 @@ class BR_Quest {
                 ],
                 'body' => json_encode([
                     'model' => 'claude-haiku-4-5-20251001',
-                    'max_tokens' => 150,
+                    'max_tokens' => 300,
                     'system' => $system_prompt,
                     'messages' => [['role' => 'user', 'content' => $user_message]],
                 ]),
             ]);
 
             if(is_wp_error($response)){
-                $verdicts[] = ['valid' => false, 'reason' => __('A.I. service unavailable - try again.','bluerabbit')];
+                $verdicts[] = ['valid' => false, 'reason' => __('A.I. service unavailable - try again.','bluerabbit'), 'grade' => null, 'comment' => ''];
                 continue;
             }
 
@@ -1177,25 +1179,38 @@ class BR_Quest {
             if(preg_match('/\{[^}]+\}/', $ai_text, $json_match)){
                 $result = json_decode($json_match[0], true);
                 if(isset($result['valid'])){
-                    $verdicts[] = ['valid' => (bool) $result['valid'], 'reason' => $result['reason'] ?? ''];
+                    $verdicts[] = [
+                        'valid'   => (bool) $result['valid'],
+                        'reason'  => $result['reason'] ?? '',
+                        'grade'   => isset($result['grade']) ? max(0, min(100, (float) $result['grade'])) : null,
+                        'comment' => $result['comment'] ?? '',
+                    ];
                     continue;
                 }
             }
-            $verdicts[] = ['valid' => true, 'reason' => ''];
+            $verdicts[] = ['valid' => true, 'reason' => '', 'grade' => null, 'comment' => ''];
         }
 
         $all_valid = true;
-        $reasons = [];
+        $reasons = []; $grades = []; $comments = [];
         foreach($verdicts as $v){
             if(!$v['valid']){ $all_valid = false; if($v['reason']){ $reasons[] = $v['reason']; } }
+            if($v['grade'] !== null){ $grades[] = $v['grade']; }
+            if($v['comment']){ $comments[] = $v['comment']; }
         }
+        // Multiple open-text steps average into one grade/comment since Validate/Invalidate
+        // and the grade field are per-post (per whole milestone), not per-step.
+        $suggested_grade = $grades ? round(array_sum($grades) / count($grades)) : null;
 
         BR_Activity::instance()->logActivity($adventure_id, 'ai-recheck', 'post', "", $quest_id, $player_id);
         echo json_encode([
-            'success'    => true,
-            'valid'      => $all_valid,
-            'reason'     => implode(' / ', $reasons),
-            'strictness' => $strictness_used,
+            'success'           => true,
+            'valid'             => $all_valid,
+            'reason'            => implode(' / ', $reasons),
+            'strictness'        => $strictness_used,
+            'grade_scale'       => $adventure->adventure_grade_scale,
+            'suggested_grade'   => $suggested_grade,
+            'suggested_comment' => implode(' ', $comments),
         ]);
         die();
     }

@@ -168,21 +168,35 @@ $show_ai_validate_btn = $has_ai_key && (bool) $wpdb->get_var( $wpdb->prepare(
 				</div>
 				<?php } ?>
 
-				<!-- Validate / Invalidate -->
+				<!-- Validate / Invalidate - only ONE side shows at a time: a post that still
+				     needs validation (never reviewed, or previously invalidated) offers
+				     Validate (+ Validate with A.I. if configured); a validated post offers
+				     only Invalidate. script.js rebuilds this container's contents after any
+				     action via buildValidateActionsHtml() - see refreshValidateActions(). -->
 				<?php if ( $q->mech_validate ) { ?>
-				<?php $validated = ($pp->pp_grade > 0); ?>
-				<div class="br-flex br-flex-center br-gap-sm">
-					<button class="<?= $validated ? 'br-btn' : 'br-btn green'; ?>"
-							<?= $validated ? 'disabled' : ''; ?>
-							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'validate');"
-							id="validate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
-						<span class="icon icon-check"></span> <?= __("Validate","bluerabbit"); ?>
-					</button>
-					<button class="<?= ! $validated ? 'br-btn' : 'br-btn red'; ?>"
-							<?= ! $validated ? 'disabled' : ''; ?>
+				<?php
+					// pp_grade alone can't tell "validated" apart from "invalidated": a quest
+					// with its own real percentage/letter grade keeps that grade as-is on
+					// Invalidate (see validatePlayerPost()) instead of forcing it to 0, so a
+					// graded-then-invalidated post can still have pp_grade > 0. pp_status is
+					// the actual source of truth once a post has been reviewed at all.
+					$is_validated = ( $pp->pp_grade !== null ) && ( $pp->pp_status == 'publish' );
+				?>
+				<div class="br-flex br-flex-center br-gap-sm"
+					 id="validate-actions-<?= $pp->player_id."-".$q->quest_id; ?>"
+					 data-show-ai="<?= $show_ai_validate_btn ? 1 : 0; ?>"
+					 data-player-name="<?= esc_attr($pp->player_display_name); ?>">
+					<?php if ( $is_validated ) { ?>
+					<button class="br-btn red"
 							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'invalidate');"
 							id="invalidate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
 						<span class="icon icon-cancel"></span> <?= __("Invalidate","bluerabbit"); ?>
+					</button>
+					<?php } else { ?>
+					<button class="br-btn green"
+							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'validate');"
+							id="validate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
+						<span class="icon icon-check"></span> <?= __("Validate","bluerabbit"); ?>
 					</button>
 					<?php if ( $show_ai_validate_btn ) { ?>
 					<button class="br-btn" title="<?= esc_attr__("Ask the A.I. validator for a second opinion on this answer","bluerabbit"); ?>"
@@ -190,6 +204,7 @@ $show_ai_validate_btn = $has_ai_key && (bool) $wpdb->get_var( $wpdb->prepare(
 							id="ai-recheck-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
 						<span class="icon icon-data"></span> <?= __("Validate with A.I.","bluerabbit"); ?>
 					</button>
+					<?php } ?>
 					<?php } ?>
 				</div>
 				<?php } ?>

@@ -269,6 +269,7 @@ max-width: 1440px;
     &.cyan   { background: $br-primary; color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
     &.green  { background: $br-green;   color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
     &.amber  { background: $br-accent;  color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
+    &.orange { background: $br-orange;  color: $br-bg; border-color: transparent; &:hover { opacity: 0.85; } }
     &.red    { background: $br-red;     color: $br-white; border-color: transparent; &:hover { opacity: 0.85; } }
     &.purple { background: $br-purple;  color: $br-white; border-color: transparent; &:hover { opacity: 0.85; } }
     &.ghost  {

@@ -914,6 +914,48 @@ body.asset-rotating * { cursor: grabbing !important; }
 	}
 }
 
+.br-ai-suggestion {
+	margin-top: 14px;
+	text-align: left;
+	background: rgba($new-colors-yellow, 0.08);
+	border: 1px solid rgba($new-colors-yellow, 0.25);
+	border-radius: 8px;
+	padding: 12px 14px;
+
+	.br-ai-suggestion-label {
+		display: block;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: rgba($white, 0.45);
+		margin-bottom: 2px;
+	}
+
+	.br-ai-suggestion-grade {
+		margin-bottom: 10px;
+		strong {
+			font-family: $preospe-font;
+			font-size: 1.3rem;
+			color: $new-colors-yellow;
+			margin-left: 6px;
+		}
+	}
+
+	.br-ai-suggestion-comment {
+		font-size: 0.85rem;
+		color: rgba($white, 0.75);
+		line-height: 1.5;
+	}
+}
+
+.br-ai-verdict-actions {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-top: 16px;
+}
+
 .br-ai-bulk-progress {
 	text-align: center;
 	padding: 16px 0 4px;

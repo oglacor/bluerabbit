@@ -2298,7 +2298,12 @@ function br_ai_validation_system_prompt(string $strictness = 'standard'): string
 	];
 	$tone = $strictness_instructions[$strictness] ?? $strictness_instructions['standard'];
 
-	return $base . "\n\n" . $tone . "\n\nRespond ONLY with a JSON object: {\"valid\": true} or {\"valid\": false, \"reason\": \"brief explanation\"}";
+	// grade/comment are only surfaced by the GM's "Validate with A.I." review tool today
+	// (br_ai_validate_text ignores every field but "valid"), but they're requested
+	// unconditionally so the two callers keep sharing one prompt/response contract.
+	return $base . "\n\n" . $tone
+		. "\n\nAlso act as a grader: suggest a 0-100 grade reflecting the quality and completeness of the response (100 = excellent, fully addresses the prompt; 0 = blank or entirely off-topic), and a short comment (1-2 sentences, written directly to the student, encouraging in tone) explaining that grade."
+		. "\n\nRespond ONLY with a JSON object: {\"valid\": true|false, \"reason\": \"brief internal note on the valid/invalid decision\", \"grade\": 0-100, \"comment\": \"short note to the student\"}";
 }
 
 function br_ai_validate_text() {
@@ -2345,7 +2350,7 @@ function br_ai_validate_text() {
 		],
 		'body' => json_encode([
 			'model' => 'claude-haiku-4-5-20251001',
-			'max_tokens' => 150,
+			'max_tokens' => 300,
 			'system' => $system_prompt,
 			'messages' => [['role' => 'user', 'content' => $user_message]],
 		]),
