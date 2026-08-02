@@ -839,6 +839,112 @@ body.asset-rotating * { cursor: grabbing !important; }
 	}
 }
 
+// A.I. Validation check (Milestone Review page) - a small centered dialog
+// rather than a right-edge drawer, since it only ever holds one verdict's
+// worth of text (or, for the bulk pass, a progress bar + summary).
+.ai-validate-overlay {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: min(480px, 92vw);
+	max-width: none;
+	max-height: 80vh;
+	overflow: hidden;
+	background: rgba(4, 22, 30, 0.97);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(28, 194, 235, 0.18);
+	border-radius: 12px;
+	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	z-index: 300;
+	visibility: hidden;
+	opacity: 0;
+	transition: opacity 0.15s;
+
+	&.active { visibility: visible; opacity: 1; }
+}
+
+.br-ai-verdict {
+	text-align: center;
+	padding: 8px 0 4px;
+
+	.br-ai-verdict-icon {
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 14px;
+		font-size: 26px;
+
+		&.valid { background: rgba($new-colors-green, 0.15); color: $new-colors-green; }
+		&.invalid { background: rgba($new-colors-yellow, 0.15); color: $new-colors-yellow; }
+	}
+
+	.br-ai-verdict-headline {
+		font-family: $preospe-font;
+		font-size: 1.2rem;
+		text-transform: uppercase;
+		color: $white;
+		margin-bottom: 12px;
+	}
+
+	.br-ai-verdict-reason {
+		color: rgba($white, 0.7);
+		font-size: 0.9rem;
+		line-height: 1.5;
+		text-align: left;
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 8px;
+		padding: 12px 14px;
+		margin-top: 4px;
+	}
+
+	.br-ai-verdict-meta {
+		margin-top: 14px;
+		font-size: 0.72rem;
+		color: rgba($white, 0.4);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+}
+
+.br-ai-bulk-progress {
+	text-align: center;
+	padding: 16px 0 4px;
+
+	.br-ai-bulk-progress-bar {
+		height: 8px;
+		border-radius: 4px;
+		background: rgba($white, 0.08);
+		overflow: hidden;
+		margin: 16px 0;
+
+		> div {
+			height: 100%;
+			background: $new-colors-blue;
+			transition: width 0.2s ease;
+		}
+	}
+
+	.br-ai-bulk-progress-list {
+		max-height: 160px;
+		overflow-y: auto;
+		text-align: left;
+		font-size: 0.8rem;
+		color: rgba($white, 0.6);
+		margin-top: 12px;
+
+		div { padding: 3px 0; }
+		.done { color: $new-colors-green; }
+	}
+}
+
 .tabi-conditions-header {
 	display: flex;
 	align-items: center;

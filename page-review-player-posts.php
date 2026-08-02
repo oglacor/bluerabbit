@@ -30,6 +30,25 @@ $player_posts = $wpdb->get_results( $wpdb->prepare(
 	$adventure->adventure_id, $q->quest_id
 ) );
 $rating = 0;
+
+// Whether the "Validate with A.I." button on each entry has anything to work
+// with: an adventure-level key, and at least one published Open Text step on
+// this milestone (whichever one the player answered). This is a manual "ask
+// the AI for its opinion" tool the GM reaches for on demand - it is NOT
+// gated on the step's own A.I. Validation on/off toggle, since that toggle
+// only controls whether AI validation runs automatically at submission time;
+// a GM should still be able to sanity-check the AI's behavior on a step even
+// when auto-validation is switched off there.
+$has_ai_key = (bool) $wpdb->get_var( $wpdb->prepare(
+	"SELECT adventure_ai_api_key FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
+	$adventure->adventure_id
+) );
+$show_ai_validate_btn = $has_ai_key && (bool) $wpdb->get_var( $wpdb->prepare(
+	"SELECT COUNT(*) FROM {$wpdb->prefix}br_steps
+	WHERE quest_id = %d AND adventure_id = %d AND step_status = 'publish'
+	AND (step_type IN ('open_text','open') OR step_skin IN ('open_text','open'))",
+	$q->quest_id, $adventure->adventure_id
+) );
 ?>
 
 <div class="br-page">
@@ -63,20 +82,38 @@ $rating = 0;
 				</span>
 				<?php } ?>
 			</div>
+		</div>
+
+		<div class="br-panel">
+			<h3 class="br-panel-title"><span class="icon icon-download"></span> <?= __("Grade & Review CSV","bluerabbit"); ?></h3>
+			<span class="br-form-hint"><?= __("Download every entry to review offline, then upload it back with grade, validation status and comment filled in.","bluerabbit"); ?></span>
 
 			<div class="br-flex br-mt-sm br-gap-sm br-flex-wrap">
-				<a class="br-form-btn-green" href="<?= admin_url('admin-ajax.php').'?action=exportPlayerPostsCSV&adventure_id='.$adventure->adventure_id.'&quest_id='.$q->quest_id.'&nonce='.wp_create_nonce('br_grade_nonce'); ?>">
+				<a class="br-btn br-btn-green" href="<?= admin_url('admin-ajax.php').'?action=exportPlayerPostsCSV&adventure_id='.$adventure->adventure_id.'&quest_id='.$q->quest_id.'&nonce='.wp_create_nonce('br_grade_nonce'); ?>">
 					<span class="icon icon-download"></span> <?= __("Download CSV","bluerabbit"); ?>
 				</a>
 			</div>
 			<div class="br-flex br-flex-center br-mt-sm br-gap-sm br-flex-wrap">
 				<input type="file" id="review_csv_file" accept=".csv">
-				<button class="br-form-btn-blue" onClick="uploadPostReviewCSV();">
+				<button class="br-btn br-btn-blue" onClick="uploadPostReviewCSV();">
 					<span class="icon icon-upload"></span> <?= __("Upload Reviewed CSV","bluerabbit"); ?>
 				</button>
 				<span class="br-text-12-muted"><?= __("Only updates grade, validation status and comment - everything else in the file is ignored.","bluerabbit"); ?></span>
 			</div>
 		</div>
+
+		<?php if ( $q->mech_validate ) { ?>
+		<div class="br-panel">
+			<h3 class="br-panel-title"><span class="icon icon-mail"></span> <?= __("Pending Validation Reminders","bluerabbit"); ?></h3>
+			<span class="br-form-hint"><?= __("Emails of players who haven't passed validation yet - never reviewed, or reviewed and marked invalid. Upload this file on the Email Notifications page to send them a reminder.","bluerabbit"); ?></span>
+
+			<div class="br-flex br-mt-sm br-gap-sm br-flex-wrap">
+				<a class="br-btn br-btn-amber" href="<?= admin_url('admin-ajax.php').'?action=exportPendingReviewEmailsCSV&adventure_id='.$adventure->adventure_id.'&quest_id='.$q->quest_id.'&nonce='.wp_create_nonce('br_grade_nonce'); ?>">
+					<span class="icon icon-download"></span> <?= __("Download Pending Emails","bluerabbit"); ?>
+				</a>
+			</div>
+		</div>
+		<?php } ?>
 
 		<?php foreach ( $player_posts as $pp ) { ?>
 		<?php $rating += (int) $pp->pp_quest_rating; ?>
@@ -135,18 +172,25 @@ $rating = 0;
 				<?php if ( $q->mech_validate ) { ?>
 				<?php $validated = ($pp->pp_grade > 0); ?>
 				<div class="br-flex br-flex-center br-gap-sm">
-					<button class="<?= $validated ? 'br-btn' : 'br-btn br-form-btn-green'; ?>"
+					<button class="<?= $validated ? 'br-btn' : 'br-btn green'; ?>"
 							<?= $validated ? 'disabled' : ''; ?>
 							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'validate');"
 							id="validate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
 						<span class="icon icon-check"></span> <?= __("Validate","bluerabbit"); ?>
 					</button>
-					<button class="<?= ! $validated ? 'br-btn' : 'br-btn br-form-btn-red'; ?>"
+					<button class="<?= ! $validated ? 'br-btn' : 'br-btn red'; ?>"
 							<?= ! $validated ? 'disabled' : ''; ?>
 							onClick="validateQuest(<?= "$q->quest_id,$pp->player_id"; ?>, 'invalidate');"
 							id="invalidate-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
 						<span class="icon icon-cancel"></span> <?= __("Invalidate","bluerabbit"); ?>
 					</button>
+					<?php if ( $show_ai_validate_btn ) { ?>
+					<button class="br-btn" title="<?= esc_attr__("Ask the A.I. validator for a second opinion on this answer","bluerabbit"); ?>"
+							onClick="reviewValidateWithAI(<?= "$q->quest_id,$pp->player_id"; ?>, '<?= esc_js($pp->player_display_name); ?>');"
+							id="ai-recheck-btn-<?= $pp->player_id."-".$q->quest_id; ?>">
+						<span class="icon icon-data"></span> <?= __("Validate with A.I.","bluerabbit"); ?>
+					</button>
+					<?php } ?>
 				</div>
 				<?php } ?>
 			</div>
@@ -185,6 +229,14 @@ $rating = 0;
 		</div>
 	</div>
 	<?php } ?>
+
+	<div class="overlay-layer ai-validate-overlay" id="ai-validate-overlay">
+		<div class="tabi-conditions-header">
+			<h3 class="br-text-16 w700" id="ai-validate-overlay-title"><?= __("A.I. Validation Check","bluerabbit"); ?></h3>
+			<button class="br-close-btn" onclick="closeAiValidateModal();"><span class="icon icon-cancel white-color"></span></button>
+		</div>
+		<div class="tabi-conditions-body" id="ai-validate-overlay-body"></div>
+	</div>
 
 </div>
 

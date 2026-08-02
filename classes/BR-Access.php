@@ -67,7 +67,7 @@ class BR_Access {
         'br_stats_time_in_app', 'br_stats_segment_breakdown', 'br_stats_item_breakdown',
         'br_stats_item_detail', 'br_stats_achievement_breakdown', 'br_stats_achievement_detail',
         'br_guild_roster', 'getRequests',
-        'exportPlayerPostsCSV', 'exportPlayersWork',
+        'exportPlayerPostsCSV', 'exportPendingReviewEmailsCSV', 'exportPlayersWork',
         'br_meta_search_players', 'br_meta_preview_csv', 'br_meta_export_csv',
 
         // ── The one thing an NPC may change ──────────────────────────────

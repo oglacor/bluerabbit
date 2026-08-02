@@ -2279,6 +2279,28 @@ function br_save_ai_api_key() {
 	die();
 }
 
+// Shared by the player-facing Open Text check (br_ai_validate_text) and the
+// GM-triggered re-check from the Milestone Review page (BR_Quest::reviewValidateWithAI) -
+// one prompt definition so the two never drift apart.
+function br_ai_validation_system_prompt(string $strictness = 'standard'): string {
+	// A prompt can legitimately ask for several distinct pieces of information
+	// (e.g. "share your prompt, the output, and your thoughts") - a student who
+	// answers all three in one free-flowing paragraph instead of clearly
+	// labelling each part is still giving a genuine, complete answer. Reported
+	// bug: this used to get flagged as invalid for not being "structured".
+	$base = "You are a content validator for an educational platform. A student was asked to write a response to a prompt. You must determine if the response is a genuine attempt to address the prompt.\n\n"
+		. "If the prompt asks for multiple distinct pieces of information, the student may combine them into a single free-flowing response instead of clearly labelling or separating each part - do not reject an answer merely because its parts aren't clearly delineated or formatted, as long as each requested piece of information is present in some recognizable form.";
+
+	$strictness_instructions = [
+		'lenient'  => "Be very lenient: accept the response unless it is almost entirely blank, random words, copy-pasted gibberish, or completely unrelated to the topic. Minor omissions, brevity, or imperfect grammar are always fine.",
+		'standard' => "Reject responses that are: random words, copy-pasted gibberish, completely off-topic, or obvious filler text. Be lenient — imperfect grammar or short answers are fine as long as they genuinely try to address the topic.",
+		'strict'   => "Reject responses that are: random words, copy-pasted gibberish, completely or partially off-topic, obvious filler text, or that skip or ignore part of what the prompt asked for. The response should meaningfully and specifically engage with every part of the prompt.",
+	];
+	$tone = $strictness_instructions[$strictness] ?? $strictness_instructions['standard'];
+
+	return $base . "\n\n" . $tone . "\n\nRespond ONLY with a JSON object: {\"valid\": true} or {\"valid\": false, \"reason\": \"brief explanation\"}";
+}
+
 function br_ai_validate_text() {
 	global $wpdb;
 
@@ -2305,11 +2327,12 @@ function br_ai_validate_text() {
 		"SELECT step_content, step_settings FROM {$wpdb->prefix}br_steps WHERE step_id = %d", $step_id
 	));
 	$step_prompt = $step->step_content ? wp_strip_all_tags($step->step_content) : '';
+	$step_settings = $step && $step->step_settings ? json_decode($step->step_settings, true) : [];
 
 	$plain_text = wp_strip_all_tags($content);
 	$word_count = str_word_count($plain_text);
 
-	$system_prompt = "You are a content validator for an educational platform. A student was asked to write a response to a prompt. You must determine if the response is a genuine attempt to address the prompt. Reject responses that are: random words, copy-pasted gibberish, completely off-topic, or obvious filler text. Be lenient — imperfect grammar or short answers are fine as long as they genuinely try to address the topic. Respond ONLY with a JSON object: {\"valid\": true} or {\"valid\": false, \"reason\": \"brief explanation\"}";
+	$system_prompt = br_ai_validation_system_prompt($step_settings['ai_strictness'] ?? 'standard');
 
 	$user_message = "PROMPT GIVEN TO STUDENT:\n" . ($step_prompt ?: '(open response, no specific prompt)') . "\n\nSTUDENT RESPONSE ({$word_count} words):\n" . $plain_text;
 
@@ -2649,8 +2672,10 @@ add_action("wp_ajax_updatePlayer", [BR_Player::instance(), 'updatePlayer']);
 add_action("wp_ajax_setGrade", [BR_Quest::instance(), 'setGrade']);
 add_action("wp_ajax_setPostComment", [BR_Quest::instance(), 'setPostComment']);
 add_action("wp_ajax_exportPlayerPostsCSV", [BR_Quest::instance(), 'exportPlayerPostsCSV']);
+add_action("wp_ajax_exportPendingReviewEmailsCSV", [BR_Quest::instance(), 'exportPendingReviewEmailsCSV']);
 add_action("wp_ajax_importPlayerPostsCSV", [BR_Quest::instance(), 'importPlayerPostsCSV']);
 add_action("wp_ajax_validatePlayerPost", [BR_Quest::instance(), 'validatePlayerPost']);
+add_action("wp_ajax_reviewValidateWithAI", [BR_Quest::instance(), 'reviewValidateWithAI']);
 add_action("wp_ajax_updateProfile", [BR_Player::instance(), 'updateProfile']);
 add_action("wp_ajax_nopriv_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
 add_action("wp_ajax_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);

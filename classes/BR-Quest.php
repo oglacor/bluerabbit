@@ -1007,6 +1007,199 @@ class BR_Quest {
 		die();
     }
 
+    // A GM reminder tool: just the players who submitted for a validated milestone but
+    // aren't through review yet (never graded, or graded and marked invalid) - the list
+    // the GM currently builds by eye, scrolling the review page looking for missing/red
+    // Validate buttons, so they can chase those players down individually.
+    public function exportPendingReviewEmailsCSV(){
+		global $wpdb; $current_user = wp_get_current_user();
+		$quest_id = intval($_GET['quest_id']);
+		$adventure_id = intval($_GET['adventure_id']);
+		$nonce = isset($_GET['nonce']) ? $_GET['nonce'] : '';
+
+		if(!wp_verify_nonce($nonce, 'br_grade_nonce')){
+			wp_die(__("Security check failed, please reload the page and try again.",'bluerabbit'));
+		}
+
+		$adventure = BR_Adventure::instance()->getAdventure($adventure_id);
+		if(!$adventure || !$this->currentUserIsGMFor($adventure)){
+			wp_die(__("You don't have permission to do this.",'bluerabbit'));
+		}
+
+		$q = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=%d AND adventure_id=%d",
+			$quest_id, $adventure_id
+		));
+		if(!$q){
+			wp_die(__("This milestone doesn't exist",'bluerabbit'));
+		}
+		if(!$q->mech_validate){
+			wp_die(__("This milestone doesn't require validation.",'bluerabbit'));
+		}
+
+		// Same "not yet validated" definition as exportPlayerPostsCSV's per-row label
+		// above: never graded at all, or graded and currently marked invalid. Queried
+		// fresh on every download (this whole method only runs when the link is
+		// actually clicked), so grading 10 players and then downloading reflects
+		// those 10 as gone from the list - never a stale snapshot from page load.
+		$player_emails = $wpdb->get_col($wpdb->prepare(
+			"SELECT b.player_email
+			FROM {$wpdb->prefix}br_player_posts a
+			JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
+			WHERE a.adventure_id=%d AND a.quest_id=%d
+			AND (a.pp_grade IS NULL OR a.pp_status != 'publish')
+			ORDER BY b.player_display_name",
+			$adventure_id, $quest_id
+		));
+
+		nocache_headers();
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="PENDING-VALIDATION-'.sanitize_title($q->quest_title).'.csv"');
+
+		// Plain list of addresses only - no header row, no other columns. This feeds
+		// straight into the Email Notifications page's upload as-is.
+		$out = fopen('php://output', 'w');
+		fputs($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel doesn't mangle accented names
+		foreach($player_emails as $email){
+			fputcsv($out, array($email));
+		}
+		fclose($out);
+		die();
+    }
+
+    // GM-triggered re-check from the Milestone Review page - runs the exact same Claude
+    // call the player's own "Check Answer" button uses (br_ai_validate_text in
+    // functions.php, sharing br_ai_validation_system_prompt so the two prompts never
+    // drift apart), but only ever returns an opinion; it never touches pp_grade or
+    // pp_status itself. The GM still has to click Validate/Invalidate after seeing it -
+    // this is a second opinion, not an auto-decision, which matters here specifically
+    // because the client's complaint was the AI being wrong once already. Deliberately
+    // NOT gated on the step's own A.I. Validation on/off toggle - this is the GM's tool
+    // for checking whether the AI *would* behave well, including on steps where
+    // auto-validation is currently switched off.
+    // Response shape is structured (not a Notification::pop() toast) because the caller
+    // shows it in a modal that has to stay legible while the GM reads the reasoning,
+    // not a 1-second popup - see closeAiValidateModal()/reviewValidateWithAI() in script.js.
+    public function reviewValidateWithAI(){
+        global $wpdb; $current_user = wp_get_current_user();
+
+        $player_id = intval($_POST['player_id']);
+        $quest_id  = intval($_POST['quest_id']);
+        $adventure_id = intval($_POST['adventure_id']);
+        $nonce = $_POST['nonce'] ?? '';
+
+        if(!wp_verify_nonce($nonce, 'br_grade_nonce')){
+            echo json_encode(['success' => false, 'error' => __("Unauthorized access",'bluerabbit')]); die();
+        }
+
+        $adventure = BR_Adventure::instance()->getAdventure($adventure_id);
+        if(!$adventure || !$this->currentUserIsGMFor($adventure)){
+            echo json_encode(['success' => false, 'error' => __("You don't have permission to do this.",'bluerabbit')]); die();
+        }
+
+        $api_key = $adventure->adventure_ai_api_key ?? '';
+        if(!$api_key){
+            echo json_encode(['success' => false, 'error' => __("This adventure has no A.I. key configured.",'bluerabbit')]); die();
+        }
+
+        // All open-text steps for the quest, so a single-open-text-step quest (the
+        // common case) can fall back to pp_content the same way step-open.php's
+        // "already answered" display does, per the ambiguity documented in
+        // player-step-answers.php - pp_content only reliably belongs to one step
+        // when there's exactly one open-text step in the whole quest.
+        $all_ot_steps = $wpdb->get_results($wpdb->prepare(
+            "SELECT step_id, step_content, step_settings FROM {$wpdb->prefix}br_steps
+            WHERE quest_id=%d AND adventure_id=%d AND step_status='publish'
+            AND (step_type IN ('open_text','open') OR step_skin IN ('open_text','open'))",
+            $quest_id, $adventure_id
+        ));
+        if(!$all_ot_steps){
+            echo json_encode(['success' => false, 'error' => __("This milestone has no Open Text step.",'bluerabbit')]); die();
+        }
+
+        $pp_content = $wpdb->get_var($wpdb->prepare(
+            "SELECT pp_content FROM {$wpdb->prefix}br_player_posts WHERE quest_id=%d AND player_id=%d AND adventure_id=%d",
+            $quest_id, $player_id, $adventure_id
+        ));
+
+        $verdicts = [];
+        $strictness_used = 'standard';
+        foreach($all_ot_steps as $step){
+            $settings = $step->step_settings ? json_decode($step->step_settings, true) : [];
+            $strictness_used = $settings['ai_strictness'] ?? 'standard';
+
+            $answer = '';
+            if(count($all_ot_steps) === 1){
+                $answer = $pp_content ?: '';
+            }else{
+                $ps_response = $wpdb->get_var($wpdb->prepare(
+                    "SELECT ps_response FROM {$wpdb->prefix}br_player_steps
+                    WHERE step_id=%d AND player_id=%d AND quest_id=%d AND adventure_id=%d",
+                    $step->step_id, $player_id, $quest_id, $adventure_id
+                ));
+                $resp = $ps_response ? json_decode($ps_response, true) : [];
+                $answer = $resp['content'] ?? ($pp_content ?: '');
+            }
+
+            $plain_text = wp_strip_all_tags($answer);
+            if(trim($plain_text) === ''){
+                $verdicts[] = ['valid' => false, 'reason' => __('No answer found for this step.','bluerabbit')];
+                continue;
+            }
+            $word_count = str_word_count($plain_text);
+            $step_prompt = $step->step_content ? wp_strip_all_tags($step->step_content) : '';
+            $system_prompt = br_ai_validation_system_prompt($strictness_used);
+            $user_message = "PROMPT GIVEN TO STUDENT:\n" . ($step_prompt ?: '(open response, no specific prompt)') . "\n\nSTUDENT RESPONSE ({$word_count} words):\n" . $plain_text;
+
+            $response = wp_remote_post('https://api.anthropic.com/v1/messages', [
+                'timeout' => 15,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'x-api-key' => $api_key,
+                    'anthropic-version' => '2023-06-01',
+                ],
+                'body' => json_encode([
+                    'model' => 'claude-haiku-4-5-20251001',
+                    'max_tokens' => 150,
+                    'system' => $system_prompt,
+                    'messages' => [['role' => 'user', 'content' => $user_message]],
+                ]),
+            ]);
+
+            if(is_wp_error($response)){
+                $verdicts[] = ['valid' => false, 'reason' => __('A.I. service unavailable - try again.','bluerabbit')];
+                continue;
+            }
+
+            $body = json_decode(wp_remote_retrieve_body($response), true);
+            $ai_text = $body['content'][0]['text'] ?? '';
+            $json_match = [];
+            if(preg_match('/\{[^}]+\}/', $ai_text, $json_match)){
+                $result = json_decode($json_match[0], true);
+                if(isset($result['valid'])){
+                    $verdicts[] = ['valid' => (bool) $result['valid'], 'reason' => $result['reason'] ?? ''];
+                    continue;
+                }
+            }
+            $verdicts[] = ['valid' => true, 'reason' => ''];
+        }
+
+        $all_valid = true;
+        $reasons = [];
+        foreach($verdicts as $v){
+            if(!$v['valid']){ $all_valid = false; if($v['reason']){ $reasons[] = $v['reason']; } }
+        }
+
+        BR_Activity::instance()->logActivity($adventure_id, 'ai-recheck', 'post', "", $quest_id, $player_id);
+        echo json_encode([
+            'success'    => true,
+            'valid'      => $all_valid,
+            'reason'     => implode(' / ', $reasons),
+            'strictness' => $strictness_used,
+        ]);
+        die();
+    }
+
     // Only ever rewrites pp_grade, pp_status and pp_gm_comment - nothing else about the
     // post (content, dates, player identity) is touched. A blank cell in grade/validation_status/
     // comment means "leave as is", not "clear this" - lets a GM re-upload the same file

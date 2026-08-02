@@ -421,7 +421,7 @@ $options = $settings['options'] ?? [];
 				$_ot_has_ai_key = !empty($_ot_ai_row);
 			}
 			?>
-			<div class="br-form-grid <?= $_ot_has_ai_key ? 'br-form-grid-3' : 'br-form-grid-2'; ?>">
+			<div class="br-form-grid <?= $_ot_has_ai_key ? 'br-form-grid-4' : 'br-form-grid-2'; ?>">
 				<div class="br-form-group">
 					<label class="br-form-label"><?= __("Min Words", "bluerabbit"); ?></label>
 					<input class="br-input br-input-narrow" type="number" min="0" id="step-ot-minwords-<?= $sid; ?>" value="<?= (int) ($settings['min_words'] ?? 0); ?>">
@@ -433,12 +433,23 @@ $options = $settings['options'] ?? [];
 						<option value="0" <?= isset($settings['use_wp_editor']) && !$settings['use_wp_editor'] ? 'selected' : ''; ?>><?= __("No", "bluerabbit"); ?></option>
 					</select>
 				</div>
-				<?php if ($_ot_has_ai_key) { ?>
+				<?php if ($_ot_has_ai_key) {
+					$_ot_strictness = $settings['ai_strictness'] ?? 'standard';
+				?>
 				<div class="br-form-group">
 					<label class="br-form-label"><?= __("A.I. Validation", "bluerabbit"); ?></label>
 					<select id="step-ot-ai-<?= $sid; ?>" class="br-input br-input-auto">
 						<option value="0" <?= empty($settings['ai_validate']) ? 'selected' : ''; ?>><?= __("Off", "bluerabbit"); ?></option>
 						<option value="1" <?= !empty($settings['ai_validate']) ? 'selected' : ''; ?>><?= __("On", "bluerabbit"); ?></option>
+					</select>
+				</div>
+				<div class="br-form-group">
+					<label class="br-form-label"><?= __("A.I. Strictness", "bluerabbit"); ?></label>
+					<span class="br-form-hint"><?= __("How closely the response must match every part of the prompt", "bluerabbit"); ?></span>
+					<select id="step-ot-ai-strictness-<?= $sid; ?>" class="br-input br-input-auto">
+						<option value="lenient" <?= $_ot_strictness == 'lenient' ? 'selected' : ''; ?>><?= __("Lenient", "bluerabbit"); ?></option>
+						<option value="standard" <?= $_ot_strictness == 'standard' ? 'selected' : ''; ?>><?= __("Standard", "bluerabbit"); ?></option>
+						<option value="strict" <?= $_ot_strictness == 'strict' ? 'selected' : ''; ?>><?= __("Strict", "bluerabbit"); ?></option>
 					</select>
 				</div>
 				<?php } ?>
