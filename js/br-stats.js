@@ -571,22 +571,20 @@
         return h;
     }
 
+    // brOpenDrawer/brCloseDrawer (script.js) move the drawer to <body> and back.
+    // .main-content is position:relative with its own z-index, so a drawer left
+    // inside the page is trapped in that stacking context and the shared
+    // backdrop paints over it no matter what z-index the drawer carries.
     window.openAchievementDetail = function(achievementId) {
         $('#achievement-detail-overlay').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
-        $('#achievement-detail-overlay').addClass('active');
-        // .main-content (site-wide layout wrapper) is position:relative with its
-        // own z-index, which traps this drawer in a local stacking context - the
-        // shared backdrop must join that SAME context (not just get appended to
-        // <body>) or it renders on top of the drawer regardless of z-index.
-        brShowDrawerBackdrop($('#achievement-detail-overlay').parent());
+        brOpenDrawer($('#achievement-detail-overlay'));
         ajax('br_stats_achievement_detail', { achievement_id: achievementId }, function(res) {
             if (!res.success) return;
             $('#achievement-detail-overlay').html(buildAchievementDetailHTML(res.data));
         });
     };
     window.closeAchievementDetail = function() {
-        $('#achievement-detail-overlay').removeClass('active');
-        brHideDrawerBackdrop();
+        brCloseDrawer($('#achievement-detail-overlay'));
     };
 
     // ── Item Purchase Stats + drill-down drawer ──────────
@@ -653,17 +651,14 @@
 
     window.openItemDetail = function(itemId) {
         $('#item-detail-overlay').html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
-        $('#item-detail-overlay').addClass('active');
-        // Same stacking-context fix as openAchievementDetail() above.
-        brShowDrawerBackdrop($('#item-detail-overlay').parent());
+        brOpenDrawer($('#item-detail-overlay'));
         ajax('br_stats_item_detail', { item_id: itemId }, function(res) {
             if (!res.success) return;
             $('#item-detail-overlay').html(buildItemDetailHTML(res.data));
         });
     };
     window.closeItemDetail = function() {
-        $('#item-detail-overlay').removeClass('active');
-        brHideDrawerBackdrop();
+        brCloseDrawer($('#item-detail-overlay'));
     };
 
     // ── Time in App ───────────────────────────────────────

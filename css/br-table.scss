@@ -1279,11 +1279,16 @@ select.br-input {
 // Shared backdrop behind ANY drawer (Step drawer, or any Conditions drawer) -
 // a real element (not just a dim filter) so clicks land on it and close
 // whatever's open, and so the site chrome (header.super-header,
-// footer.taskbar) and the page's own fixed bottom bar are genuinely
-// unreachable while a drawer is open, not just visually faded. This only
-// works because .br-page no longer declares its own z-index (see above) -
-// otherwise every drawer would be trapped below the chrome regardless of
-// its own z-index, no matter how high.
+// footer.taskbar, both z-index 51) and the page's own fixed bottom bar are
+// genuinely unreachable while a drawer is open, not just visually faded.
+//
+// These numbers only mean anything because brOpenDrawer() (script.js) moves
+// the drawer to <body> before showing this, so backdrop and drawer are
+// compared in the root stacking context. Authored in place, every drawer sits
+// inside .main-content - `position:relative; z-index:3` - and the whole
+// subtree is therefore capped below the chrome at 51 and below this backdrop
+// at 250, however high the drawer's own z-index goes. Raising the number here
+// or on a drawer cannot fix that; only leaving the trapping context can.
 .br-drawer-backdrop {
   display: none;
 }

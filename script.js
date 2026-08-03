@@ -2366,6 +2366,11 @@ function hideAllOverlay() {
         $('#start-button').removeClass('close');
         $('#taskbar').removeClass('start-active');
     }
+    // The line above deactivates .overlay-layer, which the Conditions drawers
+    // also carry - so this call may just have closed a drawer without going
+    // through brCloseDrawer(). Put the DOM back in order rather than leaving a
+    // backdrop over a drawer that is no longer there.
+    if (typeof brSyncDrawerState === 'function') brSyncDrawerState();
 }
 
 function playSound(id) {
@@ -3330,29 +3335,108 @@ function addStep(id_to_duplicate = null) {
     }
 }
 ////////////////////////////// LOAD STEP ///////////////////////////
-////////////////////////////// SHARED DRAWER BACKDROP (Step + any Conditions drawer) ///////////////////////////
-// One dynamically-injected backdrop reused by every drawer, instead of one per page/consumer.
-// Re-parented into $container (when given) instead of always living on <body>, so its
-// z-index is only ever compared against its actual drawer sibling - not the whole DOM.
-// A Step drawer lives inside .br-step-item, which jQuery UI Sortable can promote into its
-// own stacking context (drag transforms) - a body-level backdrop would then be compared
-// against that trapped context instead of the drawer itself and could paint on top of it.
-function brShowDrawerBackdrop($container) {
-    var $target = $container && $container.length ? $container : $('body');
+////////////////////////////// SHARED DRAWERS ///////////////////////////
+//
+// Every full-screen drawer/modal in the app (Step editor, the Conditions
+// drawers, the Stats drill-downs, the guild roster, the AI verdict) is
+// position:fixed with z-index 300, sitting above a shared backdrop at 250.
+// That comparison only means anything when the two are in the SAME stacking
+// context, and they usually weren't: .main-content is `position:relative;
+// z-index:3`, which makes it a stacking context, so a drawer authored inside
+// the page was painted as part of that subtree while a backdrop appended to
+// <body> sat in the root context. The backdrop's 250 then beat the drawer's
+// 300 no matter how high the drawer's number went - it covered the drawer,
+// swallowed its clicks and stopped it scrolling.
+//
+// Chasing that with per-caller `.parent()` arguments only fixed backdrop
+// vs. drawer; the drawer was still trapped under anything painted above
+// .main-content, and inside a transformed ancestor (jQuery UI Sortable drag
+// helpers, animations) position:fixed stops resolving against the viewport
+// altogether, so the drawer is mispositioned as well as mislayered.
+//
+// So the drawer itself is moved to <body> when it opens and put back where it
+// was when it closes. Both drawer and backdrop then live in the root stacking
+// context, which is the only place a fixed-position full-screen element can be
+// reasoned about. Any new drawer gets this for free by going through
+// brOpenDrawer()/brCloseDrawer() - there is nothing per-drawer to remember.
+
+// One selector listing every drawer family, so "is anything still open" and
+// "close whatever is open" can never drift apart from each other.
+var BR_DRAWER_OPEN_SELECTOR = '.br-step-accordion.open, .tabi-conditions-overlay.active, '
+    + '.item-conditions-overlay.active, .quest-conditions-overlay.active, '
+    + '.guild-roster-overlay.active, #achievement-detail-overlay.active, '
+    + '#item-detail-overlay.active, #ai-validate-overlay.active';
+
+// Moves a drawer to <body>, leaving a comment node behind to mark where it
+// belongs. Idempotent: re-opening an already-portaled drawer does nothing.
+function brPortalDrawer($drawer) {
+    var el = $drawer && $drawer.length ? $drawer[0] : null;
+    if (!el || !el.parentNode || el.parentNode === document.body) return;
+    var marker = document.createComment('br-drawer-home');
+    el.parentNode.insertBefore(marker, el);
+    $drawer.data('brDrawerMarker', marker);
+    document.body.appendChild(el);
+}
+
+// Puts it back, so the page's own markup is unchanged once the drawer closes
+// and anything walking the DOM (or a later re-render of that row) still finds
+// the element where the template put it.
+function brRestoreDrawer($drawer) {
+    var el = $drawer && $drawer.length ? $drawer[0] : null;
+    if (!el) return;
+    var marker = $drawer.data('brDrawerMarker');
+    if (marker && marker.parentNode) {
+        marker.parentNode.insertBefore(el, marker);
+        marker.parentNode.removeChild(marker);
+    }
+    $drawer.removeData('brDrawerMarker');
+}
+
+function brOpenDrawer($drawer, activeClass) {
+    brPortalDrawer($drawer);
+    $drawer.addClass(activeClass || 'active');
+    brShowDrawerBackdrop();
+}
+
+function brCloseDrawer($drawer, activeClass) {
+    $drawer.removeClass(activeClass || 'active');
+    brRestoreDrawer($drawer);
+    brHideDrawerBackdrop();
+}
+
+// The backdrop always lives on <body>, because every drawer it backs is there
+// too by the time it is shown.
+function brShowDrawerBackdrop() {
     var $backdrop = $('#br-drawer-backdrop');
     if (!$backdrop.length) {
         $backdrop = $('<div class="br-drawer-backdrop" id="br-drawer-backdrop" onclick="brCloseTopDrawer();"></div>');
     }
-    $target.append($backdrop);
+    $('body').append($backdrop);
     $('body').addClass('br-drawer-open');
 }
 
 function brHideDrawerBackdrop() {
-    var anyOpen = $('.br-step-accordion.open').length
-        || $('.tabi-conditions-overlay.active, .item-conditions-overlay.active, .quest-conditions-overlay.active, .guild-roster-overlay.active, #achievement-detail-overlay.active, #item-detail-overlay.active, #ai-validate-overlay.active').length;
-    if (!anyOpen) {
+    if (!$(BR_DRAWER_OPEN_SELECTOR).length) {
         $('body').removeClass('br-drawer-open');
     }
+}
+
+// Reconciles drawer state with whatever the DOM actually says.
+//
+// The Conditions drawers also carry .overlay-layer, so hideAllOverlay() - which
+// fires after most AJAX responses - strips .active off them directly, behind
+// these helpers' backs. Before, that left the backdrop up over a drawer that had
+// already disappeared; now it would also leave the element parked on <body>.
+// Calling this puts any drawer that is no longer open back where it belongs and
+// re-evaluates the backdrop, so no path can leave the two out of step.
+function brSyncDrawerState() {
+    $('.br-step-accordion, .overlay-layer, .tabi-modal').each(function () {
+        var $el = $(this);
+        if (!$el.data('brDrawerMarker')) return;
+        if ($el.hasClass('active') || $el.hasClass('open')) return;
+        brRestoreDrawer($el);
+    });
+    brHideDrawerBackdrop();
 }
 
 // Closes every drawer/modal in the app that rides the shared backdrop (plus
@@ -3396,9 +3480,15 @@ function editStep(step_id) {
         data: ({ action: 'editStep', step_id: step_id, adventure_id: adventure_id }),
         method: "POST",
         success: function (data_received) {
-            $accordion.html(data_received).addClass('open');
+            // Portal before the markup goes in, not after: the response carries
+            // wp_editor output whose inline script boots TinyMCE, and moving a
+            // live editor's iframe across the DOM re-creates it and loses its
+            // contents. Injecting into the element after it has reached its
+            // final home means the editor is only ever built once, in place.
+            brPortalDrawer($accordion);
+            $accordion.html(data_received);
+            brOpenDrawer($accordion, 'open');
             $('#step-' + step_id + ' .br-step-edit-btn').addClass('active');
-            brShowDrawerBackdrop($('#step-' + step_id));
             $('.loader, .small-loader').removeClass('active');
         }
     });
@@ -3409,9 +3499,10 @@ function closeStepAccordion(step_id) {
     if (typeof tinymce !== 'undefined') {
         try { tinymce.remove('#' + editorId); } catch(e) {}
     }
-    $('#step-accordion-' + step_id).removeClass('open').html('');
+    var $accordion = $('#step-accordion-' + step_id);
+    $accordion.html('');
+    brCloseDrawer($accordion, 'open');
     $('#step-' + step_id + ' .br-step-edit-btn').removeClass('active');
-    brHideDrawerBackdrop();
 }
 
 ////////////////////////////// UPDATE STEP ///////////////////////////
@@ -7461,13 +7552,11 @@ function aiEscapeHtml(str) {
 
 function openAiValidateModal(title) {
     $('#ai-validate-overlay-title').text(title || 'A.I. Validation Check');
-    $('#ai-validate-overlay').addClass('active');
-    brShowDrawerBackdrop($('#ai-validate-overlay').parent());
+    brOpenDrawer($('#ai-validate-overlay'));
 }
 
 function closeAiValidateModal() {
-    $('#ai-validate-overlay').removeClass('active');
-    brHideDrawerBackdrop();
+    brCloseDrawer($('#ai-validate-overlay'));
 }
 
 // The percentage grade an AI grade suggestion snaps to when this adventure grades in
@@ -8097,10 +8186,21 @@ function setTabiAsCategory(id) {
 }
 ///////////////////////// Tabi Modal  //////////////////
 
+// The Tabi modal predates the shared backdrop and brings its own veil
+// (#tabi-modal-overlay at z-index 200, modal at 201). Those two are siblings so
+// they layer correctly against each other, but both were authored inside
+// .main-content - `position:relative; z-index:3` - which caps the whole subtree
+// below the fixed site chrome at z-index 51. The header and taskbar therefore
+// painted over the modal. Same cause as every other drawer, same fix: move both
+// to <body> so their numbers are compared in the root stacking context.
 function openTabiModal(tabiId) {
-    $('.tabi-modal').removeClass('active');
-    $('#tabi-modal-' + tabiId).addClass('active');
-    $('#tabi-modal-overlay').addClass('active');
+    closeTabiModal();
+    var $veil  = $('#tabi-modal-overlay');
+    var $modal = $('#tabi-modal-' + tabiId);
+    brPortalDrawer($veil);
+    brPortalDrawer($modal);
+    $modal.addClass('active');
+    $veil.addClass('active');
     $('body').css('overflow', 'hidden');
 }
 
@@ -8126,8 +8226,10 @@ function saveTabiPrerequisites(tabiId) {
 }
 
 function closeTabiModal() {
-    $('.tabi-modal').removeClass('active');
-    $('#tabi-modal-overlay').removeClass('active');
+    $('.tabi-modal').removeClass('active').each(function () { brRestoreDrawer($(this)); });
+    var $veil = $('#tabi-modal-overlay');
+    $veil.removeClass('active');
+    brRestoreDrawer($veil);
     $('body').css('overflow', '');
 }
 
@@ -8148,13 +8250,11 @@ function openTabiConditionsModal(tabiId) {
             }
         });
     }
-    $overlay.addClass('active');
-    brShowDrawerBackdrop();
+    brOpenDrawer($overlay);
 }
 
 function closeTabiConditionsModal(tabiId) {
-    $('#tabi-conditions-overlay-' + tabiId).removeClass('active');
-    brHideDrawerBackdrop();
+    brCloseDrawer($('#tabi-conditions-overlay-' + tabiId));
 }
 
 function saveTabiConditionsModal(tabiId) {
@@ -8208,13 +8308,11 @@ function openQuestConditionsModal(questId) {
             $content.html(data_received);
         }
     });
-    $('#quest-conditions-overlay').addClass('active');
-    brShowDrawerBackdrop();
+    brOpenDrawer($('#quest-conditions-overlay'));
 }
 
 function closeQuestConditionsModal() {
-    $('#quest-conditions-overlay').removeClass('active');
-    brHideDrawerBackdrop();
+    brCloseDrawer($('#quest-conditions-overlay'));
 }
 
 function saveQuestConditionsModal(questId) {
@@ -8717,13 +8815,11 @@ function openItemConditionsModal(targetType, targetId) {
             $content.html(data_received);
         }
     });
-    $('#item-conditions-overlay').addClass('active');
-    brShowDrawerBackdrop();
+    brOpenDrawer($('#item-conditions-overlay'));
 }
 
 function closeItemConditionsModal() {
-    $('#item-conditions-overlay').removeClass('active');
-    brHideDrawerBackdrop();
+    brCloseDrawer($('#item-conditions-overlay'));
 }
 
 function saveItemConditionsModal() {
@@ -9120,11 +9216,7 @@ function duplicateAdventure(adventure_id = null) {
 function openGuildRoster(guild_id) {
     var $overlay = $('#guild-roster-overlay');
     $overlay.html('<div class="tabi-conditions-header"><h3 class="br-text-16 w700">Loading...</h3></div>');
-    $overlay.addClass('active');
-    // Shared backdrop must join the SAME positioned ancestor as the overlay,
-    // not just <body>, or it can render on top of the overlay regardless of
-    // z-index - same gotcha documented next to the Stats page's drawers.
-    brShowDrawerBackdrop($overlay.parent());
+    brOpenDrawer($overlay);
     jQuery.ajax({
         url: runAJAX.ajaxurl,
         data: ({
@@ -9143,8 +9235,7 @@ function openGuildRoster(guild_id) {
     });
 }
 function closeGuildRoster() {
-    $('#guild-roster-overlay').removeClass('active');
-    brHideDrawerBackdrop();
+    brCloseDrawer($('#guild-roster-overlay'));
 }
 /////////////////////// BULK CREATE /////////////////////////
 
