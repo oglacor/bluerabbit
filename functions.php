@@ -2684,8 +2684,10 @@ add_action("wp_ajax_reviewValidateWithAI", [BR_Quest::instance(), 'reviewValidat
 add_action("wp_ajax_updateProfile", [BR_Player::instance(), 'updateProfile']);
 add_action("wp_ajax_nopriv_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
 add_action("wp_ajax_bluerabbit_add_new_player", [BR_Player::instance(), 'bluerabbit_add_new_player']);
-add_action("wp_ajax_checkUserDataExists", [BR_Player::instance(), 'checkUserDataExists']);
-add_action("wp_ajax_enrollUser", [BR_Player::instance(), 'enrollUser']);
+// Manual add. Replaces checkUserDataExists/enrollUser, which only answered
+// yes/no on an exact nickname or email and left the form dead after one add.
+add_action("wp_ajax_brSearchRegisteredPlayers", [BR_Player::instance(), 'searchRegisteredPlayers']);
+add_action("wp_ajax_brAddSinglePlayer", [BR_Player::instance(), 'addSinglePlayer']);
 add_action("wp_ajax_uploadBulkUsers", [BR_Player::instance(), 'uploadBulkUsers']);
 add_action("wp_ajax_bulkEnrollUsers", [BR_Player::instance(), 'bulkEnrollUsers']);
 add_action("wp_ajax_brImportPlayersBatch", [BR_Player::instance(), 'importPlayersBatch']);

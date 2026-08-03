@@ -457,6 +457,185 @@ class BR_Player {
         ob_end_clean();
     }
 
+    ////////////////////////////// MANUAL ADD //////////////////////////////
+    //
+    // Adding people one at a time is often *faster* than a CSV, because most of
+    // them already have an account somewhere in the system and it is only a
+    // matter of finding them. The old flow could not do that: it took one exact
+    // nickname or email and answered yes/no, so typing "gauden" when the account
+    // is gauden@bluerabbit.io reported "Nickname available" and offered to
+    // create a duplicate. This searches every field a human would recognise
+    // somebody by and hands back real candidates to pick from.
+
+    /**
+     * Candidate accounts for the Add Players box.
+     *
+     * Matches on first name, last name, nickname/login, display name and email,
+     * and reports each candidate's standing in *this* adventure so the caller
+     * can show "already in" instead of offering a pointless Add button.
+     */
+    public function searchRegisteredPlayers(){
+        global $wpdb;
+        $data = ['success' => false, 'players' => []];
+
+        $nonce        = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $search       = trim((string)($_POST['search'] ?? ''));
+
+        if (!wp_verify_nonce($nonce, 'br_add_player_nonce')) {
+            $data['message'] = __('Session expired — reload the page.','bluerabbit');
+            echo json_encode($data); die();
+        }
+        if (!$this->canManageAdventurePlayers($adventure_id)) {
+            $data['message'] = __("You don't have permission to add players to this adventure.",'bluerabbit');
+            echo json_encode($data); die();
+        }
+        if (mb_strlen($search) < 2) {
+            $data['success'] = true;
+            echo json_encode($data); die();
+        }
+
+        // Every whitespace-separated term must match somewhere on the account, so
+        // "ana lopez" narrows to that person instead of returning every Ana and
+        // every Lopez. Terms are ANDed; fields are ORed within a term.
+        $terms  = preg_split('/\s+/', $search);
+        $terms  = array_slice(array_filter($terms), 0, 5);
+        $where  = [];
+        $params = [];
+        foreach ($terms as $term) {
+            $like = '%' . $wpdb->esc_like($term) . '%';
+            $where[] = "(u.user_login LIKE %s OR u.user_email LIKE %s OR u.display_name LIKE %s
+                         OR p.player_first LIKE %s OR p.player_last LIKE %s
+                         OR p.player_nickname LIKE %s OR p.player_display_name LIKE %s)";
+            array_push($params, $like, $like, $like, $like, $like, $like, $like);
+        }
+        array_unshift($params, $adventure_id);
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT u.ID AS player_id, u.user_login, u.user_email, u.display_name,
+                    p.player_first, p.player_last, p.player_nickname, p.player_picture,
+                    pa.player_adventure_status, pa.player_adventure_role
+             FROM {$wpdb->users} u
+             LEFT JOIN {$wpdb->prefix}br_players p ON p.player_id = u.ID
+             LEFT JOIN {$wpdb->prefix}br_player_adventure pa
+                    ON pa.player_id = u.ID AND pa.adventure_id = %d
+             WHERE " . implode(' AND ', $where) . "
+             ORDER BY u.display_name ASC
+             LIMIT 25",
+            $params
+        ), ARRAY_A);
+
+        foreach ($rows as $row) {
+            // 'in' = already playing, 'out' = was removed and can be put back,
+            // 'never' = has an account but has never been in this adventure.
+            $status = 'never';
+            if ($row['player_adventure_status'] === 'in')  $status = 'in';
+            elseif ($row['player_adventure_status'] !== null) $status = 'out';
+
+            $data['players'][] = [
+                'player_id'  => (int) $row['player_id'],
+                'first'      => (string) $row['player_first'],
+                'last'       => (string) $row['player_last'],
+                'nickname'   => (string) ($row['player_nickname'] ?: $row['user_login']),
+                'login'      => (string) $row['user_login'],
+                'email'      => (string) $row['user_email'],
+                'name'       => trim($row['player_first'] . ' ' . $row['player_last']) ?: (string) $row['display_name'],
+                'avatar'     => $row['player_picture'] ?: get_avatar_url($row['player_id'], ['size' => 48]),
+                'status'     => $status,
+                'role'       => (string) $row['player_adventure_role'],
+            ];
+        }
+
+        $data['success'] = true;
+        $data['count']   = count($data['players']);
+        echo json_encode($data);
+        die();
+    }
+
+    /**
+     * Add one person to the adventure: either an account found by the search
+     * above (player_id), or a brand-new account (email + optional nickname and
+     * password).
+     *
+     * Both cases go through importOnePlayer(), the same function the CSV import
+     * uses, so a manual add behaves identically to a bulk one - profile
+     * backfill, guild handling and activity logging included - and there is only
+     * one place where "add a player" is implemented.
+     */
+    public function addSinglePlayer(){
+        global $wpdb;
+        $data = ['success' => false];
+
+        $nonce        = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $player_id    = intval($_POST['player_id'] ?? 0);
+        $n            = new Notification();
+        $data['just_notify'] = true;
+
+        if (!wp_verify_nonce($nonce, 'br_add_player_nonce')) {
+            $data['message'] = $n->pop(__('Session expired — reload the page.','bluerabbit'),'red','cancel');
+            echo json_encode($data); die();
+        }
+        if (!$this->canManageAdventurePlayers($adventure_id)) {
+            $data['message'] = $n->pop(__("You don't have permission to add players to this adventure.",'bluerabbit'),'red','warning');
+            BR_Activity::instance()->logActivity($adventure_id,'attempt-manual-registration','new-player');
+            echo json_encode($data); die();
+        }
+
+        $adventure = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d", $adventure_id
+        ));
+        if (!$adventure) {
+            $data['message'] = $n->pop(__("This adventure doesn't exist",'bluerabbit'),'red','cancel');
+            echo json_encode($data); die();
+        }
+
+        // An existing account is identified by id; the email is read back from
+        // the account rather than trusted from the request, so a tampered id
+        // cannot be used to point an enrolment at somebody else's address.
+        if ($player_id) {
+            $user = get_userdata($player_id);
+            if (!$user) {
+                $data['message'] = $n->pop(__('That account no longer exists.','bluerabbit'),'red','cancel');
+                echo json_encode($data); die();
+            }
+            $row = ['email' => $user->user_email, 'nickname' => $user->user_login];
+        } else {
+            $row = [
+                'email'     => trim((string)($_POST['email'] ?? '')),
+                'nickname'  => trim((string)($_POST['nickname'] ?? '')),
+                'password'  => (string)($_POST['password'] ?? ''),
+                'firstname' => trim((string)($_POST['firstname'] ?? '')),
+                'lastname'  => trim((string)($_POST['lastname'] ?? '')),
+                'lang'      => trim((string)($_POST['lang'] ?? '')),
+            ];
+        }
+
+        $result = $this->importOnePlayer($row, $adventure);
+        $data['result']  = $result;
+        $data['success'] = ($result['status'] !== 'failed');
+
+        switch ($result['status']) {
+            case 'created':
+                $data['message'] = $n->pop(sprintf(__('%s registered and added','bluerabbit'), $result['nickname']),'green','check');
+                break;
+            case 'enrolled':
+                $data['message'] = $n->pop(sprintf(__('%s added to the adventure','bluerabbit'), $result['nickname']),'green','check');
+                break;
+            case 'already':
+                $data['message'] = $n->pop(sprintf(__('%s is already in this adventure','bluerabbit'), $result['nickname']),'amber','warning');
+                break;
+            default:
+                $data['message'] = $n->pop($result['detail'] ?: __('Could not add that player','bluerabbit'),'red','cancel');
+        }
+
+        // The nonce is deliberately reusable and re-sent anyway: the whole point
+        // of this box is adding several people in a row without a page reload.
+        $data['nonce'] = wp_create_nonce('br_add_player_nonce');
+        echo json_encode($data);
+        die();
+    }
+
     public function importPlayersBatch(){
         global $wpdb;
         $data = ['success' => false, 'results' => []];
@@ -872,150 +1051,9 @@ class BR_Player {
         die();
     }
 
-    public function enrollUser() {
-        global $wpdb;
-        $current_user = wp_get_current_user();
-        $data = array();
-        $adventure_id = $_POST['adventure_id'];
-        $user_nickname = $_POST["nickname"];
-        $user_email = strtolower($_POST["email"]);
-        $user_pass = $_POST["password"];
-        $user_lang = $_POST["lang"];
-        $new_user = $_POST["new_user"];
-        $nonce = $_POST['nonce'];
-        $data['just_notify'] = true;
-        $n = new Notification();
-
-
-        /////////////// ADD SECURITY >>> Current_user must be Admin, GM or NPC of the class.
-        $roles = $current_user->roles[0];
-        if(isset($current_user) && $roles !='br_player' && wp_verify_nonce($nonce, 'br_create_new_user'.$current_user->ID)){
-            $adv = BR_Adventure::instance()->getAdventure($adventure_id);
-            if(isset($adv)){
-                if($adv->player_adventure_role == 'gm' || $adv->player_adventure_role == 'npc'){
-                    if($new_user == 'make-new'){
-                        $new_player_data = [
-                            "nickname"	=> $user_nickname,
-                            "email"		=> $user_email,
-                            "password"	=> $user_pass,
-                            "lang"		=> $user_lang,
-                            "adventure_id"	=> $adventure_id,
-                            'nonce' => wp_create_nonce('br_register_nonce'),
-                        ];
-                        $new_player = $this->bluerabbit_add_new_player($new_player_data);
-
-                        if($new_player['success']){
-                            $data['success'] = true;
-                            $data['added-user'] = true;
-                            $data['message'] = $new_player['message'];
-                        }else{
-                            $data['messages'] = $new_player['messages'];
-                            $data['success'] = false;
-                        }
-                        BR_Activity::instance()->logActivity($adventure_id,'new-user-registered','new-player');
-                    }else if(email_exists($user_email)) {
-                        $player = get_user_by('email',$user_email);
-                        $pData = [
-                            'adventure_id'=>$adventure_id,
-                            'player_id'=>$player->ID,
-                            'status'=>'in',
-                            'nonce'=>wp_create_nonce('br_player_adventure_status_nonce'),
-                        ];
-                        $new_enroll = $this->updatePlayerAdventureStatus($pData);
-                        $msg_content = __("User enrolled",'bluerabbit');
-                        $data['message'] = $n->pop($msg_content,'green','check');
-                        $data['success'] = true;
-                        $data['added-user'] = true;
-                        BR_Activity::instance()->logActivity($adventure_id,'manually-enrolled-player','new-player');
-                    }else{
-                        $msg_content = __("User data is wrong",'bluerabbit');
-                        $data['message'] = $n->pop($msg_content,'red','cancel');
-                        $data['success'] = false;
-                        $data['added-user'] = false;
-                    }
-
-                }else{
-                    $msg_content = __('Player unauthorized to register users!','bluerabbit');
-                    $data['message'] = $n->pop($msg_content,'red','warning');
-                    $data['success'] = false;
-                    $data['added-user'] = false;
-                    BR_Activity::instance()->logActivity($adventure_id,'attempt-manual-registration-from-player','new-player');
-                }
-            }else{
-                $msg_content = __("This adventure doesn't exist",'bluerabbit');
-                $data['message'] = $n->pop($msg_content,'red','cancel');
-                $data['success'] = false;
-                $data['added-user'] = false;
-            }
-        }else{
-            $msg_content = __('Unauthorized access!','bluerabbit');
-            $data['message'] = $n->pop($msg_content,'red','warning');
-            $data['success'] = false;
-            $data['added-user'] = false;
-            BR_Activity::instance()->logActivity($adventure_id,'attempt-manual-registration','new-player');
-        }
-        echo json_encode($data);
-        die();
-    }
-
     public function br_logout(){
         wp_logout();
         $data['location']=get_bloginfo('url').'/login';
-        echo json_encode($data);
-        die();
-    }
-
-    ////////////////////////////////////// checkUserDataExists //////////////////////////////////
-    public function checkUserDataExists(){
-        global $wpdb;
-        $current_user = wp_get_current_user();
-
-        $data = array();
-        $data['success'] = false;
-        $data['just_notify'] =true;
-        $value = $_POST['value'];
-        $adv_id = $_POST['adventure_id'];
-        $notification = new Notification();
-
-        ///////////////////// VALIDAR CAMPOS VACIOS
-        if(is_email($value)) {
-            $user = get_user_by('email',$value);
-        }else{
-            $user = get_user_by('login',$value);
-        }
-        $data['new_nonce'] = wp_create_nonce('br_create_new_user'.$current_user->ID);
-        if(!empty($user)){
-            /// FOUND BY NICKNAME OR EMAIL
-            $data['user_exists'] = true;
-            $data['user_first_name']=$user->first_name;
-            $data['user_last_name']=$user->last_name;
-            $data['user_nickname']=$user->user_login;
-            $data['user_email']=$user->user_email;
-
-            $enrolled = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_adventure WHERE player_id=$user->ID AND adventure_id=$adv_id");
-            if(!$enrolled || $enrolled->player_adventure_status =='out'){
-                $data['warning'] = __("User exists, not enrolled",'bluerabbit');
-                $data['warning_class'] = "warning";
-                $data['user_enroll_status']='out';
-            }else{
-                $data['warning'] = __("User already in adventure",'bluerabbit');
-                $data['warning_class'] = "warning";
-            }
-        }else{
-            if(is_email($value)) {
-                $data['warning'] = __("Email available",'bluerabbit');
-                $data['is_email'] = true;
-            }else{
-                $data['warning'] = __("Nickname available",'bluerabbit');
-                $data['is_nickname'] = true;
-            }
-
-            $data['user_exists'] = false;
-
-            $data['warning_class'] = "success";
-            $data['user_enroll_status']='new_user';
-        }
-        $data['success'] = true;
         echo json_encode($data);
         die();
     }

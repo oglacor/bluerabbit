@@ -98,7 +98,7 @@ const new_adventure_steps = [
     {
         id: 'players-3',
         title: "<?= __("Add One Player","bluerabbit"); ?>",
-        text: "<?= __("Check whether a nickname or email is already taken, then register a single player manually here.","bluerabbit"); ?>",
+        text: "<?= __("Search by name, nickname or email to find someone who already has an account, and add them straight from the results — one after another, no reload needed. If nobody matches you can create the account here instead.","bluerabbit"); ?>",
         attachTo: { element: '#username-search', on: 'top' },
         buttons: [ brNextBtn() ]
     },

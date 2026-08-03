@@ -7450,3 +7450,255 @@ button.br-btn.br-confirming {
   .br-pw-status-id   { align-items: center; }
   .br-pw-milestone-rewards { display: none; }
 }
+
+// ── Add Players box (add-player-box.php, 2026-08-02) ───────────────────
+//
+// Search-first: most people being added already have an account, so the box
+// leads with candidates you can recognise (name, nickname, email) and only
+// offers account creation once a search has actually come up empty.
+
+.br-ap-search-wrap {
+  position: relative;
+  display: block;
+}
+
+.br-ap-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: rgba($br-white, 0.3);
+  pointer-events: none;
+}
+
+.br-ap-search {
+  padding-left: 36px !important;
+  padding-right: 36px !important;
+}
+
+.br-ap-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba($br-white, 0.08);
+  color: rgba($br-white, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: rgba($br-red, 0.25); color: $br-white; }
+}
+
+.br-ap-status {
+  min-height: 18px;
+  margin: 8px 0 12px;
+  font-size: 13px;
+  color: rgba($br-white, 0.45);
+}
+
+.br-ap-status-found { color: $br-green; }
+.br-ap-status-empty { color: $br-amber; }
+.br-ap-status-error { color: $br-red; }
+.br-ap-status-hint  { color: rgba($br-white, 0.35); font-style: italic; }
+
+// ── Candidate rows ────────────────────────────────────────────────────
+
+.br-ap-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.br-ap-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba($br-primary, 0.15);
+  border-radius: $radius-sm;
+  background: rgba($br-bg, 0.35);
+  transition: all 0.15s;
+
+  &:hover { border-color: rgba($br-primary, 0.35); }
+
+  // Already playing: present for context, but nothing to do with it.
+  &.br-ap-row-in {
+    opacity: 0.6;
+    &:hover { border-color: rgba($br-primary, 0.15); }
+  }
+
+  // Just added by this box - the row becomes its own receipt.
+  &.br-ap-row-done {
+    border-color: rgba($br-green, 0.45);
+    background: rgba($br-green, 0.08);
+    opacity: 1;
+  }
+
+  &.br-ap-row-error {
+    border-color: rgba($br-red, 0.45);
+    background: rgba($br-red, 0.08);
+  }
+}
+
+.br-ap-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.08);
+  border: 1px solid rgba($br-primary, 0.25);
+}
+
+.br-ap-identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.br-ap-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: $br-white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.br-ap-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: rgba($br-white, 0.45);
+  min-width: 0;
+}
+
+.br-ap-nick {
+  color: $br-primary;
+
+  .icon { font-size: 11px; opacity: 0.7; }
+}
+
+.br-ap-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
+.br-ap-action {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.br-ap-spin {
+  display: inline-block;
+  animation: br-ap-spin 0.7s linear infinite;
+}
+
+@keyframes br-ap-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Create-a-new-account panel ────────────────────────────────────────
+
+.br-ap-create {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed rgba($br-primary, 0.3);
+  border-radius: $radius-sm;
+  background: rgba($br-bg, 0.3);
+}
+
+.br-ap-create-title {
+  @include condensed-heading(15px, 700);
+  color: rgba($br-white, 0.75);
+  margin: 0 0 4px;
+
+  .icon { color: $br-primary; margin-right: 4px; }
+}
+
+.br-ap-req { color: $br-red; }
+
+.br-ap-create-error {
+  margin: 8px 0;
+  font-size: 13px;
+  color: $br-red;
+}
+
+.br-ap-create-toggle { margin-top: 14px; }
+
+// ── Session log ───────────────────────────────────────────────────────
+
+.br-ap-log {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba($br-white, 0.08);
+}
+
+.br-ap-log-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  @include condensed-heading(13px, 700);
+  color: rgba($br-white, 0.55);
+
+  .icon { color: $br-green; }
+}
+
+.br-ap-refresh { margin-left: auto; }
+
+.br-ap-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+
+  li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: rgba($br-white, 0.75);
+    border-bottom: 1px solid rgba($br-white, 0.04);
+
+    &:last-child { border-bottom: none; }
+
+    .icon { color: $br-green; margin-right: 6px; font-size: 12px; }
+  }
+}
+
+// A generated password is only ever shown once, here, so it needs to be
+// readable and selectable rather than decorative.
+.br-ap-log-pass {
+  margin-left: 8px;
+  font-size: 12px;
+  color: rgba($br-white, 0.45);
+
+  code {
+    padding: 1px 6px;
+    border-radius: $radius-sm;
+    background: rgba($br-accent, 0.15);
+    color: $br-accent;
+    user-select: all;
+  }
+}
+
+@media (max-width: 620px) {
+  .br-ap-row { flex-wrap: wrap; }
+  .br-ap-action { width: 100%; justify-content: flex-end; }
+}

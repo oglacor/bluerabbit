@@ -177,7 +177,6 @@ $image_types = array(
 	<!-- Hidden inputs -->
 	<input type="hidden" id="the_adventure_id" value="<?= $adventure->adventure_id; ?>">
 	<input type="hidden" id="nonce" value="<?= wp_create_nonce('br_update_adventure_nonce'); ?>"/>
-	<input type="hidden" id="register_nonce" value=""/>
 	<input type="hidden" id="player-status-nonce" value="<?= wp_create_nonce('br_player_adventure_status_nonce'); ?>"/>
 
 	<!-- Header -->
@@ -997,34 +996,8 @@ $image_types = array(
 			</div>
 		</div>
 
-		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Add Single Player","bluerabbit"); ?></h3>
-
-		<div class="br-form-group">
-			<label class="br-form-label"><?= __("Check if Username or Email exists","bluerabbit"); ?></label>
-			<input class="br-input" type="text" id="username-search" maxlength="255" placeholder="<?= __("Nickname or Email","bluerabbit");?>" onBlur="checkUserDataExists(this);">
-		</div>
-		<div id="new-player-warnings" class="new-player-warnings">
-		</div>
-		<div id="add-single-player-form" class="add-single-player-form">
-			<div class="br-form-grid">
-				<div class="br-form-group">
-					<label class="br-form-label"><?= __("Nickname","bluerabbit"); ?></label>
-					<input type="hidden" id="new-player-lang" value="<?= $current_player->player_lang;?>">
-					<input class="br-input" type="text" id="new-player-username" maxlength="50" placeholder="<?= __("Nickname","bluerabbit");?>">
-				</div>
-				<div class="br-form-group">
-					<label class="br-form-label"><?= __("Email","bluerabbit"); ?></label>
-					<input class="br-input" type="email" id="new-player-email" maxlength="255" placeholder="<?= __("Email","bluerabbit");?>">
-				</div>
-			</div>
-			<div class="br-form-group">
-				<label class="br-form-label"><?= __("Password","bluerabbit"); ?></label>
-				<input class="br-input" type="text" id="new-player-user-password" maxlength="25" placeholder="<?= __("Password","bluerabbit");?>">
-			</div>
-			<div class="br-actions">
-				<button id="btn-reg-player" class="br-btn cyan"><?= __("Register player","bluerabbit");?></button>
-			</div>
-		</div>
+		<h3 class="br-panel-title"><span class="icon icon-players"></span> <?= __("Add Players One by One","bluerabbit"); ?></h3>
+		<?php include (get_stylesheet_directory() . '/add-player-box.php'); ?>
 	</div>
 	</div>
 

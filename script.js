@@ -56,105 +56,303 @@ function registerNewPlayer() {
     });
 }
 
-function enrollUser(p_email = null) {
-    showLoader();
-    //$('#btn-reg-player').unbind('click');
-    $('#btn-reg-player').attr('disabled', true);
-    let new_user = '';
-    let email = p_email;
-    if (p_email == 'new') {
-        email = $('#new-player-email').val();
-        new_user = 'make-new';
-    }
-    let nickname = $('#new-player-username').val();
-    let password = $('#new-player-user-password').val();
-    let lang = $('#new-player-lang').val();
-    let nonce = $('#register_nonce').val();
+//////////////////  ADD PLAYERS ONE AT A TIME  ////////////////
+// Replaces enrollUser()/checkUserDataExists(). Those took one exact nickname or
+// email, answered yes/no, and - because enrollUser() disabled the button up
+// front and unbound its handler on success without ever re-enabling it - died
+// after a single add until the page was reloaded. This keeps searching and
+// adding all day, and every row reports its own outcome in place.
 
-    jQuery.ajax({
+var BRAddPlayer = {
+    timer: null,
+    query: '',
+    seq: 0,          // guards against a slow response overwriting a newer one
+    added: 0,
+    pending: {}      // player_id -> true while its request is in flight
+};
+
+function brApEsc(s) {
+    return $('<div>').text(s == null ? '' : s).html();
+}
+
+function brApSetStatus(html, cls) {
+    var $s = $('#br-ap-status');
+    if (!html) { $s.html('').attr('class', 'br-ap-status'); return; }
+    $s.html(html).attr('class', 'br-ap-status ' + (cls || ''));
+}
+
+function brApToggleCreate(show) {
+    $('#br-ap-create').toggleClass('br-initially-hidden', !show);
+    $('#br-ap-create-toggle').toggleClass('br-initially-hidden', !!show);
+    $('#br-ap-create-error').addClass('br-initially-hidden').text('');
+    if (show) {
+        // Carry whatever was typed into the search over to the new-account form,
+        // so looking someone up and then creating them isn't two lots of typing.
+        var q = ($('#username-search').val() || '').trim();
+        if (q && !$('#br-ap-new-email').val()) {
+            if (q.indexOf('@') > 0) { $('#br-ap-new-email').val(q); }
+            else { $('#br-ap-new-nickname').val(q); }
+        }
+        $('#br-ap-new-email').trigger('focus');
+    }
+}
+
+function brApRowHTML(p) {
+    var name = p.name || p.nickname || p.email;
+    var right, cls = '';
+
+    if (p.status === 'in') {
+        cls = ' br-ap-row-in';
+        var roleLabel = p.role === 'gm' ? 'GM' : (p.role === 'npc' ? 'NPC' : brApI18n.in_adventure);
+        right = '<span class="br-badge br-badge-blue">' + brApEsc(roleLabel) + '</span>';
+    } else {
+        var label = p.status === 'out' ? brApI18n.re_add : brApI18n.add;
+        right = '<button type="button" class="br-btn cyan br-btn-sm br-ap-add-btn" ' +
+                'data-player="' + p.player_id + '" onClick="brApAdd(' + p.player_id + ');">' +
+                '<span class="icon icon-add"></span> ' + label + '</button>';
+        if (p.status === 'out') {
+            right = '<span class="br-badge br-badge-amber">' + brApI18n.removed + '</span>' + right;
+        }
+    }
+
+    return '<div class="br-ap-row' + cls + '" id="br-ap-row-' + p.player_id + '">' +
+        '<div class="br-ap-avatar" style="background-image:url(' + brApEsc(p.avatar) + ')"></div>' +
+        '<div class="br-ap-identity">' +
+            '<span class="br-ap-name">' + brApEsc(name) + '</span>' +
+            '<span class="br-ap-meta">' +
+                '<span class="br-ap-nick"><span class="icon icon-player"></span> ' + brApEsc(p.nickname) + '</span>' +
+                '<span class="br-ap-email">' + brApEsc(p.email) + '</span>' +
+            '</span>' +
+        '</div>' +
+        '<div class="br-ap-action">' + right + '</div>' +
+    '</div>';
+}
+
+function brApRenderResults(players, query) {
+    var $r = $('#br-ap-results');
+    if (!players.length) {
+        $r.html('');
+        brApSetStatus(brApI18n.no_match.replace('%s', brApEsc(query)), 'br-ap-status-empty');
+        // Nothing matched, so creating the account is now the useful next step.
+        brApToggleCreate(true);
+        return;
+    }
+    $r.html(players.map(brApRowHTML).join(''));
+    var free = players.filter(function (p) { return p.status !== 'in'; }).length;
+    brApSetStatus(
+        brApI18n.found.replace('%d', players.length).replace('%a', free),
+        'br-ap-status-found'
+    );
+}
+
+function brApSearch() {
+    var q = ($('#username-search').val() || '').trim();
+    $('#br-ap-clear').toggleClass('br-initially-hidden', q === '');
+
+    if (q.length < 2) {
+        $('#br-ap-results').html('');
+        brApSetStatus(q === '' ? '' : brApI18n.keep_typing, 'br-ap-status-hint');
+        return;
+    }
+    if (q === BRAddPlayer.query) return;
+    BRAddPlayer.query = q;
+
+    var mySeq = ++BRAddPlayer.seq;
+    brApSetStatus(brApI18n.searching, 'br-ap-status-hint');
+
+    $.ajax({
         url: runAJAX.ajaxurl,
-        data: ({
-            action: 'enrollUser',
+        method: 'POST',
+        data: {
+            action: 'brSearchRegisteredPlayers',
+            nonce: $('#br-ap-nonce').val(),
             adventure_id: $('#the_adventure_id').val(),
-            new_user: new_user,
-            nickname: nickname,
-            email: email,
-            password: password,
-            lang: lang,
-            nonce: nonce
-        }),
-        method: "POST",
-        success: function (data_received) {
-            let this_data = JSON.parse(data_received);
-            if (this_data.success == false) {
-                $('#btn-reg-player').attr('disabled', false);
-            } else {
-                $('#btn-reg-player').unbind('click');
-            }
-            displayAjaxResponse(data_received);
+            search: q
         },
+        success: function (raw) {
+            // A reply for a query the user has already typed past is stale.
+            if (mySeq !== BRAddPlayer.seq) return;
+            var data;
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+            if (!data || !data.success) {
+                brApSetStatus(brApEsc((data && data.message) || brApI18n.search_error), 'br-ap-status-error');
+                return;
+            }
+            brApRenderResults(data.players || [], q);
+        },
+        error: function () {
+            if (mySeq !== BRAddPlayer.seq) return;
+            brApSetStatus(brApI18n.search_error, 'br-ap-status-error');
+        }
     });
 }
 
-function checkUserDataExists(input_field) {
-    showLoader('small');
-    $('#btn-reg-player').unbind('click');
-    $('#add-single-player-form, #add-single-player-form .player-data-content').removeClass('active');
-    $('#new-player-username, #new-player-email, #new-player-user-password').val('');
-    if (input_field.value != '') {
-        jQuery.ajax({
-            url: runAJAX.ajaxurl,
-            data: ({
-                action: 'checkUserDataExists',
-                value: input_field.value,
-                adventure_id: $('#the_adventure_id').val()
-            }),
-            method: "POST",
-            success: function (data_received) {
-                let data = JSON.parse(data_received);
-                hideAllOverlay();
-                if (data.warning) {
-                    $('#new-player-warnings').text(data.warning);
-                    $('#new-player-warnings').removeClass().addClass(data.warning_class + " new-player-warnings");
-                    $("#register_nonce").val(data.new_nonce);
-                }
-                if (data.user_exists == true && data.user_enroll_status == 'out') {
-                    $('#add-single-player-form').addClass('active');
-                    $('#btn-reg-player').click(function () {
-                        enrollUser(data.user_email);
-                    });
-                } else if (data.user_exists == false) {
-                    $('#add-single-player-form, #add-single-player-form .player-data-content').addClass('active');
-                    if (data.is_email == true) {
-                        $('#new-player-email').val(input_field.value).attr({
-                            'readonly': true,
-                            'disabled': true
-                        });
-                        $('#new-player-username').val('');
-                    } else {
-                        $('#new-player-username').val(input_field.value).attr({
-                            'readonly': true,
-                            'disabled': true
-                        });
-                        $('#new-player-email').val('');
-                    }
-
-                    $('#btn-reg-player').click(function () {
-                        enrollUser('new');
-                    });
-                }
-                $("#notify-message ul.content").append(data.message);
-                $("#notify-message ul.content li:last-child").delay(1000).fadeOut(300, function () {
-                    $(this).remove();
-                });
-            },
-        });
-    } else {
-        $('#new-player-warnings').text("Please enter a nickname or email.");
-        $('#new-player-warnings').removeClass().addClass("error new-player-warnings");
-        hideAllOverlay();
+function brApLog(result, label) {
+    BRAddPlayer.added++;
+    var extra = '';
+    if (result && result.password) {
+        // Only ever set for accounts this box just created.
+        extra = ' <span class="br-ap-log-pass">' + brApI18n.password + ': <code>' +
+                brApEsc(result.password) + '</code></span>';
     }
+    $('#br-ap-log-list').prepend(
+        '<li><span class="icon icon-check"></span> ' + brApEsc(label) + extra + '</li>'
+    );
+    $('#br-ap-log-count').text(BRAddPlayer.added);
+    $('#br-ap-log').removeClass('br-initially-hidden');
+    // The enrolled table above was rendered server-side and its counters are
+    // recomputed by its own pager on every keystroke, so incrementing them here
+    // would be a number that silently reverts. Offer a refresh instead of faking
+    // state the page doesn't actually have.
+    $('#br-ap-refresh').removeClass('br-initially-hidden');
 }
+
+function brApAdd(playerId) {
+    if (BRAddPlayer.pending[playerId]) return;
+    BRAddPlayer.pending[playerId] = true;
+
+    var $row = $('#br-ap-row-' + playerId);
+    var $btn = $row.find('.br-ap-add-btn');
+    var name = $row.find('.br-ap-name').text() || '';
+    var mail = $row.find('.br-ap-email').text() || '';
+    $btn.prop('disabled', true).html('<span class="icon icon-rotate br-ap-spin"></span> ' + brApI18n.adding);
+
+    $.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'brAddSinglePlayer',
+            nonce: $('#br-ap-nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            player_id: playerId
+        },
+        success: function (raw) {
+            delete BRAddPlayer.pending[playerId];
+            var data;
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+            if (data && data.nonce) $('#br-ap-nonce').val(data.nonce);
+            if (data && data.message) displayAjaxResponse(raw);
+
+            if (!data || !data.success) {
+                $btn.prop('disabled', false).html('<span class="icon icon-add"></span> ' + brApI18n.add);
+                $row.addClass('br-ap-row-error');
+                return;
+            }
+            // The row stays put and turns into its own receipt, so a long list of
+            // adds reads back as a list of what happened.
+            var already = data.result && data.result.status === 'already';
+            $row.removeClass('br-ap-row-error').addClass(already ? 'br-ap-row-in' : 'br-ap-row-done');
+            $row.find('.br-ap-action').html(
+                '<span class="br-badge ' + (already ? 'br-badge-amber' : 'br-badge-green') + '">' +
+                '<span class="icon icon-check"></span> ' +
+                (already ? brApI18n.in_adventure : brApI18n.added) + '</span>'
+            );
+            if (!already) brApLog(data.result, (name ? name + ' — ' : '') + mail);
+        },
+        error: function () {
+            delete BRAddPlayer.pending[playerId];
+            $btn.prop('disabled', false).html('<span class="icon icon-add"></span> ' + brApI18n.add);
+            $row.addClass('br-ap-row-error');
+        }
+    });
+}
+
+function brApCreate() {
+    var email = ($('#br-ap-new-email').val() || '').trim();
+    var $err  = $('#br-ap-create-error');
+
+    if (!email || email.indexOf('@') < 1 || email.indexOf('.') < 0) {
+        $err.text(brApI18n.need_email).removeClass('br-initially-hidden');
+        $('#br-ap-new-email').trigger('focus');
+        return;
+    }
+    $err.addClass('br-initially-hidden').text('');
+
+    var $btn = $('#br-ap-create-btn');
+    $btn.prop('disabled', true).html('<span class="icon icon-rotate br-ap-spin"></span> ' + brApI18n.adding);
+
+    $.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'brAddSinglePlayer',
+            nonce: $('#br-ap-nonce').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            email: email,
+            nickname: ($('#br-ap-new-nickname').val() || '').trim(),
+            firstname: ($('#br-ap-new-first').val() || '').trim(),
+            lastname: ($('#br-ap-new-last').val() || '').trim(),
+            password: ($('#br-ap-new-password').val() || '').trim(),
+            lang: $('#br-ap-lang').val()
+        },
+        success: function (raw) {
+            $btn.prop('disabled', false).html('<span class="icon icon-add"></span> ' + brApI18n.create_add);
+            var data;
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+            if (data && data.nonce) $('#br-ap-nonce').val(data.nonce);
+            if (data && data.message) displayAjaxResponse(raw);
+
+            if (!data || !data.success) {
+                $err.text((data && data.result && data.result.detail) || brApI18n.create_error)
+                    .removeClass('br-initially-hidden');
+                return;
+            }
+            var r = data.result || {};
+            var label = ($('#br-ap-new-first').val() || '') + ' ' + ($('#br-ap-new-last').val() || '');
+            brApLog(r, (label.trim() ? label.trim() + ' — ' : '') + (r.email || email));
+
+            // Ready for the next one straight away.
+            $('#br-ap-new-email, #br-ap-new-nickname, #br-ap-new-first, #br-ap-new-last, #br-ap-new-password').val('');
+            $('#username-search').val('');
+            BRAddPlayer.query = '';
+            $('#br-ap-results').html('');
+            brApSetStatus('', '');
+            brApToggleCreate(false);
+            $('#username-search').trigger('focus');
+        },
+        error: function () {
+            $btn.prop('disabled', false).html('<span class="icon icon-add"></span> ' + brApI18n.create_add);
+            $err.text(brApI18n.create_error).removeClass('br-initially-hidden');
+        }
+    });
+}
+
+// Strings live here so the module works even if a page forgets to localise them.
+var brApI18n = window.brApI18n || {};
+brApI18n.add          = brApI18n.add          || 'Add';
+brApI18n.re_add       = brApI18n.re_add       || 'Add back';
+brApI18n.adding       = brApI18n.adding       || 'Adding…';
+brApI18n.added        = brApI18n.added        || 'Added';
+brApI18n.removed      = brApI18n.removed      || 'Removed earlier';
+brApI18n.in_adventure = brApI18n.in_adventure || 'In this adventure';
+brApI18n.searching    = brApI18n.searching    || 'Searching…';
+brApI18n.keep_typing  = brApI18n.keep_typing  || 'Keep typing — at least 2 characters.';
+brApI18n.found        = brApI18n.found        || '%d found, %a can be added.';
+brApI18n.no_match     = brApI18n.no_match     || 'Nobody registered matches "%s". Create the account below.';
+brApI18n.search_error = brApI18n.search_error || 'Search failed. Check your connection and try again.';
+brApI18n.create_error = brApI18n.create_error || 'Could not create that account.';
+brApI18n.need_email   = brApI18n.need_email   || 'A valid email is required.';
+brApI18n.create_add   = brApI18n.create_add   || 'Create and add';
+brApI18n.password     = brApI18n.password     || 'Password';
+
+jQuery(function ($) {
+    var $search = $('#username-search');
+    if (!$search.length) return;
+
+    $search.on('keyup search input', function (e) {
+        if (e.key === 'Enter') { clearTimeout(BRAddPlayer.timer); brApSearch(); return; }
+        clearTimeout(BRAddPlayer.timer);
+        BRAddPlayer.timer = setTimeout(brApSearch, 250);
+    });
+    $('#br-ap-clear').on('click', function () {
+        $search.val('').trigger('focus');
+        BRAddPlayer.query = '';
+        BRAddPlayer.seq++;
+        $('#br-ap-results').html('');
+        brApSetStatus('', '');
+        $('#br-ap-clear').addClass('br-initially-hidden');
+    });
+});
 
 function uploadBulkQuestions() {
     const upload_bulk_questions_form = document.getElementById('upload_bulk_questions_form');
