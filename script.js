@@ -7357,7 +7357,8 @@ function duplicateQuests() {
             achievement_duplicates: achievement_duplicates,
             item_duplicates: item_duplicates,
             tabi_duplicates: tabi_duplicates,
-            enc_duplicates: enc_duplicates
+            enc_duplicates: enc_duplicates,
+            speakers_duplicates: speakers_duplicates
         }),
         method: "POST",
         success: function (json_text) {
