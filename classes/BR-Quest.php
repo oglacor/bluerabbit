@@ -682,6 +682,7 @@ class BR_Quest {
         }
 
         // Achievement reward
+        $result['newly_earned'] = [];
         if ($quest->mech_achievement_reward) {
             $has = $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement
@@ -697,11 +698,31 @@ class BR_Quest {
                 ]);
                 BR_Activity::instance()->logActivity($adv_child_id, 'earned', 'achievement', $quest->mech_achievement_reward, $quest_id);
                 $result['rewards'][] = ['type' => 'achievement', 'id' => $quest->mech_achievement_reward];
+
+                $direct_achievement = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id = %d", $quest->mech_achievement_reward
+                ));
+                if ($direct_achievement) {
+                    $result['newly_earned'][] = [
+                        'achievement_id'    => (int) $direct_achievement->achievement_id,
+                        'achievement_name'  => $direct_achievement->achievement_name,
+                        'achievement_badge' => $direct_achievement->achievement_badge,
+                        'achievement_color' => $direct_achievement->achievement_color,
+                        'is_rank'           => false,
+                        'reason'            => sprintf(__('You completed %s!', 'bluerabbit'), $quest->quest_title),
+                    ];
+                }
             }
         }
 
-        // Recalculate player state
-        BR_Player::instance()->resetPlayer($adv_child_id, $player_id);
+        // Recalculate player state - also detects level-up and auto-grants any rank/
+        // condition-based achievements this completion just qualified the player for
+        // (see BR_Player::resetPlayer()). Merged into this same $result so the client
+        // gets one unified response instead of needing a second round trip.
+        $player_state = BR_Player::instance()->resetPlayer($adv_child_id, $player_id);
+        $result['levelup'] = $player_state['levelup'] ?? false;
+        $result['new_level'] = $player_state['new_level'] ?? null;
+        $result['newly_earned'] = array_merge($result['newly_earned'], $player_state['newly_earned'] ?? []);
         BR_Activity::instance()->logActivity($adv_child_id, 'complete', 'milestone', $quest_id);
 
         return $result;
@@ -2322,7 +2343,7 @@ class BR_Quest {
 			$this->saveQuestReqs($adventure_id, $quest_id, $quest_ids, $achievement_ids, $item_id);
 
 			$conditions = [];
-			foreach (BR_Conditions::CONDITION_TYPES as $type => $label) {
+			foreach (BR_Conditions::simpleTypes() as $type => $label) {
 				$val = $_POST['conditions'][$type] ?? '';
 				if ($val !== '') {
 					$conditions[] = ['condition_type' => $type, 'threshold_value' => (float) $val];

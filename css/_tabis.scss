@@ -780,8 +780,12 @@ body.asset-rotating * { cursor: grabbing !important; }
 	bottom: 0;
 	left: auto;
 	transform: none;
-	width: min(560px, 92vw);
-	max-width: none;
+	// Half the viewport, but never so narrow that a milestone title has to wrap
+	// twice. The min is itself capped at 96vw so a phone doesn't get a drawer
+	// wider than the screen.
+	width: 50vw;
+	min-width: min(600px, 96vw);
+	max-width: 96vw;
 	max-height: none;
 	overflow: hidden;
 	background: rgba(4, 22, 30, 0.97);
@@ -796,6 +800,25 @@ body.asset-rotating * { cursor: grabbing !important; }
 	z-index: 300;
 
 	&.active { visibility: visible; opacity: 1; }
+}
+
+// The header-fixed/body-scrolls layout needs .tabi-conditions-header/-body/
+// -footer to be flex items of the overlay. Three of these drawers wrap their
+// AJAX content in .tabi-conditions-modal-content first (tabi-row.php,
+// manage-tabis.php, manage-items.php, page-new-item.php,
+// component-quest-conditions.php), which made THAT the only flex item: an
+// ordinary block that grows to its full content height, so .tabi-conditions-body
+// never got a bounded height, its overflow-y:auto never engaged, and the
+// overlay's overflow:hidden simply clipped everything past the fold - the
+// drawer could not be scrolled at all. Making the wrapper a transparent
+// flex pass-through fixes every drawer that has one, and keeps working for the
+// ones that inject their content directly.
+.tabi-conditions-modal-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
 }
 
 // Guild roster drill-down (page-guilds.php leaderboard) - a wide data table
@@ -1004,10 +1027,56 @@ body.asset-rotating * { cursor: grabbing !important; }
 	flex: 1;
 	overflow-y: auto;
 	min-height: 0;
-	padding: 20px;
+	padding: 0 20px 20px;
+	// These drawers are read as much as they are filled in - 12px was too small
+	// for a long milestone list. 16px is the base here, and the few legacy
+	// .br-text-12 spans still coming from the Item/Quest conditions templates
+	// are pulled up with it rather than left as the odd small one out.
+	font-size: 16px;
+	color: rgba(255,255,255,0.85);
+
+	.br-text-12 { font-size: 16px; }
 
 	.tabi-conditions-section {
-		margin-bottom: 18px;
+		margin-bottom: 26px;
+
+		&:last-of-type { margin-bottom: 8px; }
+	}
+
+	// Sticky so you always know which list you are looking at, however long it
+	// runs. Needs an opaque background: the rows scroll underneath it, and the
+	// negative margins let it span the body's full padding box.
+	.tabi-conditions-section-title {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0 -20px 10px;
+		padding: 14px 20px 10px;
+		background: rgb(6, 26, 35);
+		border-bottom: 1px solid rgba(28, 194, 235, 0.14);
+		font: 700 13px $condensed-font;
+		text-transform: uppercase;
+		letter-spacing: 1.4px;
+		color: rgba(255,255,255,0.75);
+
+		.icon { font-size: 15px; color: $new-colors-blue; }
+		.br-badge { margin-left: auto; }
+	}
+
+	.tabi-conditions-hint {
+		display: block;
+		margin-bottom: 10px;
+		font-size: 13px;
+		color: rgba(255,255,255,0.4);
+	}
+
+	.tabi-conditions-empty {
+		font-size: 14px;
+		color: rgba(255,255,255,0.35);
+		font-style: italic;
 	}
 
 	.tabi-prereq-list {
@@ -1020,14 +1089,14 @@ body.asset-rotating * { cursor: grabbing !important; }
 	.tabi-prereq-label {
 		display: flex;
 		align-items: center;
-		gap: 6px;
-		padding: 4px 10px;
+		gap: 8px;
+		padding: 7px 14px;
 		border-radius: 20px;
-		font: 500 12px $base-font;
+		font: 500 15px $base-font;
 		cursor: pointer;
 		color: rgba(4,22,30,0.85);
 		border: 1px solid rgba(0,0,0,0.1);
-		input[type="checkbox"] { cursor: pointer; }
+		input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; }
 	}
 
 	.tabi-cond-threshold-row {
@@ -1035,11 +1104,125 @@ body.asset-rotating * { cursor: grabbing !important; }
 		align-items: center;
 		justify-content: space-between;
 		gap: 10px;
-		padding: 4px 0;
+		padding: 6px 0;
 
-		label { flex: 1; color: rgba(255,255,255,0.6); }
-		input { width: 120px; }
+		label { flex: 1; font-size: 15px; color: rgba(255,255,255,0.6); }
+		input { width: 120px; font-size: 15px; }
 	}
+
+	.tabi-cond-item-select { font-size: 15px; }
+}
+
+// ── Tabi membership rows (which milestones belong to this tabi) ──────────
+// A list rather than the pill cloud used for requirements: these carry a
+// second line of context (type, and the tabi that currently owns it) and are
+// scanned down the left edge for what is ticked.
+
+.tabi-member-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.tabi-member-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 12px;
+	border-radius: 8px;
+	border: 1px solid rgba(28, 194, 235, 0.12);
+	background: rgba(4, 22, 30, 0.4);
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+
+	&:hover { border-color: rgba(28, 194, 235, 0.35); }
+
+	// The real checkbox drives state but is not what you see - .tabi-member-check
+	// is, so the tick can be big enough to scan a long list at a glance.
+	input[type="checkbox"] {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	&.is-member {
+		border-color: rgba(36, 218, 152, 0.45);
+		background: rgba(36, 218, 152, 0.08);
+
+		.tabi-member-check {
+			background: $new-colors-green;
+			border-color: $new-colors-green;
+			.icon { opacity: 1; }
+		}
+		.tabi-member-name { color: #fff; }
+	}
+
+	&.is-saving { opacity: 0.5; cursor: progress; }
+
+	&.is-error {
+		border-color: rgba(244, 67, 54, 0.5);
+		background: rgba(244, 67, 54, 0.08);
+	}
+}
+
+.tabi-member-check {
+	flex-shrink: 0;
+	width: 22px;
+	height: 22px;
+	border-radius: 6px;
+	border: 2px solid rgba(255,255,255,0.25);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.15s;
+
+	.icon {
+		font-size: 12px;
+		color: rgba(4,22,30,0.95);
+		opacity: 0;
+		transition: opacity 0.15s;
+	}
+}
+
+.tabi-member-name {
+	flex: 1;
+	min-width: 0;
+	font-size: 16px;
+	color: rgba(255,255,255,0.8);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tabi-member-tags {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.tabi-member-type {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.8px;
+	color: rgba(255,255,255,0.3);
+}
+
+// Named when the milestone currently sits in a DIFFERENT tabi, because ticking
+// it here takes it out of that one.
+.tabi-member-elsewhere {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 8px;
+	border-radius: 20px;
+	background: rgba(255, 193, 7, 0.15);
+	color: #ffc107;
+	font-size: 11px;
+	white-space: nowrap;
+
+	.icon { font-size: 10px; }
 }
 
 .tabi-conditions-footer {

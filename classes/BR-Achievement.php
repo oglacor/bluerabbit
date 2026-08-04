@@ -221,7 +221,7 @@ class BR_Achievement {
                         ));
                         if($a_display == 'rank' && isset($a_data['a_rank_level']) && $a_data['a_rank_level'] !== ''){
                             $a_rank_condition = $a_data['a_rank_condition'] ?? 'level';
-                            if($a_rank_condition !== 'level' && !array_key_exists($a_rank_condition, BR_Conditions::CONDITION_TYPES)){
+                            if($a_rank_condition !== 'level' && !array_key_exists($a_rank_condition, BR_Conditions::simpleTypes())){
                                 $a_rank_condition = 'level';
                             }
                             $wpdb->query($wpdb->prepare(
@@ -1137,6 +1137,50 @@ class BR_Achievement {
         }else{
             $data['message'] = "<h1>".__("Nonce!","bluerabbit")."</h1>".'<h4>'.__('click to close','bluerabbit').'</h4>';
         }
+        echo json_encode($data);
+        die();
+    }
+
+    // Saves the achievement Conditions tab (page-new-achievement.php) - a plain
+    // pass-through to the generalized BR_Conditions engine (target_type='achievement'),
+    // evaluated for every player on every resetPlayer() call. See BR_Conditions for the
+    // condition_type list and which ones carry an object_id (specific milestone/Tabi).
+    public function saveAchievementConditions() {
+        $data = ['success' => false];
+        $notification = new Notification();
+
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'br_achievement_conditions_nonce')) {
+            $data['message'] = $notification->pop(__("Unauthorized access", 'bluerabbit'), 'red', 'cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        $achievement_id = (int) ($_POST['achievement_id'] ?? 0);
+        $adventure_id   = (int) ($_POST['adventure_id'] ?? 0);
+        if (!$achievement_id || !$adventure_id) {
+            $data['message'] = $notification->pop(__("Missing achievement.", 'bluerabbit'), 'red', 'cancel');
+            $data['just_notify'] = true;
+            echo json_encode($data); die();
+        }
+
+        $raw = json_decode(stripslashes($_POST['conditions_json'] ?? '[]'), true);
+        $conditions = [];
+        if (is_array($raw)) {
+            foreach ($raw as $c) {
+                $type = sanitize_text_field($c['condition_type'] ?? '');
+                if (!array_key_exists($type, BR_Conditions::CONDITION_TYPES)) continue;
+                $conditions[] = [
+                    'condition_type'  => $type,
+                    'object_id'       => isset($c['object_id']) && $c['object_id'] !== '' ? (int) $c['object_id'] : null,
+                    'threshold_value' => isset($c['threshold_value']) && $c['threshold_value'] !== '' ? (float) $c['threshold_value'] : null,
+                ];
+            }
+        }
+        BR_Conditions::instance()->saveConditions($adventure_id, 'achievement', $achievement_id, $conditions);
+
+        $data['success'] = true;
+        $data['message'] = $notification->pop(__('Conditions saved', 'bluerabbit'), 'green', 'check');
+        $data['just_notify'] = true;
         echo json_encode($data);
         die();
     }

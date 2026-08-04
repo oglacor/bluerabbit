@@ -659,7 +659,7 @@ $image_types = array(
 							<td>
 								<select class="br-input rank-condition-type">
 									<option value="level" <?= $rank->condition_type=='level' ? "selected" : ""; ?>><?= __("Level","bluerabbit"); ?></option>
-									<?php foreach(BR_Conditions::CONDITION_TYPES as $type=>$label){ if($type=='level') continue; ?>
+									<?php foreach(BR_Conditions::simpleTypes() as $type=>$label){ if($type=='level') continue; ?>
 										<option value="<?= $type; ?>" <?= $rank->condition_type==$type ? "selected" : ""; ?>><?= esc_html__($label,"bluerabbit"); ?></option>
 									<?php } ?>
 								</select>
@@ -689,7 +689,7 @@ $image_types = array(
 						<td>
 							<select class="br-input rank-condition-type">
 								<option value="level"><?= __("Level","bluerabbit"); ?></option>
-								<?php foreach(BR_Conditions::CONDITION_TYPES as $type=>$label){ if($type=='level') continue; ?>
+								<?php foreach(BR_Conditions::simpleTypes() as $type=>$label){ if($type=='level') continue; ?>
 									<option value="<?= $type; ?>"><?= esc_html__($label,"bluerabbit"); ?></option>
 								<?php } ?>
 							</select>

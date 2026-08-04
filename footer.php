@@ -50,6 +50,20 @@
 			<div class="layer base white-color perfect-center text-center absolute content line-200">
 			</div>
 		</div>
+
+		<!-- One clean panel for everything earned in a single action (level-up + any
+		     number of newly-earned achievements/ranks) instead of stacking several
+		     separate popups - see showRewardsOverlay()/claimRewards() in script.js. -->
+		<div class="overlay-layer br-rewards-overlay" id="br-rewards-overlay">
+			<div class="br-rewards-modal">
+				<div class="br-rewards-modal-body" id="br-rewards-modal-body"></div>
+				<div class="br-rewards-modal-footer">
+					<button class="br-btn green br-rewards-claim-btn" onclick="claimRewards();">
+						<span class="icon icon-check"></span> <?= __("Claim","bluerabbit"); ?>
+					</button>
+				</div>
+			</div>
+		</div>
 		<div class="notify-message" id="notify-message">
 			<ul class="content">
 			</ul>

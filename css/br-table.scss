@@ -7707,3 +7707,121 @@ button.br-btn.br-confirming {
   .br-ap-row { flex-wrap: wrap; }
   .br-ap-action { width: 100%; justify-content: flex-end; }
 }
+
+// ── Unified level-up / achievement rewards panel ──────────────────────
+// One clean panel for everything earned from a single action (level-up + any
+// number of newly-earned achievements/ranks) instead of stacking several
+// separate popups - see BR_Player::resetPlayer()'s newly_earned array and
+// showRewardsOverlay()/claimRewards() in script.js.
+.br-rewards-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(440px, 92vw);
+  max-height: 85vh;
+  z-index: 400;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  &.active { visibility: visible; opacity: 1; }
+}
+
+.br-rewards-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  background: rgba(4, 22, 30, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba($br-accent, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 40px rgba($br-accent, 0.15);
+  animation: br-reward-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes br-reward-pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.br-rewards-modal-body {
+  padding: 28px 24px 8px;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.br-reward-levelup {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba($br-white, 0.1);
+
+  .br-reward-levelup-label {
+    font-family: $condensed;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: $br-accent;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .br-reward-levelup-number {
+    font-family: $condensed;
+    font-size: 56px;
+    font-weight: 800;
+    color: $br-white;
+    line-height: 1.1;
+    text-shadow: 0 0 24px rgba($br-accent, 0.6);
+  }
+}
+
+.br-reward-achievement {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: rgba($br-white, 0.04);
+  border: 1px solid rgba($br-white, 0.08);
+
+  &:last-child { margin-bottom: 0; }
+
+  .br-reward-achievement-badge {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba($br-white, 0.06);
+    box-shadow: 0 0 0 2px rgba($br-accent, 0.4);
+  }
+
+  .br-reward-achievement-name {
+    font-family: $condensed;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 15px;
+    color: $br-white;
+  }
+
+  .br-reward-achievement-reason {
+    font-size: 13px;
+    color: rgba($br-white, 0.6);
+    margin-top: 2px;
+  }
+}
+
+.br-rewards-modal-footer {
+  padding: 16px 24px 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.br-rewards-claim-btn {
+  padding: 12px 32px;
+  font-size: 15px;
+}

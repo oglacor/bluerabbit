@@ -33,7 +33,30 @@ class BR_Conditions {
         'tabi_count'          => 'Tabis Completed',
         'transaction_count'   => 'Item Shop Transactions',
         'item_consumed_count' => 'Items Consumed',
+        'achievement_count'   => 'Achievements Earned',
+        'specific_quest'      => 'Complete This Milestone',
+        'specific_tabi'       => 'Complete This Tabi',
+        'tabi_pct'            => 'Progress % in This Tabi',
     ];
+
+    // Types that reference one specific quest/tabi via the object_id column (a plain
+    // membership check, not a >= threshold) - the admin UI needs a picker for these,
+    // not a bare number input.
+    const OBJECT_TYPES = ['specific_quest', 'specific_tabi', 'tabi_pct'];
+
+    // Of the OBJECT_TYPES, which also carry a numeric threshold alongside the object_id
+    // (tabi_pct: "X% of THIS tabi") vs. pure membership (specific_quest/specific_tabi:
+    // "done or not done", no threshold).
+    const OBJECT_TYPES_WITH_THRESHOLD = ['tabi_pct'];
+
+    // The pre-existing "one number input per type" UIs (rank condition dropdowns, and
+    // the Quest/Tabi/Item Conditions modals' threshold list) only ever compare a single
+    // number against a snapshot metric - they have no picker for "which quest/tabi", so
+    // OBJECT_TYPES must stay hidden from them. Only the achievement Conditions tab
+    // (which has a real object picker) uses the full CONDITION_TYPES list.
+    public static function simpleTypes() {
+        return array_diff_key(self::CONDITION_TYPES, array_flip(self::OBJECT_TYPES));
+    }
 
     // ── CRUD (replace-on-save, matching the existing br_reqs/br_tabi_prerequisites convention) ──
 
@@ -47,7 +70,9 @@ class BR_Conditions {
         ));
     }
 
-    // $conditions: array of ['condition_type'=>string, 'threshold_value'=>float]
+    // $conditions: array of ['condition_type'=>string, 'threshold_value'=>float, 'object_id'=>int]
+    // object_id only matters (and is required) for OBJECT_TYPES; threshold_value is
+    // skipped for the pure-membership object types (specific_quest/specific_tabi).
     public function saveConditions($adventure_id, $target_type, $target_id, $conditions) {
         global $wpdb;
         $wpdb->query($wpdb->prepare(
@@ -59,14 +84,29 @@ class BR_Conditions {
         foreach ($conditions as $c) {
             $type = sanitize_text_field($c['condition_type'] ?? '');
             if (!array_key_exists($type, self::CONDITION_TYPES)) continue;
-            if (!isset($c['threshold_value']) || $c['threshold_value'] === '') continue;
+
+            $is_object_type = in_array($type, self::OBJECT_TYPES, true);
+            $needs_threshold = !$is_object_type || in_array($type, self::OBJECT_TYPES_WITH_THRESHOLD, true);
+
+            $object_id = null;
+            if ($is_object_type) {
+                $object_id = isset($c['object_id']) ? (int) $c['object_id'] : 0;
+                if (!$object_id) continue; // no target picked - skip this row rather than save a broken condition
+            }
+
+            $threshold_value = null;
+            if ($needs_threshold) {
+                if (!isset($c['threshold_value']) || $c['threshold_value'] === '') continue;
+                $threshold_value = (float) $c['threshold_value'];
+            }
 
             $wpdb->insert("{$wpdb->prefix}br_conditions", [
                 'adventure_id'    => (int) $adventure_id,
                 'target_type'     => $target_type,
                 'target_id'       => (string) $target_id,
                 'condition_type'  => $type,
-                'threshold_value' => (float) $c['threshold_value'],
+                'object_id'       => $object_id,
+                'threshold_value' => $threshold_value,
             ]);
         }
         return true;
@@ -126,6 +166,11 @@ class BR_Conditions {
             'key_item_ids'        => $key_item_ids,
             'transaction_count'   => $transaction_count,
             'item_consumed_count' => $item_consumed_count,
+            // Carried through so conditionMet() can lazily compute a per-tabi percentage
+            // (tabi_pct) without every snapshot having to precompute progress for every
+            // tabi in the adventure up front.
+            'adv_parent_id'       => $adv_parent_id,
+            'player_id'           => $player_id,
         ];
     }
 
@@ -165,9 +210,61 @@ class BR_Conditions {
                 return ($snapshot['transaction_count'] ?? 0) >= (float) $c->threshold_value;
             case 'item_consumed_count':
                 return ($snapshot['item_consumed_count'] ?? 0) >= (float) $c->threshold_value;
+            case 'achievement_count':
+                return count($snapshot['achievement_ids'] ?? []) >= (float) $c->threshold_value;
+            case 'specific_quest':
+                return in_array((int) $c->object_id, array_map('intval', $snapshot['fqs'] ?? []), true);
+            case 'specific_tabi':
+                return in_array((int) $c->object_id, array_map('intval', $snapshot['completed_tabi_ids'] ?? []), true);
+            case 'tabi_pct':
+                $pct = BR_Tabi::instance()->getTabiProgressPct(
+                    $snapshot['adv_parent_id'] ?? 0, $snapshot['player_id'] ?? 0, (int) $c->object_id
+                );
+                return $pct >= (float) $c->threshold_value;
             default:
                 // Unknown condition_type - fail closed rather than silently grant access.
                 return false;
         }
+    }
+
+    // Human-friendly "why did I earn this" line for the reward overlay - prefers the
+    // first specific-object condition (names the actual quest/tabi by its own title, no
+    // internal jargon), falling back to a plain description of the first threshold
+    // condition attached. Achievements built this way are expected to carry one
+    // condition in practice, so "first condition" is a reasonable summary even though
+    // evaluate() itself is AND across all of them.
+    public function describeMetCondition($adventure_id, $target_type, $target_id) {
+        global $wpdb;
+        foreach ($this->getConditions($adventure_id, $target_type, $target_id) as $c) {
+            switch ($c->condition_type) {
+                case 'specific_tabi':
+                    $name = $wpdb->get_var($wpdb->prepare("SELECT tabi_name FROM {$wpdb->prefix}br_tabis WHERE tabi_id=%d", $c->object_id));
+                    if ($name) return sprintf(__('You completed %s!', 'bluerabbit'), wp_strip_all_tags($name));
+                    break;
+                case 'specific_quest':
+                    $title = $wpdb->get_var($wpdb->prepare("SELECT quest_title FROM {$wpdb->prefix}br_quests WHERE quest_id=%d", $c->object_id));
+                    if ($title) return sprintf(__('You completed %s!', 'bluerabbit'), $title);
+                    break;
+                case 'tabi_pct':
+                    $name = $wpdb->get_var($wpdb->prepare("SELECT tabi_name FROM {$wpdb->prefix}br_tabis WHERE tabi_id=%d", $c->object_id));
+                    if ($name) return sprintf(__('You made great progress on %s!', 'bluerabbit'), wp_strip_all_tags($name));
+                    break;
+                case 'journey_pct':
+                    return sprintf(__("You've completed %s%% of the journey!", 'bluerabbit'), rtrim(rtrim((string) $c->threshold_value, '0'), '.'));
+                case 'milestone_count':
+                    return sprintf(__('You completed %d Milestones!', 'bluerabbit'), (int) $c->threshold_value);
+                case 'tabi_count':
+                    return sprintf(__('You completed %d Tabis!', 'bluerabbit'), (int) $c->threshold_value);
+                case 'achievement_count':
+                    return sprintf(__('You earned %d Achievements!', 'bluerabbit'), (int) $c->threshold_value);
+                case 'transaction_count':
+                    return sprintf(__('You made %d purchases!', 'bluerabbit'), (int) $c->threshold_value);
+                case 'item_consumed_count':
+                    return sprintf(__('You used %d items!', 'bluerabbit'), (int) $c->threshold_value);
+                case 'level':
+                    return sprintf(__('You reached Level %d!', 'bluerabbit'), (int) $c->threshold_value);
+            }
+        }
+        return __('You earned this achievement!', 'bluerabbit');
     }
 }

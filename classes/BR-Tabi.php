@@ -54,12 +54,19 @@ class BR_Tabi {
         if (!$tabi) return '';
 
         $adventure_id = $tabi->adventure_id;
+        // tabi_id comes along so the modal can show, and let you change, which
+        // milestones belong to THIS tabi - a milestone carries exactly one
+        // tabi_id, so the membership list needs to know when one is currently
+        // held by a different tabi rather than silently stealing it.
         $quests = $wpdb->get_results($wpdb->prepare(
-            "SELECT quest_id, quest_title, quest_type FROM {$wpdb->prefix}br_quests
+            "SELECT quest_id, quest_title, quest_type, tabi_id FROM {$wpdb->prefix}br_quests
             WHERE adventure_id=%d AND quest_status IN ('publish','locked') AND quest_type IN ('quest','challenge','survey','mission')
             ORDER BY quest_order ASC, quest_title ASC",
             $adventure_id
         ));
+        $tabi_names = $wpdb->get_results($wpdb->prepare(
+            "SELECT tabi_id, tabi_name FROM {$wpdb->prefix}br_tabis WHERE adventure_id=%d", $adventure_id
+        ), OBJECT_K);
         $achievements = $wpdb->get_results($wpdb->prepare(
             "SELECT achievement_id, achievement_name FROM {$wpdb->prefix}br_achievements
             WHERE adventure_id=%d AND achievement_status='publish' ORDER BY achievement_name ASC",
@@ -78,6 +85,10 @@ class BR_Tabi {
         foreach ($conditions as $c) { $condition_values[$c->condition_type] = $c->threshold_value; }
 
         $tabi_conditions_nonce = wp_create_nonce('tabi_conditions_nonce');
+        // Membership changes go straight to setQuestTabi(), which has its own
+        // nonce. Rendered here rather than read off the host page so the drawer
+        // works wherever it is opened from.
+        $quest_tabi_nonce = wp_create_nonce('quest_tabi_nonce');
         $theFile = get_template_directory() . '/tabi-conditions-modal.php';
         if (!file_exists($theFile)) return '';
         ob_start();
@@ -111,7 +122,7 @@ class BR_Tabi {
             $this->saveTabiReqs($adventure_id, $tabi_id, $quest_ids, $achievement_ids, $item_id);
 
             $conditions = [];
-            foreach (BR_Conditions::CONDITION_TYPES as $type => $label) {
+            foreach (BR_Conditions::simpleTypes() as $type => $label) {
                 $val = $_POST['conditions'][$type] ?? '';
                 if ($val !== '') {
                     $conditions[] = ['condition_type' => $type, 'threshold_value' => (float) $val];
@@ -262,6 +273,28 @@ class BR_Tabi {
             }
         }
         return $completed;
+    }
+
+    // Same shape of query as getCompletedTabiIds(), scoped to one tabi - for the
+    // achievement-conditions "X% progress in THIS Tabi" condition type, which needs a
+    // percentage rather than getCompletedTabiIds()'s all-or-nothing boolean.
+    public function getTabiProgressPct($adventure_id, $player_id, $tabi_id) {
+        global $wpdb;
+        $total = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND tabi_id = %d AND quest_status = 'publish' AND (mech_optional IS NULL OR mech_optional = 0)",
+            $adventure_id, $tabi_id
+        ));
+        if ($total === 0) return 0;
+
+        $done = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_posts pp
+            JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
+            WHERE q.adventure_id = %d AND q.tabi_id = %d AND (q.mech_optional IS NULL OR q.mech_optional = 0)
+            AND pp.player_id = %d AND pp.pp_status = 'publish'",
+            $adventure_id, $tabi_id, $player_id
+        ));
+        return round(($done / $total) * 100, 2);
     }
 
     // From functions/ajax.php

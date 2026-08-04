@@ -1049,7 +1049,7 @@ class BR_Item {
             $this->saveItemReqs($adventure_id, $target_type, $target_id, $quest_ids, $achievement_ids);
 
             $conditions = [];
-            foreach (BR_Conditions::CONDITION_TYPES as $type => $label) {
+            foreach (BR_Conditions::simpleTypes() as $type => $label) {
                 $val = $_POST['conditions'][$type] ?? '';
                 if ($val !== '') {
                     $conditions[] = ['condition_type' => $type, 'threshold_value' => (float) $val];

@@ -52,7 +52,7 @@
 
     <div class="tabi-conditions-section">
         <span class="br-text-12 block grey-500"><?= __('Threshold conditions (leave blank to skip):', 'bluerabbit'); ?></span>
-        <?php foreach (BR_Conditions::CONDITION_TYPES as $type => $label) { ?>
+        <?php foreach (BR_Conditions::simpleTypes() as $type => $label) { ?>
             <div class="input-group tabi-cond-threshold-row">
                 <label class="br-text-12 grey-600"><?= esc_html__($label, 'bluerabbit'); ?></label>
                 <input type="number" class="form-ui tabi-cond-threshold-input" data-condition-type="<?= esc_attr($type); ?>"

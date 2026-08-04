@@ -367,6 +367,12 @@ class BR_Step {
             $data['success'] = true;
             $data['result'] = $result;
             if (!empty($result['milestone_complete'])) {
+                // Surfaced at the top level (not just data.result.milestone_result)
+                // because this is where displayAjaxResponse()'s existing data.levelup
+                // handling looks - see script.js's generic AJAX response dispatcher.
+                $data['levelup'] = $result['levelup'] ?? false;
+                $data['new_level'] = $result['new_level'] ?? null;
+                $data['newly_earned'] = $result['newly_earned'] ?? [];
                 $data['message'] = $notification->pop(__('Milestone complete!', 'bluerabbit'), 'green', 'check');
             } elseif ($result['correct'] === 0) {
                 $data['message'] = $notification->pop(
@@ -590,6 +596,12 @@ class BR_Step {
             if ($required_done) {
                 $result['milestone_complete'] = true;
                 $result['milestone_result'] = BR_Quest::instance()->completeMilestone($player_id, $quest_id, $adventure_id);
+                // Bubbled to this level (not just nested in milestone_result) so
+                // ajaxCompleteStep() can surface them at the top of the AJAX response,
+                // where displayAjaxResponse()'s existing data.levelup handling looks.
+                $result['levelup'] = $result['milestone_result']['levelup'] ?? false;
+                $result['new_level'] = $result['milestone_result']['new_level'] ?? null;
+                $result['newly_earned'] = $result['milestone_result']['newly_earned'] ?? [];
             }
         }
 

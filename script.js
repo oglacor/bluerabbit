@@ -3365,7 +3365,7 @@ function addStep(id_to_duplicate = null) {
 var BR_DRAWER_OPEN_SELECTOR = '.br-step-accordion.open, .tabi-conditions-overlay.active, '
     + '.item-conditions-overlay.active, .quest-conditions-overlay.active, '
     + '.guild-roster-overlay.active, #achievement-detail-overlay.active, '
-    + '#item-detail-overlay.active, #ai-validate-overlay.active';
+    + '#item-detail-overlay.active, #ai-validate-overlay.active, #br-rewards-overlay.active';
 
 // Moves a drawer to <body>, leaving a comment node behind to mark where it
 // belongs. Idempotent: re-opening an already-portaled drawer does nothing.
@@ -3456,6 +3456,7 @@ function brCloseTopDrawer() {
     if (typeof closeAchievementDetail === 'function' && $('#achievement-detail-overlay').hasClass('active')) { closeAchievementDetail(); }
     if (typeof closeItemDetail === 'function' && $('#item-detail-overlay').hasClass('active')) { closeItemDetail(); }
     if ($('#ai-validate-overlay').hasClass('active')) { closeAiValidateModal(); }
+    if ($('#br-rewards-overlay').hasClass('active')) { claimRewards(); }
     closeTabiModal();
 }
 
@@ -5576,6 +5577,66 @@ function updateSponsor() {
 }
 ////////////////////////////////////////// UPDATE ACHIEVEMENT ////////////////////////////////////////////
 
+// ── Achievement auto-assign Conditions (page-new-achievement.php) ──────────
+// Distinct from the single Rank Condition field above it: usable on any achievement
+// type, supports several conditions at once (AND, evaluated in
+// BR_Player::resetPlayer()), and two types reference one specific milestone/Tabi
+// rather than a bare threshold - those need a picker instead of a number input.
+var ACH_COND_OBJECT_TYPE = { specific_quest: 'quest', specific_tabi: 'tabi', tabi_pct: 'tabi' };
+var ACH_COND_NO_THRESHOLD = ['specific_quest', 'specific_tabi'];
+
+function brAchCondRowUpdate(selectEl) {
+    var $row = $(selectEl).closest('.br-cond-row');
+    var type = $(selectEl).val();
+    var objType = ACH_COND_OBJECT_TYPE[type];
+    $row.find('.br-cond-quest-picker').toggle(objType === 'quest');
+    $row.find('.br-cond-tabi-picker').toggle(objType === 'tabi');
+    $row.find('.br-cond-threshold').toggle(ACH_COND_NO_THRESHOLD.indexOf(type) === -1);
+}
+
+function brAddAchievementConditionRow() {
+    var tpl = document.getElementById('achievement-condition-row-template');
+    if (!tpl) return;
+    var clone = document.importNode(tpl.content, true);
+    $('#achievement-conditions-list').append(clone);
+}
+
+function saveAchievementConditions() {
+    var conditions = [];
+    $('#achievement-conditions-list .br-cond-row').each(function () {
+        var $row = $(this);
+        var type = $row.find('.br-cond-type').val();
+        if (!type) return;
+        var objType = ACH_COND_OBJECT_TYPE[type];
+        var object_id = objType === 'quest' ? $row.find('.br-cond-quest-picker').val()
+                      : objType === 'tabi' ? $row.find('.br-cond-tabi-picker').val()
+                      : '';
+        var threshold_value = ACH_COND_NO_THRESHOLD.indexOf(type) === -1 ? $row.find('.br-cond-threshold').val() : '';
+        conditions.push({ condition_type: type, object_id: object_id, threshold_value: threshold_value });
+    });
+
+    showLoader('small');
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'saveAchievementConditions',
+            achievement_id: $('#the_achievement_id').val(),
+            adventure_id: $('#the_adventure_id').val(),
+            conditions_json: JSON.stringify(conditions),
+            nonce: $('#achievement-conditions-nonce').val()
+        },
+        success: function (json) { displayAjaxResponse(json); }
+    });
+}
+
+$(function () {
+    // Existing saved rows are rendered with every picker hidden by default (see
+    // achievement-condition-row.php) - reconcile visibility with each row's actual
+    // saved condition_type once on load.
+    $('#achievement-conditions-list .br-cond-type').each(function () { brAchCondRowUpdate(this); });
+});
+
 function updateAchievement() {
     showLoader();
     if (typeof tinyMCE == 'object' && typeof tinyMCE.triggerSave == 'function') {
@@ -7559,6 +7620,39 @@ function closeAiValidateModal() {
     brCloseDrawer($('#ai-validate-overlay'));
 }
 
+// One clean panel for everything earned from a single action - see
+// BR_Player::resetPlayer()'s levelup/new_level/newly_earned and the
+// data.newly_earned branch in displayAjaxResponse(). newlyEarned entries:
+// {achievement_id, achievement_name, achievement_badge, achievement_color, is_rank, reason}.
+function showRewardsOverlay(levelup, newLevel, newlyEarned) {
+    var html = '';
+    if (levelup) {
+        html += '<div class="br-reward-levelup">' +
+            '<div class="br-reward-levelup-label">' + (brI18n.level_up || 'Level Up!') + '</div>' +
+            '<div class="br-reward-levelup-number">' + parseInt(newLevel, 10) + '</div>' +
+        '</div>';
+    }
+    (newlyEarned || []).forEach(function (a) {
+        html += '<div class="br-reward-achievement">' +
+            '<div class="br-reward-achievement-badge" style="background-image:url(' + (a.achievement_badge || '') + ')"></div>' +
+            '<div class="br-reward-achievement-info">' +
+                '<div class="br-reward-achievement-name">' + aiEscapeHtml(a.achievement_name || '') + '</div>' +
+                '<div class="br-reward-achievement-reason">' + aiEscapeHtml(a.reason || '') + '</div>' +
+            '</div>' +
+        '</div>';
+    });
+    $('#br-rewards-modal-body').html(html);
+    brOpenDrawer($('#br-rewards-overlay'));
+}
+
+// The button only ever closes the overlay - there is nothing to confirm with the
+// server, the rewards were already granted the moment they were earned. It exists
+// purely so claiming a reward feels like an action the player took, not something
+// that just happened to them.
+function claimRewards() {
+    brCloseDrawer($('#br-rewards-overlay'));
+}
+
 // The percentage grade an AI grade suggestion snaps to when this adventure grades in
 // letters, so it lands on an option the <select> in the row actually has - mirrors the
 // breakpoints in page-review-player-posts.php's own letter-grade <select>.
@@ -8255,6 +8349,59 @@ function openTabiConditionsModal(tabiId) {
 
 function closeTabiConditionsModal(tabiId) {
     brCloseDrawer($('#tabi-conditions-overlay-' + tabiId));
+}
+
+// Move a milestone into or out of this tabi, straight from the Conditions
+// drawer. br_quests.tabi_id holds exactly one tabi, so ticking is "set to this
+// tabi" and unticking is "set to none" - there is no many-to-many to maintain.
+// Saves on change rather than waiting for the Save button, which only covers
+// conditions; the checkbox is put back if the write fails so the drawer never
+// shows a membership the database doesn't have.
+function toggleTabiMembership(tabiId, questId, questType, input) {
+    var wanted = input.checked;
+    var $row = $('#tabi-member-' + tabiId + '-' + questId);
+    $row.addClass('is-saving');
+    input.disabled = true;
+
+    $.ajax({
+        url: runAJAX.ajaxurl,
+        method: 'POST',
+        data: {
+            action: 'setQuestTabi',
+            tabi_id: wanted ? tabiId : 0,
+            type: questType,
+            adventure_id: $('#the_adventure_id').val(),
+            id: questId,
+            nonce: $('#tabi-conditions-overlay-' + tabiId + ' .tabi-quest-tabi-nonce').val()
+        },
+        success: function (raw) {
+            $row.removeClass('is-saving');
+            input.disabled = false;
+            var data;
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+            if (data && data.new_quest_tabi_nonce) {
+                $('#tabi-conditions-overlay-' + tabiId + ' .tabi-quest-tabi-nonce').val(data.new_quest_tabi_nonce);
+            }
+            if (!data || !data.success) {
+                input.checked = !wanted;
+                $row.addClass('is-error');
+                displayAjaxResponse(raw);
+                return;
+            }
+            $row.removeClass('is-error').toggleClass('is-member', wanted);
+            // The row may have named another tabi as its owner; it belongs to
+            // this one now, so that note is no longer true.
+            if (wanted) $row.find('.tabi-member-elsewhere').remove();
+            var $count = $('#tabi-member-count-' + tabiId);
+            $count.text(Math.max(0, (parseInt($count.text(), 10) || 0) + (wanted ? 1 : -1)));
+            displayAjaxResponse(raw);
+        },
+        error: function () {
+            $row.removeClass('is-saving').addClass('is-error');
+            input.disabled = false;
+            input.checked = !wanted;
+        }
+    });
 }
 
 function saveTabiConditionsModal(tabiId) {
@@ -9602,7 +9749,17 @@ function displayAjaxResponse(json_data) {
             $(this).remove();
         });
     }
-    if (data.levelup) {
+    // The new unified path (BR_Player::resetPlayer(), fired from quest/step
+    // completion) always sends newly_earned (possibly empty) alongside levelup - a
+    // single clean panel for everything earned in this one action, instead of the
+    // old one-achievement-at-a-time overlay below. Only falls through to the legacy
+    // #level-up overlay when newly_earned isn't present at all (the old
+    // updatePrevLevel() AJAX action, still reachable from page-adventure.php).
+    if (data.newly_earned !== undefined) {
+        if (data.levelup || (data.newly_earned && data.newly_earned.length)) {
+            showRewardsOverlay(data.levelup, data.new_level, data.newly_earned);
+        }
+    } else if (data.levelup) {
         if (data.achievement_id) {
             $("#level-up .content").html(data.levelupContent).hide();
             $("#level-up").addClass('active');

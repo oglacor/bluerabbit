@@ -2723,6 +2723,7 @@ add_action("wp_ajax_updateEncounter", [BR_Encounter::instance(), 'updateEncounte
 add_action("wp_ajax_randomEncounter", [BR_Encounter::instance(), 'randomEncounter']);
 add_action("wp_ajax_answerEncounter", [BR_Encounter::instance(), 'answerEncounter']);
 add_action("wp_ajax_updateAchievement", [BR_Achievement::instance(), 'updateAchievement']);
+add_action("wp_ajax_saveAchievementConditions", [BR_Achievement::instance(), 'saveAchievementConditions']);
 add_action("wp_ajax_setAchievement", [BR_Achievement::instance(), 'setAchievement']);
 add_action("wp_ajax_setQuestTabi", [BR_Quest::instance(), 'setQuestTabi']);
 add_action("wp_ajax_setGuild", [BR_Guild::instance(), 'setGuild']);

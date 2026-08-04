@@ -14,6 +14,24 @@ if($adventure && ($isGM || $isAdmin)){
 		));
 	}
 	$is_edit = (isset($a) && $a);
+
+	// Auto-assign Conditions - a separate mechanism from the single Rank Condition
+	// above: usable on ANY achievement type (not just 'rank'), supports several
+	// conditions at once (AND semantics), and two of the types reference one
+	// specific milestone/Tabi rather than a bare threshold. See BR_Conditions.
+	$cond_quests = $wpdb->get_results($wpdb->prepare(
+		"SELECT quest_id, quest_title FROM {$wpdb->prefix}br_quests
+		WHERE adventure_id=%d AND quest_status='publish' AND quest_type IN ('quest','challenge','survey','mission')
+		ORDER BY quest_order ASC, quest_title ASC",
+		$adv_parent_id
+	));
+	$cond_tabis = $wpdb->get_results($wpdb->prepare(
+		"SELECT tabi_id, tabi_name FROM {$wpdb->prefix}br_tabis WHERE adventure_id=%d AND tabi_status='publish' ORDER BY tabi_name ASC",
+		$adv_parent_id
+	));
+	$achievement_conditions = $is_edit
+		? BR_Conditions::instance()->getConditions($adv_parent_id, 'achievement', $a->achievement_id)
+		: [];
 ?>
 
 <div class="br-page br-has-bottom-bar">
@@ -41,6 +59,9 @@ if($adventure && ($isGM || $isAdmin)){
 		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('achievement-codes', this);">
 			<span class="icon icon-qr"></span> <?= __("Codes", "bluerabbit"); ?>
+		</button>
+		<button class="br-tab-btn" onClick="brScrollTo('achievement-conditions', this);">
+			<span class="icon icon-progression"></span> <?= __("Conditions", "bluerabbit"); ?>
 		</button>
 		<?php } ?>
 		<button class="br-tab-btn <?= $isNPC ? 'active' : ''; ?>" onClick="brScrollTo('select-players', this);">
@@ -75,7 +96,7 @@ if($adventure && ($isGM || $isAdmin)){
 					<span class="br-form-hint"><?= __("What the player must reach to be awarded this rank", "bluerabbit"); ?></span>
 					<select class="br-input" id="the_achievement_rank_condition">
 						<option value="level" <?= (!isset($existing_rank) || !$existing_rank || $existing_rank->condition_type=='level') ? 'selected' : ''; ?>><?= __("Level", "bluerabbit"); ?></option>
-						<?php foreach(BR_Conditions::CONDITION_TYPES as $type=>$label){ if($type=='level') continue; ?>
+						<?php foreach(BR_Conditions::simpleTypes() as $type=>$label){ if($type=='level') continue; ?>
 							<option value="<?= $type; ?>" <?= (isset($existing_rank) && $existing_rank && $existing_rank->condition_type==$type) ? 'selected' : ''; ?>><?= esc_html__($label,"bluerabbit"); ?></option>
 						<?php } ?>
 					</select>
@@ -321,6 +342,37 @@ if($adventure && ($isGM || $isAdmin)){
 					<span class="icon icon-qr"></span>
 					<h3><?= __("Must save the achievement before generating codes", "bluerabbit"); ?></h3>
 				</div>
+			<?php } ?>
+		</div></div>
+
+		<!-- ═══ CONDITIONS ═══ -->
+		<div class="br-scroll-section" id="achievement-conditions"><div class="br-panel">
+			<h3 class="br-panel-title"><span class="icon icon-progression"></span> <?= __("Auto-Assign Conditions", "bluerabbit"); ?></h3>
+			<span class="br-section-desc"><?= __("Automatically award this achievement the moment a player meets ALL of the conditions below. Leave empty for manual assignment only.", "bluerabbit"); ?></span>
+
+			<?php if ($is_edit) { ?>
+			<div id="achievement-conditions-list">
+				<?php foreach ($achievement_conditions as $c) { include(TEMPLATEPATH . '/achievement-condition-row.php'); } ?>
+			</div>
+			<button class="br-btn br-btn-blue br-mt-sm" onClick="brAddAchievementConditionRow();">
+				<span class="icon icon-add"></span> <?= __("Add Condition", "bluerabbit"); ?>
+			</button>
+			<div class="br-mt-md">
+				<button class="br-btn br-btn-green br-btn-submit" onClick="saveAchievementConditions();">
+					<span class="icon icon-check"></span> <?= __("Save Conditions", "bluerabbit"); ?>
+				</button>
+			</div>
+			<input type="hidden" id="achievement-conditions-nonce" value="<?= wp_create_nonce('br_achievement_conditions_nonce'); ?>">
+
+			<!-- Template for a freshly-added row (JS clones this, then clears the selects) -->
+			<template id="achievement-condition-row-template">
+				<?php $c = null; include(TEMPLATEPATH . '/achievement-condition-row.php'); ?>
+			</template>
+			<?php } else { ?>
+			<div class="br-empty br-empty-md">
+				<span class="icon icon-progression"></span>
+				<h3><?= __("Must save the achievement before adding conditions", "bluerabbit"); ?></h3>
+			</div>
 			<?php } ?>
 		</div></div>
 		<?php } ?>

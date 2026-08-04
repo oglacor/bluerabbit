@@ -113,7 +113,7 @@ class BR_Adventure {
                                 $ranksSQL = "INSERT INTO {$wpdb->prefix}br_adventure_ranks (`adventure_id`, `rank_level`, `achievement_id`, `condition_type`)  VALUES";
                                 foreach($adventure_ranks as $r){
                                     $message = stripslashes_deep($r['message']);
-                                    $condition_type = array_key_exists($r['condition_type'] ?? '', BR_Conditions::CONDITION_TYPES) ? $r['condition_type'] : 'level';
+                                    $condition_type = array_key_exists($r['condition_type'] ?? '', BR_Conditions::simpleTypes()) ? $r['condition_type'] : 'level';
                                     array_push($ranks_values, $adventure_id, $r['level'], $r['achievement'], $condition_type);
                                     $ranks_ph[] = "(%d, %d, %d, %s)";
                                 }
