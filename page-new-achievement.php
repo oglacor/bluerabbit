@@ -587,6 +587,7 @@ function brSaveNewBranchInline() {
 	});
 }
 </script>
+<?php include (get_stylesheet_directory() . '/br-op-console.php'); ?>
 <?php }else{ ?>
 	<script>document.location.href="<?php bloginfo('url');?>/404"; </script>
 <?php } ?>

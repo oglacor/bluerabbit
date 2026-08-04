@@ -232,7 +232,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  object-fit: cover;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .br-stats-pagination {
@@ -283,7 +284,8 @@
   height: 72px;
   border-radius: 50%;
   border: 2px solid rgba(28, 194, 235, 0.4);
-  object-fit: cover;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .br-stats-hero-name {
@@ -500,7 +502,8 @@
   border-radius: 50%;
   margin: 0 auto 6px;
   display: block;
-  object-fit: cover;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 .br-stats-achievement.locked img, .br-stats-achievement.locked .br-stats-achievement-placeholder {
   filter: grayscale(1) opacity(0.3);
@@ -559,7 +562,8 @@
   width: 64px;
   height: 64px;
   border-radius: 12px;
-  object-fit: cover;
+  -o-object-fit: cover;
+     object-fit: cover;
   border: 1px solid rgba(28, 194, 235, 0.2);
 }
 
@@ -868,4 +872,4 @@
   .br-stats-achievements-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
-}
+}/*# sourceMappingURL=br-stats.css.map */

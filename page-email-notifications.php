@@ -252,13 +252,11 @@ if ( ! $can_send ) { $view = 'log'; }
 			<button type="button" id="br-notif-send-btn" class="br-btn br-btn-green br-btn-send">
 				<span class="icon icon-mail"></span> <?php _e( 'Send Email', 'bluerabbit' ); ?>
 			</button>
-			<span id="br-notif-spinner" class="br-notif-spinner">
-				<span class="icon icon-rotate"></span>
-				<?php _e( 'Sending…', 'bluerabbit' ); ?>
-			</span>
 			<span id="br-notif-send-summary" class="br-notif-send-summary"></span>
 		</div>
 	</div>
+
+	<?php include (get_stylesheet_directory() . '/br-op-console.php'); ?>
 
 <script>
 jQuery(function($){
@@ -414,17 +412,19 @@ jQuery(function($){
 	function pollBatch( campaignId, total ){
 		$.post(brEmailFront.ajaxurl,{ action:'br_email_send_batch', nonce:brEmailFront.nonce, campaign_id:campaignId },function(r){
 			if(!r.success){
-				showStatus('<span class="icon icon-cancel"></span> '+(r.data&&r.data.message||'<?php esc_attr_e("Send failed.","bluerabbit");?>'),'red');
-				$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
+				brOpConsoleLog((r.data&&r.data.message)||'<?php esc_attr_e("Send failed.","bluerabbit");?>', 'error');
+				brOpConsoleDone();
+				$('#br-notif-send-btn').prop('disabled',false);
 				return;
 			}
 			var remaining = r.data.remaining, done = total - remaining;
-			showStatus('<span class="icon icon-rotate"></span> '+done+' / '+total+' processed…','orange');
+			brOpConsoleSetProgress(done, total);
+			brOpConsoleLog('Sent ' + done + ' / ' + total + '…', 'info');
 			if(remaining>0){
 				setTimeout(function(){ pollBatch(campaignId,total); }, 50);
 			} else {
-				$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
-				showStatus('<span class="icon icon-check"></span> '+total+' processed &mdash; <a href="'+logUrl+'" class="br-notif-status-link">View Send Log</a>','green');
+				$('#br-notif-send-btn').prop('disabled',false);
+				brOpConsoleDone(total + ' emails sent — ' + '<a href="'+logUrl+'">View Send Log</a>');
 				if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
 				else $('#br_notif_body').val('');
 				$('#br-notif-subject').val('');
@@ -444,22 +444,26 @@ jQuery(function($){
 			? '<?php printf(esc_attr__('Send this email to all %d enrolled players?','bluerabbit'),$recipient_count);?>'
 			: '<?php esc_attr_e('Send this email to the selected players?','bluerabbit');?>';
 		if(!confirm(msg)) return;
-		$('#br-notif-send-btn').prop('disabled',true); $('#br-notif-spinner').show();
-		showStatus('<span class="icon icon-rotate"></span> <?php esc_attr_e("Starting…","bluerabbit");?>','orange');
+		$('#br-notif-send-btn').prop('disabled',true);
+		brOpConsoleOpen('<?php esc_attr_e("Sending Emails","bluerabbit"); ?>');
+		brOpConsoleLog('<?php esc_attr_e("Starting campaign…","bluerabbit"); ?>', 'info');
 		$.post(brEmailFront.ajaxurl,{
 			action:'br_email_start_campaign', nonce:brEmailFront.nonce,
 			adventure_id:<?php echo (int)$adv_parent_id;?>, subject:subject, body:body,
 			recipients:recipients, sender_name:$so.data('name'), sender_email:$so.data('email')
 		},function(r){
 			if(r.success){
+				brOpConsoleLog('Campaign created — ' + r.data.total + ' recipient' + (r.data.total !== 1 ? 's' : '') + '…', 'info');
 				pollBatch( r.data.campaign_id, r.data.total );
 			} else {
-				$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
-				showStatus('<span class="icon icon-cancel"></span> '+(r.data&&r.data.message||'<?php esc_attr_e("Send failed.","bluerabbit");?>'),'red');
+				brOpConsoleLog((r.data&&r.data.message)||'<?php esc_attr_e("Send failed.","bluerabbit");?>', 'error');
+				brOpConsoleDone();
+				$('#br-notif-send-btn').prop('disabled',false);
 			}
 		}).fail(function(){
-			$('#br-notif-send-btn').prop('disabled',false); $('#br-notif-spinner').hide();
-			showStatus('<span class="icon icon-cancel"></span> <?php esc_attr_e("Request failed.","bluerabbit");?>','red');
+			brOpConsoleLog('<?php esc_attr_e("Request failed.","bluerabbit"); ?>', 'error');
+			brOpConsoleDone();
+			$('#br-notif-send-btn').prop('disabled',false);
 		});
 	});
 

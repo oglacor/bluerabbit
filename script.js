@@ -6393,7 +6393,8 @@ function assignBulkUsersToAchievement() {
             alert('No valid email addresses found in the file.');
             return;
         }
-        var $progress = $('#bulk-ach-progress').show().text('Uploading ' + emails.length + ' emails…');
+        brOpConsoleOpen('Bulk Assign Achievement');
+        brOpConsoleLog('Found ' + emails.length + ' email address' + (emails.length !== 1 ? 'es' : '') + ' in CSV…', 'info');
         jQuery.ajax({
             url: runAJAX.ajaxurl,
             data: {
@@ -6406,25 +6407,28 @@ function assignBulkUsersToAchievement() {
             success: function (json_text) {
                 var d = JSON.parse(json_text);
                 if (!d.success) {
-                    displayAjaxResponse(json_text);
-                    $progress.hide();
+                    brOpConsoleLog((d.message || 'Error starting batch.'), 'error');
+                    brOpConsoleDone();
                     return;
                 }
                 var total = d.total;
+                brOpConsoleLog('Batch queued — processing ' + total + ' player' + (total !== 1 ? 's' : '') + '…', 'info');
                 brRunBatchPoll(
                     { action: 'bulkAssignAchievementBatch', achievement_id: d.achievement_id, adventure_id: d.adventure_id },
                     total,
                     function (r, done) {
-                        $progress.text(done + ' / ' + total + ' processed…');
+                        brOpConsoleSetProgress(done, total);
                         (r.assigned_ids || []).forEach(function (pid) {
+                            brOpConsoleLog('Assigned to player #' + pid, 'success');
                             $('#player-achievement-' + pid).addClass('active');
                         });
                     },
-                    function (r) {
-                        $progress.text('Done: ' + total + ' processed.');
+                    function () {
+                        brOpConsoleDone('Done — ' + total + ' player' + (total !== 1 ? 's' : '') + ' processed.');
                     },
                     function () {
-                        $progress.text('Error processing batch — reload and try again.');
+                        brOpConsoleLog('Error processing batch — reload and try again.', 'error');
+                        brOpConsoleDone();
                     }
                 );
             }
@@ -9264,6 +9268,47 @@ function duplicateRow(id, adventure_id = $("#the_adventure_id").val(), type = $(
         }
     });
 }
+/////////////////////// OPERATION CONSOLE /////////////////////////
+
+function brOpConsoleOpen(title) {
+    $('#br-op-console-title').text(title || 'Processing…');
+    $('#br-op-terminal').empty();
+    $('#br-op-bar').css('width', '0%');
+    $('#br-op-progress-text').text('');
+    $('#br-op-cancel-btn').removeClass('br-initially-hidden');
+    $('#br-op-close-btn').addClass('br-initially-hidden');
+    $('#br-op-console').fadeIn(180);
+}
+
+function brOpConsoleLog(msg, type) {
+    type = type || 'info';
+    var cls = type === 'success' ? 'br-op-line-ok'
+            : type === 'error'   ? 'br-op-line-err'
+            : type === 'warn'    ? 'br-op-line-warn'
+            : 'br-op-line-info';
+    var prefix = type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : type === 'warn' ? '⚠ ' : '› ';
+    var $t = $('#br-op-terminal');
+    $t.append('<div class="br-op-line ' + cls + '">' + prefix + $('<div>').text(msg).html() + '</div>');
+    $t[0].scrollTop = $t[0].scrollHeight;
+}
+
+function brOpConsoleSetProgress(done, total) {
+    var pct = total > 0 ? Math.round(done / total * 100) : 0;
+    $('#br-op-bar').css('width', pct + '%');
+    $('#br-op-progress-text').text(done + ' / ' + total);
+}
+
+function brOpConsoleDone(msg) {
+    $('#br-op-cancel-btn').addClass('br-initially-hidden');
+    $('#br-op-close-btn').removeClass('br-initially-hidden');
+    if (msg) brOpConsoleLog(msg, 'success');
+    $('#br-op-bar').css('width', '100%');
+}
+
+function brOpConsoleClose() {
+    $('#br-op-console').fadeOut(200);
+}
+
 /////////////////////// DUPLICATE QUESTS /////////////////////////
 
 function duplicateQuests() {
@@ -9292,7 +9337,10 @@ function duplicateQuests() {
     $('ul#speakers-to-duplicate li.active.to-duplicate').each(function (index, element) {
         speakers_duplicates.push($('input.reqs-id', this).val());
     });
-    showLoader();
+    let total = duplicates.length + achievement_duplicates.length + item_duplicates.length + tabi_duplicates.length + enc_duplicates.length + speakers_duplicates.length;
+    brOpConsoleOpen('Duplicator');
+    brOpConsoleLog('Preparing ' + total + ' item' + (total !== 1 ? 's' : '') + '…', 'info');
+
     let nonce = $("#duplicator_nonce").val();
     let adventure_id = $("#the_adventure_id").val();
     let adventure_target = $("#adventure_target").val();
@@ -9312,7 +9360,25 @@ function duplicateQuests() {
         }),
         method: "POST",
         success: function (json_text) {
-            displayAjaxResponse(json_text);
+            var d;
+            try { d = JSON.parse(json_text); } catch(e) { d = null; }
+            if (d && d.success) {
+                var count = 0;
+                $('<div>').html(d.message).find('li').each(function() {
+                    var text = $(this).text().replace(/\s+/g, ' ').trim();
+                    if (text) { brOpConsoleLog(text, 'success'); count++; }
+                });
+                brOpConsoleSetProgress(count, total);
+                brOpConsoleDone('Duplication complete — ' + count + ' item' + (count !== 1 ? 's' : '') + ' duplicated.');
+            } else {
+                var errMsg = d ? $('<div>').html(d.message || '').text().trim() : 'Unknown error.';
+                brOpConsoleLog(errMsg || 'Server error — please reload and try again.', 'error');
+                brOpConsoleDone();
+            }
+        },
+        error: function() {
+            brOpConsoleLog('Request failed — please reload and try again.', 'error');
+            brOpConsoleDone();
         }
     });
 }

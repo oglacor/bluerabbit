@@ -83,7 +83,7 @@ foreach ($adventures as $c) {
 		<h3 class="br-panel-title">
 			<span class="icon icon-quest"></span> <?= __("Milestones","bluerabbit"); ?>
 			<span class="br-ml-auto br-flex br-gap-sm">
-				<button class="br-form-btn-green" onClick="activateAll('#quests-to-duplicate li.dup-row'); updateDupCount();">
+				<button class="br-btn br-btn-green" onClick="activateAll('#quests-to-duplicate li.dup-row'); updateDupCount();">
 					<span class="icon icon-check"></span> <?= __("All","bluerabbit"); ?>
 				</button>
 				<button class="br-btn" onClick="deactivateAll('#quests-to-duplicate li.dup-row'); updateDupCount();">
@@ -123,7 +123,7 @@ foreach ($adventures as $c) {
 		<h3 class="br-panel-title">
 			<span class="icon icon-achievement"></span> <?= __("Achievements","bluerabbit"); ?>
 			<span class="br-ml-auto br-flex br-gap-sm">
-				<button class="br-form-btn-green" onClick="activateAll('#achievements-to-duplicate li.dup-row'); updateDupCount();">
+				<button class="br-btn br-btn-green" onClick="activateAll('#achievements-to-duplicate li.dup-row'); updateDupCount();">
 					<span class="icon icon-check"></span> <?= __("All","bluerabbit"); ?>
 				</button>
 				<button class="br-btn" onClick="deactivateAll('#achievements-to-duplicate li.dup-row'); updateDupCount();">
@@ -157,7 +157,7 @@ foreach ($adventures as $c) {
 		<h3 class="br-panel-title">
 			<span class="icon icon-carrot"></span> <?= __("Tabis","bluerabbit"); ?>
 			<span class="br-ml-auto br-flex br-gap-sm">
-				<button class="br-form-btn-green" onClick="activateAll('#tabis-to-duplicate li.dup-row'); updateDupCount();">
+				<button class="br-btn br-btn-green" onClick="activateAll('#tabis-to-duplicate li.dup-row'); updateDupCount();">
 					<span class="icon icon-check"></span> <?= __("All","bluerabbit"); ?>
 				</button>
 				<button class="br-btn" onClick="deactivateAll('#tabis-to-duplicate li.dup-row'); updateDupCount();">
@@ -189,7 +189,7 @@ foreach ($adventures as $c) {
 		<h3 class="br-panel-title">
 			<span class="icon icon-basket"></span> <?= __("Items","bluerabbit"); ?>
 			<span class="br-ml-auto br-flex br-gap-sm">
-				<button class="br-form-btn-green" onClick="activateAll('#items-to-duplicate li.dup-row'); updateDupCount();">
+				<button class="br-btn br-btn-green" onClick="activateAll('#items-to-duplicate li.dup-row'); updateDupCount();">
 					<span class="icon icon-check"></span> <?= __("All","bluerabbit"); ?>
 				</button>
 				<button class="br-btn" onClick="deactivateAll('#items-to-duplicate li.dup-row'); updateDupCount();">
@@ -227,7 +227,7 @@ foreach ($adventures as $c) {
 		<h3 class="br-panel-title">
 			<span class="icon icon-activity"></span> <?= __("Encounters","bluerabbit"); ?>
 			<span class="br-ml-auto br-flex br-gap-sm">
-				<button class="br-form-btn-green" onClick="activateAll('#encounters-to-duplicate li.dup-row'); updateDupCount();">
+				<button class="br-btn br-btn-green" onClick="activateAll('#encounters-to-duplicate li.dup-row'); updateDupCount();">
 					<span class="icon icon-check"></span> <?= __("All","bluerabbit"); ?>
 				</button>
 				<button class="br-btn" onClick="deactivateAll('#encounters-to-duplicate li.dup-row'); updateDupCount();">
@@ -262,7 +262,7 @@ foreach ($adventures as $c) {
 		<h3 class="br-panel-title">
 			<span class="icon icon-socialiser"></span> <?= __("Speakers","bluerabbit"); ?>
 			<span class="br-ml-auto br-flex br-gap-sm">
-				<button class="br-form-btn-green" onClick="activateAll('#speakers-to-duplicate li.dup-row'); updateDupCount();">
+				<button class="br-btn br-btn-green" onClick="activateAll('#speakers-to-duplicate li.dup-row'); updateDupCount();">
 					<span class="icon icon-check"></span> <?= __("All","bluerabbit"); ?>
 				</button>
 				<button class="br-btn" onClick="deactivateAll('#speakers-to-duplicate li.dup-row'); updateDupCount();">
@@ -321,7 +321,7 @@ foreach ($adventures as $c) {
 			<ul class="br-modal-summary" id="dup-modal-summary"></ul>
 		</div>
 		<div class="br-modal-footer">
-			<button class="br-form-btn-green" onClick="hideDupConfirm(); duplicateQuests();">
+			<button class="br-btn br-btn-green" onClick="hideDupConfirm(); duplicateQuests();">
 				<span class="icon icon-check"></span> <?= __("Yes, Duplicate","bluerabbit"); ?>
 			</button>
 			<button class="br-btn" onClick="hideDupConfirm();">
@@ -332,6 +332,8 @@ foreach ($adventures as $c) {
 </div>
 
 <input type="hidden" id="duplicator_nonce" value="<?= wp_create_nonce('duplicate_nonce'); ?>">
+
+<?php include (get_stylesheet_directory() . '/br-op-console.php'); ?>
 
 <script>
 var dupAdvTitles = <?= json_encode($adv_titles); ?>;
