@@ -4043,6 +4043,7 @@ body.br-drawer-open {
 // ── Spacing utilities ──────────────────────────────────
 .br-mt-sm { margin-top: 16px; }
 .br-mt-md { margin-top: 24px; }
+.br-mb-0  { margin-bottom: 0 !important; }
 .br-mb-sm { margin-bottom: 8px; }
 .br-mb-md { margin-bottom: 16px; }
 .br-mb-14 { margin-bottom: 14px; }
@@ -7824,4 +7825,37 @@ button.br-btn.br-confirming {
 .br-rewards-claim-btn {
   padding: 12px 32px;
   font-size: 15px;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Duplicator page
+// ═══════════════════════════════════════════════════════════
+
+.br-dup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba($br-purple, 0.15);
+  border: 1px solid rgba($br-purple, 0.25);
+  font-size: 13px;
+  color: rgba($br-white, 0.55);
+  white-space: nowrap;
+
+  span { font-weight: 700; font-size: 17px; color: $br-white; }
+}
+
+.selectable-list li.dup-type-header {
+  display: block;
+  padding: 5px 12px;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba($br-white, 0.35);
+  background: rgba($br-white, 0.03);
+  cursor: default;
+  border-bottom: 1px solid rgba($br-white, 0.04);
+  pointer-events: none;
 }
