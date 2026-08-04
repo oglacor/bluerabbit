@@ -6,7 +6,7 @@ if($config['default_adventure']['value']>0){
 	?><script>document.location.href="<?= get_bloginfo('url')."/adventure/?adventure_id={$config['default_adventure']['value']}";?>"; </script><?php
 }
 $player_search = ($roles[0] == 'administrator' ? br_require_id('player_id', false) : null) ?: $current_user->ID;
-$show_public_adventures = $config['adventure_privacy']['value'] ? " OR (adventures.adventure_privacy = 'public' AND adventures.adventure_status = 'publish') " : "";
+$show_public_adventures = ($roles[0] == 'administrator' && $config['adventure_privacy']['value']) ? " OR (adventures.adventure_privacy = 'public' AND adventures.adventure_status = 'publish') " : "";
 
 $adventures_sql ="SELECT
 	adventures.*, 
