@@ -11,6 +11,7 @@ $paths = $group_id ? BR_Branch::instance()->getGroupAchievements($group_id) : []
 			<div class="corner-tl"></div><div class="edge-top"></div><div class="corner-tr"></div>
 			<div class="edge-left"></div>
 			<div class="center br-text-center">
+				<?php if ($step->step_content) { ?><div class="step-content"><?= apply_filters('the_content', $step->step_content); ?></div><?php } ?>
 				<?php if (!empty($settings['prompt'])) { ?><h3 class="br-step-prompt"><?= esc_html($settings['prompt']); ?></h3><?php } ?>
 
 				<?php if ($existing_choice) { ?>

@@ -121,7 +121,7 @@ $options = $settings['options'] ?? [];
 		</div>
 
 		<!-- ═══ CONTENT EDITOR ═══ -->
-		<div class="br-skin-panel" data-skins="dialogue,system,open_text,win,fail,find_item">
+		<div class="br-skin-panel" data-skins="dialogue,system,open_text,win,fail,find_item,branch_choice">
 			<div class="br-form-group" id="step-content-row-<?= $sid; ?>">
 				<label class="br-form-label"><?= __("Content", "bluerabbit"); ?></label>
 				<?php wp_editor($s->step_content ?? '', $step_editor_id, ['quicktags' => true, 'editor_height' => 250]); ?>
