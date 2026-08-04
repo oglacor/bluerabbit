@@ -1553,8 +1553,10 @@ class BR_Quest {
 				}
 				$steps_first_id++;
 			}
-			$btns_query .= implode(', ', $btn_placeholders);
-			$btns_insert = $wpdb->query( $wpdb->prepare("$btns_query ", $btn_values));
+			if(!empty($btn_placeholders)){
+				$btns_query .= implode(', ', $btn_placeholders);
+				$btns_insert = $wpdb->query( $wpdb->prepare("$btns_query ", $btn_values));
+			}
 
 
 
@@ -1628,7 +1630,6 @@ class BR_Quest {
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','quest',"",$quest_id);
 		}
 		$clone = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_quests WHERE quest_id=".$new_quest_id);
-		$clone->debug = $debug;
 		return $clone;
 		die();
     }
@@ -1704,6 +1705,7 @@ class BR_Quest {
 		$speakers_duplicates = isset($_POST['speakers_duplicates']) ? $_POST['speakers_duplicates'] : [];
 		$roles = $current_user->roles;
 		$data['success']=false;
+		$data['message'] = '';
 		if(wp_verify_nonce($nonce, 'duplicate_nonce')){
 			$total = 0;
 			if(!empty($duplicates) || !empty($achievement_duplicates) || !empty($item_duplicates) || !empty($tabi_duplicates) || !empty($enc_duplicates)){
