@@ -6424,6 +6424,9 @@ function assignBulkUsersToAchievement() {
                         totalAssigned   += (r.assigned   || 0);
                         totalAlreadyHas += (r.already_has || 0);
                         (r.not_found_emails || []).forEach(function (em) { notFoundEmails.push(em); });
+                        (r.assigned_emails || []).forEach(function (em) {
+                            brOpConsoleLog(em, 'success');
+                        });
                         (r.assigned_ids || []).forEach(function (pid) {
                             $('#player-achievement-' + pid).addClass('active');
                         });

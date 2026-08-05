@@ -572,7 +572,7 @@ class BR_Achievement {
             $achievement_id, $adventure_id, $limit
         ));
 
-        $assigned = 0; $already_has = 0; $not_found = 0; $assigned_ids = []; $not_found_emails = [];
+        $assigned = 0; $already_has = 0; $not_found = 0; $assigned_ids = []; $not_found_emails = []; $assigned_emails = [];
 
         foreach ($rows as $row) {
             $email  = $row->email;
@@ -610,7 +610,8 @@ class BR_Achievement {
                     BR_Activity::instance()->logActivity($adventure_id, 'earned', 'achievement', '', $player->player_id, $achievement_id);
                     $status = 'assigned';
                     $assigned++;
-                    $assigned_ids[] = $player->player_id;
+                    $assigned_ids[]   = $player->player_id;
+                    $assigned_emails[] = $email;
                 }
             } else {
                 $not_found++;
@@ -637,6 +638,7 @@ class BR_Achievement {
         $data['not_found']        = $not_found;
         $data['not_found_emails'] = $not_found_emails;
         $data['assigned_ids']     = $assigned_ids;
+        $data['assigned_emails']  = $assigned_emails;
         $data['remaining']        = $remaining;
         echo json_encode($data);
         die();
