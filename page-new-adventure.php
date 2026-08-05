@@ -26,7 +26,7 @@ if (!isset($adventure) || !$adventure) {
 		'adventure_ai_api_key' => '',
 		'adventure_xp_label' => 'XP', 'adventure_bloo_label' => 'BLOO',
 		'adventure_ep_label' => 'EP', 'adventure_xp_long_label' => 'Experience Points',
-		'adventure_bloo_long_label' => 'Bloo', 'adventure_ep_long_label' => 'Exploration Points',
+		'adventure_bloo_long_label' => 'BLOO', 'adventure_ep_long_label' => 'Energy Points',
 	];
 }
 if (!isset($xp_label)) $xp_label = $adventure->adventure_xp_label ?: 'XP';
