@@ -572,7 +572,7 @@ class BR_Achievement {
             $achievement_id, $adventure_id, $limit
         ));
 
-        $assigned = 0; $already_has = 0; $not_found = 0; $assigned_ids = [];
+        $assigned = 0; $already_has = 0; $not_found = 0; $assigned_ids = []; $not_found_emails = [];
 
         foreach ($rows as $row) {
             $email  = $row->email;
@@ -614,6 +614,7 @@ class BR_Achievement {
                 }
             } else {
                 $not_found++;
+                $not_found_emails[] = $email;
             }
 
             $wpdb->update(
@@ -630,12 +631,13 @@ class BR_Achievement {
             $achievement_id, $adventure_id
         ));
 
-        $data['success']      = true;
-        $data['assigned']     = $assigned;
-        $data['already_has']  = $already_has;
-        $data['not_found']    = $not_found;
-        $data['assigned_ids'] = $assigned_ids;
-        $data['remaining']    = $remaining;
+        $data['success']          = true;
+        $data['assigned']         = $assigned;
+        $data['already_has']      = $already_has;
+        $data['not_found']        = $not_found;
+        $data['not_found_emails'] = $not_found_emails;
+        $data['assigned_ids']     = $assigned_ids;
+        $data['remaining']        = $remaining;
         echo json_encode($data);
         die();
     }

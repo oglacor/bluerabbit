@@ -2457,7 +2457,7 @@ function countdown() {
             $('')
         } else if (time_left <= 9) {
             //$('#countdown-sfx').get(0).play();
-            $('#challenge-timer .progress').removeClass('warning').addClass("danger");
+            $('#challenge-timer .progress').removeClass('warn').addClass("danger");
         }
         setTimeout(countdown, 1000);
     } else {
@@ -6412,19 +6412,36 @@ function assignBulkUsersToAchievement() {
                     return;
                 }
                 var total = d.total;
-                brOpConsoleLog('Batch queued — processing ' + total + ' player' + (total !== 1 ? 's' : '') + '…', 'info');
+                var totalAssigned = 0;
+                var totalAlreadyHas = 0;
+                var notFoundEmails = [];
+                brOpConsoleLog('Batch queued — processing ' + total + ' email' + (total !== 1 ? 's' : '') + '…', 'info');
                 brRunBatchPoll(
                     { action: 'bulkAssignAchievementBatch', achievement_id: d.achievement_id, adventure_id: d.adventure_id },
                     total,
                     function (r, done) {
                         brOpConsoleSetProgress(done, total);
+                        totalAssigned   += (r.assigned   || 0);
+                        totalAlreadyHas += (r.already_has || 0);
+                        (r.not_found_emails || []).forEach(function (em) { notFoundEmails.push(em); });
                         (r.assigned_ids || []).forEach(function (pid) {
-                            brOpConsoleLog('Assigned to player #' + pid, 'success');
                             $('#player-achievement-' + pid).addClass('active');
                         });
                     },
                     function () {
-                        brOpConsoleDone('Done — ' + total + ' player' + (total !== 1 ? 's' : '') + ' processed.');
+                        var summary = 'Done — ' + totalAssigned + ' assigned, ' + totalAlreadyHas + ' already had it';
+                        if (notFoundEmails.length) {
+                            summary += ', ' + notFoundEmails.length + ' not found.';
+                        } else {
+                            summary += '.';
+                        }
+                        brOpConsoleDone(summary);
+                        if (notFoundEmails.length) {
+                            brOpConsoleLog('Emails not found in this adventure (' + notFoundEmails.length + '):', 'warn');
+                            notFoundEmails.forEach(function (em) {
+                                brOpConsoleLog(em, 'warn');
+                            });
+                        }
                     },
                     function () {
                         brOpConsoleLog('Error processing batch — reload and try again.', 'error');
