@@ -2745,6 +2745,8 @@ add_action("wp_ajax_bulkPlayersFromAdventure",  [BR_Organization::instance(), 'b
 add_action("wp_ajax_searchAdventuresForOrg",    [BR_Organization::instance(), 'searchAdventuresForOrg']);
 add_action("wp_ajax_addAdventureToOrg",         [BR_Organization::instance(), 'addAdventureToOrg']);
 add_action("wp_ajax_removeAdventureFromOrg",    [BR_Organization::instance(), 'removeAdventureFromOrg']);
+add_action("wp_ajax_createOrg",                 [BR_Organization::instance(), 'createOrg']);
+add_action("wp_ajax_deleteOrg",                 [BR_Organization::instance(), 'deleteOrg']);
 
 // ── Org Stats AJAX ────────────────────────────────────────────────────────────
 add_action('wp_ajax_brOrgStatsActivity', function() {

@@ -183,6 +183,7 @@ $all_adventures = $wpdb->get_results(
                             <th><?= __('ID','bluerabbit'); ?></th>
                             <th><?= __('Name','bluerabbit'); ?></th>
                             <th><?= __('Email','bluerabbit'); ?></th>
+                            <th title="<?= esc_attr(__('Org Manager','bluerabbit')); ?>"><span class="icon icon-star"></span></th>
                             <th><?= __('Remove','bluerabbit'); ?></th>
                         </tr>
                     </thead>

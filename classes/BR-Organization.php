@@ -365,4 +365,44 @@ class BR_Organization {
         }
         echo json_encode($data); die();
     }
+
+    // ── Create / Delete Org ──────────────────────────────────────────────────
+
+    public function createOrg(){
+        global $wpdb; $current_user = wp_get_current_user();
+        $data = ['success' => false];
+        if (!$this->is_admin() || !wp_verify_nonce($_POST['nonce'] ?? '', 'br_manage_orgs_nonce')) {
+            echo json_encode($data); die();
+        }
+        $name   = sanitize_text_field($_POST['name']   ?? '');
+        $color  = sanitize_text_field($_POST['color']  ?? '');
+        $status = sanitize_text_field($_POST['status'] ?? 'publish');
+        if (!$name) { $data['message'] = 'Name required'; echo json_encode($data); die(); }
+
+        $wpdb->insert(
+            "{$wpdb->prefix}br_orgs",
+            ['org_name' => $name, 'org_color' => $color, 'org_status' => $status, 'owner_id' => $current_user->ID],
+            ['%s', '%s', '%s', '%d']
+        );
+        $org_id = (int)$wpdb->insert_id;
+        BR_Activity::instance()->logActivity(0, 'add', 'org', '', $org_id);
+        $data['success'] = true;
+        $data['org_id']  = $org_id;
+        echo json_encode($data); die();
+    }
+
+    public function deleteOrg(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin() || !wp_verify_nonce($_POST['nonce'] ?? '', 'br_manage_orgs_nonce')) {
+            echo json_encode($data); die();
+        }
+        $org_id = intval($_POST['org_id'] ?? 0);
+        if (!$org_id) { echo json_encode($data); die(); }
+        $wpdb->delete("{$wpdb->prefix}br_player_org",    ['org_id' => $org_id], ['%d']);
+        $wpdb->delete("{$wpdb->prefix}br_org_adventure", ['org_id' => $org_id], ['%d']);
+        $wpdb->delete("{$wpdb->prefix}br_orgs",          ['org_id' => $org_id], ['%d']);
+        $data['success'] = true;
+        echo json_encode($data); die();
+    }
 }
