@@ -9321,7 +9321,11 @@ function brOpConsoleSetProgress(done, total) {
 function brOpConsoleDone(msg) {
     $('#br-op-cancel-btn').addClass('br-initially-hidden');
     $('#br-op-close-btn').removeClass('br-initially-hidden');
-    if (msg) brOpConsoleLog(msg, 'success');
+    if (msg) {
+        var $t = $('#br-op-terminal');
+        $t.append('<div class="br-op-line br-op-line-ok">✓ ' + msg + '</div>');
+        $t[0].scrollTop = $t[0].scrollHeight;
+    }
     $('#br-op-bar').css('width', '100%');
 }
 

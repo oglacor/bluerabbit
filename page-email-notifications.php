@@ -431,7 +431,7 @@ jQuery(function($){
 				if(dryRun){
 					brOpConsoleDone('Dry run complete — ' + total + ' email' + (total!==1?'s':'') + ' would have been sent.');
 				} else {
-					brOpConsoleDone(total + ' emails sent — ' + '<a href="'+logUrl+'">View Send Log</a>');
+					brOpConsoleDone(total + ' email' + (total !== 1 ? 's' : '') + ' sent — <a href="'+logUrl+'">View Send Log</a>');
 					if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
 					else $('#br_notif_body').val('');
 					$('#br-notif-subject').val('');
