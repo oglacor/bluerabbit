@@ -373,9 +373,9 @@ HTML;
 	// ── Send the next small batch for a campaign (called repeatedly by the
 	//    browser's polling loop until 'remaining' is 0) ───────────────────────
 
-	public function send_next_batch( int $campaign_id, int $limit = self::POLL_BATCH_SIZE ): array {
+	public function send_next_batch( int $campaign_id, int $limit = self::POLL_BATCH_SIZE, bool $dry_run = false ): array {
 		$campaign = self::get_campaign( $campaign_id );
-		if ( ! $campaign ) return [ 'sent' => 0, 'failed' => 0, 'remaining' => 0 ];
+		if ( ! $campaign ) return [ 'sent' => 0, 'failed' => 0, 'remaining' => 0, 'sent_emails' => [], 'failed_emails' => [] ];
 
 		global $wpdb;
 		$adv = $wpdb->get_row( $wpdb->prepare(
@@ -388,15 +388,22 @@ HTML;
 
 		$batch = $this->get_pending_batch( $campaign_id, $limit );
 
-		$sent = 0; $failed = 0;
+		$sent = 0; $failed = 0; $sent_emails = []; $failed_emails = [];
 		foreach ( $batch as $i => $user ) {
-			$html = $this->render_template( $this->settings, $campaign->subject, $campaign->body, $user );
-			$ok   = $this->send( $user['user_email'], $user['display_name'], $campaign->subject, $html, (int) $user['player_id'], (int) $campaign->adventure_id );
-			$ok ? $sent++ : $failed++;
-			if ( $i < count( $batch ) - 1 ) usleep( self::SEND_DELAY_MS * 1000 );
+			if ( $dry_run ) {
+				$this->log_send( (int) $user['player_id'], (int) $campaign->adventure_id, $campaign->subject, 'dry_run', '' );
+				$sent++;
+				$sent_emails[] = $user['user_email'];
+			} else {
+				$html = $this->render_template( $this->settings, $campaign->subject, $campaign->body, $user );
+				$ok   = $this->send( $user['user_email'], $user['display_name'], $campaign->subject, $html, (int) $user['player_id'], (int) $campaign->adventure_id );
+				if ( $ok ) { $sent++; $sent_emails[] = $user['user_email']; }
+				else        { $failed++; $failed_emails[] = $user['user_email']; }
+				if ( $i < count( $batch ) - 1 ) usleep( self::SEND_DELAY_MS * 1000 );
+			}
 		}
 
-		return [ 'sent' => $sent, 'failed' => $failed, 'remaining' => $this->count_pending( $campaign_id ) ];
+		return [ 'sent' => $sent, 'failed' => $failed, 'remaining' => $this->count_pending( $campaign_id ), 'sent_emails' => $sent_emails, 'failed_emails' => $failed_emails ];
 	}
 
 	// ── Retry failed emails in a campaign ─────────────────────────────────────

@@ -252,6 +252,9 @@ if ( ! $can_send ) { $view = 'log'; }
 			<button type="button" id="br-notif-send-btn" class="br-btn br-btn-green br-btn-send">
 				<span class="icon icon-mail"></span> <?php _e( 'Send Email', 'bluerabbit' ); ?>
 			</button>
+			<label class="br-notif-dryrun-label" title="<?php esc_attr_e('Simulates the full send without delivering any emails','bluerabbit'); ?>">
+				<input type="checkbox" id="br-notif-dry-run"> <?php _e( 'Dry Run', 'bluerabbit' ); ?>
+			</label>
 			<span id="br-notif-send-summary" class="br-notif-send-summary"></span>
 		</div>
 	</div>
@@ -409,8 +412,8 @@ jQuery(function($){
 	// ── Send ──
 	var logUrl = '<?php echo esc_js( add_query_arg( [ 'adventure_id' => $adv_parent_id, 'view' => 'log' ], get_permalink() ) ); ?>';
 
-	function pollBatch( campaignId, total ){
-		$.post(brEmailFront.ajaxurl,{ action:'br_email_send_batch', nonce:brEmailFront.nonce, campaign_id:campaignId },function(r){
+	function pollBatch( campaignId, total, dryRun ){
+		$.post(brEmailFront.ajaxurl,{ action:'br_email_send_batch', nonce:brEmailFront.nonce, campaign_id:campaignId, dry_run:dryRun?1:0 },function(r){
 			if(!r.success){
 				brOpConsoleLog((r.data&&r.data.message)||'<?php esc_attr_e("Send failed.","bluerabbit");?>', 'error');
 				brOpConsoleDone();
@@ -419,33 +422,39 @@ jQuery(function($){
 			}
 			var remaining = r.data.remaining, done = total - remaining;
 			brOpConsoleSetProgress(done, total);
-			brOpConsoleLog('Sent ' + done + ' / ' + total + '…', 'info');
+			(r.data.sent_emails || []).forEach(function(em){ brOpConsoleLog(em, 'success'); });
+			(r.data.failed_emails || []).forEach(function(em){ brOpConsoleLog(em + ' (failed)', 'error'); });
 			if(remaining>0){
-				setTimeout(function(){ pollBatch(campaignId,total); }, 50);
+				setTimeout(function(){ pollBatch(campaignId,total,dryRun); }, 50);
 			} else {
 				$('#br-notif-send-btn').prop('disabled',false);
-				brOpConsoleDone(total + ' emails sent — ' + '<a href="'+logUrl+'">View Send Log</a>');
-				if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
-				else $('#br_notif_body').val('');
-				$('#br-notif-subject').val('');
+				if(dryRun){
+					brOpConsoleDone('Dry run complete — ' + total + ' email' + (total!==1?'s':'') + ' would have been sent.');
+				} else {
+					brOpConsoleDone(total + ' emails sent — ' + '<a href="'+logUrl+'">View Send Log</a>');
+					if(typeof tinyMCE!=='undefined'&&tinyMCE.get('br_notif_body')) tinyMCE.get('br_notif_body').setContent('');
+					else $('#br_notif_body').val('');
+					$('#br-notif-subject').val('');
+				}
 			}
 		}).fail(function(){
 			// A dropped request never loses data (every send is logged immediately) - just retry.
-			setTimeout(function(){ pollBatch(campaignId,total); }, 2000);
+			setTimeout(function(){ pollBatch(campaignId,total,dryRun); }, 2000);
 		});
 	}
 
 	$('#br-notif-send-btn').on('click', function(){
 		var subject=$.trim($('#br-notif-subject').val()), body=getEditorBody(), recipients=getRecipients();
 		var $so=$('#br-notif-sender option:selected');
+		var dryRun=$('#br-notif-dry-run').is(':checked');
 		if(!subject||!body){ showStatus('<span class="icon icon-warning"></span> <?php esc_attr_e('Fill in subject and message.','bluerabbit');?>','orange'); return; }
 		if(recipients!=='all'&&!recipients){ showStatus('<span class="icon icon-warning"></span> <?php esc_attr_e('No players selected.','bluerabbit');?>','orange'); return; }
 		var msg = recipients==='all'
 			? '<?php printf(esc_attr__('Send this email to all %d enrolled players?','bluerabbit'),$recipient_count);?>'
 			: '<?php esc_attr_e('Send this email to the selected players?','bluerabbit');?>';
-		if(!confirm(msg)) return;
+		if(!dryRun&&!confirm(msg)) return;
 		$('#br-notif-send-btn').prop('disabled',true);
-		brOpConsoleOpen('<?php esc_attr_e("Sending Emails","bluerabbit"); ?>');
+		brOpConsoleOpen(dryRun?'<?php esc_attr_e("Dry Run — Emails","bluerabbit"); ?>':'<?php esc_attr_e("Sending Emails","bluerabbit"); ?>');
 		brOpConsoleLog('<?php esc_attr_e("Starting campaign…","bluerabbit"); ?>', 'info');
 		$.post(brEmailFront.ajaxurl,{
 			action:'br_email_start_campaign', nonce:brEmailFront.nonce,
@@ -453,8 +462,8 @@ jQuery(function($){
 			recipients:recipients, sender_name:$so.data('name'), sender_email:$so.data('email')
 		},function(r){
 			if(r.success){
-				brOpConsoleLog('Campaign created — ' + r.data.total + ' recipient' + (r.data.total !== 1 ? 's' : '') + '…', 'info');
-				pollBatch( r.data.campaign_id, r.data.total );
+				brOpConsoleLog((dryRun?'Dry run — ':'Campaign created — ') + r.data.total + ' recipient' + (r.data.total !== 1 ? 's' : '') + '…', 'info');
+				pollBatch( r.data.campaign_id, r.data.total, dryRun );
 			} else {
 				brOpConsoleLog((r.data&&r.data.message)||'<?php esc_attr_e("Send failed.","bluerabbit");?>', 'error');
 				brOpConsoleDone();

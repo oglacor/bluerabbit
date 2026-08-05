@@ -172,7 +172,8 @@ function br_email_ajax_send_batch(): void {
 		|| br_email_user_can_send( $current_user->ID, (int) $campaign->adventure_id );
 	if ( ! $allowed ) wp_send_json_error( [ 'message' => 'Forbidden' ], 403 );
 
-	$mailer = new BR_Mailer();
-	$result = $mailer->send_next_batch( $campaign_id );
+	$dry_run = ! empty( $_POST['dry_run'] );
+	$mailer  = new BR_Mailer();
+	$result  = $mailer->send_next_batch( $campaign_id, 10, $dry_run );
 	wp_send_json_success( $result );
 }

@@ -4499,6 +4499,18 @@ body.br-drawer-open {
   color: rgba($br-white, 0.4);
 }
 
+.br-notif-dryrun-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  font-size: 13px;
+  color: rgba($br-white, 0.55);
+  cursor: pointer;
+  user-select: none;
+  input[type="checkbox"] { cursor: pointer; accent-color: #f0a500; }
+}
+
 .br-notif-csv-section {
   padding: 10px 0;
   border-bottom: 1px solid rgba($br-primary, 0.08);
