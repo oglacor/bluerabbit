@@ -793,6 +793,37 @@ $radius:       12px;
   tbody td { vertical-align: middle; }
 }
 
+// ── Org Stats specific ───────────────────────────────────
+
+.br-stats-date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  .form-ui { width: 130px; }
+}
+
+.br-stats-segment-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.br-stats-dim-btn {
+  padding: 4px 12px;
+  border: 1px solid rgba($br-white, 0.2);
+  border-radius: 14px;
+  background: transparent;
+  color: rgba($br-white, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { background: rgba($br-white, 0.08); color: $br-white; }
+  &.active { background: rgba($br-primary, 0.25); border-color: $br-primary; color: $br-primary; }
+}
+
 // ── Responsive ───────────────────────────────────────────
 
 @media (max-width: 768px) {

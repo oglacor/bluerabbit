@@ -1215,6 +1215,7 @@ require_once ("$dirName/classes/BR-Encounter.php");
 require_once ("$dirName/classes/BR-Tabi.php");
 require_once ("$dirName/classes/BR-Session.php");
 require_once ("$dirName/classes/BR-Organization.php");
+require_once ("$dirName/classes/BR-OrgStats.php");
 require_once ("$dirName/classes/BR-Blocker.php");
 require_once ("$dirName/classes/BR-Transaction.php");
 require_once ("$dirName/classes/BR-Announcement.php");
@@ -1331,6 +1332,10 @@ function br_stats_enqueue_assets() {
 	if ( is_page('milestone-funnel') ) {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
 		wp_enqueue_script( 'br-milestone-funnel', get_template_directory_uri() . '/js/br-milestone-funnel.js', ['jquery'], '1.0', true );
+	}
+	if ( is_page('organization') ) {
+		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
+		wp_enqueue_script( 'br-org-stats', get_template_directory_uri() . '/js/br-org-stats.js', ['jquery'], br_asset_version(), true );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'br_stats_enqueue_assets' );
@@ -2731,9 +2736,30 @@ add_action("wp_ajax_setSpeaker", [BR_Session::instance(), 'setSpeaker']);
 add_action("wp_ajax_setSpeakerData", [BR_Session::instance(), 'setSpeakerData']);
 add_action("wp_ajax_updateOrg", [BR_Organization::instance(), 'updateOrg']);
 add_action("wp_ajax_updateSponsor", [BR_Session::instance(), 'updateSponsor']);
-add_action("wp_ajax_findPlayersToOrg", [BR_Organization::instance(), 'findPlayersToOrg']);
-add_action("wp_ajax_addPlayerToOrg", [BR_Organization::instance(), 'addPlayerToOrg']);
-add_action("wp_ajax_setPlayerOrgCapabilities", [BR_Organization::instance(), 'setPlayerOrgCapabilities']);
+add_action("wp_ajax_findPlayersToOrg",          [BR_Organization::instance(), 'findPlayersToOrg']);
+add_action("wp_ajax_addPlayerToOrg",            [BR_Organization::instance(), 'addPlayerToOrg']);
+add_action("wp_ajax_removePlayerFromOrg",       [BR_Organization::instance(), 'removePlayerFromOrg']);
+add_action("wp_ajax_setPlayerOrgCapabilities",  [BR_Organization::instance(), 'setPlayerOrgCapabilities']);
+add_action("wp_ajax_importPlayersToOrg",        [BR_Organization::instance(), 'importPlayersToOrg']);
+add_action("wp_ajax_bulkPlayersFromAdventure",  [BR_Organization::instance(), 'bulkPlayersFromAdventure']);
+add_action("wp_ajax_searchAdventuresForOrg",    [BR_Organization::instance(), 'searchAdventuresForOrg']);
+add_action("wp_ajax_addAdventureToOrg",         [BR_Organization::instance(), 'addAdventureToOrg']);
+add_action("wp_ajax_removeAdventureFromOrg",    [BR_Organization::instance(), 'removeAdventureFromOrg']);
+
+// ── Org Stats AJAX ────────────────────────────────────────────────────────────
+add_action('wp_ajax_brOrgStatsActivity', function() {
+    if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Forbidden'], 403);
+    $org_id = intval($_POST['org_id'] ?? 0);
+    $from   = sanitize_text_field($_POST['from'] ?? '');
+    $to     = sanitize_text_field($_POST['to']   ?? '');
+    wp_send_json_success(BR_OrgStats::instance()->get_org_activity_heatmap($org_id, $from, $to));
+});
+add_action('wp_ajax_brOrgStatsSegment', function() {
+    if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Forbidden'], 403);
+    $org_id = intval($_POST['org_id'] ?? 0);
+    $dim    = sanitize_key($_POST['dimension'] ?? 'work_country');
+    wp_send_json_success(BR_OrgStats::instance()->get_org_segment_breakdown($org_id, $dim));
+});
 add_action("wp_ajax_previewTemplate", [BR_Adventure::instance(), 'previewTemplate']);
 add_action("wp_ajax_createChildAdventure", [BR_Adventure::instance(), 'createChildAdventure']);
 add_action("wp_ajax_duplicateAdventure", [BR_Adventure::instance(), 'duplicateAdventure']);

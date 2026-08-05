@@ -7,189 +7,353 @@ class BR_Organization {
     }
     private function __construct() {}
 
+    private function is_admin(): bool {
+        return in_array('administrator', wp_get_current_user()->roles, true);
+    }
+
+    // ── Org CRUD ─────────────────────────────────────────────────────────────
+
     public function updateOrg(){
         global $wpdb; $current_user = wp_get_current_user();
-
-        $data = array();
-        $errors = array();
+        $data = [];
         if (wp_verify_nonce($_POST['nonce'], 'br_update_org_nonce')) {
             $org_data = $_POST['org_data'];
-            $id = $org_data['id'];
-            $name = $org_data['name'];
-            $logo = $org_data['logo'];
-            $color = $org_data['color'];
-            $status = $org_data['status'];
-            $about = stripslashes_deep($org_data['about']);
-
+            $id    = intval($org_data['id']);
+            $name  = sanitize_text_field($org_data['name']);
+            $logo  = esc_url_raw($org_data['logo']);
+            $color = sanitize_text_field($org_data['color']);
+            $status = sanitize_text_field($org_data['status']);
+            $about = wp_kses_post(stripslashes_deep($org_data['about']));
             $today = date("Y-m-d H:i:s");
 
-            $sql = "INSERT INTO {$wpdb->prefix}br_orgs
-            (`org_id`,`org_name`,`org_logo`,`org_content`,`org_color`,`owner_id`,`org_status`)
-            VALUES (%d, %s, %s, %s, %s, %d, %s)
-            ON DUPLICATE KEY UPDATE
-
-            `org_name`=%s,`org_logo`=%s,`org_content`=%s,`org_color`=%s,`owner_id`=%d,`org_status`=%s,`org_modified`=%s
-            ";
-            $sql = $wpdb->prepare($sql, $id, $name, $logo,$about, $color,  $current_user->ID, $status, $name, $logo,$about, $color,  $current_user->ID, $status, $today);
-
-            $the_query = $wpdb->query($sql);
-            $org_id = $wpdb->insert_id;
+            $sql = $wpdb->prepare(
+                "INSERT INTO {$wpdb->prefix}br_orgs
+                 (`org_id`,`org_name`,`org_logo`,`org_content`,`org_color`,`owner_id`,`org_status`)
+                 VALUES (%d, %s, %s, %s, %s, %d, %s)
+                 ON DUPLICATE KEY UPDATE
+                 `org_name`=%s,`org_logo`=%s,`org_content`=%s,`org_color`=%s,`owner_id`=%d,`org_status`=%s,`org_modified`=%s",
+                $id, $name, $logo, $about, $color, $current_user->ID, $status,
+                $name, $logo, $about, $color, $current_user->ID, $status, $today
+            );
+            $wpdb->query($sql);
+            $org_id = $wpdb->insert_id ?: $id;
             $n = new Notification();
-
-            $msg_content = __('Organization Saved!','bluerabbit');
-            $data['message'] = $n->pop($msg_content,'green');
-            $data['success'] = true;
-            if($id){
-                BR_Activity::instance()->logActivity(0,'update','org','',$org_id);
-            }else{
-                BR_Activity::instance()->logActivity(0,'add','org','',$org_id);
-            }
-            $data['just_notify'] =true;
-
-        }else{
-            $data['message'] = '<h1><span class="icon icon-cancel solid-red"></span></h1> <h4><strong>'.__("Unauthorized access","bluerabbit").'</strong></h4> <h5>'.__("click to close","bluerabbit").'</h5>';
-            $data['location'] = get_bloginfo('url');
+            $data['message']     = $n->pop(__('Organization Saved!','bluerabbit'), 'green');
+            $data['success']     = true;
+            $data['just_notify'] = true;
+            BR_Activity::instance()->logActivity(0, $id ? 'update' : 'add', 'org', '', $org_id);
+        } else {
+            $data['message'] = '<h1><span class="icon icon-cancel solid-red"></span></h1><h4>'.__("Unauthorized access","bluerabbit").'</h4>';
         }
-        echo json_encode($data);
-        die();
+        echo json_encode($data); die();
     }
 
     public function getOrgs($org_id=NULL){
         global $wpdb; $current_user = wp_get_current_user();
-        $roles = $current_user->roles;
-        if($roles[0]=='administrator'){
-            $isAdmin=true;
-            if($org_id){
-                $org = $wpdb->get_row("SELECT orgs.*, players.player_display_name, players.player_email, players.player_nickname FROM {$wpdb->prefix}br_orgs orgs
-                LEFT JOIN {$wpdb->prefix}br_players players
-                ON orgs.owner_id = players.player_id
-                WHERE orgs.org_id=$org_id");
-                return $org;
-            }else{
-                $orgs = $wpdb->get_results("SELECT orgs.*, players.player_display_name, players.player_email, players.player_nickname FROM {$wpdb->prefix}br_orgs orgs
-                    LEFT JOIN {$wpdb->prefix}br_players players
-                    ON orgs.owner_id = players.player_id
-                ");
-                return $orgs;
-            }
-        }else{
-            return false ;
+        if (!in_array('administrator', $current_user->roles, true)) return false;
+        if ($org_id) {
+            return $wpdb->get_row($wpdb->prepare(
+                "SELECT orgs.*, players.player_display_name, players.player_email, players.player_nickname
+                 FROM {$wpdb->prefix}br_orgs orgs
+                 LEFT JOIN {$wpdb->prefix}br_players players ON orgs.owner_id = players.player_id
+                 WHERE orgs.org_id = %d",
+                $org_id
+            ));
         }
+        return $wpdb->get_results(
+            "SELECT orgs.*, players.player_display_name, players.player_email, players.player_nickname
+             FROM {$wpdb->prefix}br_orgs orgs
+             LEFT JOIN {$wpdb->prefix}br_players players ON orgs.owner_id = players.player_id"
+        );
     }
 
-    public function getOrgAdventures($org_id=NULL){
-        global $wpdb; $current_user = wp_get_current_user();
-        $roles = $current_user->roles;
-        if($roles[0]=='administrator' && $org_id){
-            $adventures = $wpdb->get_row("SELECT adventures.*, players.player_display_name, players.player_email, players.player_nickname FROM {$wpdb->prefix}br_adventures adventures
-            JOIN {$wpdb->prefix}br_players players
-            ON adventures.adventure_owner = players.player_id
-            WHERE adventures.org_id=$org_id");
-            return $adventures;
-        }else{
-            return false ;
-        }
-    }
+    // ── Players ───────────────────────────────────────────────────────────────
 
     public function getOrgPlayers($org_id=NULL){
-        global $wpdb; $current_user = wp_get_current_user();
-        $roles = $current_user->roles;
-        if($roles[0]=='administrator' && $org_id){
-            $players = $wpdb->get_results("SELECT players.*, org.role FROM {$wpdb->prefix}br_players players
-            JOIN {$wpdb->prefix}br_player_org org
-            ON org.player_id = players.player_id
-            WHERE org.org_id=$org_id");
-            return $players;
-        }else{
-            return false ;
-        }
-    }
-
-    public function setPlayerOrgCapabilities(){
-        global $wpdb; $current_user = wp_get_current_user();
-        $roles = $current_user->roles;
-        $n = new Notification();
-        $data = array();
-        if($roles[0]=='administrator'){
-            $org_id = $_POST['org_id'];
-            $player_id = $_POST['player_id'];
-            $role = $_POST['role'];
-
-            $update_string = "UPDATE {$wpdb->prefix}br_player_org SET `role`=%s WHERE `org_id`=%d AND `player_id`=%d";
-            $updatedPlayer = $wpdb->query( $wpdb->prepare("$update_string ", $role, $org_id, $player_id));
-            $data['org_role_update'] = true;
-            $data['player_id'] = $player_id;
-            $data['role_update'] = $role;
-
-            $data['success'] = true;
-            $msg_content = __('Role Updated','bluerabbit');
-            $data['message'] = $n->pop($msg_content,'green','check');
-            $data['just_notify'] =true;
-        }else{
-            $data['success'] = false;
-            $msg_content = __('Error. Role Not Updated','bluerabbit');
-            $data['message'] = $n->pop($msg_content,'red','cancel');
-            $data['just_notify'] =true;
-        }
-        echo json_encode($data);
-        die();
+        global $wpdb;
+        if (!$this->is_admin() || !$org_id) return [];
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT players.*, org.role
+             FROM {$wpdb->prefix}br_players players
+             JOIN {$wpdb->prefix}br_player_org org ON org.player_id = players.player_id AND org.org_id = %d",
+            $org_id
+        )) ?: [];
     }
 
     public function findPlayersToOrg(){
-        global $wpdb; $current_user = wp_get_current_user();
-        $roles = $current_user->roles;
-        if($roles[0]=='administrator' && wp_verify_nonce($_POST['nonce'], 'br_search_player_org_nonce')){
-            $search_str = $_POST['search_string'];
-            $search_str = '%'.$search_str.'%';
-            $players_results = "SELECT players.* FROM {$wpdb->prefix}br_players players
-            WHERE (`players`.`player_email` LIKE %s
-            OR `players`.`player_first` LIKE %s
-            OR `players`.`player_last` LIKE %s
-            OR `players`.`player_display_name` LIKE %s)";
-            $players_results = $wpdb->get_results($wpdb->prepare($players_results, $search_str, $search_str, $search_str, $search_str));
-            if($players_results){
-                foreach ($players_results as $p){
-                    $theFile = (get_template_directory()."/player-select-org.php");
-                    if(file_exists($theFile)) {
-                        include ($theFile);
-                    }
-                }
-                die();
-            }else{
-                echo "
-<li class='margin-5'>
-    <div class='icon-group'>
-        <button class='button-icon player-picture white-bg sq-60'>
-
-        </button>
-        <div class='icon-content text-left'>
-            <span class='line font _18 player-name'>".__("No results","bluerabbit")."
-            </span>
-        </div>
-    </div>
-</li>
-";
+        global $wpdb;
+        if (!$this->is_admin() || !wp_verify_nonce($_POST['nonce'] ?? '', 'br_search_player_org_nonce')) return false;
+        $s = '%' . $wpdb->esc_like($_POST['search_string'] ?? '') . '%';
+        $results = $wpdb->get_results($wpdb->prepare(
+            "SELECT players.* FROM {$wpdb->prefix}br_players players
+             WHERE player_email LIKE %s OR player_first LIKE %s OR player_last LIKE %s OR player_display_name LIKE %s
+             LIMIT 20",
+            $s, $s, $s, $s
+        ));
+        if ($results) {
+            foreach ($results as $p) {
+                $theFile = get_template_directory() . '/player-select-org.php';
+                if (file_exists($theFile)) include $theFile;
             }
-            die();
-        }else{
-            return false ;
+        } else {
+            echo "<li class='margin-5'><div class='icon-group'><div class='icon-content'><span class='line font _18'>".__("No results","bluerabbit")."</span></div></div></li>";
         }
+        die();
     }
 
     public function addPlayerToOrg(){
-        global $wpdb; $current_user = wp_get_current_user();
-        $player = BR_Player::instance()->getPlayerData($_POST['player_id']);
-        $org = $this->getOrgs($_POST['org_id']);
-        if($player && $org && $current_user->roles[0]=='administrator'){
-            $addToOrg = "INSERT INTO {$wpdb->prefix}br_player_org (`player_id`, `org_id`) VALUES (%d, %d)";
-            $code_insert = $wpdb->query( $wpdb->prepare("$addToOrg ", $player->player_id, $org->org_id));
-            $theFile = (get_template_directory()."/player-row-org.php");
-            if(file_exists($theFile)) {
-                include ($theFile);
-            }
+        global $wpdb;
+        $player = BR_Player::instance()->getPlayerData(intval($_POST['player_id'] ?? 0));
+        $org    = $this->getOrgs(intval($_POST['org_id'] ?? 0));
+        if ($player && $org && $this->is_admin()) {
+            $wpdb->query($wpdb->prepare(
+                "INSERT IGNORE INTO {$wpdb->prefix}br_player_org (player_id, org_id) VALUES (%d, %d)",
+                $player->player_id, $org->org_id
+            ));
+            $theFile = get_template_directory() . '/player-row-org.php';
+            if (file_exists($theFile)) include $theFile;
             die();
-        }else{
-            return false;
         }
+        echo json_encode(['success' => false]); die();
+    }
+
+    public function removePlayerFromOrg(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin()) { echo json_encode($data); die(); }
+        $player_id = intval($_POST['player_id'] ?? 0);
+        $org_id    = intval($_POST['org_id']    ?? 0);
+        if ($player_id && $org_id) {
+            $wpdb->delete("{$wpdb->prefix}br_player_org",
+                ['player_id' => $player_id, 'org_id' => $org_id], ['%d', '%d']
+            );
+            $data['success'] = true;
+        }
+        echo json_encode($data); die();
+    }
+
+    public function setPlayerOrgCapabilities(){
+        global $wpdb;
+        $data = ['success' => false];
+        $n = new Notification();
+        if ($this->is_admin()) {
+            $org_id    = intval($_POST['org_id']    ?? 0);
+            $player_id = intval($_POST['player_id'] ?? 0);
+            $role      = sanitize_text_field($_POST['role'] ?? 'player');
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$wpdb->prefix}br_player_org SET `role`=%s WHERE org_id=%d AND player_id=%d",
+                $role, $org_id, $player_id
+            ));
+            $data['success']      = true;
+            $data['player_id']    = $player_id;
+            $data['role_update']  = $role;
+            $data['org_role_update'] = true;
+            $data['message']      = $n->pop(__('Role Updated','bluerabbit'), 'green', 'check');
+            $data['just_notify']  = true;
+        } else {
+            $data['message']     = $n->pop(__('Error. Role Not Updated','bluerabbit'), 'red', 'cancel');
+            $data['just_notify'] = true;
+        }
+        echo json_encode($data); die();
+    }
+
+    // ── CSV bulk import: add existing users to org by email ──────────────────
+
+    public function importPlayersToOrg(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin()) { echo json_encode($data); die(); }
+
+        $raw_emails = $_POST['emails'] ?? [];
+        $org_id     = intval($_POST['org_id'] ?? 0);
+        if (!$raw_emails || !$org_id) {
+            $data['message'] = 'Missing data'; echo json_encode($data); die();
+        }
+
+        // Sanitize + deduplicate
+        $emails = array_unique(array_filter(array_map(function($e){
+            return strtolower(sanitize_email(trim($e)));
+        }, $raw_emails)));
+
+        if (!$emails) { $data['message'] = 'No valid emails'; echo json_encode($data); die(); }
+
+        // Fetch all matching players in one query
+        $ph      = implode(',', array_fill(0, count($emails), '%s'));
+        $found   = $wpdb->get_results($wpdb->prepare(
+            "SELECT player_id, player_email FROM {$wpdb->prefix}br_players WHERE player_email IN ($ph)",
+            ...$emails
+        ));
+        $found_map = [];
+        foreach ($found as $p) $found_map[strtolower($p->player_email)] = (int)$p->player_id;
+
+        $not_found_emails = [];
+        $player_ids       = [];
+        foreach ($emails as $email) {
+            if (!isset($found_map[$email])) { $not_found_emails[] = $email; }
+            else                            { $player_ids[] = $found_map[$email]; }
+        }
+
+        $already_in = 0; $added = 0;
+        if ($player_ids) {
+            // Check which are already in org
+            $ph2      = implode(',', array_fill(0, count($player_ids), '%d'));
+            $existing = $wpdb->get_col($wpdb->prepare(
+                "SELECT player_id FROM {$wpdb->prefix}br_player_org WHERE org_id=%d AND player_id IN ($ph2)",
+                array_merge([$org_id], $player_ids)
+            ));
+            $existing_set = array_flip(array_map('intval', $existing));
+            $new_ids = array_filter($player_ids, fn($id) => !isset($existing_set[$id]));
+            $already_in = count($player_ids) - count($new_ids);
+
+            if ($new_ids) {
+                $ins_ph  = implode(',', array_fill(0, count($new_ids), '(%d,%d)'));
+                $ins_vals = [];
+                foreach ($new_ids as $pid) { $ins_vals[] = $pid; $ins_vals[] = $org_id; }
+                $wpdb->query($wpdb->prepare(
+                    "INSERT IGNORE INTO {$wpdb->prefix}br_player_org (player_id, org_id) VALUES $ins_ph",
+                    $ins_vals
+                ));
+                $added = (int)$wpdb->rows_affected;
+            }
+        }
+
+        $data['success']          = true;
+        $data['added']            = $added;
+        $data['already_in']       = $already_in;
+        $data['not_found']        = count($not_found_emails);
+        $data['not_found_emails'] = $not_found_emails;
+        echo json_encode($data); die();
+    }
+
+    // ── Bulk: add all players from an adventure to this org ──────────────────
+
+    public function bulkPlayersFromAdventure(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin()) { echo json_encode($data); die(); }
+
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $org_id       = intval($_POST['org_id']       ?? 0);
+        if (!$adventure_id || !$org_id) {
+            $data['message'] = 'Missing data'; echo json_encode($data); die();
+        }
+
+        $players = $wpdb->get_col($wpdb->prepare(
+            "SELECT player_id FROM {$wpdb->prefix}br_player_adventure
+             WHERE adventure_id=%d AND player_adventure_status='in' AND player_adventure_role='player'",
+            $adventure_id
+        ));
+
+        $added = 0; $already_in = 0;
+        if ($players) {
+            $ph2      = implode(',', array_fill(0, count($players), '%d'));
+            $existing = $wpdb->get_col($wpdb->prepare(
+                "SELECT player_id FROM {$wpdb->prefix}br_player_org WHERE org_id=%d AND player_id IN ($ph2)",
+                array_merge([$org_id], $players)
+            ));
+            $existing_set = array_flip(array_map('intval', $existing));
+            $new_ids = array_filter($players, fn($id) => !isset($existing_set[(int)$id]));
+            $already_in = count($players) - count($new_ids);
+
+            if ($new_ids) {
+                $ins_ph   = implode(',', array_fill(0, count($new_ids), '(%d,%d)'));
+                $ins_vals = [];
+                foreach ($new_ids as $pid) { $ins_vals[] = (int)$pid; $ins_vals[] = $org_id; }
+                $wpdb->query($wpdb->prepare(
+                    "INSERT IGNORE INTO {$wpdb->prefix}br_player_org (player_id, org_id) VALUES $ins_ph",
+                    $ins_vals
+                ));
+                $added = (int)$wpdb->rows_affected;
+            }
+        }
+
+        $data['success']    = true;
+        $data['added']      = $added;
+        $data['already_in'] = $already_in;
+        $data['total']      = count($players);
+        echo json_encode($data); die();
+    }
+
+    // ── Adventures ───────────────────────────────────────────────────────────
+
+    public function getOrgAdventures($org_id=NULL){
+        global $wpdb;
+        if (!$this->is_admin() || !$org_id) return [];
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT a.*, p.player_display_name, p.player_email
+             FROM {$wpdb->prefix}br_adventures a
+             JOIN {$wpdb->prefix}br_org_adventure oa ON a.adventure_id = oa.adventure_id AND oa.org_id = %d
+             LEFT JOIN {$wpdb->prefix}br_players p ON a.adventure_owner = p.player_id
+             ORDER BY a.adventure_title ASC",
+            $org_id
+        )) ?: [];
+    }
+
+    public function searchAdventuresForOrg(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin()) { echo json_encode($data); die(); }
+        $search = '%' . $wpdb->esc_like(sanitize_text_field($_POST['search'] ?? '')) . '%';
+        $org_id = intval($_POST['org_id'] ?? 0);
+        $results = $wpdb->get_results($wpdb->prepare(
+            "SELECT a.adventure_id, a.adventure_title, a.adventure_badge, a.adventure_color, p.player_display_name
+             FROM {$wpdb->prefix}br_adventures a
+             LEFT JOIN {$wpdb->prefix}br_players p ON a.adventure_owner = p.player_id
+             WHERE a.adventure_title LIKE %s
+               AND a.adventure_status = 'publish'
+               AND a.adventure_id NOT IN (
+                   SELECT adventure_id FROM {$wpdb->prefix}br_org_adventure WHERE org_id = %d
+               )
+             ORDER BY a.adventure_title ASC
+             LIMIT 10",
+            $search, $org_id
+        )) ?: [];
+        $data['success'] = true;
+        $data['results'] = $results;
+        echo json_encode($data); die();
+    }
+
+    public function addAdventureToOrg(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin()) { echo json_encode($data); die(); }
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $org_id       = intval($_POST['org_id']       ?? 0);
+        if ($adventure_id && $org_id) {
+            $wpdb->query($wpdb->prepare(
+                "INSERT IGNORE INTO {$wpdb->prefix}br_org_adventure (org_id, adventure_id) VALUES (%d, %d)",
+                $org_id, $adventure_id
+            ));
+            $adv = $wpdb->get_row($wpdb->prepare(
+                "SELECT a.adventure_id, a.adventure_title, a.adventure_badge, a.adventure_color, a.adventure_code, p.player_display_name
+                 FROM {$wpdb->prefix}br_adventures a
+                 LEFT JOIN {$wpdb->prefix}br_players p ON a.adventure_owner = p.player_id
+                 WHERE a.adventure_id = %d",
+                $adventure_id
+            ));
+            if ($adv) {
+                $data['success']          = true;
+                $data['adventure_id']     = (int)$adv->adventure_id;
+                $data['adventure_title']  = $adv->adventure_title;
+                $data['adventure_code']   = $adv->adventure_code;
+                $data['owner_name']       = $adv->player_display_name ?? '';
+            }
+        }
+        echo json_encode($data); die();
+    }
+
+    public function removeAdventureFromOrg(){
+        global $wpdb;
+        $data = ['success' => false];
+        if (!$this->is_admin()) { echo json_encode($data); die(); }
+        $adventure_id = intval($_POST['adventure_id'] ?? 0);
+        $org_id       = intval($_POST['org_id']       ?? 0);
+        if ($adventure_id && $org_id) {
+            $wpdb->delete("{$wpdb->prefix}br_org_adventure",
+                ['org_id' => $org_id, 'adventure_id' => $adventure_id], ['%d', '%d']
+            );
+            $data['success'] = true;
+        }
+        echo json_encode($data); die();
     }
 }
