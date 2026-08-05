@@ -132,27 +132,46 @@ class BR_Organization {
 
     public function setPlayerOrgCapabilities(){
         global $wpdb;
-        $data = ['success' => false];
-        $n = new Notification();
-        if ($this->is_admin()) {
-            $org_id    = intval($_POST['org_id']    ?? 0);
-            $player_id = intval($_POST['player_id'] ?? 0);
-            $role      = sanitize_text_field($_POST['role'] ?? 'player');
-            $wpdb->query($wpdb->prepare(
-                "UPDATE {$wpdb->prefix}br_player_org SET `role`=%s WHERE org_id=%d AND player_id=%d",
-                $role, $org_id, $player_id
-            ));
-            $data['success']      = true;
-            $data['player_id']    = $player_id;
-            $data['role_update']  = $role;
-            $data['org_role_update'] = true;
-            $data['message']      = $n->pop(__('Role Updated','bluerabbit'), 'green', 'check');
-            $data['just_notify']  = true;
-        } else {
-            $data['message']     = $n->pop(__('Error. Role Not Updated','bluerabbit'), 'red', 'cancel');
-            $data['just_notify'] = true;
+        if (!$this->is_admin()) {
+            echo json_encode(['success' => false, 'message' => __('Role not updated.','bluerabbit')]); die();
         }
-        echo json_encode($data); die();
+
+        $org_id    = intval($_POST['org_id']    ?? 0);
+        $player_id = intval($_POST['player_id'] ?? 0);
+        $role      = sanitize_text_field($_POST['role'] ?? 'player');
+        // Only these two are meaningful at org level; anything else is a bad request.
+        if (!in_array($role, ['player', 'manager'], true)) $role = 'player';
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_player_org SET `role`=%s WHERE org_id=%d AND player_id=%d",
+            $role, $org_id, $player_id
+        ));
+
+        echo json_encode([
+            'success'   => true,
+            'player_id' => $player_id,
+            'role'      => $role,
+            // The caller swaps this in whole rather than patching the old markup,
+            // so the button's state, title and next-click role stay in one place.
+            'row_html'  => $this->renderOrgPlayerRow($org_id, $player_id, $role),
+            'message'   => $role === 'manager'
+                ? __('Set as org manager','bluerabbit')
+                : __('Manager role removed','bluerabbit'),
+        ]); die();
+    }
+
+    // Renders player-row-org.php for one player, which expects $player and $org.
+    private function renderOrgPlayerRow(int $org_id, int $player_id, string $role): string {
+        $org    = $this->getOrgs($org_id);
+        $player = BR_Player::instance()->getPlayerData($player_id);
+        if (!$org || !$player) return '';
+        $player->role = $role;
+
+        $file = get_template_directory() . '/player-row-org.php';
+        if (!file_exists($file)) return '';
+        ob_start();
+        include $file;
+        return ob_get_clean();
     }
 
     // ── CSV bulk import: add existing users to org by email ──────────────────
@@ -247,11 +266,32 @@ class BR_Organization {
             $data['message'] = 'Missing data'; echo json_encode($data); die();
         }
 
-        $players = $wpdb->get_col($wpdb->prepare(
-            "SELECT player_id FROM {$wpdb->prefix}br_player_adventure
-             WHERE adventure_id=%d AND player_adventure_status='in' AND player_adventure_role='player'",
+        // Everyone who belongs to the adventure comes across, not just the
+        // players: game masters, NPCs and the adventure owner are org members
+        // too, and leaving them out meant an org could not see its own staff.
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT player_id, player_adventure_role AS role
+             FROM {$wpdb->prefix}br_player_adventure
+             WHERE adventure_id=%d AND player_adventure_status='in'",
+            $adventure_id
+        ), ARRAY_A) ?: [];
+
+        $by_role = [];
+        foreach ($rows as $r) {
+            $by_role[$r['role'] ?: 'player'][] = (int)$r['player_id'];
+        }
+
+        // The owner is on the adventure record, not in the enrolment table.
+        $owner_id = (int)$wpdb->get_var($wpdb->prepare(
+            "SELECT adventure_owner FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d",
             $adventure_id
         ));
+        $enrolled = array_map('intval', array_column($rows, 'player_id'));
+        if ($owner_id && !in_array($owner_id, $enrolled, true)) {
+            $by_role['owner'][] = $owner_id;
+        }
+
+        $players = array_values(array_unique(array_merge($enrolled, $owner_id ? [$owner_id] : [])));
 
         $added = 0; $already_in = 0;
         if ($players) {
@@ -280,6 +320,8 @@ class BR_Organization {
         $data['added']      = $added;
         $data['already_in'] = $already_in;
         $data['total']      = count($players);
+        // Per-role tallies so the console can say what kind of people came over.
+        $data['by_role']    = array_map('count', $by_role);
         echo json_encode($data); die();
     }
 

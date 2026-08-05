@@ -8262,3 +8262,23 @@ button.br-btn.br-confirming {
   border-top: 1px solid rgba($br-white, 0.07);
   flex-shrink: 0;
 }
+
+// ── br-initially-hidden, enforced ────────────────────────
+//
+// `.br-initially-hidden { display: none }` is declared early in this file, so
+// any component further down that sets its own `display` beat it on source
+// order alone at equal specificity - `.br-ap-clear` (inline-flex) and
+// `.br-ap-log` (flex) were both permanently on screen, which is why the org
+// player search showed a stray clear button and an empty session log.
+//
+// Repeating the class raises specificity to 0-2-0 so it wins wherever it is
+// declared. Deliberately no !important: jQuery .show()/.fadeIn() write an
+// inline display and must still be able to reveal these elements.
+.br-initially-hidden.br-initially-hidden { display: none; }
+
+// Rows mid-request: dimmed and inert until the server answers.
+.br-row-busy,
+.br-ap-row-busy {
+  opacity: 0.4;
+  pointer-events: none;
+}

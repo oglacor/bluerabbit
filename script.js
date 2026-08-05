@@ -857,6 +857,21 @@ function notify(message = "", icon = "check", color = "blue", message_delay = 10
     });
 }
 
+// Semantic wrapper over notify(). Callers say what happened - brNotify('Saved',
+// 'success') - instead of each one picking its own icon and colour and drifting
+// out of step with the rest of the app.
+function brNotify(message, type = 'info', message_delay = 1500) {
+    const styles = {
+        success: ['check',   'green'],
+        error:   ['cancel',  'red'],
+        warn:    ['warning', 'amber'],
+        warning: ['warning', 'amber'],
+        info:    ['info',    'blue']
+    };
+    const style = styles[type] || styles.info;
+    notify(message, style[0], style[1], message_delay);
+}
+
 function notification(message, msg_delay = 1000, var_content = null, var_icon = null) {
     $("#notify-message ul.content").append($(message).html());
     let notificationTimeOut1 = setTimeout(function () {
@@ -5517,29 +5532,9 @@ function addPlayerToOrg(player_id = null) {
         notification('#msg-player-not-added-to-org', 1000, 'Player not added to org', 'cancel');
     }
 }
-////////////////////////////////////////// Add Player To ORGANIZATION ////////////////////////////////////////////
+// The org manager toggle now lives in js/br-org.js (orgSetPlayerRole), which
+// swaps in the row the server re-renders instead of patching it here.
 
-function setPlayerOrgCapabilities(player_id = null, role) {
-    if (player_id) {
-        showLoader('small');
-        jQuery.ajax({
-            url: runAJAX.ajaxurl,
-            data: ({
-                org_id: $("#the_org_id").val(),
-                player_id: player_id,
-                role: role,
-                action: 'setPlayerOrgCapabilities',
-            }),
-            method: "POST",
-            success: function (json_text) {
-                hideAllOverlay();
-                displayAjaxResponse(json_text);
-            }
-        });
-    } else {
-        notification('#msg-player-not-added-to-org', 1000, 'Player not added to org', 'cancel');
-    }
-}
 ////////////////////////////////////////// UPDATE SPONSOR ////////////////////////////////////////////
 
 function updateSponsor() {
@@ -9760,16 +9755,10 @@ function displayAjaxResponse(json_data) {
         });
     }
 
-    if (data.org_role_update) {
-        $("tr#player-org-row-" + data.player_id).fadeOut('fast', function () {
-            $('button.role-button-npc', this).attr('onclick', "setPlayerAdventureRole(" + adventure_id + "," + data.player_id + ",'npc');");
-            $('button.role-button-player', this).attr('onclick', "setPlayerAdventureRole(" + adventure_id + "," + data.player_id + ",'player');");
-            $('button.role-button-gm', this).attr('onclick', "showOverlay('#confirm-gm-" + data.player_id + "');");
-
-            $('button.role-button-' + data.role_update, this).removeAttr('onclick');
-            $(this).removeClass('role-gm role-player role-npc').addClass('role-' + data.role_update).fadeIn('fast');
-        });
-    }
+    // The org player row is rebuilt server-side and swapped in by br-org.js
+    // (orgSetPlayerRole). It used to be patched here against `adventure_id`,
+    // which does not exist on the org page - the ReferenceError killed the
+    // fadeOut callback and the row never faded back in.
 
     if (data.duplicate) {
         $(data.original).clone().appendTo(data.container).attr('id', data.duplicate);

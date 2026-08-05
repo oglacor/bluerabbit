@@ -6,7 +6,7 @@
 	<td>
 		<button class="br-btn br-btn-sm <?= $org_role === 'manager' ? 'amber' : 'ghost'; ?>"
 			title="<?= esc_attr($org_role === 'manager' ? __('Remove manager role','bluerabbit') : __('Set as org manager','bluerabbit')); ?>"
-			onclick="setPlayerOrgCapabilities(<?= (int)$player->player_id; ?>, '<?= $org_role === 'manager' ? 'player' : 'manager'; ?>');">
+			onclick="orgSetPlayerRole(<?= (int)$player->player_id; ?>, '<?= $org_role === 'manager' ? 'player' : 'manager'; ?>');">
 			<span class="icon icon-star"></span>
 		</button>
 	</td>

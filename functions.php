@@ -1333,12 +1333,102 @@ function br_stats_enqueue_assets() {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
 		wp_enqueue_script( 'br-milestone-funnel', get_template_directory_uri() . '/js/br-milestone-funnel.js', ['jquery'], '1.0', true );
 	}
+	// Org pages share one behaviour file; the organization page additionally
+	// gets the chart file and its bootstrap data. Nothing is emitted from the
+	// templates - no page in this theme should carry a <script> block.
+	if ( is_page( ['organization', 'manage-orgs', 'my-orgs'] ) ) {
+		wp_enqueue_script( 'br-org', get_template_directory_uri() . '/js/br-org.js', ['jquery', 'ajaxFunctions'], br_asset_version(), true );
+		wp_localize_script( 'br-org', 'brOrgL10n', br_org_l10n() );
+	}
+
 	if ( is_page('organization') ) {
 		wp_enqueue_style( 'br-stats', get_template_directory_uri() . '/css/br-stats.css', ['br-table'], br_asset_version() );
 		wp_enqueue_script( 'br-org-stats', get_template_directory_uri() . '/js/br-org-stats.js', ['jquery'], br_asset_version(), true );
+
+		$org_id = isset( $_GET['id'] ) && ctype_digit( (string) $_GET['id'] ) ? (int) $_GET['id'] : 0;
+		if ( $org_id ) {
+			// wp_add_inline_script rather than wp_localize_script: the chart data
+			// is numeric and localize would stringify every value.
+			wp_add_inline_script(
+				'br-org-stats',
+				'window.brOrgStats = ' . wp_json_encode( br_org_stats_bootstrap( $org_id ) ) . ';',
+				'before'
+			);
+		}
 	}
 }
 add_action( 'wp_enqueue_scripts', 'br_stats_enqueue_assets' );
+
+// Copy for js/br-org.js. Kept here so the templates stay markup-only.
+function br_org_l10n(): array {
+	return [
+		'siteUrl'        => get_bloginfo('url'),
+		'searching'      => __('Searching…','bluerabbit'),
+		'result'         => __('result','bluerabbit'),
+		'results'        => __('results','bluerabbit'),
+		'noResults'      => __('No results found.','bluerabbit'),
+		'noAdventures'   => __('No adventures found.','bluerabbit'),
+		'settingsSaved'  => __('Settings saved','bluerabbit'),
+		'saveFailed'     => __('Save failed','bluerabbit'),
+		'selectCsv'      => __('Please select a CSV file.','bluerabbit'),
+		'noEmails'       => __('No valid emails found.','bluerabbit'),
+		'selectAdv'      => __('Please select an adventure.','bluerabbit'),
+		'confirmBulk'    => __('Add everyone enrolled in "%s" — players, game masters, NPCs and the owner — to this org?','bluerabbit'),
+		'importTitle'    => __('Import Players to Org','bluerabbit'),
+		'emailsFound'    => __('email addresses found in CSV…','bluerabbit'),
+		'bulkTitle'      => __('Bulk Add from Adventure','bluerabbit'),
+		'processing'     => __('Processing','bluerabbit'),
+		'added'          => __('added','bluerabbit'),
+		'alreadyIn'      => __('already in org','bluerabbit'),
+		'notFound'       => __('not found','bluerabbit'),
+		'totalInAdv'     => __('total in adventure','bluerabbit'),
+		'requestFailed'  => __('Request failed','bluerabbit'),
+		'error'          => __('Error','bluerabbit'),
+		'remove'         => __('Remove?','bluerabbit'),
+		'roleFailed'     => __('Could not update the role.','bluerabbit'),
+		'orgNameNeeded'  => __('Please enter a name.','bluerabbit'),
+		'orgDeleted'     => __('Organization deleted','bluerabbit'),
+		'orgDeleteError' => __('Error deleting organization','bluerabbit'),
+		'roles'          => [
+			'player' => __('Players','bluerabbit'),
+			'gm'     => __('Game Masters','bluerabbit'),
+			'npc'    => __('NPCs','bluerabbit'),
+			'owner'  => __('Owner','bluerabbit'),
+		],
+	];
+}
+
+// Bootstrap payload for js/br-org-stats.js.
+function br_org_stats_bootstrap( int $org_id ): array {
+	return [
+		'ajaxurl'             => admin_url('admin-ajax.php'),
+		'orgId'               => $org_id,
+		'progressByAdventure' => BR_OrgStats::instance()->get_progress_by_adventure( $org_id ),
+		'segment'             => BR_OrgStats::instance()->get_org_segment_breakdown( $org_id, 'work_country' ),
+		'segmentDimensions'   => BR_OrgStats::SEGMENT_DIMENSIONS,
+		'engagementLabels'    => [
+			'on_fire'         => __('On Fire','bluerabbit'),
+			'active'          => __('Active','bluerabbit'),
+			'moderate'        => __('Moderate','bluerabbit'),
+			'cooling_off'     => __('Cooling Off','bluerabbit'),
+			'dormant'         => __('Dormant','bluerabbit'),
+			'never_logged_in' => __('Never Logged In','bluerabbit'),
+		],
+		'engagementComponents' => [
+			'recency'     => [ 'label' => __('Recency','bluerabbit'),     'info' => __('How recently players have been active. 25 = today, 0 = 30+ days ago. Based on last login or activity log.','bluerabbit'),                    'suffix' => __('d avg inactive','bluerabbit'), 'key' => 'avg_days' ],
+			'frequency'   => [ 'label' => __('Frequency','bluerabbit'),   'info' => __('How often players complete milestones. Measured by completions in the last 30 days relative to 30% of total milestones.','bluerabbit'), 'suffix' => __(' avg in 30d','bluerabbit'),    'key' => 'avg_completions_30d' ],
+			'completion'  => [ 'label' => __('Completion','bluerabbit'),  'info' => __('Percentage of all published milestones completed. 25 = 100% done, 0 = nothing completed.','bluerabbit'),                                'suffix' => __('% avg done','bluerabbit'),     'key' => 'avg_pct' ],
+			'progression' => [ 'label' => __('Progression','bluerabbit'), 'info' => __('Player level relative to the highest level in the adventure. 15 = max level, 0 = level 1.','bluerabbit'),                                'suffix' => '',                                'key' => '' ],
+			'economy'     => [ 'label' => __('Economy','bluerabbit'),     'info' => __('Item shop activity. Each transaction = 2 pts, capped at 10. Measures engagement with the economy system.','bluerabbit'),                  'suffix' => '',                                'key' => '' ],
+		],
+		'engagementStrings' => [
+			'avg_score' => __('AVG SCORE','bluerabbit'),
+			'coverage'  => __('%1$s players scored of %2$s enrolled — %3$s have never logged in.','bluerabbit'),
+			'no_data'   => __('No enrolled players yet.','bluerabbit'),
+			'error'     => __('Could not load engagement data.','bluerabbit'),
+		],
+	];
+}
 
 function br_stats_is_manager( $adventure_id ) {
 	if ( current_user_can( 'manage_options' ) ) return true;

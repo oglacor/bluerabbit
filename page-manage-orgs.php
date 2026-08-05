@@ -126,55 +126,5 @@ $orgs = $wpdb->get_results(
 
 </div><!-- /.br-page -->
 
-<script>
-function toggleNewOrgPanel() {
-    var panel = document.getElementById('new-org-panel');
-    panel.classList.toggle('br-initially-hidden');
-    if (!panel.classList.contains('br-initially-hidden')) {
-        document.getElementById('new-org-name').focus();
-    }
-}
-
-function orgCreate() {
-    var name = jQuery('#new-org-name').val().trim();
-    if (!name) { brNotify('<?= esc_js(__('Please enter a name.','bluerabbit')); ?>', 'error'); return; }
-    jQuery.post(runAJAX.ajaxurl, {
-        action: 'createOrg',
-        nonce:  jQuery('#manage-orgs-nonce').val(),
-        name:   name,
-        color:  jQuery('#new-org-color').val(),
-        status: jQuery('#new-org-status').val()
-    }, function(r) {
-        var d = (typeof r === 'string') ? JSON.parse(r) : r;
-        if (!d.success) { brNotify(d.message || '<?= esc_js(__('Error','bluerabbit')); ?>', 'error'); return; }
-        // Redirect to the new org's management page
-        window.location.href = '<?= esc_js(get_bloginfo('url')); ?>/organization/?id=' + d.org_id;
-    });
-}
-
-function orgDelete(org_id) {
-    jQuery.post(runAJAX.ajaxurl, {
-        action:  'deleteOrg',
-        nonce:   jQuery('#manage-orgs-nonce').val(),
-        org_id:  org_id
-    }, function(r) {
-        var d = (typeof r === 'string') ? JSON.parse(r) : r;
-        if (d.success) {
-            jQuery('#org-row-' + org_id).fadeOut(300, function(){ jQuery(this).remove(); });
-            brNotify('<?= esc_js(__('Organization deleted','bluerabbit')); ?>', 'success');
-        } else {
-            brNotify('<?= esc_js(__('Error deleting organization','bluerabbit')); ?>', 'error');
-        }
-    });
-}
-
-// Live filter
-document.getElementById('filter-orgs')?.addEventListener('input', function(){
-    var val = this.value.toLowerCase();
-    document.querySelectorAll('#orgs-list tr').forEach(function(tr){
-        tr.style.display = (!val || tr.textContent.toLowerCase().includes(val)) ? '' : 'none';
-    });
-});
-</script>
 
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

@@ -72,7 +72,7 @@ if (!$managed_orgs && !$isAdmin) {
         <span class="br-badge br-badge-blue"><?= $total; ?> <?= __('players','bluerabbit'); ?></span>
         <?php if ($total > 0): ?>
         <input type="text" class="br-input br-input-auto" placeholder="<?= esc_attr(__('Filter…','bluerabbit')); ?>"
-               oninput="orgMgrFilter(this, 'org-mgr-list-<?= (int)$managed_org->org_id; ?>');">
+               data-filter-rows="#org-mgr-list-<?= (int)$managed_org->org_id; ?> tr">
         <?php endif; ?>
     </div>
     <p class="br-form-hint"><?= __('Showing members enrolled in your adventures.','bluerabbit'); ?></p>
@@ -101,7 +101,7 @@ if (!$managed_orgs && !$isAdmin) {
                             <?php else: ?>
                             <div class="br-ap-avatar"></div>
                             <?php endif; ?>
-                            <span class="w500"><?= esc_html($name); ?></span>
+                            <span class="br-text-medium"><?= esc_html($name); ?></span>
                         </div>
                     </td>
                     <td><?= esc_html($p->player_email); ?></td>
@@ -124,13 +124,5 @@ if (!$managed_orgs && !$isAdmin) {
 
 </div><!-- /.br-page -->
 
-<script>
-function orgMgrFilter(input, tbodyId) {
-    var val = input.value.toLowerCase();
-    document.querySelectorAll('#' + tbodyId + ' tr').forEach(function(tr){
-        tr.style.display = (!val || tr.textContent.toLowerCase().includes(val)) ? '' : 'none';
-    });
-}
-</script>
 
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>
