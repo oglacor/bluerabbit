@@ -2762,6 +2762,13 @@ add_action('wp_ajax_brOrgStatsSegment', function() {
     $dim    = sanitize_key($_POST['dimension'] ?? 'work_country');
     wp_send_json_success(BR_OrgStats::instance()->get_org_segment_breakdown($org_id, $dim));
 });
+// Engagement is the heaviest query set on the tab, so it is never bootstrapped
+// into the page — it loads once, on demand, when the Stats tab is first opened.
+add_action('wp_ajax_brOrgEngagement', function() {
+    if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Forbidden'], 403);
+    $org_id = intval($_POST['org_id'] ?? 0);
+    wp_send_json_success(BR_OrgStats::instance()->get_org_engagement($org_id));
+});
 add_action("wp_ajax_previewTemplate", [BR_Adventure::instance(), 'previewTemplate']);
 add_action("wp_ajax_createChildAdventure", [BR_Adventure::instance(), 'createChildAdventure']);
 add_action("wp_ajax_duplicateAdventure", [BR_Adventure::instance(), 'duplicateAdventure']);

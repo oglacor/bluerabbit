@@ -218,7 +218,7 @@ $all_adventures = $wpdb->get_results(
                     <span class="icon icon-search"></span> <?= __('Search','bluerabbit'); ?>
                 </button>
             </div>
-            <ul id="org-adv-search-results" class="player-select"></ul>
+            <div id="org-adv-search-results" class="br-ap-results"></div>
         </div>
 
         <!-- Adventures table -->
@@ -300,6 +300,34 @@ $all_adventures = $wpdb->get_results(
             </div>
         </div>
 
+        <!-- Engagement Overview — gauge + distribution, one row per unique player -->
+        <div class="br-panel br-stats-loadable" id="org-eng-panel">
+            <div class="br-stats-panel-loader"><?= __('Calculating…','bluerabbit'); ?></div>
+            <h3 class="br-panel-title"><span class="icon icon-signal"></span> <?= __('Engagement Overview','bluerabbit'); ?></h3>
+            <div class="br-stats-engagement-overview" id="org-eng-overview"></div>
+            <p class="br-form-hint" id="org-eng-coverage"></p>
+        </div>
+
+        <!-- Engagement Breakdown — the five components behind the score -->
+        <div class="br-panel br-stats-loadable" id="org-eng-breakdown-panel">
+            <div class="br-stats-panel-loader"><?= __('Calculating…','bluerabbit'); ?></div>
+            <h3 class="br-panel-title">
+                <span class="icon icon-power"></span> <?= __('Engagement Breakdown','bluerabbit'); ?>
+                <span class="br-panel-title-note">(<?= __('avg across all players','bluerabbit'); ?>)</span>
+            </h3>
+            <div class="br-stats-kpis br-stats-kpis-5" id="org-eng-breakdown"></div>
+        </div>
+
+        <!-- Engagement by Adventure -->
+        <div class="br-panel br-stats-loadable" id="org-eng-adv-panel">
+            <div class="br-stats-panel-loader"><?= __('Calculating…','bluerabbit'); ?></div>
+            <h3 class="br-panel-title"><span class="icon icon-adventure"></span> <?= __('Engagement by Adventure','bluerabbit'); ?></h3>
+            <div class="br-stats-chart-wrap" id="org-eng-adv-wrap">
+                <canvas id="org-eng-adv-chart"></canvas>
+            </div>
+            <p class="br-form-hint"><?= __('Players are scored per adventure, so someone enrolled in several journeys appears in each bar.','bluerabbit'); ?></p>
+        </div>
+
         <!-- Progress by Adventure -->
         <div class="br-panel">
             <h3 class="br-panel-title"><span class="icon icon-adventure"></span> <?= __('Progress by Adventure','bluerabbit'); ?></h3>
@@ -356,7 +384,29 @@ window.brOrgStats = {
     orgId:   <?= (int)$org->org_id; ?>,
     progressByAdventure: <?= json_encode($org_progress); ?>,
     segment: <?= json_encode($org_segment); ?>,
-    segmentDimensions: <?= json_encode(BR_OrgStats::SEGMENT_DIMENSIONS); ?>
+    segmentDimensions: <?= json_encode(BR_OrgStats::SEGMENT_DIMENSIONS); ?>,
+    // Engagement copy lives here so the chart JS stays translation-free.
+    engagementLabels: <?= json_encode([
+        'on_fire'         => __('On Fire','bluerabbit'),
+        'active'          => __('Active','bluerabbit'),
+        'moderate'        => __('Moderate','bluerabbit'),
+        'cooling_off'     => __('Cooling Off','bluerabbit'),
+        'dormant'         => __('Dormant','bluerabbit'),
+        'never_logged_in' => __('Never Logged In','bluerabbit'),
+    ]); ?>,
+    engagementComponents: <?= json_encode([
+        'recency'     => [ 'label' => __('Recency','bluerabbit'),     'info' => __('How recently players have been active. 25 = today, 0 = 30+ days ago. Based on last login or activity log.','bluerabbit'), 'suffix' => __('d avg inactive','bluerabbit'), 'key' => 'avg_days' ],
+        'frequency'   => [ 'label' => __('Frequency','bluerabbit'),   'info' => __('How often players complete milestones. Measured by completions in the last 30 days relative to 30% of total milestones.','bluerabbit'), 'suffix' => __(' avg in 30d','bluerabbit'), 'key' => 'avg_completions_30d' ],
+        'completion'  => [ 'label' => __('Completion','bluerabbit'),  'info' => __('Percentage of all published milestones completed. 25 = 100% done, 0 = nothing completed.','bluerabbit'), 'suffix' => __('% avg done','bluerabbit'), 'key' => 'avg_pct' ],
+        'progression' => [ 'label' => __('Progression','bluerabbit'), 'info' => __('Player level relative to the highest level in the adventure. 15 = max level, 0 = level 1.','bluerabbit'), 'suffix' => '', 'key' => '' ],
+        'economy'     => [ 'label' => __('Economy','bluerabbit'),     'info' => __('Item shop activity. Each transaction = 2 pts, capped at 10. Measures engagement with the economy system.','bluerabbit'), 'suffix' => '', 'key' => '' ],
+    ]); ?>,
+    engagementStrings: <?= json_encode([
+        'avg_score' => __('AVG SCORE','bluerabbit'),
+        'coverage'  => __('%1$s players scored of %2$s enrolled — %3$s have never logged in.','bluerabbit'),
+        'no_data'   => __('No enrolled players yet.','bluerabbit'),
+        'error'     => __('Could not load engagement data.','bluerabbit'),
+    ]); ?>
 };
 
 // ── Player tab filter ─────────────────────────────────────────────────────────
@@ -558,17 +608,16 @@ function orgSearchAdventures() {
         success: function(r) {
             var d = (typeof r === 'string') ? JSON.parse(r) : r;
             if (!d.success || !d.results.length) {
-                jQuery('#org-adv-search-results').html('<li class="br-form-hint padding-10"><?= esc_js(__('No adventures found.','bluerabbit')); ?></li>');
+                jQuery('#org-adv-search-results').html('<div class="br-ap-status br-ap-status-empty"><?= esc_js(__('No adventures found.','bluerabbit')); ?></div>');
                 return;
             }
             var html = '';
             d.results.forEach(function(adv){
-                html += '<li class="border padding-8 margin-bottom-4 pointer" onclick="orgAddAdventure(' + adv.adventure_id + ', this);">'
-                    + '<span class="icon-group">'
-                    + '<span class="br-icon-btn br-icon-btn-indigo"><span class="icon icon-adventure white-color"></span></span>'
-                    + '<span class="icon-content"><span class="line br-text-16 w500">' + adv.adventure_title + '</span>'
-                    + '<span class="line br-text-12-muted">' + (adv.player_display_name || '') + '</span></span>'
-                    + '</span></li>';
+                html += '<div class="br-ap-row br-ap-row-click" onclick="orgAddAdventure(' + adv.adventure_id + ', this);">'
+                    + '<span class="br-ap-avatar br-ap-avatar-icon"><span class="icon icon-adventure"></span></span>'
+                    + '<span class="br-ap-identity"><span class="br-ap-name">' + adv.adventure_title + '</span>'
+                    + '<span class="br-ap-meta">' + (adv.player_display_name || '') + '</span></span>'
+                    + '</div>';
             });
             jQuery('#org-adv-search-results').html(html);
         }

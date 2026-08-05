@@ -192,11 +192,187 @@
     }
     window.orgLoadSegment = orgLoadSegment;
 
+    // ── 4. Engagement (gauge + distribution + breakdown + per-adventure) ─────
+    //
+    // Loaded on demand — the org-wide engagement scan is the heaviest query set
+    // on this tab, so it never blocks the page render.
+
+    var engColors = {
+        on_fire: '#f7cb15', active: '#24da98', moderate: '#1cc2eb',
+        cooling_off: '#ff9800', dormant: '#f44336', never_logged_in: '#607d8b'
+    };
+    var engOrder = ['on_fire', 'active', 'moderate', 'cooling_off', 'dormant', 'never_logged_in'];
+    var engCompColors = {
+        recency: '#1cc2eb', frequency: '#24da98', completion: '#9f40e2',
+        progression: '#f7cb15', economy: '#ff9800'
+    };
+
+    // Copy comes from PHP so it stays translatable; the fallbacks keep the panel
+    // rendering if a cached page predates these keys.
+    var engStrings = $.extend({
+        avg_score: 'AVG SCORE',
+        coverage:  '%1$s players scored of %2$s enrolled — %3$s have never logged in.',
+        no_data:   'No enrolled players yet.',
+        error:     'Could not load engagement data.'
+    }, cfg.engagementStrings || {});
+
+    function engLabel(key) {
+        return (cfg.engagementLabels && cfg.engagementLabels[key]) || key;
+    }
+
+    function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function buildGaugeSVG(score, level) {
+        var circ = 326.73;
+        var off  = (circ * (1 - score / 100)).toFixed(2);
+        var col  = engColors[level] || palette.primary;
+        return '<svg viewBox="0 0 120 120">'
+            + '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>'
+            + '<circle cx="60" cy="60" r="52" fill="none" stroke="' + col + '" stroke-width="8"'
+            + ' stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"'
+            + ' transform="rotate(-90 60 60)" stroke-linecap="round"/>'
+            + '<text x="60" y="52" text-anchor="middle" fill="#ffffff" font-size="28" font-weight="900"'
+            + ' font-family="proxima-nova-extra-condensed,sans-serif">' + score + '</text>'
+            + '<text x="60" y="70" text-anchor="middle" fill="' + col + '" font-size="9" font-weight="700">'
+            + esc(engStrings.avg_score) + '</text></svg>';
+    }
+
+    function renderEngagementOverview(overall) {
+        var $wrap = $('#org-eng-overview');
+        if (!$wrap.length) return;
+
+        // Percentages are of every enrolled player, so the never-logged-in slice
+        // is visible instead of being hidden behind the scored-only average.
+        var total = Math.max(1, overall.count);
+        var h = '<div class="br-stats-engagement-avg">' + buildGaugeSVG(overall.avg_score, overall.level) + '</div>';
+        h += '<div class="br-stats-engagement-dist">';
+        engOrder.forEach(function (key) {
+            var count = overall.distribution[key] || 0;
+            var pct   = Math.round((count / total) * 100);
+            h += '<div class="br-stats-eng-row">'
+               + '<span class="br-stats-eng-label" style="color:' + engColors[key] + '">' + esc(engLabel(key)) + '</span>'
+               + '<div class="br-stats-eng-bar-wrap"><div class="br-stats-eng-bar" style="width:' + pct + '%;background:' + engColors[key] + '"></div></div>'
+               + '<span class="br-stats-eng-score">' + count + '</span>'
+               + '</div>';
+        });
+        h += '</div>';
+        $wrap.html(h);
+
+        var never = overall.distribution.never_logged_in || 0;
+        $('#org-eng-coverage').text(
+            engStrings.coverage
+                .replace('%1$s', overall.scored)
+                .replace('%2$s', overall.count)
+                .replace('%3$s', never)
+        );
+    }
+
+    function renderEngagementBreakdown(overall) {
+        var $wrap = $('#org-eng-breakdown');
+        if (!$wrap.length) return;
+        var comps = cfg.engagementComponents || {};
+        var ab    = overall.avg_breakdown || {};
+        var h = '';
+
+        Object.keys(comps).forEach(function (key) {
+            var meta = comps[key];
+            var c    = ab[key] || { score: 0, max: 0 };
+            var col  = engCompColors[key] || palette.primary;
+            var detail = meta.key ? (c[meta.key] || 0) + meta.suffix : '';
+            h += '<div class="br-stats-kpi br-stats-kpi-eng" style="border-color:' + col + '33">'
+               + '<span class="br-stats-kpi-value" style="color:' + col + '">' + c.score + '<small>/' + c.max + '</small></span>'
+               + '<span class="br-stats-kpi-label">' + esc(meta.label)
+               + ' <span class="br-stats-info-btn br-stats-info-icon" title="' + esc(meta.info) + '">&#9432;</span></span>'
+               + (detail ? '<span class="br-stats-kpi-detail">' + esc(detail) + '</span>' : '')
+               + '</div>';
+        });
+        $wrap.html(h);
+    }
+
+    function renderEngagementByAdventure(rows) {
+        var ctx = document.getElementById('org-eng-adv-chart');
+        if (!ctx) return;
+        destroy('engAdv');
+        rows = rows || [];
+        if (!rows.length) return;
+
+        var wrap = document.getElementById('org-eng-adv-wrap');
+        if (wrap) wrap.style.height = Math.max(180, rows.length * 46 + 70) + 'px';
+
+        var labels = rows.map(function (r) { return r.adventure_title; });
+        var datasets = engOrder.map(function (key) {
+            return {
+                label: engLabel(key),
+                data: rows.map(function (r) { return parseInt(r.distribution[key], 10) || 0; }),
+                backgroundColor: engColors[key] + 'cc',
+                borderColor: engColors[key],
+                borderWidth: 1
+            };
+        });
+
+        var opts = $.extend(true, {}, baseOpts);
+        opts.legend.display = true;
+        opts.legend.position = 'bottom';
+        opts.legend.labels = { fontColor: palette.white, fontSize: 11, boxWidth: 12 };
+        opts.scales.xAxes[0].stacked = true;
+        opts.scales.yAxes[0].stacked = true;
+
+        charts['engAdv'] = new Chart(ctx, {
+            type: 'horizontalBar',
+            data: { labels: labels, datasets: datasets },
+            options: $.extend(true, {}, opts, {
+                tooltips: {
+                    mode: 'index',
+                    callbacks: {
+                        // The bar is a headcount split, so the adventure's own average
+                        // score - the number a manager actually acts on - is appended.
+                        afterTitle: function (items) {
+                            var r = rows[items[0].index];
+                            return 'Avg score: ' + r.avg_score + '/100';
+                        }
+                    }
+                }
+            })
+        });
+    }
+
+    function orgLoadEngagement() {
+        var $panels = $('#org-eng-panel, #org-eng-breakdown-panel, #org-eng-adv-panel').addClass('br-stats-loading');
+        $.post(cfg.ajaxurl, { action: 'brOrgEngagement', org_id: cfg.orgId })
+            .done(function (res) {
+                if (!res || !res.success || !res.data) {
+                    $('#org-eng-coverage').text(engStrings.error);
+                    return;
+                }
+                var overall = res.data.overall;
+                if (!overall || !overall.count) {
+                    $('#org-eng-overview').empty();
+                    $('#org-eng-coverage').text(engStrings.no_data);
+                    return;
+                }
+                renderEngagementOverview(overall);
+                renderEngagementBreakdown(overall);
+                renderEngagementByAdventure(res.data.by_adventure);
+            })
+            .fail(function () {
+                $('#org-eng-coverage').text(engStrings.error);
+            })
+            .always(function () {
+                $panels.removeClass('br-stats-loading');
+            });
+    }
+    window.orgLoadEngagement = orgLoadEngagement;
+
     // ── Init (called once when Stats tab is first opened) ────────────────────
 
     function brOrgChartsInit() {
         initProgressChart();
         orgLoadActivity();
+        orgLoadEngagement();
         orgLoadSegment(cfg.segment ? cfg.segment.dimension : 'work_country', null);
     }
     window.brOrgChartsInit = brOrgChartsInit;

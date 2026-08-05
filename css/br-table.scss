@@ -7328,6 +7328,16 @@ button.br-btn.br-confirming {
   gap: 6px;
 }
 
+// Qualifier that rides alongside a panel title ("(avg across all players)") —
+// same line, deliberately quieter than the heading it explains.
+.br-panel-title-note {
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba($br-white, 0.3);
+}
+
 // A tab's worth of panels. Hidden/shown by brSwitchPanel(), which toggles
 // .br-initially-hidden on them.
 //
@@ -7602,6 +7612,23 @@ button.br-btn.br-confirming {
   border: 1px solid rgba($br-primary, 0.25);
   // When an <img> is used for dynamic avatars (no inline-style needed)
   &[src] { object-fit: cover; }
+}
+
+// Adventure results have no avatar image, so the same circle carries an icon.
+.br-ap-avatar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba($br-primary, 0.12);
+
+  .icon { font-size: 18px; color: rgba($br-white, 0.7); }
+}
+
+// Rows where the whole row is the button (adventure search adds on click).
+.br-ap-row-click {
+  cursor: pointer;
+
+  &:hover { background: rgba($br-primary, 0.08); }
 }
 
 .br-ap-identity {
