@@ -6,7 +6,7 @@ if (!$org) { echo '<p class="br-page">' . __('Organization not found.','bluerabb
 $org_players    = BR_Organization::instance()->getOrgPlayers($org->org_id);
 $org_adventures = BR_Organization::instance()->getOrgAdventures($org->org_id);
 $total_players  = count($org_players);
-$total_advs     = count($org_adventures);
+$total_advs     = count($org_adventures); 
 
 $org_stats    = BR_OrgStats::instance()->get_org_summary($org->org_id);
 $org_progress = BR_OrgStats::instance()->get_progress_by_adventure($org->org_id);
@@ -112,17 +112,26 @@ $all_adventures = $wpdb->get_results(
         <div class="br-panel">
             <h3 class="br-panel-title"><span class="icon icon-add"></span> <?= __('Add Players','bluerabbit'); ?></h3>
 
-            <!-- Search -->
+            <!-- Player search -->
             <div class="br-form-group">
-                <label class="br-form-label"><?= __('Search by name or email','bluerabbit'); ?></label>
-                <div class="br-input-row">
-                    <input type="text" class="br-input" id="player-search-string" autocomplete="off"
-                           placeholder="<?= esc_attr(__('Type email or name…','bluerabbit')); ?>">
-                    <button class="br-btn cyan" onclick="findPlayersToOrg();">
-                        <span class="icon icon-search"></span> <?= __('Find','bluerabbit'); ?>
+                <label class="br-form-label"><?= __('Find someone already registered','bluerabbit'); ?></label>
+                <div class="br-ap-search-wrap">
+                    <span class="icon icon-search br-ap-search-icon"></span>
+                    <input class="br-input br-ap-search" type="text" id="org-ap-search"
+                           autocomplete="off" placeholder="<?= esc_attr(__('Type email or name…','bluerabbit')); ?>">
+                    <button class="br-ap-clear br-initially-hidden" id="org-ap-clear" onclick="orgApClearSearch();">
+                        <span class="icon icon-cancel"></span>
                     </button>
                 </div>
-                <div id="search-players-results"><ul class="player-select"></ul></div>
+                <div class="br-ap-status" id="org-ap-status"></div>
+                <div class="br-ap-results" id="org-ap-results"></div>
+                <div class="br-ap-log br-initially-hidden" id="org-ap-log">
+                    <div class="br-ap-log-head">
+                        <span><?= __('Added in this session','bluerabbit'); ?></span>
+                        <span class="br-badge br-badge-green" id="org-ap-log-count">0</span>
+                    </div>
+                    <ul class="br-ap-log-list" id="org-ap-log-list"></ul>
+                </div>
             </div>
 
             <!-- CSV import -->
@@ -174,7 +183,6 @@ $all_adventures = $wpdb->get_results(
                             <th><?= __('ID','bluerabbit'); ?></th>
                             <th><?= __('Name','bluerabbit'); ?></th>
                             <th><?= __('Email','bluerabbit'); ?></th>
-                            <th><?= __('Role','bluerabbit'); ?></th>
                             <th><?= __('Remove','bluerabbit'); ?></th>
                         </tr>
                     </thead>
@@ -337,23 +345,6 @@ $all_adventures = $wpdb->get_results(
 
 <?php include get_stylesheet_directory().'/br-op-console.php'; ?>
 
-<!-- Player add success/error messages (used by findPlayersToOrg in script.js) -->
-<div class="hidden" id="msg-player-added-to-org">
-    <li class="border green-bg-400 green-border-800">
-        <span class="icon-group">
-            <span class="br-icon-btn"><span class="icon icon-check white-color"></span></span>
-            <span class="icon-content white-color"><span class="line br-text-16"><?= __('Player added to Org!','bluerabbit'); ?></span></span>
-        </span>
-    </li>
-</div>
-<div class="hidden" id="msg-player-not-added-to-org">
-    <li class="border red-bg-400 red-border-800">
-        <span class="icon-group">
-            <span class="br-icon-btn"><span class="icon icon-cancel white-color"></span></span>
-            <span class="icon-content white-color"><span class="line br-text-16"><?= __('Error adding player','bluerabbit'); ?></span></span>
-        </span>
-    </li>
-</div>
 
 </div><!-- /.br-page -->
 
@@ -419,7 +410,66 @@ function removePlayerFromOrg(player_id, org_id) {
     );
 }
 
-// ── CSV import players to org ─────────────────────────────────────────────────
+// ── Player search (add-player-box style) ─────────────────────────────────────
+function orgApFind() {
+    var s = jQuery('#org-ap-search').val().trim();
+    if (!s) return;
+    jQuery('#org-ap-status').removeClass().addClass('br-ap-status br-ap-status-hint').text('<?= esc_js(__('Searching…','bluerabbit')); ?>');
+    jQuery('#org-ap-results').empty();
+    jQuery('#org-ap-clear').removeClass('br-initially-hidden');
+    jQuery.post(runAJAX.ajaxurl, {
+        action: 'findPlayersToOrg',
+        nonce: jQuery('#search-player-nonce').val(),
+        search_string: s
+    }, function(html) {
+        var $res = jQuery('#org-ap-results').html(html || '');
+        var count = $res.find('.br-ap-row').length;
+        if (count > 0) {
+            jQuery('#org-ap-status').removeClass().addClass('br-ap-status br-ap-status-found')
+                .text(count + ' <?= esc_js(__('result','bluerabbit')); ?>' + (count !== 1 ? 's' : ''));
+        } else {
+            jQuery('#org-ap-status').removeClass().addClass('br-ap-status br-ap-status-empty')
+                .text('<?= esc_js(__('No results found.','bluerabbit')); ?>');
+        }
+    });
+}
+
+function orgApClearSearch() {
+    jQuery('#org-ap-search').val('');
+    jQuery('#org-ap-results').empty();
+    jQuery('#org-ap-clear').addClass('br-initially-hidden');
+    jQuery('#org-ap-status').removeClass().addClass('br-ap-status').text('');
+}
+
+function orgApAddPlayer(player_id, btn) {
+    var $btn = jQuery(btn);
+    var $row = jQuery('#org-ap-row-' + player_id);
+    $btn.prop('disabled', true).html('<span class="br-ap-spin icon icon-refresh"></span>');
+    jQuery.post(runAJAX.ajaxurl, {
+        action: 'addPlayerToOrg',
+        org_id: jQuery('#the_org_id').val(),
+        player_id: player_id
+    }, function(html) {
+        if (html && html.trim()) {
+            var name = $row.find('.br-ap-name').text().trim() || ('Player ' + player_id);
+            $row.addClass('br-ap-row-done');
+            $row.find('.br-ap-action').html('<span class="br-badge br-badge-green"><span class="icon icon-check"></span></span>');
+            var $log = jQuery('#org-ap-log');
+            var $list = jQuery('#org-ap-log-list');
+            $log.removeClass('br-initially-hidden');
+            $list.prepend('<li><span class="icon icon-check"></span> ' + jQuery('<span>').text(name).html() + '</li>');
+            jQuery('#org-ap-log-count').text($list.find('li').length);
+            jQuery('#org-players-list').append(html);
+            var cur = parseInt(jQuery('#org-player-count').text()) || 0;
+            jQuery('#org-player-count').text(cur + 1);
+        } else {
+            $row.addClass('br-ap-row-error');
+            $row.find('.br-ap-action').html('<span class="br-badge br-badge-red"><span class="icon icon-cancel"></span></span>');
+        }
+    });
+}
+
+// ── CSV import players to org (batched, per-email logging) ────────────────────
 function orgImportPlayersCsv() {
     var fileInput = document.getElementById('org-csv-players');
     if (!fileInput || !fileInput.files[0]) { alert('<?= esc_js(__('Please select a CSV file.','bluerabbit')); ?>'); return; }
@@ -428,31 +478,49 @@ function orgImportPlayersCsv() {
         var lines  = e.target.result.split(/[\r\n]+/);
         var emails = [];
         lines.forEach(function(line){
-            var cell = line.split(',')[0].replace(/['"]/g,'').trim().toLowerCase();
+            var cell = line.split(',')[0].replace(/['"]/g, '').trim().toLowerCase();
             if (cell && cell.indexOf('@') > -1 && cell !== 'email') emails.push(cell);
         });
         if (!emails.length) { alert('<?= esc_js(__('No valid emails found.','bluerabbit')); ?>'); return; }
+
+        var CHUNK = 20, chunks = [], i;
+        for (i = 0; i < emails.length; i += CHUNK) chunks.push(emails.slice(i, i + CHUNK));
+        var total = emails.length, done = 0, addedTotal = 0, alreadyInTotal = 0, notFoundTotal = 0;
+
         brOpConsoleOpen('<?= esc_js(__('Import Players to Org','bluerabbit')); ?>');
-        brOpConsoleLog('<?= esc_js(__('Found','bluerabbit')); ?> ' + emails.length + ' <?= esc_js(__('email addresses…','bluerabbit')); ?>', 'info');
-        jQuery.ajax({
-            url: runAJAX.ajaxurl, method: 'POST',
-            data: { action: 'importPlayersToOrg', org_id: jQuery('#the_org_id').val(), emails: emails },
-            success: function(r) {
-                var d = (typeof r === 'string') ? JSON.parse(r) : r;
-                if (!d.success) { brOpConsoleLog(d.message || '<?= esc_js(__('Error','bluerabbit')); ?>', 'error'); brOpConsoleDone(); return; }
-                var summary = d.added + ' <?= esc_js(__('added','bluerabbit')); ?>, ' + d.already_in + ' <?= esc_js(__('already in org','bluerabbit')); ?>';
-                if (d.not_found) summary += ', ' + d.not_found + ' <?= esc_js(__('not found','bluerabbit')); ?>.';
-                if (d.not_found_emails && d.not_found_emails.length) {
-                    brOpConsoleLog('<?= esc_js(__('Emails not found','bluerabbit')); ?> (' + d.not_found_emails.length + '):', 'warn');
-                    d.not_found_emails.forEach(function(em){ brOpConsoleLog(em, 'warn'); });
-                }
+        brOpConsoleLog(emails.length + ' <?= esc_js(__('email addresses found in CSV…','bluerabbit')); ?>', 'info');
+        brOpConsoleSetProgress(0, total);
+
+        function processChunk(idx) {
+            if (idx >= chunks.length) {
+                var summary = addedTotal + ' <?= esc_js(__('added','bluerabbit')); ?>, '
+                    + alreadyInTotal + ' <?= esc_js(__('already in org','bluerabbit')); ?>';
+                if (notFoundTotal) summary += ', ' + notFoundTotal + ' <?= esc_js(__('not found','bluerabbit')); ?>';
                 brOpConsoleDone(summary);
                 var cur = parseInt(jQuery('#org-player-count').text()) || 0;
-                jQuery('#org-player-count').text(cur + d.added);
+                jQuery('#org-player-count').text(cur + addedTotal);
                 fileInput.value = '';
-            },
-            error: function(){ brOpConsoleLog('<?= esc_js(__('Request failed','bluerabbit')); ?>', 'error'); brOpConsoleDone(); }
-        });
+                return;
+            }
+            jQuery.post(runAJAX.ajaxurl, {
+                action: 'importPlayersToOrg',
+                org_id: jQuery('#the_org_id').val(),
+                emails: chunks[idx]
+            }, function(r) {
+                var d = (typeof r === 'string') ? JSON.parse(r) : r;
+                if (!d.success) { brOpConsoleLog(d.message || '<?= esc_js(__('Error','bluerabbit')); ?>', 'error'); brOpConsoleDone(); return; }
+                addedTotal     += d.added      || 0;
+                alreadyInTotal += d.already_in || 0;
+                notFoundTotal  += d.not_found  || 0;
+                done += chunks[idx].length;
+                (d.added_emails      || []).forEach(function(em){ brOpConsoleLog('+ ' + em, 'success'); });
+                (d.already_in_emails || []).forEach(function(em){ brOpConsoleLog('= ' + em, 'info'); });
+                (d.not_found_emails  || []).forEach(function(em){ brOpConsoleLog('? ' + em, 'warn'); });
+                brOpConsoleSetProgress(done, total);
+                processChunk(idx + 1);
+            }).fail(function(){ brOpConsoleLog('<?= esc_js(__('Request failed','bluerabbit')); ?>', 'error'); brOpConsoleDone(); });
+        }
+        processChunk(0);
     };
     reader.readAsText(fileInput.files[0]);
 }
@@ -560,7 +628,7 @@ function orgStatsInit() {
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 jQuery(function($){
     $('#adv-search-string').on('keyup', function(e){ if (e.key === 'Enter') orgSearchAdventures(); });
-    $('#player-search-string').on('keyup', function(e){ if (e.key === 'Enter') findPlayersToOrg(); });
+    $('#org-ap-search').on('keyup', function(e){ if (e.key === 'Enter') orgApFind(); });
 });
 </script>
 

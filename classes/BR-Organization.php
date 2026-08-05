@@ -75,7 +75,7 @@ class BR_Organization {
         return $wpdb->get_results($wpdb->prepare(
             "SELECT players.*, org.role
              FROM {$wpdb->prefix}br_players players
-             JOIN {$wpdb->prefix}br_player_org org ON org.player_id = players.player_id AND org.org_id = %d",
+             JOIN {$wpdb->prefix}br_player_org org ON org.player_id = players.player_id AND org.org_id = %d LIMIT 10000",
             $org_id
         )) ?: [];
     }
@@ -95,8 +95,6 @@ class BR_Organization {
                 $theFile = get_template_directory() . '/player-select-org.php';
                 if (file_exists($theFile)) include $theFile;
             }
-        } else {
-            echo "<li class='margin-5'><div class='icon-group'><div class='icon-content'><span class='line font _18'>".__("No results","bluerabbit")."</span></div></div></li>";
         }
         die();
     }
@@ -183,8 +181,13 @@ class BR_Organization {
             "SELECT player_id, player_email FROM {$wpdb->prefix}br_players WHERE player_email IN ($ph)",
             ...$emails
         ));
-        $found_map = [];
-        foreach ($found as $p) $found_map[strtolower($p->player_email)] = (int)$p->player_id;
+        $found_map  = [];
+        $id_to_email = [];
+        foreach ($found as $p) {
+            $em = strtolower($p->player_email);
+            $found_map[$em]            = (int)$p->player_id;
+            $id_to_email[(int)$p->player_id] = $em;
+        }
 
         $not_found_emails = [];
         $player_ids       = [];
@@ -194,6 +197,7 @@ class BR_Organization {
         }
 
         $already_in = 0; $added = 0;
+        $added_emails = []; $already_in_emails = [];
         if ($player_ids) {
             // Check which are already in org
             $ph2      = implode(',', array_fill(0, count($player_ids), '%d'));
@@ -202,8 +206,10 @@ class BR_Organization {
                 array_merge([$org_id], $player_ids)
             ));
             $existing_set = array_flip(array_map('intval', $existing));
-            $new_ids = array_filter($player_ids, fn($id) => !isset($existing_set[$id]));
-            $already_in = count($player_ids) - count($new_ids);
+            $new_ids      = array_values(array_filter($player_ids, fn($id) => !isset($existing_set[$id])));
+            $already_ids  = array_values(array_filter($player_ids, fn($id) =>  isset($existing_set[$id])));
+            $already_in   = count($already_ids);
+            $already_in_emails = array_map(fn($id) => $id_to_email[$id] ?? '', $already_ids);
 
             if ($new_ids) {
                 $ins_ph  = implode(',', array_fill(0, count($new_ids), '(%d,%d)'));
@@ -213,15 +219,18 @@ class BR_Organization {
                     "INSERT IGNORE INTO {$wpdb->prefix}br_player_org (player_id, org_id) VALUES $ins_ph",
                     $ins_vals
                 ));
-                $added = (int)$wpdb->rows_affected;
+                $added        = (int)$wpdb->rows_affected;
+                $added_emails = array_map(fn($id) => $id_to_email[$id] ?? '', $new_ids);
             }
         }
 
-        $data['success']          = true;
-        $data['added']            = $added;
-        $data['already_in']       = $already_in;
-        $data['not_found']        = count($not_found_emails);
-        $data['not_found_emails'] = $not_found_emails;
+        $data['success']            = true;
+        $data['added']              = $added;
+        $data['added_emails']       = $added_emails;
+        $data['already_in']         = $already_in;
+        $data['already_in_emails']  = $already_in_emails;
+        $data['not_found']          = count($not_found_emails);
+        $data['not_found_emails']   = $not_found_emails;
         echo json_encode($data); die();
     }
 

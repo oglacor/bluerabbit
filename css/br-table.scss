@@ -7600,6 +7600,8 @@ button.br-btn.br-confirming {
   background-position: center;
   background-color: rgba($br-white, 0.08);
   border: 1px solid rgba($br-primary, 0.25);
+  // When an <img> is used for dynamic avatars (no inline-style needed)
+  &[src] { object-fit: cover; }
 }
 
 .br-ap-identity {
