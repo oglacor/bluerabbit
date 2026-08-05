@@ -112,7 +112,7 @@ footer.php (44), page-duplicator.php (41), icon-select.php (34), page-post.php (
 - Feature-gate with `$my_features['feature_name'][$f_role]`
 
 ## Git Workflow
-- Branch: `new_steps_system`
+- Branch: `main`
 - Remote: `origin` → GitHub `oglacor/bluerabbit`
 - Commit frequently with descriptive messages
 - Push after each logical unit of work
