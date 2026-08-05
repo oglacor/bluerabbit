@@ -1427,7 +1427,7 @@ class BR_Quest {
 
 				SELECT
 
-		 NULL,`quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, `milestone_top`, `milestone_left`, `milestone_x`, `milestone_y`, `milestone_z`, `milestone_rotation`
+		 NULL,`quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, NULL, NULL, NULL, NULL, NULL, NULL
 
 				FROM  {$wpdb->prefix}br_quests WHERE `quest_id` = %d;
 			";
@@ -1440,7 +1440,7 @@ class BR_Quest {
 
 				SELECT
 
-		 `quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, `milestone_top`, `milestone_left`, `milestone_x`, `milestone_y`, `milestone_z`, `milestone_rotation`
+		 `quest_author`, `quest_order`, %d, `achievement_id`, `quest_date_posted`, `quest_date_modified`, `quest_status`, `quest_relevance`, `quest_title`, `quest_content`, `quest_success_message`, `quest_guild`, `quest_type`, `mech_level`, `mech_xp`, `mech_bloo`, `mech_ep`, `mech_badge`, `mech_deadline`, `mech_start_date`, `mech_deadline_cost`, `mech_unlock_cost`, `mech_min_words`, `mech_min_links`, `mech_min_images`, `mech_max_attempts`, `mech_free_attempts`, `mech_attempt_cost`, `mech_questions_to_display`, `mech_answers_to_win`, `mech_time_limit`, `mech_show_answers`, `mech_item_reward`, `mech_achievement_reward`,  `quest_style`, `quest_secondary_headline`, `quest_color`, NULL, NULL, NULL, NULL, NULL, NULL
 
 				FROM  {$wpdb->prefix}br_quests WHERE `quest_id` = %d;
 			";
@@ -1480,9 +1480,11 @@ class BR_Quest {
 				array_push($values, $new_quest_id, $q_title_str, $qs['image'], $qs['type']);
 				$place_holders[] = "(%d, %s, %s, %s)";
 			}
-			$questions_query .= implode(', ', $place_holders);
-			///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the answers and insert from there.
-			$qs_insert = $wpdb->query( $wpdb->prepare("$questions_query ", $values));
+			if(!empty($place_holders)){
+				$questions_query .= implode(', ', $place_holders);
+				///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the answers and insert from there.
+				$qs_insert = $wpdb->query( $wpdb->prepare("$questions_query ", $values));
+			}
 			$question_first_id = $wpdb->insert_id;
 
 
@@ -1498,8 +1500,10 @@ class BR_Quest {
 				}
 				$question_first_id++;
 			}
-			$answers_query .= implode(', ', $a_place_holders);
-			$answers_insert = $wpdb->query( $wpdb->prepare("$answers_query ", $a_values));
+			if(!empty($a_place_holders)){
+				$answers_query .= implode(', ', $a_place_holders);
+				$answers_insert = $wpdb->query( $wpdb->prepare("$answers_query ", $a_values));
+			}
 			//
 		}elseif($quest->quest_type == 'quest'){
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','quest',"quest-steps",$quest_id);
@@ -1535,8 +1539,10 @@ class BR_Quest {
 				);
 				$place_holders[] = "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %d, %s, %s, %d, %d, %d)";
 			}
-			$steps_query .= implode(', ', $place_holders);
-			$steps_insert = $wpdb->query( $wpdb->prepare("$steps_query ", $values));
+			if(!empty($place_holders)){
+				$steps_query .= implode(', ', $place_holders);
+				$steps_insert = $wpdb->query( $wpdb->prepare("$steps_query ", $values));
+			}
 			$steps_first_id = $wpdb->insert_id;
 
 			// Duplicate Step BUTTONS
@@ -1592,9 +1598,11 @@ class BR_Quest {
 				array_push($values,$new_quest_id, $q_title_str, $qs['image'], $qs['type'], $qs['order'], $q_desc_str, $qs['display'], $qs['range']);
 				$place_holders[] = "(%d, %s, %s, %s, %d, %s, %s, %d)";
 			}
-			$questions_query .= implode(', ', $place_holders);
-			///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the options and insert from there.
-			$qs_insert = $wpdb->query( $wpdb->prepare("$questions_query ", $values));
+			if(!empty($place_holders)){
+				$questions_query .= implode(', ', $place_holders);
+				///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the options and insert from there.
+				$qs_insert = $wpdb->query( $wpdb->prepare("$questions_query ", $values));
+			}
 			$question_first_id = $wpdb->insert_id;
 			///////////// ANSWERS DUPLICATION >>>
 			$options_query = "INSERT INTO {$wpdb->prefix}br_survey_options (survey_id, survey_question_id,  survey_option_text, survey_option_image) VALUES ";
@@ -1609,8 +1617,10 @@ class BR_Quest {
 				}
 				$question_first_id++;
 			}
-			$options_query .= implode(', ', $o_place_holders);
-			$options_insert = $wpdb->query( $wpdb->prepare("$options_query ", $o_values));
+			if(!empty($o_place_holders)){
+				$options_query .= implode(', ', $o_place_holders);
+				$options_insert = $wpdb->query( $wpdb->prepare("$options_query ", $o_values));
+			}
 
 		}elseif($quest->quest_type == 'mission'){
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','mission',"",$quest_id);
@@ -1622,9 +1632,10 @@ class BR_Quest {
 				array_push($values, $new_quest_id, $adventure_id, $objs->objective_order, $objs->ep_cost, $objs->blog_post_id, $objs->objective_date, $objs->objective_modified, $objs->objective_keyword, $objs->objective_content, $objs->objective_success_message, $objs->objective_type, $objs->objective_status);
 				$place_holders[] = "(%d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s)";
 			}
-			$objectives_query .= implode(', ', $place_holders);
-			///////////// INSERT QUESTIONS AND GET FIRST QUESITON ID INSERT to duplicate the options and insert from there.
-			$objectives_insert = $wpdb->query( $wpdb->prepare("$objectives_query ", $values));
+			if(!empty($place_holders)){
+				$objectives_query .= implode(', ', $place_holders);
+				$objectives_insert = $wpdb->query( $wpdb->prepare("$objectives_query ", $values));
+			}
 
 		}else{
 			BR_Activity::instance()->logActivity($adventure_id,'duplicate','quest',"",$quest_id);

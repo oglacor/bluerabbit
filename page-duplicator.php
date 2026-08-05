@@ -18,7 +18,7 @@ $adventures = $wpdb->get_results( $wpdb->prepare(
 
 $adventure_quests = $wpdb->get_results( $wpdb->prepare(
 	"SELECT * FROM {$wpdb->prefix}br_quests
-	 WHERE adventure_id = %d AND quest_status = 'publish'
+	 WHERE adventure_id = %d AND quest_status = 'publish' OR quest_status = 'locked' 
 	 ORDER BY quest_type, quest_relevance, quest_order, mech_level, mech_start_date",
 	$adv_id
 ) );

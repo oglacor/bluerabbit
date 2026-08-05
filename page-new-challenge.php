@@ -5,7 +5,7 @@ $quests = $wpdb->get_results(" SELECT * FROM {$wpdb->prefix}br_quests WHERE adve
 $items = BR_Item::instance()->getItems($adventure->adventure_id);
 $achievements = BR_Achievement::instance()->getAchievements($adventure->adventure_id);
 $paths = BR_Achievement::instance()->getAchievements($adventure->adventure_id, 'path|rank');
-if($questID && $use_challenges){
+if($questID){
 	foreach($quests as $q){
 		if($q->quest_id == $questID){
 			$quest = $q;

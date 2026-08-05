@@ -564,6 +564,7 @@ class BR_Challenge {
 
     public function gradeChallenge($attempt_id=0){
         global $wpdb; $current_user = wp_get_current_user();
+        $player_id = $current_user->ID;
 
         $challenge_id = $_POST['challenge_id'];
         $att_id = $_POST['attempt_id'];
@@ -686,7 +687,6 @@ class BR_Challenge {
             die();
         }
         $data['success']=true;
-        $player_id = $current_user->ID;
         BR_Player::instance()->resetPlayer($adv_child_id, $player_id);
         echo json_encode($data);
         die();
