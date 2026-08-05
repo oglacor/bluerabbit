@@ -46,6 +46,8 @@
         var ctx = document.getElementById('org-progress-chart');
         if (!ctx) return;
         destroy('progress');
+        var wrap = document.getElementById('org-progress-wrap');
+        if (wrap) wrap.style.height = Math.max(160, rows.length * 50 + 60) + 'px';
 
         var labels   = rows.map(function(r){ return r.adventure_title; });
         var enrolled = rows.map(function(r){ return parseInt(r.enrolled_count, 10); });

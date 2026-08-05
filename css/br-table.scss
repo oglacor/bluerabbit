@@ -1537,6 +1537,17 @@ body.br-drawer-open {
 // ── Spacing utilities ───────────────────────────────────
 .br-mt-lg { margin-top: 24px; }
 .br-ml-auto { margin-left: auto; }
+.br-flex-1 { flex: 1; min-width: 0; }
+
+// ── Panel inner header row (title + actions side by side) ─
+.br-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .br-panel-title { margin: 0; flex: 1; min-width: 0; }
+}
 
 // ── Tabs inline (no margin, border-bottom) ──────────────
 .br-tabs-inline {
