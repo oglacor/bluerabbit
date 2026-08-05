@@ -10,7 +10,7 @@ $transactions = $wpdb->get_results("SELECT
 	JOIN {$wpdb->prefix}br_items c ON b.object_id = c.item_id
 	WHERE b.adventure_id=$adventure->adventure_id AND b.trnx_status='publish'
 		AND b.trnx_type IN ('consumable','key','reward','tabi-piece','gift-card')
-	ORDER BY b.trnx_use ASC, b.trnx_id ASC LIMIT 1000
+	ORDER BY b.trnx_use ASC, b.trnx_id ASC LIMIT 2000
 ");
 
 $type_badges = [

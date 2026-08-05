@@ -107,7 +107,7 @@ if($adventure && ($isGM || $isAdmin || $isNPC)){
                                 SELECT a.*, b.player_display_name, b.player_picture, b.player_first, b.player_last, b.player_email, b.player_hexad, b.player_hexad_slug FROM {$wpdb->prefix}br_player_adventure a
                                 LEFT JOIN {$wpdb->prefix}br_players b 
                                 on a.player_id = b.player_id
-                                WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' AND a.player_id IN ($player_ids) ORDER BY b.player_email LIMIT 1000
+                                WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' AND a.player_id IN ($player_ids) ORDER BY b.player_email LIMIT 2000
 
                                 ");
                                 ?>

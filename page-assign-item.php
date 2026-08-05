@@ -33,7 +33,7 @@ $players = $wpdb->get_results($wpdb->prepare(
 	LEFT JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
 	LEFT JOIN {$wpdb->prefix}users users ON a.player_id = users.ID
 	WHERE a.adventure_id=%d AND a.player_adventure_status='in'
-	ORDER BY b.player_email LIMIT 1000",
+	ORDER BY b.player_email LIMIT 2000",
 	$adventure->adventure_id
 ));
 ?>

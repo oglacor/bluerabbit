@@ -407,7 +407,7 @@ if($adventure && ($isGM || $isAdmin)){
 								FROM {$wpdb->prefix}br_player_adventure a
 								LEFT JOIN {$wpdb->prefix}br_players b ON a.player_id = b.player_id
 								WHERE a.adventure_id=$adventure->adventure_id AND a.player_adventure_status='in' AND a.player_id IN ($player_ids)
-								ORDER BY b.player_email LIMIT 1000
+								ORDER BY b.player_email LIMIT 2000
 							");
 						}
 						?>

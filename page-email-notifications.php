@@ -47,7 +47,7 @@ $enrolled_players = $wpdb->get_results(
 	   LEFT JOIN {$wpdb->users} u ON a.player_id = u.ID
 	  WHERE a.adventure_id = {$adv_parent_id}
 	    AND a.player_adventure_status = 'in'
-	  ORDER BY u.user_email LIMIT 1000"
+	  ORDER BY u.user_email LIMIT 2000"
 );
 $recipient_count  = count( $enrolled_players );
 $sender_is_owner  = ( $owner && (int) $owner->ID === (int) $sender->ID );

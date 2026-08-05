@@ -6,7 +6,7 @@ $players = $wpdb->get_results("
 	on a.player_id = b.player_id
 	LEFT JOIN {$wpdb->prefix}users users
 	on a.player_id = users.ID
-	WHERE a.adventure_id=$adv_parent_id AND a.player_adventure_status='in' $str ORDER BY b.player_email LIMIT 1000
+	WHERE a.adventure_id=$adv_parent_id AND a.player_adventure_status='in' $str ORDER BY b.player_email LIMIT 2000
 "); ?>
 
 <!-- Bulk Upload -->

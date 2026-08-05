@@ -12,7 +12,7 @@ $orders = $wpdb->get_results("SELECT
 	LEFT JOIN {$wpdb->prefix}br_players p ON o.player_id = p.player_id
 	LEFT JOIN {$wpdb->prefix}br_items i ON o.item_id = i.item_id
 	WHERE $where
-	ORDER BY o.created_at DESC LIMIT 1000
+	ORDER BY o.created_at DESC LIMIT 2000
 ");
 
 $status_badges = array(
