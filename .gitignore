@@ -16,3 +16,6 @@ node_modules/
 # Working documents (not part of theme)
 BLUERABBIT_PROJECT_BRIEF.md
 DECISIONS.md
+
+# Golden-master captures for tools/reset-player-baseline.php (multi-MB, machine-specific)
+tools/reset-player-baseline*.json

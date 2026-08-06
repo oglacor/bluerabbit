@@ -2134,6 +2134,56 @@ function br_migrate_conditions_schema() {
 		$wpdb->query("ALTER TABLE {$prefix}br_adventure_ranks ADD COLUMN `condition_type` VARCHAR(30) NOT NULL DEFAULT 'level'");
 	}
 
+	// ── Indexes ───────────────────────────────────────────────────────────────
+	//
+	// These tables were carrying primary keys and nothing else, so every lookup by
+	// player or by adventure was a full table scan. That is invisible at 40 rows and
+	// fatal at 400,000: resetPlayer() alone reads player_posts, quests, transactions
+	// and achievements several times per call, and it runs on every quest completion
+	// for every player.
+	//
+	// Each index below matches a filter this codebase actually issues. Composite
+	// order is "most selective first" for the queries in question - player_posts is
+	// almost always read as "this player, in this adventure".
+	//
+	// Note several primary keys start with the wrong column for how the table is
+	// read (br_player_achievement is keyed achievement-first but read player-first,
+	// br_player_posts is keyed quest-first but read player-first), which is why these
+	// secondary indexes are needed rather than being redundant with the PK.
+	$br_indexes = [
+		'br_player_posts'        => [
+			'idx_player_adventure' => '(player_id, adventure_id)',
+			'idx_adventure_quest'  => '(adventure_id, quest_id)',
+		],
+		'br_player_achievement'  => [ 'idx_player_adventure' => '(player_id, adventure_id)' ],
+		'br_player_adventure'    => [ 'idx_adventure_status'  => '(adventure_id, player_adventure_status)' ],
+		'br_quests'              => [
+			'idx_adventure_status' => '(adventure_id, quest_status)',
+			'idx_tabi'             => '(tabi_id)',
+		],
+		'br_transactions'        => [
+			'idx_player_adventure' => '(player_id, adventure_id)',
+			'idx_adventure_object' => '(adventure_id, object_id)',
+		],
+		'br_items'               => [ 'idx_adventure_status' => '(adventure_id, item_status)' ],
+		'br_challenge_attempts'  => [ 'idx_player_adventure' => '(player_id, adventure_id)' ],
+		'br_players'             => [ 'idx_email'            => '(player_email)' ],
+		'br_conditions'          => [ 'idx_target'           => '(adventure_id, target_type, target_id)' ],
+		'br_adventure_ranks'     => [ 'idx_adventure'        => '(adventure_id)' ],
+		'br_activity_log'        => [ 'idx_adventure_date'   => '(adventure_id, log_date)' ],
+		'br_tabi_prerequisites'  => [ 'idx_tabi'             => '(tabi_id)' ],
+		'br_survey_answers'      => [ 'idx_survey'           => '(survey_id)' ],
+	];
+	foreach ( $br_indexes as $table => $indexes ) {
+		$full = $prefix . $table;
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$full'" ) !== $full ) continue;
+		$existing = $wpdb->get_col( "SHOW INDEX FROM `$full`", 2 ); // Key_name column
+		foreach ( $indexes as $name => $cols ) {
+			if ( in_array( $name, $existing, true ) ) continue;
+			$wpdb->query( "ALTER TABLE `$full` ADD INDEX `$name` $cols" );
+		}
+	}
+
 	// Reward-sync gating. Every player-driven state change already runs resetPlayer()
 	// (quest completion, items, challenges - see its docblock), so the only thing the
 	// journey page has to catch is a RULES change: a GM adding a condition, a rank, an
