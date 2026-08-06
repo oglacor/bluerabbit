@@ -1624,7 +1624,7 @@ class BR_Player {
                     ON DUPLICATE KEY UPDATE achievement_applied=VALUES(achievement_applied)",
                     $r->achievement_id, $user->player_id, $adventure_id, $today
                 ));
-                BR_Achievement::instance()->switchRank($r->achievement_id, $adventure_id);
+                BR_Achievement::instance()->switchRank($r->achievement_id, $adventure_id, $user->player_id);
                 BR_Activity::instance()->logActivity($adventure_id, 'earned-achievement', 'player', $r->achievement_id);
                 $newly_earned[] = [
                     'achievement_id'    => (int) $achievement->achievement_id,

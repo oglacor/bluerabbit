@@ -154,7 +154,9 @@ class BR_Encounter {
                 $sql = $wpdb->prepare($sql,$id, $adv_child_id, $path, $question, $correct, $decoy1, $decoy2, $badge, $color, $icon, $status, $xp, $bloo, $ep, $level, $today, $today, $path, $question, $correct, $decoy1, $decoy2, $badge, $color, $icon, $status, $xp, $bloo, $ep, $level, $today );
 
                 $the_query = $wpdb->query($sql);
-                $enc_id = $wpdb->insert_id;
+                // On an edit the upsert reports no insert id, so the activity log below
+                // was recording encounter 0. Keep the id we were given.
+                $enc_id = $id ?: (int) $wpdb->insert_id;
                 $data['message'] = "<h1><strong>".__("Encounter Updated!","bluerabbit")."</strong></h1>";
                 $data['success'] = true;
                 if(!$enc_data['id']){

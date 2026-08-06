@@ -271,10 +271,13 @@ class BR_Item {
 
             $sql = $wpdb->prepare($sql, $item_id, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $item_tremendous_enabled, $item_tremendous_amount, $item_tremendous_label, $item_tremendous_products, $adventure_id, $item_cost, $item_stock, $item_max, $item_level, $item_post_modified, $current_user->ID, $item_name, $item_description, $item_type, $item_badge, $item_secret_badge, $item_secret_description, $item_category_id, $achievement_id, $item_start_date, $item_deadline, $item_x, $item_y, $item_z, $tabi_id, $item_visibility, $item_tremendous_enabled, $item_tremendous_amount, $item_tremendous_label, $item_tremendous_products);
             if(!$errors){
-                $wpdb->query($sql);
-                $new_item_id = $wpdb->insert_id;
+                $i_query = $wpdb->query($sql);
+                // An upsert that writes back identical values reports no insert id and 0
+                // affected rows - a successful save, not a failure. See the note in
+                // BR_Achievement::updateAchievement().
+                $new_item_id = $i_query === false ? 0 : ($item_id ?: (int) $wpdb->insert_id);
 
-                if($wpdb->insert_id){
+                if($new_item_id){
                     $data['success']=true;
                     if(!$item_id){
                         $data['location']=get_bloginfo('url')."/new-item/?adventure_id=$adventure_id&item_id=$new_item_id";

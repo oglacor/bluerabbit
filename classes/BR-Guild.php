@@ -45,7 +45,10 @@ class BR_Guild {
                 adventure_id=%d, guild_name=%s, guild_logo=%s, guild_status=%s, guild_color=%s, assign_on_login=%d, guild_group=%s, guild_capacity=%s";
                 $sql = $wpdb->prepare($sql,$g_id,$adventure_id,$g_name, $g_logo, $g_status, $g_color, $g_assign_on_login, $guild_code, $g_group, $g_capacity, $adventure_id,$g_name, $g_logo, $g_status, $g_color, $g_assign_on_login, $g_group, $g_capacity);
                 $b_query = $wpdb->query($sql);
-                $updated_g_id = $wpdb->insert_id;
+                // An upsert that writes back identical values reports no insert id and 0
+                // affected rows - a successful save, not a failure. See the note in
+                // BR_Achievement::updateAchievement().
+                $updated_g_id = $b_query === false ? 0 : ($g_id ?: (int) $wpdb->insert_id);
                 if($updated_g_id){
                     $data['success']=true;
                     if(!$g_id){

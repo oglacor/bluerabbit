@@ -187,11 +187,23 @@ class BR_Achievement {
                 VALUES (%d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d, %d, %s, %d, %s)
                 ON DUPLICATE KEY UPDATE
                 adventure_id=%d, achievement_xp=%d, achievement_ep=%d, achievement_bloo=%d, achievement_name=%s, achievement_badge=%s, achievement_status=%s, achievement_color=%s, achievement_code=%s, achievement_content=%s, achievement_deadline=%s, achievement_max=%d, achievement_display=%s, achievement_path=%d, achievement_group=%s";
-                $sql = $wpdb->prepare($sql,$a_id,$adv_parent_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline, $a_max, $a_order, $a_display, $a_path, $a_group, $adventure_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline,$a_max, $a_display, $a_path, $a_group);
+                // Both branches write adventure_id=$adv_parent_id. The update branch used
+                // to write the CHILD id, which quietly moved an achievement out of the
+                // parent adventure the moment it was edited from a child - and every read
+                // of achievements filters on the parent.
+                $sql = $wpdb->prepare($sql,$a_id,$adv_parent_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline, $a_max, $a_order, $a_display, $a_path, $a_group, $adv_parent_id,$a_xp, $a_ep, $a_bloo, $a_name, $a_badge, $a_status, $a_color, $magic_code, $a_content,$a_deadline,$a_max, $a_display, $a_path, $a_group);
                 $a_query = $wpdb->query($sql);
-                if($a_query){
-                    $updated_id = $wpdb->insert_id;
-                }
+
+                // INSERT ... ON DUPLICATE KEY UPDATE reports 0 affected rows when the
+                // row is written with the values it already holds, and MySQL exposes no
+                // insert id on the update path at all. Neither means failure - and both
+                // happen constantly here, because the Rank threshold and the auto-assign
+                // Conditions live in OTHER tables (br_adventure_ranks, br_conditions).
+                // Editing only those leaves br_achievements byte-identical, so the old
+                // guard skipped the rank/QR/branch writes below and reported a database
+                // error on a save that had in fact succeeded. That is why a rank could be
+                // configured over and over and never award.
+                $updated_id = $a_query === false ? 0 : ($a_id ? (int) $a_id : (int) $wpdb->insert_id);
                 if($updated_id){
                     $data['success']=true;
                         $achQrCode = BR_Utils::instance()->createQR($ach_args = array(
@@ -923,20 +935,25 @@ class BR_Achievement {
         die();
     }
 
-    public function switchRank($p_achievement_id="", $p_adventure_id=""){
+    // $p_player_id matters when this is called on someone else's behalf - a GM
+    // validating a player's work runs the whole award path as the GM, and without
+    // it the rank badge was pinned onto the GM's own row while the player who
+    // actually earned it kept their old one.
+    public function switchRank($p_achievement_id="", $p_adventure_id="", $p_player_id=null){
         global $wpdb; $current_user = wp_get_current_user();
         $data = array();
         $data['success']=false;
         $n = new Notification();
         $achievement_id = $p_achievement_id ? $p_achievement_id : $_POST['achievement_id'];
         $adventure_id = $p_adventure_id ? $p_adventure_id : $_POST['adventure_id'];
+        $player_id = $p_player_id ? (int) $p_player_id : $current_user->ID;
 
         $adventure = BR_Adventure::instance()->getAdventure($adventure_id);
         $adv_child_id = $adventure->adventure_id;
         $adv_parent_id = $adventure->adventure_parent ? $adventure->adventure_parent : $adventure->adventure_id;
 
         $sql = "UPDATE {$wpdb->prefix}br_player_adventure SET achievement_id=%d WHERE player_id=%d AND adventure_id=%d";
-        $sql = $wpdb->prepare($sql,$achievement_id,$current_user->ID, $adv_child_id);
+        $sql = $wpdb->prepare($sql,$achievement_id,$player_id, $adv_child_id);
         $sql = $wpdb->query($sql);
         if(!$p_achievement_id){
             $data['just_notify'] =true;

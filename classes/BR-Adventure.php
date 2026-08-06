@@ -102,7 +102,14 @@ class BR_Adventure {
                 $adventure_owner, $adventure_date_modified, $adventure_badge, $adventure_gmt, $adventure_title, $adventure_xp_label, $adventure_bloo_label, $adventure_ep_label, $adventure_xp_long_label, $adventure_bloo_long_label, $adventure_ep_long_label, $adventure_grade_scale, $adventure_progression_type, $adventure_privacy, $adventure_status, $adventure_instructions, $adventure_nickname, $adventure_code, $adventure_color, $adventure_start_date, $adventure_end_date, $adventure_hide_quests, $adventure_topic_id, $adventure_hide_schedule, $adventure_has_guilds, $adventure_type, $adventure_certificate_signature, $adventure_logo);
 
                 if(!$errors){
-                    $wpdb->query($sql); $the_just_updated_id = $wpdb->insert_id;
+                    $adv_query = $wpdb->query($sql);
+                    // Same trap as BR_Achievement::updateAchievement(): an upsert that
+                    // writes back identical values reports 0 affected rows and no insert
+                    // id, which is a successful save. Saving ONLY the Ranks panel or the
+                    // feature settings touches no column on br_adventures, so the old
+                    // guard threw away the ranks and the settings and claimed a database
+                    // error - ranks configured here never reached br_adventure_ranks.
+                    $the_just_updated_id = $adv_query === false ? 0 : ($adventure_id ?: (int) $wpdb->insert_id);
                     if($the_just_updated_id){
                         if($adventure_id){
                             $ranksDELETE = "DELETE FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d";
@@ -122,7 +129,7 @@ class BR_Adventure {
                             }
                             $data['message'] = '<h1><strong>'.$adventure_title.'</strong></h1> <h4><strong>'.__("Adventure Updated!","bluerabbit").'</strong></h4>';
                         }else{
-                            $adventure_id = $wpdb->insert_id;
+                            $adventure_id = $the_just_updated_id;
                             $data['message'] = '<h1><strong>'.$adventure_title.'</strong></h1> <h4><strong>'.__("Adventure Created!","bluerabbit").'</strong></h4>';
                         }
 

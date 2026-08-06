@@ -36,7 +36,9 @@ class BR_Session {
             $sql = $wpdb->prepare($sql, $id, $adventure_id, $name, $url, $logo, $color, $level, $image, $about, $twitter, $linkedin, $adventure_id, $name, $url, $logo, $color, $level, $image, $about, $twitter, $linkedin);
 
             $the_query = $wpdb->query($sql);
-            $sponsor_id = $wpdb->insert_id;
+            // On an edit the upsert reports no insert id, so the activity log below was
+            // recording sponsor 0. Keep the id we were given.
+            $sponsor_id = $id ?: (int) $wpdb->insert_id;
             $n = new Notification();
 
             $msg_content = __('Sponsor Saved!','bluerabbit');
@@ -323,7 +325,10 @@ class BR_Session {
                 $sql = $wpdb->prepare($sql,$session_id, $adventure_id, $quest_id, $speaker_ids, $session_title, $session_start, $session_end, $session_status, $session_description, $session_room,   $achievement_id,  $guild_id,  $adventure_id, $quest_id, $speaker_ids, $session_title, $session_start, $session_end, $session_status, $session_description , $session_room , $achievement_id , $guild_id );
                 $sql = $wpdb->query($sql);
                 $data['debug'] = print_r($wpdb->last_query,true);
-                $updated_session_id = $wpdb->insert_id;
+                // An upsert that writes back identical values reports no insert id and 0
+                // affected rows - a successful save, not a failure. See the note in
+                // BR_Achievement::updateAchievement().
+                $updated_session_id = $sql === false ? 0 : ($session_id ?: (int) $wpdb->insert_id);
                 if($updated_session_id ){
                     $data['success']=true;
                     if(!$session_id){
