@@ -294,7 +294,8 @@ class BR_Progression {
             $data['attempts']=$attempts;
             $data['item_rewards']=$item_rewards;
             $data['blockers']=$blockers;
-            $data['guildwork']= isset($guildwork) ? $guildwork : "";
+            // guildwork removed: it was only ever meaningful for missions, which are
+            // retired, and nothing read the value even when they existed.
             $data['debug']=isset($debugQuery) ? $debugQuery : "";
         }else{
             $data['debug']='Player not found';

@@ -1251,27 +1251,10 @@ class BR_Player {
             ON quests.achievement_id = achievements.achievement_id AND achievements.achievement_status='publish'
             WHERE quests.adventure_id=$adv_parent_id AND (quests.quest_status='publish' OR quests.quest_status='hidden') AND (quests.achievement_id='' OR quests.achievement_id=NULL $achievements_ids_str ) ORDER BY quests.quest_order, quests.mech_level, quests.mech_start_date, quests.quest_title");
 
-            $survey_questions = $wpdb->get_results("SELECT questions.*
-            FROM {$wpdb->prefix}br_survey_questions questions
-            JOIN  {$wpdb->prefix}br_quests surveys
-            ON surveys.quest_id = questions.survey_id AND surveys.quest_status='publish'
-            WHERE surveys.adventure_id=$adventure_id AND questions.survey_question_status='publish' GROUP BY questions.survey_question_id");
-
-            $survey_answers = $wpdb->get_results("SELECT answers.*
-            FROM {$wpdb->prefix}br_survey_answers answers
-            JOIN  {$wpdb->prefix}br_quests surveys
-            ON surveys.quest_id = answers.survey_id AND surveys.quest_status='publish'
-            JOIN  {$wpdb->prefix}br_survey_questions questions
-            ON surveys.quest_id = questions.survey_id AND questions.survey_question_status='publish'
-            WHERE surveys.adventure_id=$adventure_id AND answers.player_id=$user->player_id AND (answers.survey_option_id > 0 OR answers.survey_answer_value!='') GROUP BY answers.survey_question_id");
-
-            $surveys = array();
-            foreach($survey_questions as $sq){
-                $surveys['s'.$sq->survey_id]['questions'][]=$sq;
-            }
-            foreach($survey_answers as $sa){
-                $surveys['s'.$sa->survey_id]['answers'][]=$sa;
-            }
+            // Missions, guild work and survey-as-a-quest were retired as mechanics.
+            // Their loops stayed here for years costing five queries and ~140 lines on
+            // every call, computing values nothing read - guildwork was assembled, passed
+            // through two classes into header.php, and never once looked at.
 
             $attempts = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_challenge_attempts WHERE player_id=$user->player_id AND adventure_id=$adventure_id  AND attempt_status !='trash'");
 
@@ -1334,35 +1317,6 @@ class BR_Player {
             GROUP BY trnxs.trnx_id ORDER BY trnxs.trnx_id
             ");
 
-            $myGuilds = $wpdb->get_col ("SELECT a.guild_id FROM {$wpdb->prefix}br_guilds a
-            JOIN {$wpdb->prefix}br_player_guild b
-            ON a.guild_id = b.guild_id
-            WHERE b.player_id=$user->player_id AND a.adventure_id=$adventure_id");
-            $guilds_str = implode(',',$myGuilds);
-
-            if($guilds_str){
-
-                $guildmates = $wpdb->get_col ("SELECT b.player_id FROM {$wpdb->prefix}br_guilds a
-                JOIN {$wpdb->prefix}br_player_guild b
-                ON a.guild_id = b.guild_id
-                WHERE a.guild_id IN ($guilds_str)");
-                $guildmates_str = implode(',',$guildmates);
-
-
-                $guildwork_sql = $wpdb->get_results("SELECT
-                playerposts.quest_id
-                FROM {$wpdb->prefix}br_player_posts playerposts
-                WHERE playerposts.adventure_id=$adventure_id AND playerposts.player_id IN ($guildmates_str)");
-
-                $guildwork=array();
-                foreach($guildwork_sql as $gw){
-                    $guildwork[]=$gw->quest_id;
-                }
-                $guildwork = array_unique($guildwork);
-                sort($guildwork);
-
-
-            }
             $ppInsertSQL = "INSERT INTO {$wpdb->prefix}br_player_posts (quest_id, player_id, adventure_id, pp_status, pp_type) VALUES ";
             $pp_ph = array();
             $pp_values = array();
@@ -1407,100 +1361,6 @@ class BR_Player {
                                 $pp_ph[] = " (%d, %d, %d, %s, %s) ";
                             }
                         }
-                    }
-                }elseif($pp->quest_type == 'survey'){
-                    if(isset($surveys['s'.$pp->quest_id]['answers']) && isset ($surveys['s'.$pp->quest_id]['questions'])){
-                        if(count($surveys['s'.$pp->quest_id]['answers']) >= count($surveys['s'.$pp->quest_id]['questions']) && count($surveys['s'.$pp->quest_id]['questions'])>0 ){
-                            $myXP += $pp->mech_xp;
-                            $myEP += $pp->mech_ep;
-                            $myBloo += $pp->mech_bloo;
-                            $fqs[]=$pp->quest_id;
-                            array_push($pp_values, $pp->quest_id, $user->player_id, $adventure_id, 'publish','survey');
-                            $pp_ph[] = " (%d, %d, %d, %s, %s) ";
-                        }
-                    }
-                }
-            }
-            /// MISSIONS
-            foreach($quests as $ppKey=>$pp){
-                if($pp->quest_status == 'locked') continue;
-                if($pp->quest_type == 'mission'){
-                    $objectives = BR_Objective::instance()->getObjectives($pp->adventure_id, $pp->quest_id, $user->player_id);
-                    $objectives_completed = 0;
-                    foreach($objectives as $cc){
-                        if($cc->player_id==$user->player_id){
-                            $objectives_completed++;
-                        }
-                    }
-
-                    $something_to_do = false;
-                    if(count($objectives) > 0 || !empty($reqs_ids['quests'][$pp->quest_id]) || !empty($reqs_ids['items'][$pp->quest_id]) || !empty($reqs_ids['achievements'][$pp->quest_id])){
-                        $something_to_do = true;
-                    }
-
-                    if($objectives_completed >= count($objectives)){
-                        $objectives_achieved = true;
-                    }else{
-                        $objectives_achieved = false;
-                    }
-
-                    if(isset($reqs_ids['quests'][$pp->quest_id])){
-                        $mFinished = array_intersect($fqs, $reqs_ids['quests'][$pp->quest_id]);
-                        $mFinished=array_values($mFinished);
-                        sort($mFinished);
-                        sort($reqs_ids['quests'][$pp->quest_id]);
-                        $qFM = ($mFinished == $reqs_ids['quests'][$pp->quest_id]) ? true : false;
-                    }else{
-                        $qFM = true;
-                    }
-
-                    if(isset($reqs_ids['items'][$pp->quest_id])){
-                        $mItems = array_intersect($myItems['ids']['key'], $reqs_ids['items'][$pp->quest_id]);
-                        $mItems=array_values($mItems);
-                        sort($mItems);
-                        sort($reqs_ids['items'][$pp->quest_id]);
-                        $iFM = ($mItems == $reqs_ids['items'][$pp->quest_id]) ? true : false;
-                    }else{
-                        $iFM = true;
-                    }
-
-                    if(isset($reqs_ids['achievements'][$pp->quest_id])){
-                        $mAchievements = array_intersect($achievements_ids, $reqs_ids['achievements'][$pp->quest_id]);
-                        $mAchievements = array_values($mAchievements);
-                        sort($mAchievements);
-                        sort($reqs_ids['achievements'][$pp->quest_id]);
-                        $aFM = ($mAchievements == $reqs_ids['achievements'][$pp->quest_id]) ? true : false;
-                    }else{
-                        $aFM = true;
-                    }
-                    if($qFM && $iFM && $aFM && $objectives_achieved && $something_to_do){
-                        if($pp->mech_item_reward && $pp->quest_type == 'mission'){
-                            $prev_reward = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_transactions WHERE player_id=$user->player_id AND adventure_id=$adventure_id AND object_id=$pp->mech_item_reward AND trnx_status='publish'");
-                            if(!$prev_reward){
-                                $sql = "INSERT INTO {$wpdb->prefix}br_transactions (player_id, adventure_id, object_id, trnx_author, trnx_amount, trnx_type)
-                                VALUES (%d, %d, %d, %d, %d, %s)";
-                                $sql = $wpdb->prepare($sql, $user->player_id, $adventure_id, $pp->mech_item_reward, $user->player_id, 0, 'reward');
-                                $sql = $wpdb->query($sql);
-                            }
-                        }
-
-                        if($pp->mech_achievement_reward){
-                            $prev_ach = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_player_achievement a
-                            JOIN {$wpdb->prefix}br_achievements b ON a.achievement_id=b.achievement_id
-                            WHERE a.player_id=$user->player_id AND a.adventure_id=$adventure_id AND a.achievement_id=$pp->mech_achievement_reward AND b.achievement_status='publish'");
-                            if(!$prev_ach && BR_Branch::instance()->canGrantAchievement($user->player_id, $adventure_id, $pp->mech_achievement_reward)){
-                                $sql = "INSERT INTO {$wpdb->prefix}br_player_achievement (player_id, adventure_id, achievement_id, achievement_applied)
-                                VALUES (%d, %d, %d, %s)";
-                                $sql = $wpdb->prepare($sql, $user->player_id, $adventure_id, $pp->mech_achievement_reward, $today);
-                                $sql = $wpdb->query($sql);
-                            }
-                        }
-                        $myXP += $pp->mech_xp;
-                        $myEP += $pp->mech_ep;
-                        $myBloo += $pp->mech_bloo;
-                        $fqs[]=$pp->quest_id;
-                        array_push($pp_values, $pp->quest_id, $user->player_id, $adventure_id, 'publish','mission');
-                        $pp_ph[] = " (%d, %d, %d, %s, %s) ";
                     }
                 }
             }
@@ -1643,7 +1503,6 @@ class BR_Player {
             $data['attempts']=$attempts;
             $data['item_rewards']=$item_rewards;
             $data['blockers']=$blockers;
-            $data['guildwork']= isset($guildwork) ? $guildwork : "";
             $data['debug']=isset($debugQuery) ? $debugQuery : "";
         }else{
             $data['debug']='Player not found';

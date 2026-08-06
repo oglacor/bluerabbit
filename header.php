@@ -68,7 +68,6 @@
 			$all_quests=isset($playerReset['all_quests']) ? $playerReset['all_quests'] : [];
 			$reqs=isset($playerReset['reqs']) ? $playerReset['reqs'] : NULL;
 			$reqs_ids=isset($playerReset['reqs_ids']) ? $playerReset['reqs_ids'] : NULL;
-			$guildwork=isset($playerReset['guildwork']) ? $playerReset['guildwork'] : NULL;
 			$player=isset($playerReset['player']) ? $playerReset['player'] : NULL;
 			$my_items=isset($playerReset['items']) ? $playerReset['items'] : NULL;
 			$player_achievements=isset($playerReset['achievements_ids']) ? $playerReset['achievements_ids'] : NULL;
