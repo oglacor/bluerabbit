@@ -236,14 +236,28 @@ class BR_Feedback {
     }
 
     // Recorded once the player has been evaluated, so the next visit is a no-op.
-    public function markSynced( $player_id, $adventure_id, $adv_parent_id ) {
+    // The version is read inside the UPDATE rather than fetched first - resetPlayer()
+    // runs on every quest completion for every player, so a round trip saved here is
+    // a round trip saved a great many times.
+    public function markSynced( $player_id, $adventure_id, $adv_parent_id, array $extra_columns = [] ) {
         global $wpdb;
-        $version = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT rules_version FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d", (int) $adv_parent_id
-        ) );
+
+        $sets   = [ "synced_rules = (SELECT rules_version FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d)" ];
+        $params = [ (int) $adv_parent_id ];
+        // Callers with other columns to write to the same row can fold them in rather
+        // than issuing a second UPDATE against it.
+        foreach ( $extra_columns as $column => $value ) {
+            if ( ! preg_match( '/^[a-z_]+$/', $column ) ) continue;
+            $sets[]   = "`$column` = %d";
+            $params[] = (int) $value;
+        }
+        $params[] = (int) $player_id;
+        $params[] = (int) $adventure_id;
+
         $wpdb->query( $wpdb->prepare(
-            "UPDATE {$wpdb->prefix}br_player_adventure SET synced_rules = %d WHERE player_id = %d AND adventure_id = %d",
-            $version, (int) $player_id, (int) $adventure_id
+            "UPDATE {$wpdb->prefix}br_player_adventure SET " . implode( ', ', $sets )
+            . " WHERE player_id = %d AND adventure_id = %d",
+            $params
         ) );
     }
 

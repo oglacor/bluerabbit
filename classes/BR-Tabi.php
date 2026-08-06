@@ -244,14 +244,28 @@ class BR_Tabi {
     }
 
     // From functions/ajax.php
+    // How many required quests each tabi holds. Depends on the adventure, never on
+    // the player, so it is memoised for the request - resetPlayer() calls this once
+    // per player and the bulk paths call it 1,400 times in a row.
+    private static $tabi_totals = [];
+
+    private function tabiQuestTotals($adventure_id) {
+        global $wpdb;
+        if (!array_key_exists($adventure_id, self::$tabi_totals)) {
+            self::$tabi_totals[$adventure_id] = $wpdb->get_results($wpdb->prepare("
+                SELECT tabi_id, COUNT(*) AS total
+                FROM {$wpdb->prefix}br_quests
+                WHERE adventure_id = %d AND tabi_id > 0 AND quest_status = 'publish'
+                  AND (mech_optional IS NULL OR mech_optional = 0)
+                GROUP BY tabi_id
+            ", $adventure_id));
+        }
+        return self::$tabi_totals[$adventure_id];
+    }
+
     public function getCompletedTabiIds($adventure_id, $player_id) {
         global $wpdb;
-        $totals = $wpdb->get_results("
-            SELECT tabi_id, COUNT(*) AS total
-            FROM {$wpdb->prefix}br_quests
-            WHERE adventure_id = $adventure_id AND tabi_id > 0 AND quest_status = 'publish' AND (mech_optional IS NULL OR mech_optional = 0)
-            GROUP BY tabi_id
-        ");
+        $totals = $this->tabiQuestTotals($adventure_id);
         if(empty($totals)) return [];
 
         $done = $wpdb->get_results("

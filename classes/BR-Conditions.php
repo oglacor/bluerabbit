@@ -163,6 +163,22 @@ class BR_Conditions {
 
     // ── Progress snapshot ──
 
+    /**
+     * Per-request memo for values that depend on the adventure and not on the player.
+     *
+     * Deliberately request-scoped and not persisted: it lives exactly as long as one
+     * PHP process, so an admin editing quests mid-request can never be served a stale
+     * total on the next one. Anything player-specific must NOT go through here.
+     */
+    private static $adventure_totals = [];
+
+    private static function adventureTotal($key, callable $compute) {
+        if (!array_key_exists($key, self::$adventure_totals)) {
+            self::$adventure_totals[$key] = $compute();
+        }
+        return self::$adventure_totals[$key];
+    }
+
     // $player_progress is the array already returned by BR_Progression::getPlayerProgress()
     // (cached once per page load as $playerReset in header.php) - reused here instead of
     // re-querying fqs/level/items, which are already expensive to compute. $adv_parent_id
@@ -176,31 +192,42 @@ class BR_Conditions {
         $achievement_ids = $player_progress['achievements_ids'] ?? [];
         $key_item_ids    = $this->keyItemIds($player_progress);
 
-        $total_milestones = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
-            WHERE adventure_id=%d AND quest_status='publish' AND quest_type IN ('quest','challenge','survey','mission')",
-            $adv_parent_id
-        ));
+        // Adventure-level totals: identical for every player in the adventure, so they
+        // are read once per request rather than once per player. That is invisible for
+        // a single page load and decisive for the bulk paths - assign-to-all, the CSV
+        // batch, a cohort arriving after a rules change - which call resetPlayer() in a
+        // loop and used to re-read these for all 1,400 of them.
+        $total_milestones = self::adventureTotal("milestones:$adv_parent_id", function () use ($wpdb, $adv_parent_id) {
+            return (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
+                WHERE adventure_id=%d AND quest_status='publish' AND quest_type IN ('quest','challenge','survey','mission')",
+                $adv_parent_id
+            ));
+        });
         $milestone_count = count($fqs);
         $journey_pct     = $total_milestones > 0 ? round(($milestone_count / $total_milestones) * 100, 2) : 0;
 
         $completed_tabi_ids = BR_Tabi::instance()->getCompletedTabiIds($adv_parent_id, $player_id);
-        $total_tabis        = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}br_tabis WHERE adventure_id=%d AND tabi_status='publish'",
-            $adv_parent_id
-        ));
+        $total_tabis        = self::adventureTotal("tabis:$adv_parent_id", function () use ($wpdb, $adv_parent_id) {
+            return (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}br_tabis WHERE adventure_id=%d AND tabi_status='publish'",
+                $adv_parent_id
+            ));
+        });
 
-        // "Itemshop transactions" = purchases only (consumable/key), excluding blocker/deadline/unlock/attempt payments.
-        $transaction_count = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}br_transactions
-            WHERE adventure_id=%d AND player_id=%d AND trnx_status='publish' AND trnx_type IN ('consumable','key')",
+        // "Itemshop transactions" = purchases only (consumable/key), excluding
+        // blocker/deadline/unlock/attempt payments. Both counts come off one scan of
+        // the same rows - they used to be two round trips over an identical WHERE.
+        $trnx = $wpdb->get_row($wpdb->prepare(
+            "SELECT
+                SUM(CASE WHEN trnx_type IN ('consumable','key') THEN 1 ELSE 0 END) AS purchases,
+                SUM(CASE WHEN trnx_use = 1 THEN 1 ELSE 0 END)                      AS consumed
+            FROM {$wpdb->prefix}br_transactions
+            WHERE adventure_id=%d AND player_id=%d AND trnx_status='publish'",
             $adv_child_id, $player_id
         ));
-        $item_consumed_count = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}br_transactions
-            WHERE adventure_id=%d AND player_id=%d AND trnx_status='publish' AND trnx_use=1",
-            $adv_child_id, $player_id
-        ));
+        $transaction_count   = (int) ($trnx->purchases ?? 0);
+        $item_consumed_count = (int) ($trnx->consumed  ?? 0);
 
         return [
             'level'               => (int) $level,

@@ -1568,113 +1568,17 @@ class BR_Player {
             $updatePlayerSQL = "UPDATE {$wpdb->prefix}br_player_adventure SET player_xp=%d, player_bloo=%d, player_ep=%d, player_level=%d , player_gpa=%d WHERE player_id=%d AND adventure_id=%d ";
             $updatePlayer=$wpdb->query($wpdb->prepare($updatePlayerSQL,$myXP,$myBloo,$myEP, $myLevel, $totalgpa, $user->player_id,$adventure_id));
 
-            // ── Level-up / rank / achievement-condition detection ───────────────────
-            // resetPlayer() is the one function every XP-granting action in the app
-            // already calls (quests, tabis-via-quests, items, challenges, blockers,
-            // gift cards - ~19 call sites), so this is the single reliable choke point
-            // for "did something new unlock" - the old approach (BR_Player::updatePrevLevel(),
-            // fired only from page-adventure.php's full-page-load level comparison)
-            // silently stopped firing once quest/step completion moved to stay on
-            // page-quest.php via AJAX instead of reloading the adventure map.
-            $prev_level = (int) $wpdb->get_var($wpdb->prepare(
-                "SELECT player_prev_level FROM {$wpdb->prefix}br_player_adventure WHERE player_id=%d AND adventure_id=%d",
-                $user->player_id, $adventure_id
-            ));
-            $leveled_up = $myLevel > $prev_level;
-            $newly_earned = [];
-            $already_have = $wpdb->get_col($wpdb->prepare(
-                "SELECT achievement_id FROM {$wpdb->prefix}br_player_achievement WHERE player_id=%d AND adventure_id=%d",
-                $user->player_id, $adventure_id
-            ));
-            $already_have = array_map('intval', $already_have);
-
-            // $data['player']['fqs'] etc. aren't populated until further below in this
-            // same function - buildProgressSnapshot() only needs fqs/level/achievement
-            // ids/key items, all of which are already sitting in local variables by this
-            // point (the quest/transaction loops above have already run).
-            $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adventure_id, $user->player_id, [
-                'player'           => ['fqs' => $fqs, 'level' => $myLevel, 'items' => $items],
-                'achievements_ids' => $achievements_ids,
-            ]);
-
-            // Ranks: level (as before) or milestone_count/journey_pct/transaction_count/
-            // item_consumed_count - condition_type lives on br_adventure_ranks, not
-            // br_conditions (kept separate per BR_Conditions's own docblock).
-            $all_ranks = $wpdb->get_results($wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d ORDER BY rank_level ASC", $adv_parent_id
-            ));
-            foreach($all_ranks as $r){
-                if(in_array((int) $r->achievement_id, $already_have, true)) continue;
-                switch($r->condition_type){
-                    case 'milestone_count':     $met = $snapshot['milestone_count']     >= $r->rank_level; break;
-                    case 'journey_pct':         $met = $snapshot['journey_pct']         >= $r->rank_level; break;
-                    case 'transaction_count':   $met = $snapshot['transaction_count']   >= $r->rank_level; break;
-                    case 'item_consumed_count': $met = $snapshot['item_consumed_count'] >= $r->rank_level; break;
-                    default:                    $met = $myLevel >= $r->rank_level; // 'level'
-                }
-                if(!$met) continue;
-
-                $achievement = $wpdb->get_row($wpdb->prepare(
-                    "SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=%d AND achievement_status='publish'", $r->achievement_id
-                ));
-                if(!$achievement) continue;
-
-                $wpdb->query($wpdb->prepare(
-                    "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d,%d,%d,%s)
-                    ON DUPLICATE KEY UPDATE achievement_applied=VALUES(achievement_applied)",
-                    $r->achievement_id, $user->player_id, $adventure_id, $today
-                ));
-                BR_Achievement::instance()->switchRank($r->achievement_id, $adventure_id, $user->player_id);
-                BR_Activity::instance()->logActivity($adventure_id, 'earned-achievement', 'player', $r->achievement_id);
-                $newly_earned[] = [
-                    'achievement_id'    => (int) $achievement->achievement_id,
-                    'achievement_name'  => $achievement->achievement_name,
-                    'achievement_badge' => $achievement->achievement_badge,
-                    'achievement_color' => $achievement->achievement_color,
-                    'is_rank'           => true,
-                    'reason'            => sprintf(__('You reached Level %d!', 'bluerabbit'), $myLevel),
-                ];
-                $already_have[] = (int) $r->achievement_id;
-            }
-
-            // Condition-based achievements (br_conditions, target_type='achievement') -
-            // any achievement with at least one condition row, not already earned, whose
-            // conditions now evaluate true. Auto-granted immediately on meeting the bar.
-            $candidate_ids = $wpdb->get_col($wpdb->prepare(
-                "SELECT DISTINCT target_id FROM {$wpdb->prefix}br_conditions WHERE adventure_id=%d AND target_type='achievement'",
-                $adv_parent_id
-            ));
-            foreach($candidate_ids as $achievement_id){
-                $achievement_id = (int) $achievement_id;
-                if(in_array($achievement_id, $already_have, true)) continue;
-                if(!BR_Conditions::instance()->evaluate($adv_parent_id, 'achievement', $achievement_id, $snapshot)) continue;
-
-                $achievement = $wpdb->get_row($wpdb->prepare(
-                    "SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=%d AND achievement_status='publish'", $achievement_id
-                ));
-                if(!$achievement) continue;
-
-                $wpdb->query($wpdb->prepare(
-                    "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d,%d,%d,%s)
-                    ON DUPLICATE KEY UPDATE achievement_applied=VALUES(achievement_applied)",
-                    $achievement_id, $user->player_id, $adventure_id, $today
-                ));
-                BR_Activity::instance()->logActivity($adventure_id, 'earned-achievement', 'player', $achievement_id);
-                $newly_earned[] = [
-                    'achievement_id'    => $achievement->achievement_id,
-                    'achievement_name'  => $achievement->achievement_name,
-                    'achievement_badge' => $achievement->achievement_badge,
-                    'achievement_color' => $achievement->achievement_color,
-                    'is_rank'           => false,
-                    'reason'            => BR_Conditions::instance()->describeMetCondition($adv_parent_id, 'achievement', $achievement_id),
-                ];
-                $already_have[] = $achievement_id;
-            }
-
-            $wpdb->query($wpdb->prepare(
-                "UPDATE {$wpdb->prefix}br_player_adventure SET player_prev_level=%d WHERE player_id=%d AND adventure_id=%d",
-                $myLevel, $user->player_id, $adventure_id
-            ));
+            // ── Phase: detect and grant awards ──────────────────────────────────────
+            // Everything above computed what the player HAS. This decides what that
+            // newly entitles them to, and is the only part of resetPlayer() that grants
+            // anything. Extracted so it can be read - and changed - without scrolling
+            // through the currency maths.
+            $awards = $this->detectAndGrantAwards(
+                $user, $adventure_id, $adv_parent_id, $myLevel, $today,
+                ["fqs" => $fqs, "items" => $items, "achievements_ids" => $achievements_ids]
+            );
+            $leveled_up   = $awards["leveled_up"];
+            $newly_earned = $awards["newly_earned"];
 
             $data['levelup'] = $leveled_up;
             $data['new_level'] = $myLevel;
@@ -1702,7 +1606,14 @@ class BR_Player {
             // page can skip the whole pass until the rules change again. Every
             // player-driven change already routes through here, which is what makes the
             // gate safe - see BR_Feedback::needsSync().
-            BR_Feedback::instance()->markSynced($user->player_id, $adventure_id, $adv_parent_id);
+            //
+            // player_prev_level rides along in the same statement: it is the same row,
+            // and it can only be written after the award pass above has read the old
+            // value to detect the level-up.
+            BR_Feedback::instance()->markSynced(
+                $user->player_id, $adventure_id, $adv_parent_id,
+                ['player_prev_level' => $myLevel]
+            );
 
             $data['player']['xp']=$myXP;
             $data['player']['bloo']=$myBloo;
@@ -2338,6 +2249,132 @@ class BR_Player {
         }
         echo json_encode($data);
         die();
+    }
+
+
+    /**
+     * Decides what the player has newly earned, grants it, and reports it back.
+     *
+     * Split out of resetPlayer(), which had grown to ~550 lines covering loading,
+     * currency maths, unlock rules and awards in one scope. This is the only part
+     * that GRANTS anything, so keeping it separate makes "what can hand out an
+     * achievement?" answerable by reading one method.
+     *
+     * Two independent mechanisms, deliberately kept apart (see BR_Conditions):
+     *   - ranks      - br_adventure_ranks, one achievement per threshold
+     *   - conditions - br_conditions, AND-ed sets attachable to any achievement
+     *
+     * $state carries what the caller already computed - fqs, items, achievement ids -
+     * so this never re-reads progress that has just been calculated.
+     *
+     * @return array{leveled_up: bool, newly_earned: array}
+     */
+    private function detectAndGrantAwards($user, $adventure_id, $adv_parent_id, $myLevel, $today, array $state) {
+        global $wpdb;
+
+        // ── Level-up / rank / achievement-condition detection ───────────────────
+        // resetPlayer() is the one function every XP-granting action in the app
+        // already calls (quests, tabis-via-quests, items, challenges, blockers,
+        // gift cards - ~19 call sites), so this is the single reliable choke point
+        // for "did something new unlock" - the old approach (BR_Player::updatePrevLevel(),
+        // fired only from page-adventure.php's full-page-load level comparison)
+        // silently stopped firing once quest/step completion moved to stay on
+        // page-quest.php via AJAX instead of reloading the adventure map.
+        $prev_level = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT player_prev_level FROM {$wpdb->prefix}br_player_adventure WHERE player_id=%d AND adventure_id=%d",
+            $user->player_id, $adventure_id
+        ));
+        $leveled_up = $myLevel > $prev_level;
+        $newly_earned = [];
+        $already_have = $wpdb->get_col($wpdb->prepare(
+            "SELECT achievement_id FROM {$wpdb->prefix}br_player_achievement WHERE player_id=%d AND adventure_id=%d",
+            $user->player_id, $adventure_id
+        ));
+        $already_have = array_map('intval', $already_have);
+
+        // Built from what the caller already computed rather than re-read: the quest
+        // and transaction loops in resetPlayer() have finished by the time this runs,
+        // and buildProgressSnapshot() only needs fqs, level, achievement ids and key
+        // items. $data['player'] is assembled after this returns.
+        $snapshot = BR_Conditions::instance()->buildProgressSnapshot($adv_parent_id, $adventure_id, $user->player_id, [
+            'player'           => ['fqs' => $state["fqs"], 'level' => $myLevel, 'items' => $state["items"]],
+            'achievements_ids' => $state["achievements_ids"],
+        ]);
+
+        // Ranks: level (as before) or milestone_count/journey_pct/transaction_count/
+        // item_consumed_count - condition_type lives on br_adventure_ranks, not
+        // br_conditions (kept separate per BR_Conditions's own docblock).
+        $all_ranks = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d ORDER BY rank_level ASC", $adv_parent_id
+        ));
+        foreach($all_ranks as $r){
+            if(in_array((int) $r->achievement_id, $already_have, true)) continue;
+            switch($r->condition_type){
+                case 'milestone_count':     $met = $snapshot['milestone_count']     >= $r->rank_level; break;
+                case 'journey_pct':         $met = $snapshot['journey_pct']         >= $r->rank_level; break;
+                case 'transaction_count':   $met = $snapshot['transaction_count']   >= $r->rank_level; break;
+                case 'item_consumed_count': $met = $snapshot['item_consumed_count'] >= $r->rank_level; break;
+                default:                    $met = $myLevel >= $r->rank_level; // 'level'
+            }
+            if(!$met) continue;
+
+            $achievement = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=%d AND achievement_status='publish'", $r->achievement_id
+            ));
+            if(!$achievement) continue;
+
+            $wpdb->query($wpdb->prepare(
+                "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d,%d,%d,%s)
+                ON DUPLICATE KEY UPDATE achievement_applied=VALUES(achievement_applied)",
+                $r->achievement_id, $user->player_id, $adventure_id, $today
+            ));
+            BR_Achievement::instance()->switchRank($r->achievement_id, $adventure_id, $user->player_id);
+            BR_Activity::instance()->logActivity($adventure_id, 'earned-achievement', 'player', $r->achievement_id);
+            $newly_earned[] = [
+                'achievement_id'    => (int) $achievement->achievement_id,
+                'achievement_name'  => $achievement->achievement_name,
+                'achievement_badge' => $achievement->achievement_badge,
+                'achievement_color' => $achievement->achievement_color,
+                'is_rank'           => true,
+                'reason'            => sprintf(__('You reached Level %d!', 'bluerabbit'), $myLevel),
+            ];
+            $already_have[] = (int) $r->achievement_id;
+        }
+
+        // Condition-based achievements (br_conditions, target_type='achievement') -
+        // any achievement with at least one condition row, not already earned, whose
+        // conditions now evaluate true. Auto-granted immediately on meeting the bar.
+        $candidate_ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT DISTINCT target_id FROM {$wpdb->prefix}br_conditions WHERE adventure_id=%d AND target_type='achievement'",
+            $adv_parent_id
+        ));
+        foreach($candidate_ids as $achievement_id){
+            $achievement_id = (int) $achievement_id;
+            if(in_array($achievement_id, $already_have, true)) continue;
+            if(!BR_Conditions::instance()->evaluate($adv_parent_id, 'achievement', $achievement_id, $snapshot)) continue;
+
+            $achievement = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}br_achievements WHERE achievement_id=%d AND achievement_status='publish'", $achievement_id
+            ));
+            if(!$achievement) continue;
+
+            $wpdb->query($wpdb->prepare(
+                "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d,%d,%d,%s)
+                ON DUPLICATE KEY UPDATE achievement_applied=VALUES(achievement_applied)",
+                $achievement_id, $user->player_id, $adventure_id, $today
+            ));
+            BR_Activity::instance()->logActivity($adventure_id, 'earned-achievement', 'player', $achievement_id);
+            $newly_earned[] = [
+                'achievement_id'    => $achievement->achievement_id,
+                'achievement_name'  => $achievement->achievement_name,
+                'achievement_badge' => $achievement->achievement_badge,
+                'achievement_color' => $achievement->achievement_color,
+                'is_rank'           => false,
+                'reason'            => BR_Conditions::instance()->describeMetCondition($adv_parent_id, 'achievement', $achievement_id),
+            ];
+            $already_have[] = $achievement_id;
+        }
+        return ["leveled_up" => $leveled_up, "newly_earned" => $newly_earned];
     }
 
     /////////////////////// Update Prev Level ////////////////////
