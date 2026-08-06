@@ -79,9 +79,13 @@
         }, function (r) {
             var d = parseJs(r), ok = !!(d.success || d.updated);
             brNotify(ok ? L.settingsSaved : L.saveFailed, ok ? 'success' : 'error');
-            // The header badge and page title are rendered server-side, so keep
-            // them honest with what was just saved instead of waiting for F5.
-            if (ok) $('.br-page-title').text($('#the-org-name').val());
+            // The title and About blurb in the header are rendered server-side,
+            // so keep them honest with what was just saved instead of waiting
+            // for a reload.
+            if (ok) {
+                $('.br-page-title').text($('#the-org-name').val());
+                $('#org-about-blurb').html(about);
+            }
         }).fail(function () {
             brNotify(L.saveFailed, 'error');
         }).always(hideLoader);

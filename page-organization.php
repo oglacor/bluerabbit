@@ -34,6 +34,9 @@ $all_adventures = $wpdb->get_results(
     <div class="br-flex-1">
         <span class="br-page-subtitle"><?= __('Manage Organization','bluerabbit'); ?></span>
         <h1 class="br-page-title"><?= esc_html($org->org_name ?: __('Untitled Org','bluerabbit')); ?></h1>
+        <!-- Kept in the DOM even when empty so saving the About editor can fill
+             it without a reload; .br-org-about:empty hides itself. -->
+        <div class="br-org-about" id="org-about-blurb"><?= wp_kses_post($org->org_content); ?></div>
     </div>
     <div class="br-actions br-ml-auto">
         <span class="br-badge br-badge-blue"><?= $total_players; ?> <?= __('players','bluerabbit'); ?></span>

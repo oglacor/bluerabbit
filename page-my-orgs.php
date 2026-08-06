@@ -75,6 +75,11 @@ if (!$managed_orgs && !$isAdmin) {
                data-filter-rows="#org-mgr-list-<?= (int)$managed_org->org_id; ?> tr">
         <?php endif; ?>
     </div>
+
+    <?php if (trim(strip_tags($managed_org->org_content ?? ''))): ?>
+    <div class="br-org-about"><?= wp_kses_post($managed_org->org_content); ?></div>
+    <?php endif; ?>
+
     <p class="br-form-hint"><?= __('Showing members enrolled in your adventures.','bluerabbit'); ?></p>
 
     <?php if ($org_players): ?>

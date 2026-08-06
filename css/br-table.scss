@@ -145,6 +145,24 @@ max-width: 1440px;
   color: rgba($br-white, 0.45);
 }
 
+// The org's About text, wherever it is shown to a reader rather than edited.
+// Rich text from wp_editor, so element styles are set here rather than assumed.
+.br-org-about {
+  margin-top: 8px;
+  max-width: 70ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba($br-white, 0.5);
+
+  // An org with no description must not leave a gap behind.
+  &:empty { display: none; }
+
+  p  { margin: 0 0 8px; &:last-child { margin-bottom: 0; } }
+  ul, ol { margin: 0 0 8px 18px; }
+  a  { color: $br-primary; }
+  strong { color: rgba($br-white, 0.75); }
+}
+
 // ── Table ────────────────────────────────────────────────
 .br-table-wrap {
     background-color: rgba(11, 61, 79, 0.6);
