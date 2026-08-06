@@ -499,16 +499,10 @@ ul.selectable-list{
 		margin: 20px auto 0;
 	}
 }
-.level-up{
-	transition-delay: 0.1s;
-	transition: all 0.3s ease-out;
-	opacity: 0;
-	display: none;
-	&.active{
-		display: block;
-		opacity: 1;
-	}
-}
+// The #level-up explosion overlay this styled is gone - every "you earned
+// something" moment now goes through the one celebration panel
+// (.br-celebrate in br-table.scss, rendered by brCelebrate()). Levelling
+// into a rank used to fire this and then the rewards panel, one after the other.
 .overlay-background-video{
 	position: fixed;
 	top: 50%;

@@ -1214,6 +1214,7 @@ require_once ("$dirName/classes/BR-Survey.php");
 require_once ("$dirName/classes/BR-Encounter.php");
 require_once ("$dirName/classes/BR-Tabi.php");
 require_once ("$dirName/classes/BR-Session.php");
+require_once ("$dirName/classes/BR-Feedback.php");
 require_once ("$dirName/classes/BR-Organization.php");
 require_once ("$dirName/classes/BR-OrgStats.php");
 require_once ("$dirName/classes/BR-Blocker.php");

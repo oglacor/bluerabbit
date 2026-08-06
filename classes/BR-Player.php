@@ -1679,6 +1679,11 @@ class BR_Player {
             $data['levelup'] = $leveled_up;
             $data['new_level'] = $myLevel;
             $data['newly_earned'] = $newly_earned;
+            // One panel for everything this action produced - see BR_Feedback. The
+            // levelup/newly_earned keys stay for anything still reading them.
+            $data['celebrate'] = BR_Feedback::instance()
+                ->fromPlayerState($leveled_up, $myLevel, $newly_earned)
+                ->pull();
 
             $data['player']['xp']=$myXP;
             $data['player']['bloo']=$myBloo;
@@ -2346,6 +2351,11 @@ class BR_Player {
             }
             if($met) $ranks[] = $r;
         }
+        // Everything this level-up produced goes into the one panel (BR_Feedback),
+        // instead of the old sequence: explosion overlay for the level, then a second
+        // popup for the rank it earned.
+        BR_Feedback::instance()->levelUp($level);
+
         $config = BR_Config::instance()->getSysConfig();
         $logo = $config['main_logo']['value'] ? $config['main_logo']['value'] :  get_bloginfo('template_directory')."/images/logo.png";
         if($ranks){
@@ -2359,19 +2369,26 @@ class BR_Player {
             $the_ranks_query .= implode(', ', $the_ranks_place_holders);
             $the_ranks_query .=" ON DUPLICATE KEY UPDATE achievement_id=VALUES(achievement_id), player_id=VALUES(player_id),  adventure_id=VALUES(adventure_id), achievement_applied=VALUES(achievement_applied)";
             $the_ranks_insert = $wpdb->query( $wpdb->prepare("$the_ranks_query ", $the_ranks_values));
-            $achievement = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}br_achievements WHERE adventure_id=$adv_parent_id AND achievement_id=$rank->achievement_id");
-            BR_Achievement::instance()->switchRank($achievement->achievement_id, $adv_child_id);
-            $data['levelupBG'] = $achievement->achievement_badge;
-            $data['achievement_id'] = $achievement->achievement_id;
-            $data['levelupContent'] = "<h3><strong>".__("LEVEL UP!","bluerabbit")."</strong></h3>";
-            $data['levelupContent'] .= "<h2 class='font _30 w900'> $level </h2>";
-            BR_Activity::instance()->logActivity($adv_child_id,'level-up','player',$level, $achievement->achievement_id);
-            BR_Activity::instance()->logActivity($adv_child_id,'earned-achievement','player',$achievement->achievement_id);
+
+            // Every rank this level-up unlocked gets its own card in the panel. This
+            // used to read $rank outside the loop above, so if a player jumped two
+            // ranks at once only the last one was ever announced.
+            foreach($ranks as $rank){
+                $achievement = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}br_achievements WHERE adventure_id=%d AND achievement_id=%d",
+                    $adv_parent_id, $rank->achievement_id
+                ));
+                if(!$achievement) continue;
+                BR_Achievement::instance()->switchRank($achievement->achievement_id, $adv_child_id, $current_user->ID);
+                BR_Feedback::instance()->achievement(
+                    $achievement,
+                    sprintf(__('You reached Level %d!','bluerabbit'), $level),
+                    true
+                );
+                BR_Activity::instance()->logActivity($adv_child_id,'level-up','player',$level, $achievement->achievement_id);
+                BR_Activity::instance()->logActivity($adv_child_id,'earned-achievement','player',$achievement->achievement_id);
+            }
         }else{
-            $data['levelupContent'] = "<h3><strong>".__("Congratulations! LEVEL UP!","bluerabbit")."</strong></h3>";
-            $data['levelupContent'] .= "<img src='$logo' width='300'>";
-            $data['levelupContent'] .= "<h6>".__("you reached level","bluerabbit")."</h6>";
-            $data['levelupContent'] .= "<h1><strong> $level </strong></h1>";
             BR_Activity::instance()->logActivity($adv_child_id,'level-up','player',$level);
         }
         $sql = "UPDATE {$wpdb->prefix}br_player_adventure SET player_prev_level=%d WHERE player_id=%d AND adventure_id=%d";
@@ -2379,9 +2396,7 @@ class BR_Player {
         $wpdb->query($sql);
         $data['success'] = true;
         $data['levelup'] = true;
-
-
-
+        $data = BR_Feedback::instance()->attach($data);
 
         echo json_encode($data);
         die();

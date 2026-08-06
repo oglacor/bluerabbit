@@ -7658,33 +7658,96 @@ function closeAiValidateModal() {
 // BR_Player::resetPlayer()'s levelup/new_level/newly_earned and the
 // data.newly_earned branch in displayAjaxResponse(). newlyEarned entries:
 // {achievement_id, achievement_name, achievement_badge, achievement_color, is_rank, reason}.
-function showRewardsOverlay(levelup, newLevel, newlyEarned) {
-    var html = '';
-    if (levelup) {
-        html += '<div class="br-reward-levelup">' +
-            '<div class="br-reward-levelup-label">' + (brI18n.level_up || 'Level Up!') + '</div>' +
-            '<div class="br-reward-levelup-number">' + parseInt(newLevel, 10) + '</div>' +
+// ═══════════════════════════════════════════════════════════════════════════
+// Celebration panel — the single feedback surface for "you earned something"
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Takes the event list any handler can attach to its response (see BR_Feedback
+// on the PHP side) and renders ALL of it into one panel:
+//
+//     Congratulations!
+//     You just leveled up and earned an achievement
+//     [ 12 ]  [🏅 Rank 3 — You reached Level 3!]
+//     Keep moving forward!                                    [ Close ]
+//
+// Everything the player gained in one action lands in one panel. Ordinary
+// acknowledgements ("Settings saved") belong on the toast list via brNotify(),
+// and admin batch progress belongs on the op console - this is only for things
+// that were EARNED.
+//
+// Call it from anywhere, at any time:  brCelebrate([{type:'levelup', ...}])
+
+function brCelebrateSentence(events) {
+    var verbs = [];
+    events.forEach(function (e) {
+        var v = e.verb || '';
+        if (v && verbs.indexOf(v) === -1) verbs.push(v);
+    });
+    if (!verbs.length) return '';
+    var joined = verbs.length === 1
+        ? verbs[0]
+        : verbs.slice(0, -1).join(', ') + ' ' + (brI18n.and || 'and') + ' ' + verbs[verbs.length - 1];
+    return (brI18n.you_just || 'You just') + ' ' + joined;
+}
+
+function brCelebrateCard(e) {
+    var accent = e.color ? ' style="border-color:' + e.color + '55"' : '';
+
+    // A level-up is the number itself; everything else is a badge/art card.
+    if (e.type === 'levelup') {
+        return '<div class="br-celebrate-card br-celebrate-card-level"' + accent + '>' +
+            '<div class="br-celebrate-level-label">' + aiEscapeHtml(brI18n.level_up || 'Level Up!') + '</div>' +
+            '<div class="br-celebrate-level-number">' + parseInt(e.value, 10) + '</div>' +
         '</div>';
     }
-    (newlyEarned || []).forEach(function (a) {
-        html += '<div class="br-reward-achievement">' +
-            '<div class="br-reward-achievement-badge" style="background-image:url(' + (a.achievement_badge || '') + ')"></div>' +
-            '<div class="br-reward-achievement-info">' +
-                '<div class="br-reward-achievement-name">' + aiEscapeHtml(a.achievement_name || '') + '</div>' +
-                '<div class="br-reward-achievement-reason">' + aiEscapeHtml(a.reason || '') + '</div>' +
-            '</div>' +
-        '</div>';
-    });
-    $('#br-rewards-modal-body').html(html);
+
+    var art = e.image
+        ? '<div class="br-celebrate-art" style="background-image:url(' + encodeURI(e.image) + ')"></div>'
+        : '<div class="br-celebrate-art br-celebrate-art-icon"><span class="icon ' + (e.icon || 'icon-achievement') + '"></span></div>';
+
+    return '<div class="br-celebrate-card"' + accent + '>' +
+        art +
+        '<div class="br-celebrate-card-info">' +
+            '<div class="br-celebrate-card-title">' + aiEscapeHtml(e.title || '') + '</div>' +
+            (e.subtitle ? '<div class="br-celebrate-card-sub">' + aiEscapeHtml(e.subtitle) + '</div>' : '') +
+        '</div>' +
+    '</div>';
+}
+
+function brCelebrate(events) {
+    events = (events || []).filter(Boolean);
+    if (!events.length) return;
+
+    $('#br-celebrate-line').text(brCelebrateSentence(events));
+    $('#br-rewards-modal-body').html(events.map(brCelebrateCard).join(''));
+    // brOpenDrawer brings its own backdrop, so the panel does not add a second one.
     brOpenDrawer($('#br-rewards-overlay'));
 }
 
-// The button only ever closes the overlay - there is nothing to confirm with the
-// server, the rewards were already granted the moment they were earned. It exists
-// purely so claiming a reward feels like an action the player took, not something
-// that just happened to them.
-function claimRewards() {
+function brCelebrateClose() {
     brCloseDrawer($('#br-rewards-overlay'));
+}
+
+// Back-compat: anything still speaking the old levelup/newly_earned shape is
+// translated into events rather than kept on a second code path.
+function showRewardsOverlay(levelup, newLevel, newlyEarned) {
+    var events = [];
+    if (levelup) events.push({ type: 'levelup', verb: brI18n.verb_levelup || 'leveled up', value: newLevel });
+    (newlyEarned || []).forEach(function (a) {
+        events.push({
+            type:     a.is_rank ? 'rank' : 'achievement',
+            verb:     a.is_rank ? (brI18n.verb_rank || 'reached a new rank') : (brI18n.verb_achievement || 'earned an achievement'),
+            title:    a.achievement_name,
+            subtitle: a.reason,
+            image:    a.achievement_badge,
+            color:    a.achievement_color
+        });
+    });
+    brCelebrate(events);
+}
+
+function claimRewards() {
+    brCelebrateClose();
 }
 
 // The percentage grade an AI grade suggestion snaps to when this adventure grades in
@@ -9844,43 +9907,15 @@ function displayAjaxResponse(json_data) {
             $(this).remove();
         });
     }
-    // The new unified path (BR_Player::resetPlayer(), fired from quest/step
-    // completion) always sends newly_earned (possibly empty) alongside levelup - a
-    // single clean panel for everything earned in this one action, instead of the
-    // old one-achievement-at-a-time overlay below. Only falls through to the legacy
-    // #level-up overlay when newly_earned isn't present at all (the old
-    // updatePrevLevel() AJAX action, still reachable from page-adventure.php).
-    if (data.newly_earned !== undefined) {
-        if (data.levelup || (data.newly_earned && data.newly_earned.length)) {
-            showRewardsOverlay(data.levelup, data.new_level, data.newly_earned);
-        }
-    } else if (data.levelup) {
-        if (data.achievement_id) {
-            $("#level-up .content").html(data.levelupContent).hide();
-            $("#level-up").addClass('active');
-            $("#level-up .level-up-bg").delay(500).fadeIn('fast', function () {
-                loadAchievementCard(data.achievement_id, 1);
-            });
-            $("#level-up").click(function () {
-                $("#level-up").unbind('click');
-                hideAllOverlay();
-                unloadCard();
-            });
-        } else {
-            $("#level-up .content").html(data.levelupContent).hide();
-            $("#level-up .achievement-image").attr('style', 'background-image:url(' + data.levelupBG + ');').hide();
-            $("#level-up").addClass('active');
-            $("#level-up .level-up-bg").delay(500).fadeIn('fast', function () {
-                $("#level-up .content").fadeIn(500).delay(15000).fadeOut(1, function () {
-                    hideAllOverlay();
-                });
-            });
-            $("#level-up").click(function () {
-                $("#level-up").unbind('click');
-                hideAllOverlay();
-            });
-
-        }
+    // One surface for everything earned. Handlers attach a `celebrate` event list
+    // (BR_Feedback); the older levelup/newly_earned shape is translated into the
+    // same events rather than kept on a parallel code path. The legacy #level-up
+    // explosion overlay that used to run here is gone - it was the second animation
+    // that fired after a level-up that also earned a rank.
+    if (data.celebrate && data.celebrate.length) {
+        brCelebrate(data.celebrate);
+    } else if (data.levelup || (data.newly_earned && data.newly_earned.length)) {
+        showRewardsOverlay(data.levelup, data.new_level, data.newly_earned);
     }
     if (data.content && data.content_target) {
         $(data.content_target).append(data.content);
@@ -10691,3 +10726,11 @@ brI18n.ot_min_words = brI18n.ot_min_words || 'You need at least %d words. You ha
 brI18n.ot_ai_checking = brI18n.ot_ai_checking || 'Validating your content...';
 brI18n.ot_ai_pass = brI18n.ot_ai_pass || 'Content validated!';
 brI18n.ot_ai_fail = brI18n.ot_ai_fail || 'Your response doesn\'t seem to address the question. Please revise and try again.';
+// Celebration panel. The verbs normally arrive translated inside the event payload
+// (BR_Feedback); these cover the back-compat path and the joining words.
+brI18n.you_just = brI18n.you_just || 'You just';
+brI18n.and = brI18n.and || 'and';
+brI18n.level_up = brI18n.level_up || 'Level Up!';
+brI18n.verb_levelup = brI18n.verb_levelup || 'leveled up';
+brI18n.verb_achievement = brI18n.verb_achievement || 'earned an achievement';
+brI18n.verb_rank = brI18n.verb_rank || 'reached a new rank';

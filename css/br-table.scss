@@ -7883,8 +7883,146 @@ button.br-btn.br-confirming {
   to   { opacity: 1; transform: scale(1); }
 }
 
+// ── Celebration panel ────────────────────────────────────
+//
+// The single "you earned something" surface. Everything gained in one action is
+// rendered here at once, so a level-up that also unlocks a rank is one panel and
+// not two animations in a row.
+
+.br-celebrate-head {
+  position: relative;
+  padding: 26px 24px 18px;
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 1px solid rgba($br-white, 0.08);
+}
+
+// Soft light behind the headline. Purely decorative, and it must never intercept
+// a click meant for the panel.
+.br-celebrate-rays {
+  position: absolute;
+  top: -60%;
+  left: 50%;
+  width: 340px;
+  height: 340px;
+  margin-left: -170px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba($br-accent, 0.28) 0%, rgba($br-accent, 0) 65%);
+  animation: br-celebrate-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes br-celebrate-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+
+.br-celebrate-title {
+  position: relative;
+  margin: 0;
+  @include condensed-heading(30px, 800);
+  color: $br-white;
+  text-shadow: 0 0 26px rgba($br-accent, 0.45);
+}
+
+.br-celebrate-line {
+  position: relative;
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba($br-white, 0.7);
+}
+
+.br-celebrate-outro {
+  margin: 0 0 14px;
+  @include condensed-heading(14px, 700);
+  color: rgba($br-white, 0.45);
+}
+
+// One card per earned thing. Same frame whether it is an achievement, an item or
+// a completion - only the art and the copy change.
+.br-celebrate-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: rgba($br-white, 0.04);
+  border: 1px solid rgba($br-white, 0.1);
+  animation: br-celebrate-card-in 0.4s ease both;
+
+  &:last-child { margin-bottom: 0; }
+
+  // Cards stagger in so several rewards read as a sequence, not a wall.
+  &:nth-child(2) { animation-delay: 0.09s; }
+  &:nth-child(3) { animation-delay: 0.18s; }
+  &:nth-child(4) { animation-delay: 0.27s; }
+  &:nth-child(n+5) { animation-delay: 0.34s; }
+}
+
+@keyframes br-celebrate-card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.br-celebrate-art {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba($br-white, 0.06);
+  box-shadow: 0 0 0 2px rgba($br-accent, 0.4);
+}
+
+.br-celebrate-art-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .icon { font-size: 24px; color: rgba($br-white, 0.75); }
+}
+
+.br-celebrate-card-title {
+  @include condensed-heading(16px, 800);
+  color: $br-white;
+}
+
+.br-celebrate-card-sub {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba($br-white, 0.6);
+}
+
+// The level-up card is the number itself rather than a piece of art.
+.br-celebrate-card-level {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  padding: 16px 12px;
+
+  .br-celebrate-level-label {
+    @include condensed-heading(14px, 800);
+    letter-spacing: 2px;
+    color: $br-accent;
+  }
+
+  .br-celebrate-level-number {
+    font-family: $condensed;
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: $br-white;
+    text-shadow: 0 0 24px rgba($br-accent, 0.6);
+  }
+}
+
 .br-rewards-modal-body {
-  padding: 28px 24px 8px;
+  padding: 22px 24px 8px;
   overflow-y: auto;
   text-align: center;
 }

@@ -44,22 +44,25 @@
 			<source src="<?=get_bloginfo('template_directory')."/video/particle-trail-1.mp4"; ?>">
 		</video>
 
-		<div class="level-up layer feedback top left fixed sq-full" id="level-up">
-			<div class="layer background opacity-80 black-bg fixed sq-full level-up-bg" style="background-image: url(<?= get_bloginfo('template_directory')."/images/explosion-lq.gif"; ?>)"></div>
-			<div class="layer background opacity-60 achievement-image fixed sq-full"></div>
-			<div class="layer base white-color perfect-center text-center absolute content line-200">
-			</div>
-		</div>
-
-		<!-- One clean panel for everything earned in a single action (level-up + any
-		     number of newly-earned achievements/ranks) instead of stacking several
-		     separate popups - see showRewardsOverlay()/claimRewards() in script.js. -->
-		<div class="overlay-layer br-rewards-overlay" id="br-rewards-overlay">
+		<!-- The one celebration panel. EVERYTHING a player earns in a single action -
+		     the level-up, each rank or achievement it unlocked, items, completions -
+		     is rendered here together by brCelebrate(). There used to be a second,
+		     separate explosion overlay for level-ups, so levelling into a rank fired
+		     two animations back to back. Copy is filled in from the event payload
+		     (BR_Feedback), so this markup carries only the frame. -->
+		<div class="overlay-layer br-rewards-overlay br-celebrate" id="br-rewards-overlay"
+			role="dialog" aria-modal="true" aria-labelledby="br-celebrate-title">
 			<div class="br-rewards-modal">
+				<div class="br-celebrate-head">
+					<div class="br-celebrate-rays" aria-hidden="true"></div>
+					<h2 class="br-celebrate-title" id="br-celebrate-title"><?= __("Congratulations!","bluerabbit"); ?></h2>
+					<p class="br-celebrate-line" id="br-celebrate-line"></p>
+				</div>
 				<div class="br-rewards-modal-body" id="br-rewards-modal-body"></div>
 				<div class="br-rewards-modal-footer">
-					<button class="br-btn green br-rewards-claim-btn" onclick="claimRewards();">
-						<span class="icon icon-check"></span> <?= __("Claim","bluerabbit"); ?>
+					<p class="br-celebrate-outro"><?= __("Keep moving forward!","bluerabbit"); ?></p>
+					<button class="br-btn green br-rewards-claim-btn" onclick="brCelebrateClose();">
+						<span class="icon icon-check"></span> <?= __("Close","bluerabbit"); ?>
 					</button>
 				</div>
 			</div>
