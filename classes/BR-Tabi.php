@@ -451,6 +451,12 @@ class BR_Tabi {
             if($a) {
                 $tabis = $this->getTabis($a->adventure_id);
                 $tabi_prereq_nonce = wp_create_nonce('tabi_prereq_nonce');
+                // tabi-row.php prints this in the # column. It was never set here, so
+                // every row added without a page reload showed a blank number.
+                $rowNumber = 0;
+                foreach($tabis as $i => $t){
+                    if((int)$t->tabi_id === (int)$a->tabi_id){ $rowNumber = $i + 1; break; }
+                }
             }
             $theFile = (get_template_directory()."/tabi-row.php");
             if(file_exists($theFile)) {

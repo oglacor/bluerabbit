@@ -3053,6 +3053,12 @@ body.br-drawer-open {
   margin-bottom: 12px;
 }
 
+// A quick-edit field that spans the whole grid instead of taking one column -
+// used by anything whose control is a wrapping list rather than a single input.
+.br-qe-field-full {
+  grid-column: 1 / -1;
+}
+
 .br-qe-field {
   label {
     display: block;
