@@ -16,8 +16,8 @@
         results:        'results',
         noResults:      'No results found.',
         noAdventures:   'No adventures found.',
-        settingsSaved:  'Settings saved',
-        saveFailed:     'Save failed',
+        settingsSaved:  'Organization updated',
+        saveFailed:     'Could not update the organization',
         selectCsv:      'Please select a CSV file.',
         noEmails:       'No valid emails found.',
         selectAdv:      'Please select an adventure.',
@@ -64,6 +64,7 @@
         } else {
             about = $('#the-org-content').val();
         }
+        showLoader();
         $.post(ajaxurl(), {
             action: 'updateOrg',
             nonce:  $('#nonce').val(),
@@ -76,10 +77,20 @@
                 about:  about
             }
         }, function (r) {
-            var d = parseJs(r);
-            brNotify(d.success || d.updated ? L.settingsSaved : L.saveFailed,
-                     d.success || d.updated ? 'success' : 'error');
-        });
+            var d = parseJs(r), ok = !!(d.success || d.updated);
+            brNotify(ok ? L.settingsSaved : L.saveFailed, ok ? 'success' : 'error');
+            // The header badge and page title are rendered server-side, so keep
+            // them honest with what was just saved instead of waiting for F5.
+            if (ok) $('.br-page-title').text($('#the-org-name').val());
+        }).fail(function () {
+            brNotify(L.saveFailed, 'error');
+        }).always(hideLoader);
+    }
+
+    // Narrower than hideAllOverlay(), which also pauses audio, unfixes the page
+    // and closes the start menu - none of which belongs in a save handler.
+    function hideLoader() {
+        $('.loader, .small-loader, .overlay-bg').removeClass('active');
     }
 
     // ── Player list ──────────────────────────────────────────────────────────
@@ -332,6 +343,7 @@
     function orgCreate() {
         var name = $('#new-org-name').val().trim();
         if (!name) { brNotify(L.orgNameNeeded, 'error'); return; }
+        showLoader();
         $.post(ajaxurl(), {
             action: 'createOrg',
             nonce:  $('#manage-orgs-nonce').val(),
@@ -340,9 +352,10 @@
             status: $('#new-org-status').val()
         }, function (r) {
             var d = parseJs(r);
-            if (!d.success) { brNotify(d.message || L.error, 'error'); return; }
+            if (!d.success) { hideLoader(); brNotify(d.message || L.error, 'error'); return; }
+            // Loader stays up through the redirect - the page is on its way out.
             window.location.href = siteUrl + '/organization/?id=' + d.org_id;
-        });
+        }).fail(function () { hideLoader(); brNotify(L.error, 'error'); });
     }
 
     function orgDelete(org_id) {

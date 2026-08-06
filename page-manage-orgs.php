@@ -43,8 +43,14 @@ $orgs = $wpdb->get_results(
 
     <div class="br-form-group">
         <label class="br-form-label"><?= __('Color','bluerabbit'); ?></label>
-        <input id="new-org-color" class="color-selected" type="hidden" value="">
-        <?php $color_select_id = "#new-org-color"; include TEMPLATEPATH.'/color-select.php'; ?>
+        <?php
+        // A new org starts on a real colour rather than an empty picker, and
+        // $selected_color is what tells color-select.php which swatch is active.
+        $selected_color  = '#1cc2eb';
+        $color_select_id = "#new-org-color";
+        ?>
+        <input id="new-org-color" class="color-selected" type="hidden" value="<?= esc_attr($selected_color); ?>">
+        <?php include TEMPLATEPATH.'/color-select.php'; ?>
     </div>
 
     <div class="br-form-group">
@@ -93,7 +99,7 @@ $orgs = $wpdb->get_results(
                 ?>
                 <tr id="org-row-<?= (int)$o->org_id; ?>">
                     <td><?= (int)$o->org_id; ?></td>
-                    <td><span class="w500"><?= esc_html($o->org_name); ?></span></td>
+                    <td><span class="br-text-medium"><?= esc_html($o->org_name); ?></span></td>
                     <td><span class="br-badge <?= $status_class; ?>"><?= esc_html($o->org_status); ?></span></td>
                     <td><?= (int)$o->player_count; ?></td>
                     <td><?= (int)$o->adventure_count; ?></td>

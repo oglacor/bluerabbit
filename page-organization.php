@@ -86,7 +86,13 @@ $all_adventures = $wpdb->get_results(
             <div class="br-form-group">
                 <label class="br-form-label"><?= __('Color','bluerabbit'); ?></label>
                 <input id="the-org-color" class="color-selected" type="hidden" value="<?= esc_attr($org->org_color); ?>">
-                <?php $color_select_id = "#the-org-color"; include TEMPLATEPATH.'/color-select.php'; ?>
+                <?php
+                // color-select.php reads $selected_color to mark the active swatch
+                // and set the preview; without it the picker opens showing nothing.
+                $color_select_id = "#the-org-color";
+                $selected_color  = $org->org_color;
+                include TEMPLATEPATH.'/color-select.php';
+                ?>
             </div>
 
             <div class="br-form-group">
@@ -97,7 +103,7 @@ $all_adventures = $wpdb->get_results(
             <div class="br-form-footer">
                 <span></span>
                 <button class="br-btn cyan" onclick="saveOrgSettings();">
-                    <span class="icon icon-check"></span> <?= __('Save Settings','bluerabbit'); ?>
+                    <span class="icon icon-check"></span> <?= __('Update Organization','bluerabbit'); ?>
                 </button>
             </div>
         </div>
