@@ -1793,7 +1793,6 @@ function br_migrate_player_sessions_schema() {
 		) $charset_collate" );
 	}
 }
-add_action( 'init', 'br_migrate_player_sessions_schema' );
 
 add_action( 'after_setup_theme', 'theme_name_setup' );
 add_filter( 'upload_mimes', 'add_upload_mime_types' );
@@ -1930,7 +1929,6 @@ function br_migrate_tabi_tables() {
 		}
 	}
 }
-add_action('init', 'br_migrate_tabi_tables');
 
 function br_migrate_milestone_schema() {
 	global $wpdb;
@@ -2030,7 +2028,6 @@ function br_migrate_milestone_schema() {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_adventures ADD COLUMN adventure_ai_api_key VARCHAR(255) DEFAULT NULL");
 	}
 }
-add_action('init', 'br_migrate_milestone_schema');
 
 // Exposes the already-existing (but previously unreachable) leaderboard_limit
 // adventure setting through the standard Features table on page-new-adventure.php,
@@ -2067,7 +2064,6 @@ function br_migrate_leaderboard_limit_feature() {
 		]);
 	}
 }
-add_action('init', 'br_migrate_leaderboard_limit_feature');
 
 // GM's written verdict on a player's milestone post - one flat column, same shape as
 // the existing pp_grade/pp_quest_rating on this table (one row per player per quest,
@@ -2080,7 +2076,6 @@ function br_migrate_player_post_comment() {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_player_posts ADD COLUMN `pp_gm_comment` LONGTEXT NULL AFTER `pp_grade`");
 	}
 }
-add_action('init', 'br_migrate_player_post_comment');
 
 // Unified Conditions engine (see classes/BR-Conditions.php). Threshold/count-based
 // gates (journey %, milestone count, tabi count, transaction count, items consumed)
@@ -2291,7 +2286,6 @@ function br_migrate_conditions_schema() {
 		}
 	}
 }
-add_action('init', 'br_migrate_conditions_schema');
 
 // Closes a real race condition in BR_Item::buyItem()/pickupItem(): both read a
 // stock/cap count, validate, then INSERT with no atomicity between the two steps, so
@@ -2309,7 +2303,6 @@ function br_migrate_transaction_lock_schema() {
 		$wpdb->query("ALTER TABLE {$wpdb->prefix}br_transactions ADD COLUMN `trnx_lock_key` VARCHAR(191) NULL, ADD UNIQUE KEY `idx_trnx_lock_key` (`trnx_lock_key`)");
 	}
 }
-add_action('init', 'br_migrate_transaction_lock_schema');
 
 // Tremendous.com gift-card rewards integration - see classes/BR-Tremendous.php.
 // currency_code defaults to EUR (client's explicit tweak on the original brief, which
@@ -2402,7 +2395,6 @@ function br_migrate_tremendous_schema() {
 		}
 	}
 }
-add_action('init', 'br_migrate_tremendous_schema');
 
 // Bulk achievement-award-by-CSV queue (see BR_Achievement::bulkAssignAchievement()/
 // processBulkAchievementBatch()). Uploading a large CSV and assigning every row
@@ -2429,7 +2421,6 @@ function br_migrate_achievement_bulk_queue_schema() {
 		) $charset_collate" );
 	}
 }
-add_action( 'init', 'br_migrate_achievement_bulk_queue_schema' );
 
 // Removes the abandoned "template cascade" lineage columns (quest_parent,
 // achievement_parent, item_parent, step_parent, objective_parent,
@@ -2462,7 +2453,6 @@ function br_migrate_drop_parent_cascade_columns() {
 		}
 	}
 }
-add_action('init', 'br_migrate_drop_parent_cascade_columns');
 
 function br_save_ai_api_key() {
 	global $wpdb;
@@ -3176,3 +3166,38 @@ add_action("wp_ajax_br_player_branch_choice", [BR_Branch::instance(), 'ajaxPlaye
 add_action("wp_ajax_br_save_ai_api_key", 'br_save_ai_api_key');
 add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
 
+
+/**
+ * Schema migrations, run once per deployment instead of once per request.
+ *
+ * Each br_migrate_* function checks the database before it changes anything, so
+ * they were safe to fire on every `init` - but "safe" is not "free": between them
+ * they issued ~71 SHOW TABLES / SHOW COLUMNS / SHOW INDEX queries on EVERY page
+ * load, roughly half the cost of the journey page. On an adventure with 1,500
+ * players that is 71 pointless round trips per view, all day.
+ *
+ * They are still individually idempotent - this gate is purely an optimisation, and
+ * re-running them costs nothing but the inspection. Bump BR_SCHEMA_VERSION whenever
+ * a migration is added or changed; deleting the br_schema_version option forces a
+ * re-run.
+ */
+define( 'BR_SCHEMA_VERSION', '2026-08-06.2' );
+
+function br_run_schema_migrations() {
+	if ( get_option( 'br_schema_version' ) === BR_SCHEMA_VERSION ) return;
+
+	br_email_maybe_migrate();
+	br_migrate_player_sessions_schema();
+	br_migrate_tabi_tables();
+	br_migrate_milestone_schema();
+	br_migrate_leaderboard_limit_feature();
+	br_migrate_player_post_comment();
+	br_migrate_conditions_schema();
+	br_migrate_transaction_lock_schema();
+	br_migrate_tremendous_schema();
+	br_migrate_achievement_bulk_queue_schema();
+	br_migrate_drop_parent_cascade_columns();
+
+	update_option( 'br_schema_version', BR_SCHEMA_VERSION );
+}
+add_action( 'init', 'br_run_schema_migrations' );

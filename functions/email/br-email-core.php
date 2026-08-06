@@ -3,7 +3,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // ── DB migration ─────────────────────────────────────────────────────────────
 
-add_action( 'init', 'br_email_maybe_migrate', 5 );
+// Called from br_run_schema_migrations() in functions.php, which runs once per
+// deployment rather than once per request. It used to hook 'init' directly and
+// issue two SHOW COLUMNS plus two CREATE TABLE IF NOT EXISTS on every page load.
 function br_email_maybe_migrate(): void {
 	global $wpdb;
 	$log_table      = "{$wpdb->prefix}br_email_log";
