@@ -1695,6 +1695,11 @@ class BR_Player {
             $data['player']['deadlines']=$deadlines;
             $data['player']['unlocks']=$unlocked;
             $data['player']['gpa']=$totalgpa;
+            // Same key getPlayerProgress() publishes, holding the same getMyItems()
+            // structure. Without it, anything handed a resetPlayer() result saw no owned
+            // items at all - which silently locked key-gated milestones. header.php and
+            // BR_Conditions both read player state through this key.
+            $data['items']=$myItems;
             $data['reqs']=$reqs;
             $data['reqs_ids']=$reqs_ids;
             $data['achievements']=$achievements;

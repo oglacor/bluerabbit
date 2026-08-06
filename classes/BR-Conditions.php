@@ -125,7 +125,7 @@ class BR_Conditions {
         $fqs             = $player_progress['player']['fqs'] ?? [];
         $level           = $player_progress['player']['level'] ?? 1;
         $achievement_ids = $player_progress['achievements_ids'] ?? [];
-        $key_item_ids    = array_keys($player_progress['items']['key'] ?? []);
+        $key_item_ids    = $this->keyItemIds($player_progress);
 
         $total_milestones = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
@@ -172,6 +172,42 @@ class BR_Conditions {
             'adv_parent_id'       => $adv_parent_id,
             'player_id'           => $player_id,
         ];
+    }
+
+    // Key-item ids the player currently holds (tabi-pieces count as keys, matching
+    // BR_Item::getMyItems()).
+    //
+    // Two different "player state" arrays reach buildProgressSnapshot() and they
+    // disagree about where owned items live:
+    //
+    //   getPlayerProgress()  ['items']           = getMyItems() output - key and
+    //                                              tabi-piece merged under ['key'],
+    //                                              keyed by item_id, spent items excluded
+    //   resetPlayer()        ['player']['items'] = plain lists of item ids per
+    //                                              transaction type
+    //
+    // Reading only the first shape returned an empty list for every caller holding a
+    // resetPlayer() result, and an empty list fails the key-item gate in
+    // BR_Progression::milestoneState() - so the "next milestone" offered after a
+    // quest, challenge or survey stayed locked for players who did hold the key.
+    // resetPlayer() now publishes ['items'] too; this reads either so no future
+    // caller can lose the list again by assembling its own array.
+    private function keyItemIds($player_progress): array {
+        $ids = [];
+
+        foreach ((array) ($player_progress['items']['key'] ?? []) as $item_id => $row) {
+            $ids[] = is_object($row) && isset($row->item_id) ? (int) $row->item_id : (int) $item_id;
+        }
+
+        if (!$ids) {
+            foreach (['key', 'tabi-piece'] as $type) {
+                foreach ((array) ($player_progress['player']['items'][$type] ?? []) as $item_id) {
+                    if (is_scalar($item_id)) $ids[] = (int) $item_id;
+                }
+            }
+        }
+
+        return array_values(array_filter(array_unique($ids)));
     }
 
     // ── Evaluation ──
