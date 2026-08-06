@@ -92,11 +92,9 @@
 				<span class="headline-text amber-400 br-text-12 kerning-3 condensed w100 uppercase relative padding-5 foreground ">
 					<?= __("Mission","bluerabbit"); ?>
 				</span>
-				<?php if($isGM){ ?>
-					<a class="form-ui br-text-12 green-bg-400 padding-5" href="<?= get_bloginfo('url')."/new-mission/?adventure_id=$adv_parent_id&questID=$m->quest_id";?>">
-						<span class="icon icon-edit br-text-12"></span><?= __("Edit","bluerabbit"); ?>
-					</a>
-				<?php } ?>
+				<?php // Missions are retired: the authoring page is gone, so there is
+				      // nothing left to edit them with. This page remains only so any
+				      // historical mission still renders rather than 404ing. ?>
 			</div>
 			<div class="icon-group padding-0 inline-table">
 				<span class="icon-content">

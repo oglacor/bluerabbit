@@ -15,7 +15,9 @@
 						<?php if($isGM){ ?>
 							<div class="table">
 								<div class="table-cell text-center">
-									<a class="form-ui green-bg-400" href="<?= get_bloginfo('url')."/new-survey/?adventure_id=$adventure->adventure_id&questID=$s->quest_id";?>"><span class="icon icon-edit"></span> <?php _e("Edit","bluerabbit"); ?></a>
+									<?php // Survey-as-a-quest is retired - surveys live in milestone steps
+									      // now - so there is no authoring page to edit these with. Results
+									      // stay readable, and trashing still works. ?>
 									<button class="form-ui red-bg-400" onClick="br_confirm_trd('trash',<?= $s->quest_id; ?>,'quest');"><span class=" icon icon-trash"></span> <?php _e("Trash","bluerabbit"); ?></button>
 									<input type="hidden" id="trash-nonce" value="<?= wp_create_nonce('trash_nonce'); ?>" />
 								</div>

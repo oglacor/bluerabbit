@@ -75,9 +75,10 @@
 			/* PLAYER RESET END */
 			
 			$use_challenges = isset($adv_settings['use_challenges']['value']) ? $adv_settings['use_challenges']['value'] : "";
-			$use_missions = isset($adv_settings['use_missions']['value']) ? $adv_settings['use_missions']['value'] : "";
+			// $use_missions / $use_surveys removed: both mechanics are retired and their
+			// authoring pages deleted, so the flags gated nothing. The survey REPORTING
+			// settings below are still live - results pages outlive the quest type.
 			$use_encounters = isset($adv_settings['use_encounters']['value']) ? $adv_settings['use_encounters']['value'] : "";
-			$use_surveys = isset($adv_settings['use_surveys']['value']) ? $adv_settings['use_surveys']['value'] : "";
 			$show_survey_answers = isset($adv_settings['show_survey_answers']['value']) ? $adv_settings['show_survey_answers']['value'] : "";
 			$show_survey_names = isset($adv_settings['show_survey_names']['value']) ? $adv_settings['show_survey_names']['value'] : "";
 			$use_achievements = isset($adv_settings['use_achievements']['value']) ? $adv_settings['use_achievements']['value'] : "";
@@ -372,8 +373,8 @@
 				<?php } ?>
 				<?php
 				$br_tutorial_pages = array(
-					'adventure','adventures','quest','challenge','mission',
-					'new-quest','new-challenge','new-adventure','new-mission','new-achievement','new-speaker','new-session','new-survey',
+					'adventure','adventures','quest','challenge',
+					'new-quest','new-challenge','new-adventure','new-achievement','new-speaker','new-session',
 					'new-guild','new-blocker','new-lore','new-blog-post','new-item',
 				);
 				if(is_page($br_tutorial_pages)){ ?>

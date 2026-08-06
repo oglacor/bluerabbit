@@ -549,7 +549,7 @@
 			</script>
 		<?php } ?>
 		<?php
-		$br_builder_pages = array('new-quest','new-challenge','new-mission','new-survey','new-adventure','new-achievement','new-speaker','new-session','new-guild','new-blocker','new-lore','new-blog-post','new-item');
+		$br_builder_pages = array('new-quest','new-challenge','new-adventure','new-achievement','new-speaker','new-session','new-guild','new-blocker','new-lore','new-blog-post','new-item');
 		foreach($br_builder_pages as $br_builder_slug){
 			if(is_page($br_builder_slug)){
 				include (get_stylesheet_directory() . "/tutorials/tutorial-$br_builder_slug.php");

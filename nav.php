@@ -441,16 +441,6 @@
 							</a>
 						</li>
 					<?php } ?>
-					<?php if($use_missions){ ?>
-						<li class="nav-button">
-							<a class="" href="<?= get_bloginfo('url')."/new-mission/?adventure_id=$adv_parent_id"; ?>">
-								<span class="content">
-									<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-mission.png" alt=""/></span>
-									<span class="label"><?= __("New Mission","bluerabbit"); ?></span>
-								</span>
-							</a>
-						</li>
-					<?php } ?>
 					<?php if($use_blog){ ?>
 						<li class="nav-button">
 							<a class="" href="<?= get_bloginfo('url')."/new-blog-post/?adventure_id=$adv_parent_id"; ?>">
@@ -495,16 +485,6 @@
 								<span class="content">
 									<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-speaker.png" alt=""/></span>
 									<span class="label"><?= __("New Speaker","bluerabbit"); ?></span>
-								</span>
-							</a>
-						</li>
-					<?php } ?>
-					<?php if($use_surveys){ ?>
-						<li class="nav-button">
-							<a class="" href="<?= get_bloginfo('url')."/new-survey/?adventure_id=$adv_parent_id"; ?>">
-								<span class="content">
-									<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-survey.png" alt=""/></span>
-									<span class="label"><?= __("New Survey","bluerabbit"); ?></span>
 								</span>
 							</a>
 						</li>
