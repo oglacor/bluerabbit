@@ -7747,11 +7747,17 @@ $(function () {
     // the player doing anything that recalculates their state, and this is the screen
     // they land on. Its response already includes anything that was queued.
     if (parseInt(brFeedback.sync_adventure, 10)) {
-        $.post(runAJAX.ajaxurl,
-            { action: 'brSyncRewards', adventure_id: brFeedback.sync_adventure },
-            function (res) {
-                if (res && res.success && res.data) brCelebrate(res.data.celebrate);
-            }, 'json');
+        // Only set when the rules moved since this player was last judged, so it runs
+        // about once per player per rule change - not once per page view. The jitter
+        // matters on the change itself: a cohort that all reload together would
+        // otherwise fire a thousand award passes in the same second.
+        setTimeout(function () {
+            $.post(runAJAX.ajaxurl,
+                { action: 'brSyncRewards', adventure_id: brFeedback.sync_adventure },
+                function (res) {
+                    if (res && res.success && res.data) brCelebrate(res.data.celebrate);
+                }, 'json');
+        }, Math.floor(Math.random() * 4000));
         return;
     }
 

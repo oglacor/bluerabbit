@@ -190,6 +190,63 @@ class BR_Feedback {
         ) );
     }
 
+    // ── Rules versioning ──────────────────────────────────────────────────────
+    //
+    // resetPlayer() costs ~43 queries. Running it on every journey-page view would
+    // roughly triple the database load of the busiest page in the app, so it runs
+    // only when it can actually find something new.
+    //
+    // It can only find something new for two reasons: the player's own progress
+    // changed - which already runs resetPlayer() at the source, so it is handled -
+    // or the RULES changed underneath them. Adventures therefore carry a version
+    // that rule edits bump, and players carry the version they were last evaluated
+    // against. Same number, nothing to do.
+
+    // Called whenever conditions, ranks, or anything else that decides an award are
+    // edited. $adventure_id is the PARENT - that is where rules live.
+    public function bumpRules( $adventure_id ) {
+        global $wpdb;
+        $adventure_id = (int) $adventure_id;
+        if ( ! $adventure_id ) return;
+        $wpdb->query( $wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_adventures SET rules_version = rules_version + 1 WHERE adventure_id = %d",
+            $adventure_id
+        ) );
+    }
+
+    // One indexed query: is this player evaluated against the current rules of the
+    // adventure they are in (following the parent, where rules live)?
+    public function needsSync( $player_id, $adventure_id ) {
+        global $wpdb;
+        $player_id    = (int) $player_id;
+        $adventure_id = (int) $adventure_id;
+        if ( ! $player_id || ! $adventure_id ) return false;
+
+        $row = $wpdb->get_row( $wpdb->prepare(
+            "SELECT pa.synced_rules, rules.rules_version
+             FROM {$wpdb->prefix}br_player_adventure pa
+             JOIN {$wpdb->prefix}br_adventures adv  ON adv.adventure_id = pa.adventure_id
+             JOIN {$wpdb->prefix}br_adventures rules
+               ON rules.adventure_id = COALESCE(NULLIF(adv.adventure_parent, 0), adv.adventure_id)
+             WHERE pa.player_id = %d AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'",
+            $player_id, $adventure_id
+        ) );
+        if ( ! $row ) return false;
+        return (int) $row->synced_rules !== (int) $row->rules_version;
+    }
+
+    // Recorded once the player has been evaluated, so the next visit is a no-op.
+    public function markSynced( $player_id, $adventure_id, $adv_parent_id ) {
+        global $wpdb;
+        $version = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT rules_version FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d", (int) $adv_parent_id
+        ) );
+        $wpdb->query( $wpdb->prepare(
+            "UPDATE {$wpdb->prefix}br_player_adventure SET synced_rules = %d WHERE player_id = %d AND adventure_id = %d",
+            $version, (int) $player_id, (int) $adventure_id
+        ) );
+    }
+
     // Builds events straight from resetPlayer()'s levelup/newly_earned output, which
     // is where nearly every award in the app already surfaces.
     public function fromPlayerState( $levelup, $new_level, $newly_earned ) {

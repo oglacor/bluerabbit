@@ -1195,13 +1195,11 @@ function ajaxFunctions() {
 	// waiting - see BR_Feedback's pending queue and brCelebrate() in script.js.
 	wp_localize_script( 'ajaxFunctions', 'brFeedback', array(
 		'pending' => is_user_logged_in() ? BR_Feedback::instance()->countPending( get_current_user_id() ) : 0,
-		// The journey page re-runs the award pass on arrival. Conditions can come true
-		// without the player doing anything that recalculates their state - a GM adds
-		// an achievement for a Tabi they finished last week, a requirement is relaxed -
-		// and the journey page is where they land, so it is where we make sure nothing
-		// owed is still outstanding.
-		'sync_adventure' => ( is_user_logged_in() && is_page( 'adventure' ) && isset( $_GET['adventure_id'] ) && ctype_digit( (string) $_GET['adventure_id'] ) )
-			? (int) $_GET['adventure_id'] : 0,
+		// The journey page re-runs the award pass on arrival, but ONLY when the rules
+		// have moved since this player was last judged against them. The award pass
+		// costs ~43 queries; on a 1,500-player adventure reloading all day that has to
+		// stay a rare event, and needsSync() decides it in one indexed query.
+		'sync_adventure' => br_reward_sync_target(),
 	) );
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-casestudy-api', get_template_directory_uri().'/js/casestudy-api.js', array('jquery','ajaxFunctions'), '1.0', true);
@@ -2136,6 +2134,24 @@ function br_migrate_conditions_schema() {
 		$wpdb->query("ALTER TABLE {$prefix}br_adventure_ranks ADD COLUMN `condition_type` VARCHAR(30) NOT NULL DEFAULT 'level'");
 	}
 
+	// Reward-sync gating. Every player-driven state change already runs resetPlayer()
+	// (quest completion, items, challenges - see its docblock), so the only thing the
+	// journey page has to catch is a RULES change: a GM adding a condition, a rank, an
+	// achievement. Adventures carry a version that those edits bump, players carry the
+	// version they were last evaluated against, and the journey page runs the award
+	// pass only when the two differ. Without this the page pays 43 extra queries per
+	// load, on the busiest page in the app.
+	$adv_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_adventures");
+	if (!in_array('rules_version', $adv_cols)) {
+		$wpdb->query("ALTER TABLE {$prefix}br_adventures ADD COLUMN `rules_version` INT NOT NULL DEFAULT 1");
+	}
+	$pa_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_player_adventure");
+	if (!in_array('synced_rules', $pa_cols)) {
+		// 0, not 1: every existing player is considered out of date once, so the rules
+		// they already satisfy are evaluated on their next visit rather than never.
+		$wpdb->query("ALTER TABLE {$prefix}br_player_adventure ADD COLUMN `synced_rules` INT NOT NULL DEFAULT 0");
+	}
+
 	// Celebrations owed to a player but not yet shown. An award and the moment the
 	// player is looking at the screen are rarely the same moment - a Tabi completes
 	// as a side effect of a quest, a GM validates work later, a batch assigns ranks -
@@ -2886,6 +2902,16 @@ add_action("wp_ajax_removeAdventureFromOrg",    [BR_Organization::instance(), 'r
 add_action("wp_ajax_createOrg",                 [BR_Organization::instance(), 'createOrg']);
 add_action("wp_ajax_deleteOrg",                 [BR_Organization::instance(), 'deleteOrg']);
 
+// The adventure this page view should re-evaluate awards for, or 0 for "nothing to
+// do" - which is the answer on the overwhelming majority of journey-page loads.
+function br_reward_sync_target() {
+	if ( ! is_user_logged_in() || ! is_page( 'adventure' ) ) return 0;
+	if ( ! isset( $_GET['adventure_id'] ) || ! ctype_digit( (string) $_GET['adventure_id'] ) ) return 0;
+
+	$adventure_id = (int) $_GET['adventure_id'];
+	return BR_Feedback::instance()->needsSync( get_current_user_id(), $adventure_id ) ? $adventure_id : 0;
+}
+
 // Drains whatever celebrations are owed to the logged-in player. Called on page
 // load only when the localized `pending` count says there is something to show, so
 // the common case costs nothing.
@@ -2904,13 +2930,12 @@ add_action('wp_ajax_brSyncRewards', function() {
     $adventure_id = intval($_POST['adventure_id'] ?? 0);
     if (!$player_id || !$adventure_id) wp_send_json_success(['celebrate' => []]);
 
-    global $wpdb;
-    $enrolled = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
-         WHERE player_id=%d AND adventure_id=%d AND player_adventure_status='in'",
-        $player_id, $adventure_id
-    ));
-    if (!$enrolled) wp_send_json_success(['celebrate' => []]);
+    // Re-checked server-side rather than trusted from the page: the award pass is the
+    // most expensive thing a logged-in user can ask for, and this keeps a client that
+    // calls it in a loop from costing anything. needsSync() also covers enrolment.
+    if (!BR_Feedback::instance()->needsSync($player_id, $adventure_id)) {
+        wp_send_json_success(['celebrate' => BR_Feedback::instance()->popFor($player_id)]);
+    }
 
     $state = BR_Player::instance()->resetPlayer($adventure_id, $player_id);
     $events = $state['celebrate'] ?? [];

@@ -1698,6 +1698,12 @@ class BR_Player {
                 ? BR_Feedback::instance()->popFor($user->player_id, $adventure_id)
                 : [];
 
+            // This player has now been judged against the current rules, so the journey
+            // page can skip the whole pass until the rules change again. Every
+            // player-driven change already routes through here, which is what makes the
+            // gate safe - see BR_Feedback::needsSync().
+            BR_Feedback::instance()->markSynced($user->player_id, $adventure_id, $adv_parent_id);
+
             $data['player']['xp']=$myXP;
             $data['player']['bloo']=$myBloo;
             $data['player']['ep']=$myEP;

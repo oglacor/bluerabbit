@@ -149,6 +149,9 @@ class BR_Adventure {
                                 if(isset($saved_ranks[(int) $old_achievement_id])) continue;
                                 BR_Conditions::instance()->syncRankCondition($adventure_id, $old_achievement_id, null, null);
                             }
+                            // Ranks decide awards, so every player is due one
+                            // re-evaluation - see BR_Feedback::needsSync().
+                            BR_Feedback::instance()->bumpRules($adventure_id);
                             $data['message'] = '<h1><strong>'.$adventure_title.'</strong></h1> <h4><strong>'.__("Adventure Updated!","bluerabbit").'</strong></h4>';
                         }else{
                             $adventure_id = $the_just_updated_id;

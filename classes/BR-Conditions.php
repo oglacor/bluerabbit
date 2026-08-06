@@ -79,6 +79,9 @@ class BR_Conditions {
             "DELETE FROM {$wpdb->prefix}br_conditions WHERE adventure_id=%d AND target_type=%s AND target_id=%s",
             $adventure_id, $target_type, (string) $target_id
         ));
+        // The rules just changed, so every player is due one re-evaluation on their
+        // next visit. See BR_Feedback::needsSync().
+        BR_Feedback::instance()->bumpRules($adventure_id);
         if (empty($conditions)) return true;
 
         foreach ($conditions as $c) {
@@ -143,6 +146,7 @@ class BR_Conditions {
             WHERE adventure_id=%d AND target_type='achievement' AND target_id=%s AND condition_type='level'",
             $adventure_id, (string) $achievement_id
         ));
+        BR_Feedback::instance()->bumpRules($adventure_id);
 
         if ($condition_type !== 'level') return;
         if ($threshold === null || $threshold === '' || (float) $threshold <= 0) return;

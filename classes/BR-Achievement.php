@@ -248,6 +248,9 @@ class BR_Achievement {
                         // so in step, and drop it the moment this stops being one (type
                         // changed, threshold cleared, or no longer a rank at all).
                         BR_Conditions::instance()->syncRankCondition($adv_parent_id, $updated_id, $a_rank_condition, $a_rank_level);
+                        // Publishing, unpublishing or repointing an achievement changes
+                        // what can be awarded, so players are due a re-evaluation.
+                        BR_Feedback::instance()->bumpRules($adv_parent_id);
 
                         $data['debug']= $achQrCode;
 
