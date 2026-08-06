@@ -368,6 +368,21 @@ class BR_Achievement {
         die();
     }
 
+    // The level a rank demands, or null when this achievement is not a level-based
+    // rank. Manual assignment is otherwise unrestricted - a GM can hand out any
+    // badge to anyone, and can always take one away - but handing someone a rank
+    // they have not climbed to would put their profile ahead of their level.
+    public function rankLevelRequirement($adv_parent_id, $achievement_id){
+        global $wpdb;
+        $rank = $wpdb->get_row($wpdb->prepare(
+            "SELECT rank_level, condition_type FROM {$wpdb->prefix}br_adventure_ranks
+            WHERE adventure_id=%d AND achievement_id=%d",
+            $adv_parent_id, $achievement_id
+        ));
+        if(!$rank || $rank->condition_type !== 'level') return null;
+        return (int) $rank->rank_level;
+    }
+
     public function triggerAchievement($p_achievement_id="", $p_player_id="", $p_adventure_id=""){
         global $wpdb; $current_user = wp_get_current_user();
         $data = array();
@@ -390,6 +405,28 @@ class BR_Achievement {
         ON a.achievement_id = b.achievement_id AND b.player_id=$player_id AND b.adventure_id=$adv_child_id
         WHERE a.adventure_id=$adv_parent_id AND a.achievement_id=$achievement_id AND a.achievement_status='publish'");
         if($a){
+            // Taking an achievement away is always allowed. The one thing refused is
+            // GIVING someone a level rank they have not reached - checked once here so
+            // it covers both the plain and the path-group branches below.
+            $required_level = !$a->player_id ? $this->rankLevelRequirement($adv_parent_id, $achievement_id) : null;
+            if($required_level !== null){
+                $player_level = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT player_level FROM {$wpdb->prefix}br_player_adventure WHERE player_id=%d AND adventure_id=%d",
+                    $player_id, $adv_child_id
+                ));
+                if($player_level < $required_level){
+                    $data['success'] = false;
+                    $data['message'] = $notification->pop(sprintf(
+                        __("Can't award — player is Level %1\$d and this rank needs Level %2\$d",'bluerabbit'),
+                        $player_level, $required_level
+                    ),'red','cancel');
+                    $data['just_notify'] = true;
+                    $data['action']      = 'denied';
+                    BR_Activity::instance()->logActivity($adv_child_id,'denied','achievement',"",$player_id, $a->achievement_id);
+                    echo json_encode($data); die();
+                }
+            }
+
             if($a->achievement_group == ''){
                 if(!$a->player_id){
                     $sql = "INSERT INTO {$wpdb->prefix}br_player_achievement (achievement_id, player_id, adventure_id, achievement_applied) VALUES (%d,%d,%d, %s)";
@@ -591,7 +628,16 @@ class BR_Achievement {
             $achievement_id, $adventure_id, $limit
         ));
 
-        $assigned = 0; $already_has = 0; $not_found = 0; $assigned_ids = []; $not_found_emails = []; $assigned_emails = [];
+        // A level rank only goes to players who have reached that level, same rule as
+        // the per-player and assign-all paths. Looked up once for the whole batch.
+        $adv_parent_id  = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(NULLIF(adventure_parent,0), adventure_id) FROM {$wpdb->prefix}br_adventures WHERE adventure_id=%d",
+            $adventure_id
+        ));
+        $required_level = $this->rankLevelRequirement($adv_parent_id ?: $adventure_id, $achievement_id);
+
+        $assigned = 0; $already_has = 0; $not_found = 0; $below_level = 0;
+        $assigned_ids = []; $not_found_emails = []; $assigned_emails = []; $below_level_emails = [];
 
         foreach ($rows as $row) {
             $email  = $row->email;
@@ -599,7 +645,7 @@ class BR_Achievement {
 
             // Player must exist and be enrolled in this adventure
             $player = $wpdb->get_row($wpdb->prepare(
-                "SELECT p.player_id FROM {$wpdb->prefix}br_players p
+                "SELECT p.player_id, pa.player_level FROM {$wpdb->prefix}br_players p
                  JOIN {$wpdb->prefix}br_player_adventure pa
                    ON p.player_id = pa.player_id AND pa.adventure_id = %d AND pa.player_adventure_status = 'in'
                  WHERE p.player_email = %s
@@ -607,7 +653,11 @@ class BR_Achievement {
                 $adventure_id, $email
             ));
 
-            if ($player) {
+            if ($player && $required_level !== null && (int) $player->player_level < $required_level) {
+                $status = 'below_level';
+                $below_level++;
+                $below_level_emails[] = $email;
+            } elseif ($player) {
                 // Already has this achievement -- keep it, do nothing
                 $has_it = $wpdb->get_var($wpdb->prepare(
                     "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND player_id=%d AND adventure_id=%d",
@@ -651,14 +701,17 @@ class BR_Achievement {
             $achievement_id, $adventure_id
         ));
 
-        $data['success']          = true;
-        $data['assigned']         = $assigned;
-        $data['already_has']      = $already_has;
-        $data['not_found']        = $not_found;
-        $data['not_found_emails'] = $not_found_emails;
-        $data['assigned_ids']     = $assigned_ids;
-        $data['assigned_emails']  = $assigned_emails;
-        $data['remaining']        = $remaining;
+        $data['success']            = true;
+        $data['assigned']           = $assigned;
+        $data['already_has']        = $already_has;
+        $data['not_found']          = $not_found;
+        $data['not_found_emails']   = $not_found_emails;
+        $data['assigned_ids']       = $assigned_ids;
+        $data['assigned_emails']    = $assigned_emails;
+        $data['below_level']        = $below_level;
+        $data['below_level_emails'] = $below_level_emails;
+        $data['required_level']     = $required_level;
+        $data['remaining']          = $remaining;
         echo json_encode($data);
         die();
     }
@@ -686,41 +739,70 @@ class BR_Achievement {
         $today = date('Y-m-d H:i:s');
 
         if($a){
-            if($a->achievement_display !== 'rank'){
-                $sql = "DELETE FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND adventure_id=%d";
-                $sql = $wpdb->prepare ($sql, $a->achievement_id, $adv_child_id);
-                $wpdb->query($sql);
-                if($status=='on'){
-                    $players = $wpdb->get_results("SELECT p.* FROM {$wpdb->prefix}br_player_adventure p
-                    LEFT JOIN {$wpdb->prefix}br_adventures adv ON p.adventure_id=adv.adventure_id AND adv.adventure_id=$adv_child_id
-                    WHERE p.player_adventure_status='in' AND adv.adventure_status='publish' AND p.adventure_id=$adv_child_id");
-                    $achievements_query = "INSERT INTO {$wpdb->prefix}br_player_achievement (`achievement_id`, `player_id`, `adventure_id`) VALUES ";
+            // Ranks used to be refused outright here, which meant a rank could never be
+            // cleared from everyone - and clearing everyone is exactly how you replay
+            // the award and watch the overlay fire again. Wiping is now always allowed;
+            // resetPlayer() hands the rank straight back to anyone who still qualifies.
+            $required_level = $a->achievement_display === 'rank'
+                ? $this->rankLevelRequirement($adv_parent_id, $a->achievement_id)
+                : null;
 
-                    $place_holders = array();
-                    foreach($players as $p){
-                        $place_holders[] = "($a->achievement_id, $p->player_id, $adv_child_id)";
-                    }
-                    $achievements_query .= implode(', ', $place_holders);
-                    $achievements_insert = $wpdb->query( $wpdb->prepare("$achievements_query "));
+            $sql = "DELETE FROM {$wpdb->prefix}br_player_achievement WHERE achievement_id=%d AND adventure_id=%d";
+            $sql = $wpdb->prepare ($sql, $a->achievement_id, $adv_child_id);
+            $wpdb->query($sql);
 
+            if($status=='on'){
+                $players = $wpdb->get_results($wpdb->prepare(
+                    "SELECT p.player_id, p.player_level FROM {$wpdb->prefix}br_player_adventure p
+                    JOIN {$wpdb->prefix}br_adventures adv ON p.adventure_id=adv.adventure_id
+                    WHERE p.player_adventure_status='in' AND adv.adventure_status='publish' AND p.adventure_id=%d",
+                    $adv_child_id
+                ));
 
-                    $data['success'] = true;
-                    $msg_content =  __("All Achievements Assigned","bluerabbit");
-                    $data['message'] = $notification->pop($msg_content,'green','achievement');
-                    $data['just_notify'] =true;
-                    $data['action'] = 'assigned-all';
-                    BR_Activity::instance()->logActivity($adventure_id,'assigned-all','achievement',"", $a->achievement_id);
-                }else{
-                    $msg_content =  __("Achievements Removed","bluerabbit");
-                    $data['message'] = $notification->pop($msg_content,'red','remove');
-                    $data['just_notify'] =true;
-                    $data['action'] = 'removed-all';
-                    BR_Activity::instance()->logActivity($adventure_id,'removed-all','achievement',"", $a->achievement_id);
+                // Assigning is where the level rule bites: a rank goes only to players
+                // who have actually reached it. Everyone else is reported, not silently
+                // dropped, so the count on screen is explainable.
+                $eligible = array();
+                $skipped  = 0;
+                foreach($players as $p){
+                    if($required_level !== null && (int) $p->player_level < $required_level){ $skipped++; continue; }
+                    $eligible[] = $p;
                 }
-            }else{
-                $msg_content =  __("Can't assign to this achievement type","bluerabbit");
-                $data['message'] = $notification->pop($msg_content,'red','cancel');
+
+                if($eligible){
+                    $place_holders = array();
+                    $values        = array();
+                    foreach($eligible as $p){
+                        $place_holders[] = "(%d, %d, %d)";
+                        array_push($values, $a->achievement_id, $p->player_id, $adv_child_id);
+                    }
+                    $wpdb->query($wpdb->prepare(
+                        "INSERT INTO {$wpdb->prefix}br_player_achievement (`achievement_id`, `player_id`, `adventure_id`) VALUES "
+                        . implode(', ', $place_holders),
+                        $values
+                    ));
+                }
+
+                $data['success']  = true;
+                $data['assigned'] = count($eligible);
+                $data['skipped']  = $skipped;
+                $msg_content = $skipped
+                    ? sprintf(
+                        __("%1\$d assigned — %2\$d skipped, below Level %3\$d","bluerabbit"),
+                        count($eligible), $skipped, $required_level
+                      )
+                    : sprintf( __("%d achievements assigned","bluerabbit"), count($eligible) );
+                $data['message'] = $notification->pop($msg_content, $skipped ? 'amber' : 'green', 'achievement');
                 $data['just_notify'] =true;
+                $data['action'] = 'assigned-all';
+                BR_Activity::instance()->logActivity($adventure_id,'assigned-all','achievement',"", $a->achievement_id);
+            }else{
+                $data['success'] = true;
+                $msg_content =  __("Achievements Removed","bluerabbit");
+                $data['message'] = $notification->pop($msg_content,'red','remove');
+                $data['just_notify'] =true;
+                $data['action'] = 'removed-all';
+                BR_Activity::instance()->logActivity($adventure_id,'removed-all','achievement',"", $a->achievement_id);
             }
         }else{
             $data['success'] = false;

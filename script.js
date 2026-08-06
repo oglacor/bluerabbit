@@ -6410,6 +6410,8 @@ function assignBulkUsersToAchievement() {
                 var totalAssigned = 0;
                 var totalAlreadyHas = 0;
                 var notFoundEmails = [];
+                var belowLevelEmails = [];
+                var requiredLevel = null;
                 brOpConsoleLog('Batch queued — processing ' + total + ' email' + (total !== 1 ? 's' : '') + '…', 'info');
                 brRunBatchPoll(
                     { action: 'bulkAssignAchievementBatch', achievement_id: d.achievement_id, adventure_id: d.adventure_id },
@@ -6419,6 +6421,10 @@ function assignBulkUsersToAchievement() {
                         totalAssigned   += (r.assigned   || 0);
                         totalAlreadyHas += (r.already_has || 0);
                         (r.not_found_emails || []).forEach(function (em) { notFoundEmails.push(em); });
+                        // A level rank is only handed to players who reached that level;
+                        // the ones skipped are named rather than quietly missing.
+                        if (r.required_level) requiredLevel = r.required_level;
+                        (r.below_level_emails || []).forEach(function (em) { belowLevelEmails.push(em); });
                         (r.assigned_emails || []).forEach(function (em) {
                             brOpConsoleLog(em, 'success');
                         });
@@ -6428,12 +6434,21 @@ function assignBulkUsersToAchievement() {
                     },
                     function () {
                         var summary = 'Done — ' + totalAssigned + ' assigned, ' + totalAlreadyHas + ' already had it';
+                        if (belowLevelEmails.length) {
+                            summary += ', ' + belowLevelEmails.length + ' below Level ' + requiredLevel;
+                        }
                         if (notFoundEmails.length) {
                             summary += ', ' + notFoundEmails.length + ' not found.';
                         } else {
                             summary += '.';
                         }
                         brOpConsoleDone(summary);
+                        if (belowLevelEmails.length) {
+                            brOpConsoleLog('Not yet Level ' + requiredLevel + ', so this rank was not awarded (' + belowLevelEmails.length + '):', 'warn');
+                            belowLevelEmails.forEach(function (em) {
+                                brOpConsoleLog(em, 'warn');
+                            });
+                        }
                         if (notFoundEmails.length) {
                             brOpConsoleLog('Emails not found in this adventure (' + notFoundEmails.length + '):', 'warn');
                             notFoundEmails.forEach(function (em) {
