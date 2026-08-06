@@ -112,6 +112,51 @@ class BR_Conditions {
         return true;
     }
 
+    // ── Rank ↔ condition mirroring ──
+
+    // Keeps br_conditions in step with a level-based rank.
+    //
+    // Ranks (br_adventure_ranks) and conditions (br_conditions) are two tables
+    // driving the same outcome, and the achievement editor used to expose an editor
+    // for each at the same time - so a rank achievement could carry two different,
+    // silently competing answers to "when is this awarded". A rank awarded on LEVEL
+    // is exactly expressible as a condition, so whichever screen sets it - the
+    // adventure Settings Ranks panel, which is where you get the overview of which
+    // achievement sits at which level, or the achievement's own Rank Condition -
+    // now writes the matching condition too, and the two cannot disagree.
+    //
+    // Only 'level' mirrors. The other rank types (milestone_count, journey_pct,
+    // transaction_count, item_consumed_count) are evaluated by the rank loop in
+    // BR_Player::resetPlayer() straight off br_adventure_ranks and have no business
+    // duplicating themselves here.
+    //
+    // Conditions of other types are left alone - this owns the 'level' row only.
+    public function syncRankCondition($adventure_id, $achievement_id, $condition_type, $threshold) {
+        global $wpdb;
+        $adventure_id   = (int) $adventure_id;
+        $achievement_id = (int) $achievement_id;
+        if (!$adventure_id || !$achievement_id) return;
+
+        // A rank has exactly one level threshold, so replace rather than accumulate.
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}br_conditions
+            WHERE adventure_id=%d AND target_type='achievement' AND target_id=%s AND condition_type='level'",
+            $adventure_id, (string) $achievement_id
+        ));
+
+        if ($condition_type !== 'level') return;
+        if ($threshold === null || $threshold === '' || (float) $threshold <= 0) return;
+
+        $wpdb->insert("{$wpdb->prefix}br_conditions", [
+            'adventure_id'    => $adventure_id,
+            'target_type'     => 'achievement',
+            'target_id'       => (string) $achievement_id,
+            'condition_type'  => 'level',
+            'object_id'       => null,
+            'threshold_value' => (float) $threshold,
+        ]);
+    }
+
     // ── Progress snapshot ──
 
     // $player_progress is the array already returned by BR_Progression::getPlayerProgress()

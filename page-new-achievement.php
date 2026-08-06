@@ -348,6 +348,40 @@ if($adventure && ($isGM || $isAdmin)){
 		<!-- ═══ CONDITIONS ═══ -->
 		<div class="br-scroll-section" id="achievement-conditions"><div class="br-panel">
 			<h3 class="br-panel-title"><span class="icon icon-progression"></span> <?= __("Auto-Assign Conditions", "bluerabbit"); ?></h3>
+
+			<!-- Ranks answer "when is this awarded?" with the Rank Condition field in
+			     Settings, so showing a second, competing editor here just invited the two
+			     to disagree. checkPath() swaps between the two blocks below: only one is
+			     ever on screen, decided by the achievement Type. -->
+			<div class="conditional-display rank-display br-cond-rank-note">
+				<span class="icon icon-progression"></span>
+				<div>
+					<h4><?= __("This rank is awarded by its Rank Condition", "bluerabbit"); ?></h4>
+					<?php if (isset($existing_rank) && $existing_rank) { ?>
+						<p>
+							<?php
+							$rank_labels = BR_Conditions::simpleTypes();
+							printf(
+								/* translators: 1: condition name e.g. Level, 2: threshold */
+								esc_html__('Currently: %1$s %2$s or above.', 'bluerabbit'),
+								'<strong>' . esc_html($rank_labels[$existing_rank->condition_type] ?? __('Level','bluerabbit')) . '</strong>',
+								'<strong>' . esc_html(rtrim(rtrim((string) $existing_rank->rank_level, '0'), '.')) . '</strong>'
+							);
+							?>
+						</p>
+					<?php } else { ?>
+						<p><?= __("No threshold set yet — set one in the Settings tab above.", "bluerabbit"); ?></p>
+					<?php } ?>
+					<p class="br-cond-rank-hint">
+						<?= __("Ranks awarded by Level keep a matching condition in sync automatically, so you only ever set the number once.", "bluerabbit"); ?>
+						<a href="<?= esc_url(get_bloginfo('url') . '/new-adventure/?adventure_id=' . (int) $adv_parent_id); ?>#adventure-ranks">
+							<?= __("Manage all ranks for this adventure", "bluerabbit"); ?>
+						</a>
+					</p>
+				</div>
+			</div>
+
+			<div class="conditional-display badge-display path-display">
 			<span class="br-section-desc"><?= __("Automatically award this achievement the moment a player meets ALL of the conditions below. Leave empty for manual assignment only.", "bluerabbit"); ?></span>
 
 			<?php if ($is_edit) { ?>
@@ -374,6 +408,7 @@ if($adventure && ($isGM || $isAdmin)){
 				<h3><?= __("Must save the achievement before adding conditions", "bluerabbit"); ?></h3>
 			</div>
 			<?php } ?>
+			</div><!-- /.badge-display.path-display -->
 		</div></div>
 		<?php } ?>
 

@@ -231,16 +231,23 @@ class BR_Achievement {
                             "DELETE FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d AND achievement_id=%d",
                             $adv_parent_id, $updated_id
                         ));
+                        $a_rank_condition = null;
+                        $a_rank_level     = null;
                         if($a_display == 'rank' && isset($a_data['a_rank_level']) && $a_data['a_rank_level'] !== ''){
                             $a_rank_condition = $a_data['a_rank_condition'] ?? 'level';
                             if($a_rank_condition !== 'level' && !array_key_exists($a_rank_condition, BR_Conditions::simpleTypes())){
                                 $a_rank_condition = 'level';
                             }
+                            $a_rank_level = (int) $a_data['a_rank_level'];
                             $wpdb->query($wpdb->prepare(
                                 "INSERT INTO {$wpdb->prefix}br_adventure_ranks (adventure_id, rank_level, achievement_id, condition_type) VALUES (%d, %d, %d, %s)",
-                                $adv_parent_id, (int) $a_data['a_rank_level'], $updated_id, $a_rank_condition
+                                $adv_parent_id, $a_rank_level, $updated_id, $a_rank_condition
                             ));
                         }
+                        // A level rank IS a level condition - keep the one row that says
+                        // so in step, and drop it the moment this stops being one (type
+                        // changed, threshold cleared, or no longer a rank at all).
+                        BR_Conditions::instance()->syncRankCondition($adv_parent_id, $updated_id, $a_rank_condition, $a_rank_level);
 
                         $data['debug']= $achQrCode;
 

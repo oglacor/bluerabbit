@@ -3059,6 +3059,52 @@ body.br-drawer-open {
   grid-column: 1 / -1;
 }
 
+// Shown in place of the conditions editor when an achievement is a Rank: the
+// rank's own threshold is the award rule, so this explains where it lives
+// instead of offering a second editor that would compete with it.
+.br-cond-rank-note {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border: 1px solid rgba($br-primary, 0.2);
+  border-radius: $radius-sm;
+  background: rgba($br-primary, 0.06);
+
+  > .icon {
+    font-size: 22px;
+    color: rgba($br-primary, 0.7);
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  h4 {
+    margin: 0 0 6px;
+    @include condensed-heading(15px, 700);
+    color: $br-white;
+  }
+
+  p {
+    margin: 0 0 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba($br-white, 0.6);
+
+    &:last-child { margin-bottom: 0; }
+    strong { color: $br-white; }
+  }
+
+  a {
+    color: $br-primary;
+    white-space: nowrap;
+  }
+}
+
+.br-cond-rank-hint {
+  font-size: 12px !important;
+  color: rgba($br-white, 0.4) !important;
+}
+
 .br-qe-field {
   label {
     display: block;

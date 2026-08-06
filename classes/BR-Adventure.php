@@ -112,8 +112,17 @@ class BR_Adventure {
                     $the_just_updated_id = $adv_query === false ? 0 : ($adventure_id ?: (int) $wpdb->insert_id);
                     if($the_just_updated_id){
                         if($adventure_id){
+                            // The panel posts the whole table, so the set is rebuilt from
+                            // scratch. Remember who was a rank before, to clear the mirrored
+                            // level condition off anyone dropped from the list.
+                            $previous_rank_achievements = $wpdb->get_col($wpdb->prepare(
+                                "SELECT achievement_id FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d",
+                                $adventure_id
+                            ));
+
                             $ranksDELETE = "DELETE FROM {$wpdb->prefix}br_adventure_ranks WHERE adventure_id=%d";
                             $delete =$wpdb->query( $wpdb->prepare($ranksDELETE, $adventure_id));
+                            $saved_ranks = array();
                             if($adventure_ranks){
                                 $ranks_ph = array();
                                 $ranks_values = array();
@@ -123,9 +132,22 @@ class BR_Adventure {
                                     $condition_type = array_key_exists($r['condition_type'] ?? '', BR_Conditions::simpleTypes()) ? $r['condition_type'] : 'level';
                                     array_push($ranks_values, $adventure_id, $r['level'], $r['achievement'], $condition_type);
                                     $ranks_ph[] = "(%d, %d, %d, %s)";
+                                    $saved_ranks[(int) $r['achievement']] = array($condition_type, $r['level']);
                                 }
                                 $ranksSQL .= implode(', ', $ranks_ph);
                                 $ranks_insert =$wpdb->query( $wpdb->prepare("$ranksSQL ", $ranks_values));
+                            }
+
+                            // Mirror every level rank into br_conditions, and clear the
+                            // mirror from anyone who is no longer a rank here. This panel
+                            // and the achievement's own Rank Condition field write the same
+                            // row, so the two screens can never disagree.
+                            foreach($saved_ranks as $rank_achievement_id => $rank){
+                                BR_Conditions::instance()->syncRankCondition($adventure_id, $rank_achievement_id, $rank[0], $rank[1]);
+                            }
+                            foreach($previous_rank_achievements as $old_achievement_id){
+                                if(isset($saved_ranks[(int) $old_achievement_id])) continue;
+                                BR_Conditions::instance()->syncRankCondition($adventure_id, $old_achievement_id, null, null);
                             }
                             $data['message'] = '<h1><strong>'.$adventure_title.'</strong></h1> <h4><strong>'.__("Adventure Updated!","bluerabbit").'</strong></h4>';
                         }else{

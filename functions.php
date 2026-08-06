@@ -2123,6 +2123,24 @@ function br_migrate_conditions_schema() {
 		$wpdb->query("ALTER TABLE {$prefix}br_adventure_ranks ADD COLUMN `condition_type` VARCHAR(30) NOT NULL DEFAULT 'level'");
 	}
 
+	// A rank awarded on LEVEL is now mirrored into br_conditions, so the achievement
+	// editor can show one award rule instead of two competing ones. Saving a rank from
+	// either screen keeps the mirror current (BR_Conditions::syncRankCondition), but
+	// ranks configured before that existed have no condition row yet - backfill once so
+	// the rule holds for existing adventures rather than only for the next edit.
+	if (get_option('br_rank_level_conditions_backfilled') !== 'yes') {
+		$level_ranks = $wpdb->get_results(
+			"SELECT adventure_id, achievement_id, rank_level FROM {$prefix}br_adventure_ranks
+			WHERE condition_type = 'level' AND rank_level > 0"
+		);
+		foreach ($level_ranks as $lr) {
+			BR_Conditions::instance()->syncRankCondition(
+				$lr->adventure_id, $lr->achievement_id, 'level', $lr->rank_level
+			);
+		}
+		update_option('br_rank_level_conditions_backfilled', 'yes');
+	}
+
 	// Real item categories, replacing the old free-text 19-color enum (item_category).
 	// br_items.adventure_id is child-scoped (unlike quests/tabis/achievements, which are
 	// parent-template-scoped), so categories - and any conditions attached to items/
