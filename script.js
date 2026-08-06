@@ -7722,11 +7722,44 @@ function brCelebrate(events) {
     $('#br-rewards-modal-body').html(events.map(brCelebrateCard).join(''));
     // brOpenDrawer brings its own backdrop, so the panel does not add a second one.
     brOpenDrawer($('#br-rewards-overlay'));
+
+    // The level-up fanfare belongs to the panel now, not to whichever page happened
+    // to detect the level-up. Browsers block autoplay without a gesture, so a refused
+    // play is normal and must not break the celebration.
+    if (events.some(function (e) { return e.type === 'levelup'; })) {
+        var audio = document.getElementById('audio-funky');
+        if (audio) { var p = audio.play(); if (p && p.catch) p.catch(function () {}); }
+    }
 }
 
 function brCelebrateClose() {
     brCloseDrawer($('#br-rewards-overlay'));
 }
+
+// Anything earned while the player was not the one making the request - a Tabi that
+// completed as a side effect, a GM validating their work, a batch assign - waits in
+// the server-side queue and is shown the next time they load any page. The localized
+// `pending` count means this costs one request only when something is actually owed.
+$(function () {
+    if (!window.brFeedback) return;
+
+    // The journey page re-runs the award pass first: conditions can come true without
+    // the player doing anything that recalculates their state, and this is the screen
+    // they land on. Its response already includes anything that was queued.
+    if (parseInt(brFeedback.sync_adventure, 10)) {
+        $.post(runAJAX.ajaxurl,
+            { action: 'brSyncRewards', adventure_id: brFeedback.sync_adventure },
+            function (res) {
+                if (res && res.success && res.data) brCelebrate(res.data.celebrate);
+            }, 'json');
+        return;
+    }
+
+    if (!parseInt(brFeedback.pending, 10)) return;
+    $.post(runAJAX.ajaxurl, { action: 'brPopCelebrations' }, function (res) {
+        if (res && res.success && res.data) brCelebrate(res.data.celebrate);
+    }, 'json');
+});
 
 // Back-compat: anything still speaking the old levelup/newly_earned shape is
 // translated into events rather than kept on a second code path.

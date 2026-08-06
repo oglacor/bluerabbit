@@ -129,6 +129,67 @@ class BR_Feedback {
         return $events;
     }
 
+    // ── Pending queue ─────────────────────────────────────────────────────────
+    //
+    // An award and the moment the player is looking at the screen are not the same
+    // moment. A tabi finishes because a quest was completed; a GM validates work
+    // hours later; a rank lands during a batch. Handing the events back in the AJAX
+    // response only works when the player themselves triggered the request - which
+    // is why finishing a Tabi never showed anything on the journey page.
+    //
+    // So events are persisted against the player and drained the next time they look
+    // at any page. Whoever drains first delivers, exactly once.
+
+    public function queue( $player_id, $adventure_id, array $events = null ) {
+        global $wpdb;
+        $events = $events === null ? $this->pull() : $events;
+        if ( ! $events || ! $player_id ) return $this;
+
+        $wpdb->insert( "{$wpdb->prefix}br_feedback_queue", [
+            'player_id'    => (int) $player_id,
+            'adventure_id' => (int) $adventure_id,
+            'payload'      => wp_json_encode( $events ),
+            'created'      => current_time( 'mysql' ),
+        ] );
+        return $this;
+    }
+
+    // Returns every pending event for this player and clears them in the same breath,
+    // so a reload can never replay a celebration the player already saw.
+    public function popFor( $player_id, $adventure_id = null ) {
+        global $wpdb;
+        $player_id = (int) $player_id;
+        if ( ! $player_id ) return [];
+
+        $where  = "player_id = %d";
+        $params = [ $player_id ];
+        if ( $adventure_id ) { $where .= " AND adventure_id = %d"; $params[] = (int) $adventure_id; }
+
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT queue_id, payload FROM {$wpdb->prefix}br_feedback_queue WHERE $where ORDER BY queue_id ASC",
+            $params
+        ) );
+        if ( ! $rows ) return [];
+
+        $ids    = array_map( function ( $r ) { return (int) $r->queue_id; }, $rows );
+        $wpdb->query( "DELETE FROM {$wpdb->prefix}br_feedback_queue WHERE queue_id IN (" . implode( ',', $ids ) . ")" );
+
+        $events = [];
+        foreach ( $rows as $r ) {
+            $decoded = json_decode( $r->payload, true );
+            if ( is_array( $decoded ) ) $events = array_merge( $events, $decoded );
+        }
+        return $events;
+    }
+
+    public function countPending( $player_id ) {
+        global $wpdb;
+        if ( ! $player_id ) return 0;
+        return (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_feedback_queue WHERE player_id = %d", (int) $player_id
+        ) );
+    }
+
     // Builds events straight from resetPlayer()'s levelup/newly_earned output, which
     // is where nearly every award in the app already surfaces.
     public function fromPlayerState( $levelup, $new_level, $newly_earned ) {

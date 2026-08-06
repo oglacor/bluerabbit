@@ -1191,6 +1191,18 @@ function ajaxFunctions() {
 	// <script> blocks in the templates call into it directly.
 	wp_enqueue_script( 'ajaxFunctions', get_template_directory_uri().'/script.js', array('jquery'), br_asset_version(), false);
 	wp_localize_script( 'ajaxFunctions', 'runAJAX', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
+	// One cheap COUNT so the page only asks for its celebrations when there are some
+	// waiting - see BR_Feedback's pending queue and brCelebrate() in script.js.
+	wp_localize_script( 'ajaxFunctions', 'brFeedback', array(
+		'pending' => is_user_logged_in() ? BR_Feedback::instance()->countPending( get_current_user_id() ) : 0,
+		// The journey page re-runs the award pass on arrival. Conditions can come true
+		// without the player doing anything that recalculates their state - a GM adds
+		// an achievement for a Tabi they finished last week, a requirement is relaxed -
+		// and the journey page is where they land, so it is where we make sure nothing
+		// owed is still outstanding.
+		'sync_adventure' => ( is_user_logged_in() && is_page( 'adventure' ) && isset( $_GET['adventure_id'] ) && ctype_digit( (string) $_GET['adventure_id'] ) )
+			? (int) $_GET['adventure_id'] : 0,
+	) );
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-casestudy-api', get_template_directory_uri().'/js/casestudy-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-session-tracker', get_template_directory_uri().'/js/br-session-tracker.js', array('jquery','ajaxFunctions'), '1.0', true);
@@ -2124,6 +2136,23 @@ function br_migrate_conditions_schema() {
 		$wpdb->query("ALTER TABLE {$prefix}br_adventure_ranks ADD COLUMN `condition_type` VARCHAR(30) NOT NULL DEFAULT 'level'");
 	}
 
+	// Celebrations owed to a player but not yet shown. An award and the moment the
+	// player is looking at the screen are rarely the same moment - a Tabi completes
+	// as a side effect of a quest, a GM validates work later, a batch assigns ranks -
+	// so the events wait here and are drained on the player's next page view.
+	$feedback_table = $prefix . 'br_feedback_queue';
+	if ($wpdb->get_var("SHOW TABLES LIKE '$feedback_table'") !== $feedback_table) {
+		$wpdb->query("CREATE TABLE $feedback_table (
+			`queue_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`player_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL DEFAULT 0,
+			`payload` LONGTEXT NULL,
+			`created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`queue_id`),
+			KEY `player_id` (`player_id`)
+		) DEFAULT CHARSET=utf8mb4");
+	}
+
 	// A rank awarded on LEVEL is now mirrored into br_conditions, so the achievement
 	// editor can show one award rule instead of two competing ones. Saving a rank from
 	// either screen keeps the mirror current (BR_Conditions::syncRankCondition), but
@@ -2856,6 +2885,41 @@ add_action("wp_ajax_addAdventureToOrg",         [BR_Organization::instance(), 'a
 add_action("wp_ajax_removeAdventureFromOrg",    [BR_Organization::instance(), 'removeAdventureFromOrg']);
 add_action("wp_ajax_createOrg",                 [BR_Organization::instance(), 'createOrg']);
 add_action("wp_ajax_deleteOrg",                 [BR_Organization::instance(), 'deleteOrg']);
+
+// Drains whatever celebrations are owed to the logged-in player. Called on page
+// load only when the localized `pending` count says there is something to show, so
+// the common case costs nothing.
+add_action('wp_ajax_brPopCelebrations', function() {
+    wp_send_json_success([
+        'celebrate' => BR_Feedback::instance()->popFor(get_current_user_id()),
+    ]);
+});
+
+// Re-runs the award pass for the player arriving on the journey page, then hands
+// back whatever it produced plus anything still queued. resetPlayer() is the one
+// function that evaluates ranks and conditions, so this is simply "make sure the
+// player is up to date before they look at the map".
+add_action('wp_ajax_brSyncRewards', function() {
+    $player_id    = get_current_user_id();
+    $adventure_id = intval($_POST['adventure_id'] ?? 0);
+    if (!$player_id || !$adventure_id) wp_send_json_success(['celebrate' => []]);
+
+    global $wpdb;
+    $enrolled = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
+         WHERE player_id=%d AND adventure_id=%d AND player_adventure_status='in'",
+        $player_id, $adventure_id
+    ));
+    if (!$enrolled) wp_send_json_success(['celebrate' => []]);
+
+    $state = BR_Player::instance()->resetPlayer($adventure_id, $player_id);
+    $events = $state['celebrate'] ?? [];
+    // resetPlayer drains this player's queue when they are the caller, but anything
+    // banked from an earlier adventure or an older award is still owed to them.
+    wp_send_json_success([
+        'celebrate' => array_merge($events, BR_Feedback::instance()->popFor($player_id)),
+    ]);
+});
 
 // ── Org Stats AJAX ────────────────────────────────────────────────────────────
 add_action('wp_ajax_brOrgStatsActivity', function() {

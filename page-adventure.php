@@ -78,17 +78,14 @@
 			</script>
 		<?php exit();
 			} ?>
-		<?php if($current_player->player_level > $current_player->player_prev_level){ ?>
-			<audio id="audio-funky">
-				<source src="<?= get_bloginfo('template_directory'); ?>/audio/levelup.mp3" type="audio/mpeg">
-			</audio>
-			<script>
-				$(document).ready(function() {
-					$("#audio-funky").get(0).play();
-					updatePrevLevel(<?= "$current_player->player_level, $adventure->adventure_id"; ?>);
-				});
-			</script>
-		<?php } ?>
+		<!-- Always present so the celebration panel can play it whenever a level-up is
+		     among the events. This used to be rendered only when the page itself spotted
+		     a level-up, which also meant the page only checked for NEW awards on a
+		     level-up - a finished Tabi never announced itself here. The award pass now
+		     runs on arrival from script.js (brSyncRewards), covering every condition. -->
+		<audio id="audio-funky" preload="none">
+			<source src="<?= get_bloginfo('template_directory'); ?>/audio/levelup.mp3" type="audio/mpeg">
+		</audio>
 	</div>
 	<?php if(isset($quests) && !empty($quests)){ ?>
 		<div class="journey-builder-controls">

@@ -1681,9 +1681,22 @@ class BR_Player {
             $data['newly_earned'] = $newly_earned;
             // One panel for everything this action produced - see BR_Feedback. The
             // levelup/newly_earned keys stay for anything still reading them.
-            $data['celebrate'] = BR_Feedback::instance()
+            //
+            // Events are queued against the player rather than simply returned,
+            // because the player is often not the one who made this request: a GM
+            // validating work, a batch assign, a completion that lands while they are
+            // on another screen. They are drained on the player's next page view. When
+            // the player IS the caller, we drain right here so the panel still appears
+            // immediately - either way the celebration is delivered exactly once.
+            $events = BR_Feedback::instance()
                 ->fromPlayerState($leveled_up, $myLevel, $newly_earned)
                 ->pull();
+            if ($events) {
+                BR_Feedback::instance()->queue($user->player_id, $adventure_id, $events);
+            }
+            $data['celebrate'] = ((int) $user->player_id === (int) get_current_user_id())
+                ? BR_Feedback::instance()->popFor($user->player_id, $adventure_id)
+                : [];
 
             $data['player']['xp']=$myXP;
             $data['player']['bloo']=$myBloo;
