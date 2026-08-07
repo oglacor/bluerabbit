@@ -51,12 +51,19 @@ $pa_before  = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_player_adventu
 $ach_before = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_player_achievement", ARRAY_A);
 $q_before   = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}br_feedback_queue", ARRAY_A);
 
-// Volatile keys: things that legitimately differ between two runs and would drown
+// Volatile values: things that legitimately differ between two runs and would drown
 // a real regression in noise.
+//
+// resetPlayer returns arrays of stdClass rows straight from $wpdb, and
+// array_walk_recursive does NOT descend into objects - so timestamps buried in a
+// result set were never normalised. A single UPDATE to a quest during unrelated
+// testing then reported 134 false "quests" diffs, on quest_date_modified. Convert
+// to plain arrays first so the whole tree is reachable.
 function normalise($data) {
     unset($data['debug'], $data['celebrate']);
+    $data = json_decode(json_encode($data), true);
     array_walk_recursive($data, function (&$v) {
-        if (is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $v)) $v = '<timestamp>';
+        if (is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/', $v)) $v = '<timestamp>';
         if (is_numeric($v)) $v = 0 + $v;   // '4' and 4 are the same answer
     });
     return $data;

@@ -367,11 +367,61 @@
     }
     window.orgLoadEngagement = orgLoadEngagement;
 
+    // ── 5. Per-segment KPI table ─────────────────────────────────────────────
+    //
+    // The same figures as the org header, one row per segment, with the org total
+    // repeated at the bottom so a pillar can be read against the whole population
+    // without arithmetic.
+
+    function segCell(value, suffix) {
+        return '<td class="br-text-center">' + value + (suffix || '') + '</td>';
+    }
+
+    function segRow(s, isTotal) {
+        // A completion bar in the cell: VPs scan this column first, and a number
+        // alone makes 12% and 21% look the same at a glance.
+        var bar = '<div class="br-seg-bar"><span style="width:' + Math.min(100, s.completion_pct) + '%"></span></div>';
+        return '<tr' + (isTotal ? ' class="br-seg-total"' : '') + '>'
+            + '<td>' + esc(s.label) + '</td>'
+            + segCell(Number(s.players).toLocaleString())
+            + segCell(Number(s.avg_xp).toLocaleString())
+            + '<td class="br-text-center br-seg-completion">' + s.completion_pct + '%' + bar + '</td>'
+            + segCell(Number(s.logged_in).toLocaleString() + ' <span class="br-seg-pct">(' + s.logged_in_pct + '%)</span>')
+            + segCell(Number(s.active_7d).toLocaleString())
+            + segCell(Number(s.active_30d).toLocaleString())
+            + '</tr>';
+    }
+
+    function orgLoadSegmentSummary(dimension) {
+        var $panel = $('#org-seg-summary-panel').addClass('br-stats-loading');
+        $.post(cfg.ajaxurl, { action: 'brOrgSegmentSummary', org_id: cfg.orgId, dimension: dimension })
+            .done(function (res) {
+                if (!res || !res.success || !res.data) return;
+                var d = res.data;
+                $('#org-seg-summary-label').text(d.label);
+                var html = (d.segments || []).map(function (s) { return segRow(s, false); }).join('');
+                if (d.total) html += segRow(d.total, true);
+                $('#org-seg-summary-body').html(html
+                    || '<tr><td colspan="7" class="br-text-center">' + esc(engStrings.no_data) + '</td></tr>');
+            })
+            .always(function () { $panel.removeClass('br-stats-loading'); });
+    }
+    window.orgLoadSegmentSummary = orgLoadSegmentSummary;
+
+    $(function () {
+        $('.br-seg-summary-btn').on('click', function () {
+            $('.br-seg-summary-btn').removeClass('active');
+            $(this).addClass('active');
+            orgLoadSegmentSummary($(this).data('dimension'));
+        });
+    });
+
     // ── Init (called once when Stats tab is first opened) ────────────────────
 
     function brOrgChartsInit() {
         initProgressChart();
         orgLoadActivity();
+        orgLoadSegmentSummary('business_pillar');
         orgLoadEngagement();
         orgLoadSegment(cfg.segment ? cfg.segment.dimension : 'work_country', null);
     }

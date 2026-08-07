@@ -1327,6 +1327,26 @@ function br_color_attr( string $color, string $type = 'bg', bool $declaration_on
 	return 'style="' . esc_attr( "{$prop}:{$val}" ) . '"';
 }
 
+/**
+ * SQL predicate for "this quest counts toward completion".
+ *
+ * A milestone counts only when it is REQUIRED. Side quests (mech_optional) are
+ * opt-in extras, so including them inflates every denominator: a player who has
+ * done everything actually asked of them shows as partially complete, and a Tabi
+ * with three required steps and seven side quests reads 30% when it is finished.
+ *
+ * Fifteen separate queries were spelling the milestone test out by hand and not one
+ * of them excluded side quests. Use this everywhere a completion ratio, percentage
+ * or progress bar is calculated, so the next query cannot drift either.
+ *
+ * @param string $alias table alias used in the query, e.g. 'q' for `br_quests q`
+ */
+function br_completion_quest_sql( $alias = '' ) {
+	$p = $alias ? $alias . '.' : '';
+	return "{$p}quest_type IN ('quest','challenge','survey','mission')"
+	     . " AND ({$p}mech_optional IS NULL OR {$p}mech_optional = 0)";
+}
+
 function br_stats_enqueue_assets() {
 	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], br_asset_version() );
 	wp_enqueue_style( 'br-notify', get_template_directory_uri() . '/css/br-notify.css', [], br_asset_version() );
@@ -3002,6 +3022,15 @@ add_action('wp_ajax_brOrgStatsSegment', function() {
 });
 // Engagement is the heaviest query set on the tab, so it is never bootstrapped
 // into the page — it loads once, on demand, when the Stats tab is first opened.
+// The per-segment KPI table (business pillar by default). Same numbers as the org
+// header, broken out by segment - see BR_OrgStats::get_org_summary_by_segment().
+add_action('wp_ajax_brOrgSegmentSummary', function() {
+    if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Forbidden'], 403);
+    $org_id = intval($_POST['org_id'] ?? 0);
+    $dim    = sanitize_key($_POST['dimension'] ?? 'business_pillar');
+    wp_send_json_success(BR_OrgStats::instance()->get_org_summary_by_segment($org_id, $dim));
+});
+
 add_action('wp_ajax_brOrgEngagement', function() {
     if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Forbidden'], 403);
     $org_id = intval($_POST['org_id'] ?? 0);

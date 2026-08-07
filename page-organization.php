@@ -309,6 +309,40 @@ $all_adventures = $wpdb->get_results(
             </div>
         </div>
 
+        <!-- Per-segment KPIs. Defaults to Business Pillar because the pillar VPs
+             compare themselves against each other; the same table serves any of the
+             demographic dimensions. -->
+        <div class="br-panel br-stats-loadable" id="org-seg-summary-panel">
+            <div class="br-stats-panel-loader"><?= __('Calculating…','bluerabbit'); ?></div>
+            <h3 class="br-panel-title">
+                <span class="icon icon-stats"></span> <?= __('Breakdown by Segment','bluerabbit'); ?>
+            </h3>
+            <div class="br-stats-segment-controls">
+                <?php foreach (BR_OrgStats::SEGMENT_DIMENSIONS as $key => $label): ?>
+                <button class="br-stats-dim-btn br-seg-summary-btn<?= $key === 'business_pillar' ? ' active' : ''; ?>"
+                        data-dimension="<?= esc_attr($key); ?>">
+                    <?= esc_html($label); ?>
+                </button>
+                <?php endforeach; ?>
+            </div>
+            <div class="br-table-scroll">
+                <table class="br-table br-seg-summary-table">
+                    <thead>
+                        <tr>
+                            <th id="org-seg-summary-label"><?= __('Business Pillar','bluerabbit'); ?></th>
+                            <th class="br-text-center"><?= __('Players','bluerabbit'); ?></th>
+                            <th class="br-text-center"><?= __('Avg XP','bluerabbit'); ?></th>
+                            <th class="br-text-center"><?= __('Completion','bluerabbit'); ?></th>
+                            <th class="br-text-center"><?= __('Logged In','bluerabbit'); ?></th>
+                            <th class="br-text-center"><?= __('Active 7d','bluerabbit'); ?></th>
+                            <th class="br-text-center"><?= __('Active 30d','bluerabbit'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="org-seg-summary-body"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Engagement Overview — gauge + distribution, one row per unique player -->
         <div class="br-panel br-stats-loadable" id="org-eng-panel">
             <div class="br-stats-panel-loader"><?= __('Calculating…','bluerabbit'); ?></div>

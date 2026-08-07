@@ -40,6 +40,128 @@ class BR_OrgStats {
         return array_map( 'intval', $row ?: [ 'total_players' => 0, 'total_adventures' => 0, 'active_7d' => 0, 'active_30d' => 0 ] );
     }
 
+    // ── The same KPIs as the org header, but one row per segment ──────────────
+    //
+    // Built for the business-pillar leaderboard: the VPs who own each pillar compare
+    // themselves against each other, so the numbers have to be the SAME numbers the
+    // org total shows - the total row here is computed from the same rows as the
+    // segment rows, not from a separate query that could disagree with them.
+    //
+    // A player enrolled in several org adventures is one person: counted once, with
+    // their XP and completions summed across those adventures.
+    public function get_org_summary_by_segment( int $org_id, string $dimension = 'business_pillar' ): array {
+        global $wpdb;
+        if ( ! array_key_exists( $dimension, self::SEGMENT_DIMENSIONS ) ) $dimension = 'business_pillar';
+
+        // 1 — required milestones per adventure. Side quests never count toward
+        //     completion, here or anywhere else (see br_completion_quest_sql()).
+        $totals = [];
+        foreach ( $wpdb->get_results( $wpdb->prepare(
+            "SELECT q.adventure_id, COUNT(*) AS n
+             FROM {$wpdb->prefix}br_quests q
+             JOIN {$wpdb->prefix}br_org_adventure oa ON q.adventure_id = oa.adventure_id AND oa.org_id = %d
+             WHERE q.quest_status = 'publish' AND " . br_completion_quest_sql('q') . "
+             GROUP BY q.adventure_id",
+            $org_id
+        ) ) as $r ) $totals[ (int) $r->adventure_id ] = (int) $r->n;
+
+        // 2 — every enrolment, with the player's segment
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT
+                pa.player_id, pa.adventure_id, pa.player_xp, pa.player_last_login,
+                COALESCE(NULLIF(pm.{$dimension}, ''), 'Unknown') AS label
+             FROM {$wpdb->prefix}br_player_adventure pa
+             JOIN {$wpdb->prefix}br_org_adventure oa
+                ON pa.adventure_id = oa.adventure_id AND oa.org_id = %d
+             LEFT JOIN (
+                 SELECT player_id, MAX(player_meta_id) AS max_id
+                 FROM {$wpdb->prefix}br_player_meta GROUP BY player_id
+             ) latest ON latest.player_id = pa.player_id
+             LEFT JOIN {$wpdb->prefix}br_player_meta pm ON pm.player_meta_id = latest.max_id
+             WHERE pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'",
+            $org_id
+        ) );
+        if ( ! $rows ) return [ 'dimension' => $dimension, 'label' => self::SEGMENT_DIMENSIONS[ $dimension ], 'segments' => [], 'total' => null ];
+
+        // 3 — completed required milestones per (player, adventure)
+        $done = [];
+        foreach ( $wpdb->get_results( $wpdb->prepare(
+            "SELECT pp.player_id, pp.adventure_id, COUNT(*) AS n
+             FROM {$wpdb->prefix}br_player_posts pp
+             JOIN {$wpdb->prefix}br_org_adventure oa ON pp.adventure_id = oa.adventure_id AND oa.org_id = %d
+             JOIN {$wpdb->prefix}br_quests q ON q.quest_id = pp.quest_id
+             WHERE q.quest_status = 'publish' AND " . br_completion_quest_sql('q') . "
+             GROUP BY pp.player_id, pp.adventure_id",
+            $org_id
+        ) ) as $r ) $done[ $r->player_id . ':' . $r->adventure_id ] = (int) $r->n;
+
+        // ── Fold enrolments into one entry per person per segment ─────────────
+        $now      = time();
+        $people   = [];   // player_id => segment + running totals
+        foreach ( $rows as $r ) {
+            $pid = (int) $r->player_id;
+            if ( ! isset( $people[ $pid ] ) ) {
+                $people[ $pid ] = [ 'label' => $r->label, 'xp' => 0, 'done' => 0, 'possible' => 0, 'last_login' => 0 ];
+            }
+            $people[ $pid ]['xp']       += (int) $r->player_xp;
+            $people[ $pid ]['done']     += $done[ $pid . ':' . $r->adventure_id ] ?? 0;
+            $people[ $pid ]['possible'] += $totals[ (int) $r->adventure_id ] ?? 0;
+
+            $login = ! empty( $r->player_last_login ) ? (int) strtotime( $r->player_last_login ) : 0;
+            if ( $login > $people[ $pid ]['last_login'] ) $people[ $pid ]['last_login'] = $login;
+        }
+
+        $blank = [ 'players' => 0, 'xp_sum' => 0, 'done' => 0, 'possible' => 0, 'logged_in' => 0, 'active_7d' => 0, 'active_30d' => 0 ];
+        $buckets = [];
+        $total   = $blank;
+
+        foreach ( $people as $p ) {
+            foreach ( [ $p['label'], '__total__' ] as $key ) {
+                if ( ! isset( $buckets[ $key ] ) ) $buckets[ $key ] = $blank;
+                $buckets[ $key ]['players']++;
+                $buckets[ $key ]['xp_sum']   += $p['xp'];
+                $buckets[ $key ]['done']     += $p['done'];
+                $buckets[ $key ]['possible'] += $p['possible'];
+                if ( $p['last_login'] > 0 ) {
+                    $buckets[ $key ]['logged_in']++;
+                    $days = ( $now - $p['last_login'] ) / 86400;
+                    if ( $days <= 7 )  $buckets[ $key ]['active_7d']++;
+                    if ( $days <= 30 ) $buckets[ $key ]['active_30d']++;
+                }
+            }
+        }
+
+        $shape = function ( $label, $b ) {
+            return [
+                'label'          => $label,
+                'players'        => $b['players'],
+                'avg_xp'         => $b['players']  > 0 ? (int) round( $b['xp_sum'] / $b['players'] ) : 0,
+                'completion_pct' => $b['possible'] > 0 ? round( ( $b['done'] / $b['possible'] ) * 100, 1 ) : 0,
+                'logged_in'      => $b['logged_in'],
+                'logged_in_pct'  => $b['players']  > 0 ? round( ( $b['logged_in'] / $b['players'] ) * 100 ) : 0,
+                'active_7d'      => $b['active_7d'],
+                'active_30d'     => $b['active_30d'],
+            ];
+        };
+
+        $total = $shape( __( 'All pillars', 'bluerabbit' ), $buckets['__total__'] ?? $blank );
+        unset( $buckets['__total__'] );
+
+        $segments = [];
+        foreach ( $buckets as $label => $b ) $segments[] = $shape( $label, $b );
+        // Most players first - the leaderboard reads top-down.
+        usort( $segments, function ( $a, $b ) {
+            return $b['players'] <=> $a['players'] ?: strcasecmp( $a['label'], $b['label'] );
+        } );
+
+        return [
+            'dimension' => $dimension,
+            'label'     => self::SEGMENT_DIMENSIONS[ $dimension ],
+            'segments'  => $segments,
+            'total'     => $total,
+        ];
+    }
+
     // ── Per-adventure breakdown (first chart on stats tab) ────────────────────
 
     public function get_progress_by_adventure( int $org_id ): array {
@@ -169,6 +291,7 @@ class BR_OrgStats {
              WHERE adventure_id IN ($aph)
                AND quest_status = 'publish'
                AND quest_type IN ('quest','challenge','survey','mission')
+               AND (mech_optional IS NULL OR mech_optional = 0)
              GROUP BY adventure_id",
             ...$aids
         ), ARRAY_A ) ?: [] as $r ) $quest_map[ (int) $r['adventure_id'] ] = (int) $r['cnt'];

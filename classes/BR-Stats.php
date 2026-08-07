@@ -266,7 +266,7 @@ class BR_Stats {
 
         $total_quests = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
-            WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission')",
+            WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
             $adventure_id
         ) );
 
@@ -309,7 +309,7 @@ class BR_Stats {
 
         $total_quests = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
-            WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission')",
+            WHERE adventure_id = %d AND quest_status = 'publish' AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
             $adventure_id
         ) );
 
@@ -531,7 +531,7 @@ class BR_Stats {
             FROM {$wpdb->prefix}br_tabis t
             LEFT JOIN {$wpdb->prefix}br_quests q
                 ON t.tabi_id = q.tabi_id AND q.quest_status = 'publish'
-                AND q.quest_type IN ('quest','challenge','survey','mission')
+                AND q.quest_type IN ('quest','challenge','survey','mission') AND (q.mech_optional IS NULL OR q.mech_optional = 0)
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.player_id = %d AND pp.adventure_id = %d
             WHERE t.adventure_id = %d AND t.tabi_status = 'publish'
@@ -553,7 +553,7 @@ class BR_Stats {
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.player_id = %d AND pp.adventure_id = %d
             WHERE q.adventure_id = %d AND q.quest_status = 'publish'
-              AND q.quest_type IN ('quest','challenge','survey','mission')
+              AND q.quest_type IN ('quest','challenge','survey','mission') AND (q.mech_optional IS NULL OR q.mech_optional = 0)
             GROUP BY q.quest_type
             ORDER BY q.quest_type ASC",
             $user_id, $adventure_id, $adventure_id
@@ -630,7 +630,7 @@ class BR_Stats {
         $total_q = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
             WHERE adventure_id = %d AND quest_status = 'publish'
-              AND quest_type IN ('quest','challenge','survey','mission')",
+              AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
             $adventure_id
         ) );
         $freq_ratio = $total_q > 0 ? min( 1, $recent / max( 1, $total_q * 0.3 ) ) : 0;
@@ -708,7 +708,7 @@ class BR_Stats {
             FROM {$wpdb->prefix}br_tabis t
             LEFT JOIN {$wpdb->prefix}br_quests q
                 ON t.tabi_id = q.tabi_id AND q.quest_status = 'publish'
-                AND q.quest_type IN ('quest','challenge','survey','mission')
+                AND q.quest_type IN ('quest','challenge','survey','mission') AND (q.mech_optional IS NULL OR q.mech_optional = 0)
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.adventure_id = %d
                 AND EXISTS (
@@ -772,7 +772,7 @@ class BR_Stats {
         $total_q = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
             WHERE adventure_id = %d AND quest_status = 'publish'
-              AND quest_type IN ('quest','challenge','survey','mission')",
+              AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
             $adventure_id
         ) );
 
@@ -959,7 +959,7 @@ class BR_Stats {
         $total_q = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
             WHERE adventure_id = %d AND quest_status = 'publish'
-              AND quest_type IN ('quest','challenge','survey','mission')",
+              AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
             $adventure_id
         ) );
 

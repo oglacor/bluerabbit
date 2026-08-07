@@ -7883,6 +7883,45 @@ button.br-btn.br-confirming {
   to   { opacity: 1; transform: scale(1); }
 }
 
+// ── Per-segment KPI table (org stats) ────────────────────
+
+.br-seg-summary-table {
+  // The total row is a reference line, not another competitor.
+  .br-seg-total {
+    border-top: 2px solid rgba($br-accent, 0.35);
+    background: rgba($br-accent, 0.05);
+    font-weight: 700;
+
+    td { color: $br-white; }
+  }
+}
+
+.br-seg-pct {
+  font-size: 11px;
+  color: rgba($br-white, 0.4);
+}
+
+// Completion reads as a column of bars first and numbers second - the point is
+// which pillar is ahead, and eight percentages in a column do not show that.
+.br-seg-completion { white-space: nowrap; }
+
+.br-seg-bar {
+  display: block;
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: rgba($br-white, 0.08);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba($br-accent, 0.7), $br-accent);
+    transition: width 0.4s ease;
+  }
+}
+
 // ── Celebration panel ────────────────────────────────────
 //
 // The single "you earned something" surface. Everything gained in one action is

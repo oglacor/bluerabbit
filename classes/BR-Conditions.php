@@ -200,7 +200,7 @@ class BR_Conditions {
         $total_milestones = self::adventureTotal("milestones:$adv_parent_id", function () use ($wpdb, $adv_parent_id) {
             return (int) $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
-                WHERE adventure_id=%d AND quest_status='publish' AND quest_type IN ('quest','challenge','survey','mission')",
+                WHERE adventure_id=%d AND quest_status='publish' AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
                 $adv_parent_id
             ));
         });
