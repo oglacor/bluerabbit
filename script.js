@@ -4750,7 +4750,11 @@ function brLoadTremendousCatalog() {
             $('.loader, .small-loader').removeClass('active');
             let data = JSON.parse(raw);
             if (!data.success || !data.products || !data.products.length) {
-                $('#tremendous-catalog-list').text('Could not load the catalog - check the Tremendous connection in adventure settings.');
+                // data.error carries Tremendous's own wording (wrong key for the mode,
+                // expired key, and so on). Only fall back to the generic line when the
+                // call actually succeeded and the catalog was simply empty.
+                $('#tremendous-catalog-list').text(data.error ||
+                    'Connected, but Tremendous returned no products for this account.');
                 return;
             }
             let selected = [];

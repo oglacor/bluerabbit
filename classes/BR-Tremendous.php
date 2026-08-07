@@ -89,18 +89,82 @@ class BR_Tremendous {
         return array('success' => ($code >= 200 && $code < 300), 'http_code' => $code, 'data' => is_array($data) ? $data : array());
     }
 
-    public function getFundingSources($adventure_id) {
+    // Tremendous puts a plain-language diagnosis in the response body, and it is usually
+    // the whole answer - a production key sent to the sandbox endpoint comes back naming
+    // both the key prefix and the endpoint it was sent to. Reporting "check the API key"
+    // instead of that message turns a self-solving mistake into a support ticket.
+    private function apiError($res) {
+        foreach (array(
+            $res['data']['errors']['message'] ?? null,
+            $res['data']['error'] ?? null,
+            $res['data']['message'] ?? null,
+        ) as $candidate) {
+            if (is_string($candidate) && $candidate !== '') return $candidate;
+        }
+        return '';
+    }
+
+    // Tremendous prefixes its keys by environment, so the commonest setup mistake - a
+    // production key while Mode is Sandbox, or the reverse - is worth catching before
+    // spending a round trip to be told the same thing.
+    private function keyModeMismatch($api_key, $sandbox) {
+        if ($sandbox && stripos($api_key, 'PROD_') === 0) {
+            return __("That's a production API key, but Mode is set to Sandbox. Either paste a sandbox key or switch Mode to Production.", 'bluerabbit');
+        }
+        if (!$sandbox && stripos($api_key, 'TEST_') === 0) {
+            return __("That's a sandbox API key, but Mode is set to Production. Either paste a production key or switch Mode to Sandbox.", 'bluerabbit');
+        }
+        return '';
+    }
+
+    // Returns ['ok'=>bool, 'items'=>array, 'message'=>string]. Callers that only want the
+    // list can read 'items'; the AJAX handlers use 'message' so the operator sees what
+    // Tremendous actually said.
+    private function fetchList($adventure_id, $endpoint, $key) {
         $config = $this->getConfig($adventure_id);
-        if (!$config || !$config->api_key) return array();
-        $res = $this->apiRequest('GET', '/funding_sources', null, $config->api_key, $config->sandbox_mode);
-        return $res['success'] ? ($res['data']['funding_sources'] ?? array()) : array();
+        if (!$config || !$config->api_key) {
+            return array('ok' => false, 'items' => array(),
+                'message' => __('No API key saved yet - paste one and click Save Settings first.', 'bluerabbit'));
+        }
+        $mismatch = $this->keyModeMismatch($config->api_key, $config->sandbox_mode);
+        if ($mismatch) {
+            return array('ok' => false, 'items' => array(), 'message' => $mismatch);
+        }
+        $res = $this->apiRequest('GET', $endpoint, null, $config->api_key, $config->sandbox_mode);
+        if (!$res['success']) {
+            $detail = $this->apiError($res);
+            return array('ok' => false, 'items' => array(), 'message' => $detail !== ''
+                ? sprintf(__('Tremendous rejected the request (HTTP %1$d): %2$s', 'bluerabbit'), $res['http_code'], $detail)
+                : sprintf(__("Couldn't reach Tremendous (HTTP %d).", 'bluerabbit'), $res['http_code']));
+        }
+        return array('ok' => true, 'items' => $res['data'][$key] ?? array(), 'message' => '');
+    }
+
+    public function getFundingSources($adventure_id) {
+        $res = $this->fetchList($adventure_id, '/funding_sources', 'funding_sources');
+        return $res['items'];
     }
 
     public function getCatalog($adventure_id) {
-        $config = $this->getConfig($adventure_id);
-        if (!$config || !$config->api_key) return array();
-        $res = $this->apiRequest('GET', '/products', null, $config->api_key, $config->sandbox_mode);
-        return $res['success'] ? ($res['data']['products'] ?? array()) : array();
+        $res = $this->fetchList($adventure_id, '/products', 'products');
+        return $res['items'];
+    }
+
+    // Three outcomes the old version collapsed into a single "couldn't connect": not
+    // configured, rejected by Tremendous, and connected-but-no-funding-sources. Only the
+    // middle one is a credentials problem, and an empty account reported as a connection
+    // failure sends you back to re-checking a key that was right all along.
+    public function testConnection($adventure_id) {
+        $res = $this->fetchList($adventure_id, '/funding_sources', 'funding_sources');
+        if (!$res['ok']) {
+            return array('success' => false, 'funding_sources' => array(), 'color' => 'red', 'message' => $res['message']);
+        }
+        if (!$res['items']) {
+            return array('success' => true, 'funding_sources' => array(), 'color' => 'blue',
+                'message' => __('Connected - but this Tremendous account has no funding sources yet. Add one in your Tremendous dashboard before configuring a gift-card item.', 'bluerabbit'));
+        }
+        return array('success' => true, 'funding_sources' => $res['items'], 'color' => 'green',
+            'message' => sprintf(_n('Connected! %d funding source found.', 'Connected! %d funding sources found.', count($res['items']), 'bluerabbit'), count($res['items'])));
     }
 
     // ── The main send ─────────────────────────────────────────────────────
@@ -367,14 +431,10 @@ class BR_Tremendous {
             echo json_encode($data); die();
         }
 
-        $sources = $this->getFundingSources($adventure_id);
-        if ($sources) {
-            $data['success'] = true;
-            $data['funding_sources'] = $sources;
-            $data['message'] = $notification->pop(__('Connected! Your Tremendous account is reachable.', 'bluerabbit'), 'green', 'check');
-        } else {
-            $data['message'] = $notification->pop(__("Couldn't connect - check the API key and mode (sandbox/production).", 'bluerabbit'), 'red', 'cancel');
-        }
+        $result = $this->testConnection($adventure_id);
+        $data['success'] = $result['success'];
+        $data['funding_sources'] = $result['funding_sources'];
+        $data['message'] = $notification->pop($result['message'], $result['color'], $result['success'] ? 'check' : 'cancel');
         $data['just_notify'] = true;
         echo json_encode($data);
         die();
@@ -392,8 +452,12 @@ class BR_Tremendous {
             echo json_encode($data); die();
         }
 
-        $data['success'] = true;
-        $data['products'] = $this->getCatalog($adventure_id);
+        $res = $this->fetchList($adventure_id, '/products', 'products');
+        $data['success']  = $res['ok'];
+        $data['products'] = $res['items'];
+        // Same reasoning as the connection test: show what Tremendous said rather than a
+        // generic "check the connection" that sends the operator to the wrong screen.
+        if (!$res['ok']) $data['error'] = $res['message'];
         echo json_encode($data);
         die();
     }
