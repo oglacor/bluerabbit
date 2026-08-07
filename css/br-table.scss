@@ -8034,6 +8034,39 @@ button.br-btn.br-confirming {
   color: rgba($br-white, 0.45);
 }
 
+// The "what happens now" block. Sits between the cards and the close button because it
+// is the last thing a player should read before dismissing the panel.
+.br-celebrate-next {
+  margin: 4px 20px 0;
+  padding: 12px 14px;
+  border-radius: $radius-sm;
+  border-left: 3px solid $br-primary;
+  background: rgba(28, 194, 235, 0.08);
+  text-align: left;
+
+  &.br-initially-hidden { display: none; }
+}
+
+.br-celebrate-note {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba($br-white, 0.8);
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.br-celebrate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.br-celebrate-action {
+  text-decoration: none;
+}
+
 // One card per earned thing. Same frame whether it is an achievement, an item or
 // a completion - only the art and the copy change.
 .br-celebrate-card {

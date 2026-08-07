@@ -377,6 +377,15 @@ class BR_Item {
                                                 $data['noClose'] = true;
                                                 $data['success'] = true;
                                                 $data['sale'] = true;
+                                                // A toast is the wrong shape for the moment a player spends
+                                                // their earnings - it is gone before they have read it. The
+                                                // celebration panel holds until they close it, and for a gift
+                                                // card it is the only place that explains a second email is
+                                                // coming.
+                                                $data['celebrate'] = array_merge(
+                                                    BR_Feedback::instance()->item($purchaseData, true, $adv_child_id)->pull(),
+                                                    $reward_result['celebrate'] ?? []
+                                                );
                                             }else{
                                                 $data['message'] = $notification->pop($reward_result['message'],'red','cancel');
                                             }
@@ -412,7 +421,15 @@ class BR_Item {
                                                 $data['success']=true;
                                                 $data['sale']=true;
                                                 BR_Activity::instance()->logActivity($adv_child_id, 'purchase','item',"$purchaseData->item_type",$item_id);
-                                                BR_Player::instance()->resetPlayer($adv_child_id, $current_user->ID);
+                                                // Queued BEFORE resetPlayer, which pulls its own events into the
+                                                // same payload - a purchase that also levels the player up shows
+                                                // one panel with both, not a panel and a lost toast.
+                                                BR_Feedback::instance()->item($purchaseData, true, $adv_child_id);
+                                                $reset = BR_Player::instance()->resetPlayer($adv_child_id, $current_user->ID);
+                                                $data['celebrate'] = array_merge(
+                                                    BR_Feedback::instance()->pull(),
+                                                    is_array($reset) && !empty($reset['celebrate']) ? $reset['celebrate'] : []
+                                                );
                                             }
                                         }
                                     }else{

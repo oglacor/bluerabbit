@@ -76,6 +76,16 @@ class BR_Feedback {
             'color'    => $args['color'] ? br_color_to_hex( $args['color'] ) : '',
             'value'    => $args['value'] ?? null,
             'icon'     => $args['icon'] ?? $types[ $type ]['icon'],
+            // What the player should do next, and where. A reward the player doesn't know
+            // how to collect is a reward they don't feel they got - and a gift card in
+            // particular arrives in a separate email that nobody expects unless told.
+            'note'     => (string) ( $args['note'] ?? '' ),
+            'action'   => ( ! empty( $args['action_url'] ) && ! empty( $args['action_label'] ) )
+                ? [ 'label' => (string) $args['action_label'], 'url' => (string) $args['action_url'] ]
+                : null,
+            // Overrides the panel's "Congratulations!" when this moment deserves different
+            // words. A purchase is a thank-you, not a congratulation.
+            'heading'  => (string) ( $args['heading'] ?? '' ),
         ];
         return $this;
     }
@@ -99,13 +109,34 @@ class BR_Feedback {
         ] );
     }
 
-    public function item( $item, $purchased = false ) {
+    // $adventure_id is what makes the "where to collect it" link possible; without it the
+    // panel still shows the note, just without a button.
+    public function item( $item, $purchased = false, $adventure_id = 0 ) {
         if ( ! $item ) return $this;
+
+        $type = $item->item_type ?? '';
+        if ( $type === 'gift-card' ) {
+            // Deliberately sets no expectation of an instant arrival: Tremendous sends its
+            // own email separately, and the gap between "bought" and "in my inbox" is
+            // where a player otherwise assumes something broke.
+            $note = __( 'Your gift card is on its way by email, in a separate message from Tremendous. It can take a few minutes to arrive - check your spam folder if you don\'t see it.', 'bluerabbit' );
+            $action_label = '';
+            $action_url   = '';
+        } else {
+            $note = __( 'It\'s in your Backpack now, ready whenever you need it.', 'bluerabbit' );
+            $action_label = __( 'Open Backpack', 'bluerabbit' );
+            $action_url   = $adventure_id ? get_bloginfo( 'url' ) . "/backpack/?adventure_id=" . (int) $adventure_id : '';
+        }
+
         return $this->add( $purchased ? 'item_purchased' : 'item_earned', [
-            'title'    => $item->item_name ?? '',
-            'subtitle' => $item->item_description ?? '',
-            'image'    => $item->item_badge ?? '',
-            'color'    => $item->item_color ?? '',
+            'title'        => $item->item_name ?? '',
+            'subtitle'     => $item->item_description ?? '',
+            'image'        => $item->item_badge ?? '',
+            'color'        => $item->item_color ?? '',
+            'note'         => $note,
+            'action_label' => $action_label,
+            'action_url'   => $action_url,
+            'heading'      => $purchased ? __( 'Thank you for your purchase!', 'bluerabbit' ) : '',
         ] );
     }
 

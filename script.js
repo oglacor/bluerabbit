@@ -7760,8 +7760,44 @@ function brCelebrate(events) {
     events = (events || []).filter(Boolean);
     if (!events.length) return;
 
+    // The default wording belongs to the markup, not to this function - remember it once
+    // so an event that overrides the heading doesn't permanently replace it for the next
+    // celebration on the same page.
+    var $title = $('#br-celebrate-title');
+    if (typeof $title.data('default') === 'undefined') $title.data('default', $title.text());
+    var heading = '';
+    events.forEach(function (e) { if (!heading && e.heading) heading = e.heading; });
+    $title.text(heading || $title.data('default'));
+
     $('#br-celebrate-line').text(brCelebrateSentence(events));
     $('#br-rewards-modal-body').html(events.map(brCelebrateCard).join(''));
+
+    // Guidance: what to do next, and where to go. De-duplicated because buying two of
+    // the same kind of thing should not repeat the same sentence twice.
+    var notes = [], actions = [], seenAction = {};
+    events.forEach(function (e) {
+        if (e.note && notes.indexOf(e.note) === -1) notes.push(e.note);
+        if (e.action && e.action.url && e.action.label && !seenAction[e.action.url]) {
+            seenAction[e.action.url] = true;
+            actions.push(e.action);
+        }
+    });
+    var $next = $('#br-celebrate-next');
+    if (notes.length || actions.length) {
+        $next.html(
+            notes.map(function (n) {
+                return '<p class="br-celebrate-note">' + aiEscapeHtml(n) + '</p>';
+            }).join('') +
+            (actions.length
+                ? '<div class="br-celebrate-actions">' + actions.map(function (a) {
+                      return '<a class="br-btn br-celebrate-action" href="' + encodeURI(a.url) + '">' +
+                          aiEscapeHtml(a.label) + '</a>';
+                  }).join('') + '</div>'
+                : '')
+        ).removeClass('br-initially-hidden');
+    } else {
+        $next.empty().addClass('br-initially-hidden');
+    }
     // brOpenDrawer brings its own backdrop, so the panel does not add a second one.
     brOpenDrawer($('#br-rewards-overlay'));
 

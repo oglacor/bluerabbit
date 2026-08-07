@@ -611,10 +611,18 @@ class BR_Tremendous {
             );
 
             BR_Activity::instance()->logActivity($adventure_id, 'purchase', 'tremendous-item', "$item->item_type", $item_id, $player_id);
-            BR_Player::instance()->resetPlayer($adventure_id, $player_id);
+            // resetPlayer drains the player's celebration queue and hands the events back.
+            // They have to travel out with this result or they are simply dropped - a gift
+            // card that also levelled the player up would otherwise lose the level-up.
+            $reset = BR_Player::instance()->resetPlayer($adventure_id, $player_id);
             $this->sendReceiptEmail($recipient_email, $recipient_name, $player_id, $adventure_id, $item, $config);
 
-            return array('success' => true, 'message' => __('Your gift card is on its way!', 'bluerabbit'), 'order_id' => $tremendous_order_id);
+            return array(
+                'success'   => true,
+                'message'   => __('Your gift card is on its way!', 'bluerabbit'),
+                'order_id'  => $tremendous_order_id,
+                'celebrate' => (is_array($reset) && !empty($reset['celebrate'])) ? $reset['celebrate'] : array(),
+            );
         }
 
         // Failed/duplicate at Tremendous - tear down the speculative reservation so no

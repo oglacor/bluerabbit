@@ -59,8 +59,12 @@
 					<p class="br-celebrate-line" id="br-celebrate-line"></p>
 				</div>
 				<div class="br-rewards-modal-body" id="br-rewards-modal-body"></div>
+				<!-- What to do next. Empty for most celebrations; a purchase fills it,
+				     because "you bought it" without "here is where it went" is the
+				     moment players ask whether anything actually happened. -->
+				<div class="br-celebrate-next br-initially-hidden" id="br-celebrate-next"></div>
 				<div class="br-rewards-modal-footer">
-					<p class="br-celebrate-outro"><?= __("Keep moving forward!","bluerabbit"); ?></p>
+					<p class="br-celebrate-outro" id="br-celebrate-outro"><?= __("Keep moving forward!","bluerabbit"); ?></p>
 					<button class="br-btn green br-rewards-claim-btn" onclick="brCelebrateClose();">
 						<span class="icon icon-check"></span> <?= __("Close","bluerabbit"); ?>
 					</button>
