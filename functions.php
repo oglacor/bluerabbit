@@ -3186,6 +3186,21 @@ define( 'BR_SCHEMA_VERSION', '2026-08-06.2' );
 function br_run_schema_migrations() {
 	if ( get_option( 'br_schema_version' ) === BR_SCHEMA_VERSION ) return;
 
+	// Exactly one process may run these. On the first request after a deploy the
+	// version has not been stamped yet, so without a lock EVERY concurrent request
+	// starts the whole set at once - and on a live adventure that is hundreds of
+	// processes all issuing ALTER TABLE against the same tables. add_option() is an
+	// INSERT against a unique key, so it succeeds for exactly one caller and is the
+	// lock. Everyone else serves the request unmigrated for a moment, which is fine:
+	// the schema they need was already there before the deploy.
+	$lock = get_option( 'br_schema_lock' );
+	if ( $lock ) {
+		// A process that died mid-migration must not block the next deploy forever.
+		if ( ( time() - (int) $lock ) < 600 ) return;
+		delete_option( 'br_schema_lock' );
+	}
+	if ( ! add_option( 'br_schema_lock', time(), '', 'no' ) ) return;
+
 	br_email_maybe_migrate();
 	br_migrate_player_sessions_schema();
 	br_migrate_tabi_tables();
@@ -3199,5 +3214,6 @@ function br_run_schema_migrations() {
 	br_migrate_drop_parent_cascade_columns();
 
 	update_option( 'br_schema_version', BR_SCHEMA_VERSION );
+	delete_option( 'br_schema_lock' );
 }
 add_action( 'init', 'br_run_schema_migrations' );
