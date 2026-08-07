@@ -17,6 +17,10 @@ node_modules/
 BLUERABBIT_PROJECT_BRIEF.md
 DECISIONS.md
 
-# Golden-master captures for tools/reset-player-baseline.php (multi-MB, machine-specific)
-tools/*.json
-tools/loadtest-results.json
+# CLI maintenance tools (load test, golden-master harness).
+#
+# Deliberately untracked so they can never reach a server. loadtest.php mints valid
+# WordPress auth cookies for arbitrary players; the safest version of that file is one
+# that isn't there. They stay on the developer's machine only - a checkout of this
+# repo is a clean theme with no tooling in the document root.
+tools/
