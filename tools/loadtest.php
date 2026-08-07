@@ -67,6 +67,45 @@ if ($is_local) {
 }
 echo "\n";
 
+/**
+ * Proves the target is actually serving the journey page to a logged-in player
+ * before any timing is believed.
+ *
+ * Without this the tool happily measures the speed of the WRONG thing: a redirect
+ * to login (auth cookies do not validate across hosts - the salts in wp-config
+ * differ), a 404 template, or a full-page cache. All of those return HTTP 200 in a
+ * few milliseconds, which reads as spectacular throughput and means nothing.
+ */
+function assert_real_page($url, $cookie, $mode) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Cookie: ' . $cookie],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_FOLLOWLOCATION => false,
+    ]);
+    $body = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($body === false)  return [false, 'no response at all (host unreachable?)'];
+    if ($code !== 200)    return [false, "HTTP $code - not a page load"];
+
+    $len = strlen($body);
+    if ($mode === 'sync') {
+        if (strpos($body, '"success"') === false) return [false, "response is not the AJAX payload ({$len} bytes)"];
+        return [true, "AJAX responded, {$len} bytes"];
+    }
+    // The journey page is a logged-in player view. A login form means the cookie was
+    // rejected; a tiny body means something other than the page answered.
+    if (stripos($body, 'name="log"') !== false || stripos($body, 'user_login') !== false) {
+        return [false, "served the LOGIN page ({$len} bytes) - auth cookies are not valid on this host"];
+    }
+    if ($len < 5000) return [false, "body is only {$len} bytes - too small to be the journey page"];
+    if (stripos($body, 'adventure') === false) return [false, "body does not mention the adventure ({$len} bytes)"];
+    return [true, number_format($len) . ' bytes, looks like the real page'];
+}
+
 function run_burst($n, $conc, $cookies, $players, $url, $post) {
     $mh = curl_multi_init();
     $active = []; $lat = []; $codes = []; $sent = 0; $done = 0;
@@ -99,6 +138,27 @@ function run_burst($n, $conc, $cookies, $players, $url, $post) {
     curl_multi_close($mh);
     return [$lat, $codes];
 }
+
+// Prove we are measuring the right thing before measuring anything.
+[$valid, $why] = assert_real_page(
+    $MODE === 'sync' ? $ajax_url : $page_url,
+    $cookies[$players[0]], $MODE
+);
+echo "sanity check: $why\n";
+if (!$valid) {
+    echo "\nABORTED. Every number this tool could produce would be measuring the wrong\n";
+    echo "response. Fix the target first:\n";
+    echo "  - auth cookies only validate on the site whose salts this wp-config holds,\n";
+    echo "    so --url must point at an installation sharing them\n";
+    echo "  - a full-page cache in front of the site serves HTML without running PHP\n";
+    echo "  - check the adventure id exists and the players are enrolled in it\n";
+    exit(1);
+}
+
+// The query counter reads the database THIS script is connected to. Point the test
+// at another host and it is counting an idle local database, not the one under load.
+$remote = !preg_match('#//(localhost|127\.0\.0\.1)#i', $BASE);
+if ($remote) echo "note        : queries/req is blank for a remote target - it can only count the local database\n";
 
 // Warm-up, discarded. The first request into a cold PHP opcache and a cold InnoDB
 // buffer pool costs several seconds; letting that land in the first measured burst
