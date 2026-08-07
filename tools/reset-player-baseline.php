@@ -18,7 +18,14 @@
  *
  * CLI only.
  */
-if (PHP_SAPI !== 'cli') { http_response_code(403); exit('CLI only'); }
+// Two independent checks, because what this file can do (mint auth cookies,
+// run the award pass for arbitrary players) is worth more than one line of
+// defence. PHP_SAPI is 'cli' only for the command line; a web request always
+// carries REQUEST_METHOD, whatever SAPI is serving it.
+if (PHP_SAPI !== 'cli' || isset($_SERVER['REQUEST_METHOD']) || isset($_SERVER['HTTP_HOST'])) {
+    http_response_code(403);
+    exit('CLI only');
+}
 
 define('WP_USE_THEMES', false);
 require dirname(__DIR__, 4) . '/wp-load.php';
@@ -27,7 +34,12 @@ global $wpdb;
 $opt   = getopt('', ['capture', 'compare', 'players::', 'adventure::', 'file::']);
 $LIMIT = (int) ($opt['players']   ?? 200);
 $ADV   = (int) ($opt['adventure'] ?? 0);
-$FILE  = $opt['file'] ?? __DIR__ . '/reset-player-baseline.json';
+// Written OUTSIDE the webroot by default. The capture contains player submissions
+// (pp_content), quest content and success messages, and anything sitting in the
+// theme directory is served straight over HTTP - a .htaccess protects Apache and
+// does nothing at all for nginx. Keeping it out of the document root is the part
+// that holds regardless of server.
+$FILE  = $opt['file'] ?? rtrim( sys_get_temp_dir(), '/\\' ) . '/br-reset-player-baseline.json';
 $MODE  = isset($opt['compare']) ? 'compare' : (isset($opt['capture']) ? 'capture' : '');
 if (!$MODE) exit("usage: --capture | --compare  [--players=N] [--adventure=ID] [--file=path]\n");
 

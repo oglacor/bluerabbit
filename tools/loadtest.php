@@ -27,7 +27,14 @@
  *
  * CLI only.
  */
-if (PHP_SAPI !== 'cli') { http_response_code(403); exit('CLI only'); }
+// Two independent checks, because what this file can do (mint auth cookies,
+// run the award pass for arbitrary players) is worth more than one line of
+// defence. PHP_SAPI is 'cli' only for the command line; a web request always
+// carries REQUEST_METHOD, whatever SAPI is serving it.
+if (PHP_SAPI !== 'cli' || isset($_SERVER['REQUEST_METHOD']) || isset($_SERVER['HTTP_HOST'])) {
+    http_response_code(403);
+    exit('CLI only');
+}
 
 define('WP_USE_THEMES', false);
 require dirname(__DIR__, 4) . '/wp-load.php';
@@ -43,7 +50,8 @@ $MODE      = $opt['mode'] ?? 'page';
 $BURST     = (int) ($opt['burst'] ?? 30);              // requests per step
 $MAXCONC   = (int) ($opt['max-concurrency'] ?? 32);
 $ABORT_P95 = (int) ($opt['abort-p95'] ?? 5000);        // ms
-$OUT       = $opt['out'] ?? __DIR__ . '/loadtest-results.json';
+// Outside the webroot: see the note in reset-player-baseline.php.
+$OUT       = $opt['out'] ?? rtrim( sys_get_temp_dir(), "/\\" ) . '/br-loadtest-results.json';
 
 $players = $wpdb->get_col($wpdb->prepare(
     "SELECT player_id FROM {$wpdb->prefix}br_player_adventure
