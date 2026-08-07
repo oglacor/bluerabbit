@@ -58,6 +58,24 @@ $page_url = "$BASE/adventure/?adventure_id=$ADV";
 $ajax_url = admin_url('admin-ajax.php');
 
 $is_local = (bool) preg_match('#//(localhost|127\.0\.0\.1)#i', $BASE);
+
+// --mode=sync runs the real award pass for the real player whose cookie it borrows.
+// Against a live site that means granting their achievements and DRAINING their
+// pending celebration queue - so the celebration they were owed is delivered to a
+// curl handle and they never see it. Read-only page loads are fine; this is not.
+if ($MODE === 'sync' && !$is_local && !isset($opt['i-understand-this-writes'])) {
+    exit("REFUSED: --mode=sync against a non-local target would grant achievements and\n"
+       . "consume real players' pending celebrations. Run it locally, or pass\n"
+       . "--i-understand-this-writes if the target is genuinely disposable.\n");
+}
+
+// On a live site the players are real and so is the traffic they are already
+// generating. Start small, stay small, and let the ramp's own abort do the rest.
+if (!$is_local && $MAXCONC > 8) {
+    echo "note        : capping concurrency at 8 for a remote target (was $MAXCONC).\n";
+    echo "              raise it deliberately with --max-concurrency once you have seen the curve.\n";
+    $MAXCONC = 8;
+}
 echo "target      : " . ($MODE === 'sync' ? $ajax_url . ' [brSyncRewards]' : $page_url) . "\n";
 echo "ramp        : " . $BURST . " requests per step, stopping at p95 > {$ABORT_P95}ms or any error\n";
 if ($is_local) {
