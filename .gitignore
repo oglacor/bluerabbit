@@ -19,3 +19,4 @@ DECISIONS.md
 
 # Golden-master captures for tools/reset-player-baseline.php (multi-MB, machine-specific)
 tools/reset-player-baseline*.json
+tools/loadtest-results.json

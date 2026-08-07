@@ -1,132 +1,153 @@
 <?php
 /**
- * Journey-page load test.
+ * Journey-page capacity test.
  *
- * Simulates N distinct logged-in players hitting /adventure/ concurrently, using
- * real WordPress auth cookies so the request costs exactly what a real one costs.
+ * Answers "how many requests per second can this survive, and where does it bend"
+ * by RAMPING concurrency in short bursts and stopping at the first sign of trouble.
  *
- *   php loadtest.php --users=2000 --loads=15 --window=600 --concurrency=40
+ *   php tools/loadtest.php                          # safe ramp, ~2 minutes
+ *   php tools/loadtest.php --url=https://staging.example.com
+ *   php tools/loadtest.php --mode=sync              # the award endpoint instead
  *
- * Reports latency percentiles and, more usefully, the MySQL query count the run
- * actually caused - the database is what falls over first here, not PHP.
+ * WHY A RAMP AND NOT A FLOOD
+ * An earlier version of this tool took --users/--loads/--window and fired that many
+ * requests at that rate no matter what. Point it at a box that cannot drain the
+ * queue and the queue simply grows: requests pile up, memory follows, and the
+ * machine stops responding - which is exactly what happened. Throughput is a rate
+ * question, and a rate question is answered by finding the knee, not by sustaining
+ * a guess for ten minutes. 19,500 requests tell you nothing 500 well-chosen ones do
+ * not.
  *
- * CLI only. Never expose this over HTTP.
+ * SAFETY
+ * - Stops the moment p95 passes --abort-p95 or any request fails.
+ * - Never runs more than --max-concurrency in flight.
+ * - Writes results after every step, so a crash still leaves you the data.
+ * - Warns when the target is local, because then the generator is stealing CPU
+ *   from the thing it is measuring and every number is pessimistic.
+ *
+ * CLI only.
  */
 if (PHP_SAPI !== 'cli') { http_response_code(403); exit('CLI only'); }
 
 define('WP_USE_THEMES', false);
-require 'c:/xampp/htdocs/br1/wp-load.php';
+require dirname(__DIR__, 4) . '/wp-load.php';
 global $wpdb;
 
-$opt = getopt('', ['users::', 'loads::', 'window::', 'concurrency::', 'adventure::', 'url::', 'mode::']);
-// page : the journey page only (what a browser fetches first)
-// sync : the brSyncRewards AJAX only - the expensive award pass, fired by the page
-//        ONLY when the rules moved since that player was last evaluated
-// both : what a real browser does after a rule change
-$MODE = $opt['mode'] ?? 'page';
-$USERS       = (int) ($opt['users']       ?? 50);
-$LOADS       = (int) ($opt['loads']       ?? 3);
-$WINDOW      = (int) ($opt['window']      ?? 30);   // seconds to spread the load over
-$CONCURRENCY = (int) ($opt['concurrency'] ?? 20);
-$ADV         = (int) ($opt['adventure']   ?? 17);
-$BASE        = rtrim($opt['url'] ?? get_bloginfo('url'), '/');
+$opt = getopt('', [
+    'url::', 'adventure::', 'mode::', 'steps::', 'burst::',
+    'max-concurrency::', 'abort-p95::', 'out::', 'flood::',
+]);
+$BASE      = rtrim($opt['url'] ?? get_bloginfo('url'), '/');
+$ADV       = (int) ($opt['adventure'] ?? 17);
+$MODE      = $opt['mode'] ?? 'page';
+$BURST     = (int) ($opt['burst'] ?? 30);              // requests per step
+$MAXCONC   = (int) ($opt['max-concurrency'] ?? 32);
+$ABORT_P95 = (int) ($opt['abort-p95'] ?? 5000);        // ms
+$OUT       = $opt['out'] ?? __DIR__ . '/loadtest-results.json';
 
 $players = $wpdb->get_col($wpdb->prepare(
     "SELECT player_id FROM {$wpdb->prefix}br_player_adventure
-     WHERE adventure_id=%d AND player_adventure_status='in' LIMIT %d", $ADV, $USERS));
+     WHERE adventure_id=%d AND player_adventure_status='in' LIMIT 200", $ADV));
 if (!$players) exit("no enrolled players in adventure $ADV\n");
 
-// Real auth cookies, one per simulated player.
-$expiry  = time() + 3600;
+$expiry  = time() + 7200;
 $cookies = [];
-foreach ($players as $pid) {
-    $cookies[$pid] = LOGGED_IN_COOKIE . '=' . wp_generate_auth_cookie($pid, $expiry, 'logged_in');
-}
+foreach ($players as $pid) $cookies[$pid] = LOGGED_IN_COOKIE . '=' . wp_generate_auth_cookie($pid, $expiry, 'logged_in');
 
 $page_url = "$BASE/adventure/?adventure_id=$ADV";
 $ajax_url = admin_url('admin-ajax.php');
-$url      = $MODE === 'sync' ? $ajax_url : $page_url;
-$total    = count($players) * $LOADS;
-$rate     = $total / max(1, $WINDOW);
-$interval = 1 / $rate;
 
-printf("target : %s players x %d loads = %s requests over %ds (%.1f req/s)\n",
-    number_format(count($players)), $LOADS, number_format($total), $WINDOW, $rate);
-printf("url    : %s\nconcurrency: %d\n\n", $url, $CONCURRENCY);
-
-// Baseline for the database counter, so we can attribute queries to this run.
-$q_before = (int) $wpdb->get_var("SHOW GLOBAL STATUS LIKE 'Questions'", 1);
-
-$queue = [];
-for ($i = 0; $i < $total; $i++) $queue[] = $players[$i % count($players)];
-shuffle($queue);
-
-$mh = curl_multi_init();
-$active = []; $lat = []; $codes = []; $sent = 0; $done = 0; $total_extra = 0;
-$start = microtime(true);
-
-function spawn($mh, &$active, $url, $cookie, $post = null) {
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER     => ['Cookie: ' . $cookie],
-        CURLOPT_TIMEOUT        => 60,
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_ENCODING       => 'gzip',
-    ]);
-    if ($post !== null) {
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-    }
-    curl_multi_add_handle($mh, $ch);
-    $active[(int) $ch] = microtime(true);
+$is_local = (bool) preg_match('#//(localhost|127\.0\.0\.1)#i', $BASE);
+echo "target      : " . ($MODE === 'sync' ? $ajax_url . ' [brSyncRewards]' : $page_url) . "\n";
+echo "ramp        : " . $BURST . " requests per step, stopping at p95 > {$ABORT_P95}ms or any error\n";
+if ($is_local) {
+    echo "\n  ! target is THIS machine. The generator competes with the server for CPU,\n";
+    echo "    so every number below is worse than production would be. Use --url= to\n";
+    echo "    point at staging for a figure you can plan with.\n";
 }
+echo "\n";
 
-while ($done < $total + $total_extra) {
-    // Feed the pipe at the target rate, never exceeding the concurrency cap.
-    $elapsed = microtime(true) - $start;
-    while ($sent < $total && count($active) < $CONCURRENCY && $elapsed >= $sent * $interval) {
-        $cookie = $cookies[$queue[$sent]];
-        if ($MODE === 'sync') {
-            spawn($mh, $active, $ajax_url, $cookie, ['action' => 'brSyncRewards', 'adventure_id' => $ADV]);
-        } else {
-            spawn($mh, $active, $page_url, $cookie);
-            // A browser that is told to sync fires the AJAX straight after the page.
-            if ($MODE === 'both') {
-                spawn($mh, $active, $ajax_url, $cookie, ['action' => 'brSyncRewards', 'adventure_id' => $ADV]);
-                $total_extra++;
-            }
+function run_burst($n, $conc, $cookies, $players, $url, $post) {
+    $mh = curl_multi_init();
+    $active = []; $lat = []; $codes = []; $sent = 0; $done = 0;
+    while ($done < $n) {
+        while ($sent < $n && count($active) < $conc) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER     => ['Cookie: ' . $cookies[$players[$sent % count($players)]]],
+                CURLOPT_TIMEOUT        => 30,
+                CURLOPT_ENCODING       => 'gzip',
+            ]);
+            if ($post !== null) { curl_setopt($ch, CURLOPT_POST, true); curl_setopt($ch, CURLOPT_POSTFIELDS, $post); }
+            curl_multi_add_handle($mh, $ch);
+            $active[(int) $ch] = microtime(true);
+            $sent++;
         }
-        $sent++;
+        curl_multi_exec($mh, $running);
+        if ($running) curl_multi_select($mh, 0.05);
+        while ($info = curl_multi_info_read($mh)) {
+            $ch = $info['handle'];
+            $lat[] = (microtime(true) - $active[(int) $ch]) * 1000;
+            $code  = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $codes[$code] = ($codes[$code] ?? 0) + 1;
+            unset($active[(int) $ch]);
+            curl_multi_remove_handle($mh, $ch); curl_close($ch);
+            $done++;
+        }
     }
-
-    curl_multi_exec($mh, $running);
-    if ($running) curl_multi_select($mh, 0.05);
-
-    while ($info = curl_multi_info_read($mh)) {
-        $ch = $info['handle'];
-        $lat[]   = (microtime(true) - $active[(int) $ch]) * 1000;
-        $code    = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $codes[$code] = ($codes[$code] ?? 0) + 1;
-        unset($active[(int) $ch]);
-        curl_multi_remove_handle($mh, $ch);
-        curl_close($ch);
-        $done++;
-        if ($done % 25 === 0) printf("\r  %d/%d done…", $done, $total);
-    }
-    if (!$running && $sent >= $total && !$active) break;
+    curl_multi_close($mh);
+    return [$lat, $codes];
 }
-curl_multi_close($mh);
 
-$wall = microtime(true) - $start;
-$q_after = (int) $wpdb->get_var("SHOW GLOBAL STATUS LIKE 'Questions'", 1);
-sort($lat);
-$p = fn($x) => $lat ? $lat[min(count($lat) - 1, (int) floor(count($lat) * $x))] : 0;
+// Warm-up, discarded. The first request into a cold PHP opcache and a cold InnoDB
+// buffer pool costs several seconds; letting that land in the first measured burst
+// puts a 5-second outlier straight into p95 and aborts the ramp before it starts.
+echo "warming up...";
+run_burst(5, 2, $cookies, $players,
+    $MODE === 'sync' ? $ajax_url : $page_url,
+    $MODE === 'sync' ? ['action' => 'brSyncRewards', 'adventure_id' => $ADV] : null);
+echo " done\n\n";
 
-printf("\r%-30s\n\n", '');
-printf("completed   %s requests in %.1fs (%.1f req/s achieved)\n", number_format($done), $wall, $done / $wall);
-printf("status      %s\n", json_encode($codes));
-printf("latency     p50 %.0f ms   p95 %.0f ms   p99 %.0f ms   max %.0f ms\n", $p(0.5), $p(0.95), $p(0.99), end($lat));
-printf("mysql       %s queries total, %.1f per request, %.0f queries/s\n",
-    number_format($q_after - $q_before), ($q_after - $q_before) / max(1, $done), ($q_after - $q_before) / $wall);
-if (!empty($codes[200]) && $codes[200] < $done) echo "\nWARNING: non-200 responses - check the status map above.\n";
+$results = [];
+$best    = ['rps' => 0, 'conc' => 0];
+printf("%-6s %-9s %-9s %-9s %-11s %s\n", 'CONC', 'req/s', 'p50', 'p95', 'queries/req', 'status');
+
+foreach ([1, 2, 4, 8, 12, 16, 24, 32, 48, 64] as $conc) {
+    if ($conc > $MAXCONC) break;
+
+    $q0 = (int) $wpdb->get_var("SHOW GLOBAL STATUS LIKE 'Questions'", 1);
+    $t0 = microtime(true);
+    [$lat, $codes] = run_burst($BURST, $conc, $cookies, $players,
+        $MODE === 'sync' ? $ajax_url : $page_url,
+        $MODE === 'sync' ? ['action' => 'brSyncRewards', 'adventure_id' => $ADV] : null);
+    $wall = microtime(true) - $t0;
+    $q    = (int) $wpdb->get_var("SHOW GLOBAL STATUS LIKE 'Questions'", 1) - $q0;
+
+    sort($lat);
+    $p   = fn($x) => $lat[min(count($lat) - 1, (int) floor(count($lat) * $x))];
+    $rps = $BURST / $wall;
+    $ok  = ($codes[200] ?? 0) === $BURST;
+
+    $row = ['concurrency' => $conc, 'rps' => round($rps, 1), 'p50' => round($p(0.5)),
+            'p95' => round($p(0.95)), 'queries_per_req' => round($q / $BURST, 1), 'status' => $codes];
+    $results[] = $row;
+    file_put_contents($OUT, json_encode($results, JSON_PRETTY_PRINT));  // survive a crash
+
+    printf("%-6d %-9.1f %-9.0f %-9.0f %-11.1f %s\n", $conc, $rps, $p(0.5), $p(0.95), $q / $BURST, json_encode($codes));
+
+    if ($rps > $best['rps']) $best = ['rps' => $rps, 'conc' => $conc];
+
+    if (!$ok)                  { echo "\nSTOPPED: non-200 responses - this is the ceiling.\n"; break; }
+    if ($p(0.95) > $ABORT_P95) { echo "\nSTOPPED: p95 above {$ABORT_P95}ms - past the knee, no point pushing further.\n"; break; }
+}
+
+printf("\nbest sustained: %.1f req/s at concurrency %d\n", $best['rps'], $best['conc']);
+printf("results written to %s\n\n", $OUT);
+
+echo "what that supports, if every player loads the journey page N times in 10 minutes:\n";
+foreach ([5, 10, 15] as $loads) {
+    $supported = $best['rps'] * 600 / $loads;
+    printf("   %2d loads each  ->  %s concurrent players%s\n", $loads, number_format($supported),
+        $is_local ? ' (pessimistic: measured on the same box)' : '');
+}
