@@ -104,6 +104,43 @@ class BR_Tremendous {
         return '';
     }
 
+    // Turns a stored api_response into one line a GM can act on. Players get a
+    // deliberately vague message - they can't fix a 422 and shouldn't see API internals -
+    // but that left the operator with a red badge and no way to find out why without
+    // reading the table by hand. Tremendous names the offending fields in `payload`, so
+    // "products: this or campaign_id must be set" survives all the way to the screen.
+    public static function describeFailure($api_response) {
+        $data = json_decode((string) $api_response, true);
+        if (!is_array($data)) return '';
+
+        $parts = array();
+        foreach (array(
+            $data['errors']['message'] ?? null,
+            $data['error'] ?? null,
+            $data['message'] ?? null,
+        ) as $candidate) {
+            if (is_string($candidate) && $candidate !== '') { $parts[] = $candidate; break; }
+        }
+
+        // payload is nested field => [messages], sometimes under a rewards[] list.
+        $fields  = array();
+        $walk    = function ($node, $prefix = '') use (&$walk, &$fields) {
+            if (!is_array($node)) return;
+            foreach ($node as $key => $value) {
+                if (is_int($key)) { $walk($value, $prefix); continue; }
+                if (is_array($value) && $value && is_string(reset($value))) {
+                    $fields[] = $key . ': ' . implode(', ', array_filter($value, 'is_string'));
+                } else {
+                    $walk($value, $key);
+                }
+            }
+        };
+        $walk($data['errors']['payload'] ?? array());
+        if ($fields) $parts[] = implode(' | ', array_unique($fields));
+
+        return implode(' — ', $parts);
+    }
+
     // Tremendous prefixes its keys by environment, so the commonest setup mistake - a
     // production key while Mode is Sandbox, or the reverse - is worth catching before
     // spending a round trip to be told the same thing.
@@ -188,6 +225,20 @@ class BR_Tremendous {
         ));
         if (!$item || !$item->item_tremendous_enabled || !$item->item_tremendous_amount) {
             return array('success' => false, 'error' => 'not_enabled', 'message' => __('This item is not a configured gift card reward.', 'bluerabbit'));
+        }
+
+        // Tremendous requires EITHER an explicit product list on the reward OR a campaign
+        // to choose from, and rejects an order carrying neither with a 422. Resolved here,
+        // before the order row and the stock reservation exist, because failing later
+        // meant a misconfigured item burned a slot and left a 'failed' row behind on every
+        // single attempt - and told the player only "something went wrong".
+        $products = array();
+        if ($item->item_tremendous_products) {
+            $decoded = json_decode($item->item_tremendous_products, true);
+            if (is_array($decoded)) $products = $decoded;
+        }
+        if (!$products && empty($config->campaign_id)) {
+            return array('success' => false, 'error' => 'no_products', 'message' => __("This gift card isn't finished being set up - no Tremendous products or campaign have been chosen for it. Please contact your administrator.", 'bluerabbit'));
         }
 
         // Always the player's own WP account email - no override parameter exists on
@@ -280,12 +331,6 @@ class BR_Tremendous {
         }
         $trnx_id = $wpdb->insert_id;
 
-        $products = array();
-        if ($item->item_tremendous_products) {
-            $decoded = json_decode($item->item_tremendous_products, true);
-            if (is_array($decoded)) $products = $decoded;
-        }
-
         $reward = array(
             'value' => array(
                 'denomination'  => (float) $item->item_tremendous_amount,
@@ -293,9 +338,13 @@ class BR_Tremendous {
             ),
             'delivery'  => array('method' => 'EMAIL'),
             'recipient' => array('name' => $recipient_name, 'email' => $recipient_email),
-            'products'  => $products,
         );
-        if (!empty($config->campaign_id)) {
+        // Send whichever of the two Tremendous accepts - never an empty products array,
+        // which reads to the API as "products not set" and produces the same 422 as
+        // omitting it, only less obviously.
+        if ($products) {
+            $reward['products'] = $products;
+        } else {
             $reward['campaign_id'] = $config->campaign_id;
         }
         $order_payload = array(

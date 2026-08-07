@@ -76,6 +76,11 @@ $status_badges = array(
 					<td class="text-center"><?= number_format((float) $o->amount, 2); ?> <?= esc_html($o->currency_code); ?></td>
 					<td class="text-center">
 						<span class="br-badge <?= $status_badges[$o->status] ?? 'br-badge-blue'; ?>"><?= esc_html(ucwords(str_replace('_',' ',$o->status))); ?></span>
+						<?php if($o->status !== 'sent'){ $reason = BR_Tremendous::describeFailure($o->api_response); ?>
+							<?php if($reason){ ?>
+								<div class="br-order-reason"><?= esc_html($reason); ?></div>
+							<?php } ?>
+						<?php } ?>
 					</td>
 					<td class="text-center">
 						<span class="br-badge <?= $o->sandbox ? 'br-badge-amber' : 'br-badge-green'; ?>"><?= $o->sandbox ? __("Sandbox","bluerabbit") : __("Production","bluerabbit"); ?></span>

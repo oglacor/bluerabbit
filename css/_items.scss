@@ -598,3 +598,17 @@ nav.tab-nav{
     margin: 0 0 4px;
   }
 }
+
+
+// ── Tremendous order failure reason ────────────────────────
+// Sits under the status badge in the orders log. Deliberately readable rather than
+// truncated: it carries Tremendous's own field-level complaint, which is the whole
+// point of showing it.
+.br-order-reason {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: $br-red;
+  text-align: left;
+  word-break: break-word;
+}
