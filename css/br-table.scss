@@ -95,6 +95,34 @@ max-width: 1440px;
   font-size: 13px;
   color: rgba($br-white, 0.8);
   cursor: pointer;
+
+  &.br-catalog-hidden { display: none; }
+}
+
+// A live Tremendous account returns thousands of products. Bounded height plus a filter
+// turns that from an unusable wall into a list; without it the page simply never ends.
+.br-catalog-list {
+  max-height: 320px;
+  overflow-y: auto;
+
+  &:not(:empty) {
+    margin-top: 8px;
+    padding: 4px 10px;
+    border: 1px solid $br-border;
+    border-radius: $radius-sm;
+  }
+}
+
+.br-catalog-search {
+  max-width: 260px;
+}
+
+.br-catalog-currency {
+  margin-left: auto;
+  padding-left: 10px;
+  font-size: 11px;
+  color: rgba($br-white, 0.45);
+  white-space: nowrap;
 }
 
 .br-panel-title {
@@ -247,6 +275,35 @@ max-width: 1440px;
 .br-badge-amber  { @include badge-color($br-amber); }
 .br-badge-purple { @include badge-color($br-purple); }
 .br-badge-teal   { @include badge-color($br-teal); }
+
+// ── Panel notes ──────────────────────────────────────────
+// An inline status line inside a panel - account balance, a missing-setup warning.
+// Informational by default; -alert when the operator has to act.
+
+.br-panel-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: $radius-sm;
+  border-left: 3px solid $br-primary;
+  background: rgba(28, 194, 235, 0.08);
+  font-size: 13px;
+  line-height: 1.5;
+
+  .icon {
+    flex-shrink: 0;
+    color: $br-primary;
+  }
+
+  &.br-panel-note-alert {
+    border-left-color: $br-red;
+    background: rgba(244, 67, 54, 0.08);
+
+    .icon { color: $br-red; }
+  }
+}
 
 // ── Global button reset (kills Windows-native appearance) ─
 

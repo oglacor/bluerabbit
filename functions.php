@@ -2374,6 +2374,67 @@ function br_migrate_tremendous_schema() {
 		) $charset_collate");
 	}
 
+	// Webhook signing secret. Tremendous hands this back once, when the webhook is
+	// created, and every delivery is signed with it - so it is a credential and stored
+	// the same encrypted way as the API key, not in plain text alongside it.
+	$config_cols = $wpdb->get_col("SHOW COLUMNS FROM $config_table");
+	if (!in_array('webhook_secret_enc', $config_cols)) {
+		$wpdb->query("ALTER TABLE $config_table ADD COLUMN `webhook_secret_enc` TEXT NULL");
+	}
+
+	// An order's life does not end at 'sent'. Tremendous delivers asynchronously and the
+	// card can still bounce, be cancelled, or sit unclaimed for months - none of which we
+	// could see before. status stays the local send outcome; delivery_status is whatever
+	// Tremendous last told us.
+	$order_cols = $wpdb->get_col("SHOW COLUMNS FROM $orders_table");
+	if (!in_array('delivery_status', $order_cols)) {
+		$wpdb->query("ALTER TABLE $orders_table ADD COLUMN `delivery_status` VARCHAR(40) DEFAULT NULL");
+	}
+	// An order and the reward inside it have different ids, and it is the REWARD id that
+	// the dashboard deep-links to and that webhook payloads carry. Storing only one of
+	// them meant the link in the orders log pointed at nothing.
+	if (!in_array('tremendous_reward_id', $order_cols)) {
+		$wpdb->query("ALTER TABLE $orders_table ADD COLUMN `tremendous_reward_id` VARCHAR(255) DEFAULT NULL");
+		$wpdb->query("ALTER TABLE $orders_table ADD KEY `reward_id` (`tremendous_reward_id`)");
+		// Already-sent orders stored the whole response, so the reward id they were
+		// missing is recoverable rather than lost.
+		$wpdb->query("UPDATE $orders_table
+			SET tremendous_reward_id = JSON_UNQUOTE(JSON_EXTRACT(api_response, '$.order.rewards[0].id'))
+			WHERE tremendous_reward_id IS NULL
+			  AND api_response IS NOT NULL
+			  AND JSON_VALID(api_response)
+			  AND JSON_EXTRACT(api_response, '$.order.rewards[0].id') IS NOT NULL");
+	}
+	if (!in_array('last_event', $order_cols)) {
+		$wpdb->query("ALTER TABLE $orders_table ADD COLUMN `last_event` VARCHAR(60) DEFAULT NULL");
+	}
+	if (!in_array('last_event_at', $order_cols)) {
+		$wpdb->query("ALTER TABLE $orders_table ADD COLUMN `last_event_at` DATETIME DEFAULT NULL");
+	}
+
+	// Every webhook delivery lands here first, matched or not, verified or not. This
+	// integration has already lost three separate error messages by discarding what the
+	// API said; a public endpoint receiving unrecognised event types is exactly where
+	// that happens again, so nothing is dropped - it is stored and left visible.
+	$events_table = "{$prefix}br_tremendous_events";
+	if ($wpdb->get_var("SHOW TABLES LIKE '$events_table'") !== $events_table) {
+		$wpdb->query("CREATE TABLE $events_table (
+			`event_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`event_type` VARCHAR(60) DEFAULT NULL,
+			`tremendous_id` VARCHAR(255) DEFAULT NULL,
+			`external_id` VARCHAR(255) DEFAULT NULL,
+			`matched_order_id` BIGINT DEFAULT NULL,
+			`signature_valid` TINYINT(1) NOT NULL DEFAULT 0,
+			`applied` TINYINT(1) NOT NULL DEFAULT 0,
+			`note` VARCHAR(255) DEFAULT NULL,
+			`payload` LONGTEXT DEFAULT NULL,
+			`received_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`event_id`),
+			KEY `matched_order_id` (`matched_order_id`),
+			KEY `received_at` (`received_at`)
+		) $charset_collate");
+	}
+
 	$item_cols = $wpdb->get_col("SHOW COLUMNS FROM {$prefix}br_items");
 	if (!in_array('item_tremendous_enabled', $item_cols)) {
 		$wpdb->query("ALTER TABLE {$prefix}br_items ADD COLUMN `item_tremendous_enabled` TINYINT(1) NOT NULL DEFAULT 0");
@@ -3053,6 +3114,17 @@ add_action("wp_ajax_assignItem", [BR_Item::instance(), 'assignItem']);
 add_action("wp_ajax_br_tremendous_save_config", [BR_Tremendous::instance(), 'ajax_save_config']);
 add_action("wp_ajax_br_tremendous_test_connection", [BR_Tremendous::instance(), 'ajax_test_connection']);
 add_action("wp_ajax_br_tremendous_get_catalog", [BR_Tremendous::instance(), 'ajax_get_catalog']);
+
+// Public by necessity - Tremendous has no credentials of ours to present, so the HMAC
+// signature on the body is the authentication, checked inside the handler. Events that
+// do not verify are recorded and never applied.
+add_action( 'rest_api_init', function () {
+	register_rest_route( BR_Tremendous::WEBHOOK_ROUTE, BR_Tremendous::WEBHOOK_PATH, [
+		'methods'             => 'POST',
+		'callback'            => [ BR_Tremendous::instance(), 'handleWebhook' ],
+		'permission_callback' => '__return_true',
+	] );
+} );
 add_action("wp_ajax_pickupItem", [BR_Item::instance(), 'pickupItem']);
 add_action("wp_ajax_checkItem", [BR_Item::instance(), 'checkItem']);
 add_action("wp_ajax_useItem", [BR_Item::instance(), 'useItem']);
@@ -3210,7 +3282,7 @@ add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
  * a migration is added or changed; deleting the br_schema_version option forces a
  * re-run.
  */
-define( 'BR_SCHEMA_VERSION', '2026-08-06.2' );
+define( 'BR_SCHEMA_VERSION', '2026-08-07.1' );
 
 function br_run_schema_migrations() {
 	if ( get_option( 'br_schema_version' ) === BR_SCHEMA_VERSION ) return;

@@ -21,6 +21,30 @@ $status_badges = array(
 	'failed'            => 'br-badge-red',
 	'duplicate_blocked' => 'br-badge-purple',
 );
+
+// 'sent' only means Tremendous accepted the order. Delivery happens afterwards and can
+// still fail, so the two are shown as separate columns rather than one status that
+// silently stops being true.
+$delivery_badges = array(
+	'delivered' => 'br-badge-green',
+	'redeemed'  => 'br-badge-green',
+	'failed'    => 'br-badge-red',
+	'canceled'  => 'br-badge-red',
+	'refunded'  => 'br-badge-purple',
+);
+
+$tremendous_config  = BR_Tremendous::instance()->getConfig($adventure->adventure_id);
+$webhook_configured = $tremendous_config && !empty($tremendous_config->webhook_secret);
+
+// Events that arrived but could not be attributed or verified. Surfaced because a
+// webhook silently landing in a table nobody reads is the same as no webhook at all.
+$unapplied = $wpdb->get_results($wpdb->prepare(
+	"SELECT e.* FROM {$wpdb->prefix}br_tremendous_events e
+	 LEFT JOIN {$wpdb->prefix}br_tremendous_orders o ON o.order_id = e.matched_order_id
+	 WHERE e.applied = 0 AND (o.adventure_id = %d OR e.matched_order_id IS NULL)
+	 ORDER BY e.event_id DESC LIMIT 10",
+	$adventure->adventure_id
+));
 ?>
 
 <div class="br-page">
@@ -54,6 +78,7 @@ $status_badges = array(
 					<th><?= __("Item","bluerabbit"); ?></th>
 					<th class="text-center"><?= __("Amount","bluerabbit"); ?></th>
 					<th class="text-center"><?= __("Status","bluerabbit"); ?></th>
+					<th class="text-center"><?= __("Delivery","bluerabbit"); ?></th>
 					<th class="text-center"><?= __("Mode","bluerabbit"); ?></th>
 					<th><?= __("Tremendous","bluerabbit"); ?></th>
 				</tr>
@@ -83,12 +108,31 @@ $status_badges = array(
 						<?php } ?>
 					</td>
 					<td class="text-center">
+						<?php if($o->delivery_status){ ?>
+							<span class="br-badge <?= $delivery_badges[$o->delivery_status] ?? 'br-badge-blue'; ?>"><?= esc_html(ucwords($o->delivery_status)); ?></span>
+							<?php if($o->last_event_at){ ?>
+								<div class="br-text-12-muted"><?= date('M j, g:i A', strtotime($o->last_event_at)); ?></div>
+							<?php } ?>
+						<?php }elseif($o->status === 'sent'){ ?>
+							<span class="br-text-12-muted"><?= $webhook_configured ? __("Awaiting update","bluerabbit") : __("No webhook set up","bluerabbit"); ?></span>
+						<?php }else{ ?>
+							<span class="br-text-12-muted">&mdash;</span>
+						<?php } ?>
+					</td>
+					<td class="text-center">
 						<span class="br-badge <?= $o->sandbox ? 'br-badge-amber' : 'br-badge-green'; ?>"><?= $o->sandbox ? __("Sandbox","bluerabbit") : __("Production","bluerabbit"); ?></span>
 					</td>
 					<td>
-						<?php if($o->tremendous_order_id){ ?>
-							<a href="<?= esc_url($rewards_host . '/rewards/' . $o->tremendous_order_id); ?>" target="_blank" class="br-action-link">
-								<span class="icon icon-link"></span> <?= esc_html($o->tremendous_order_id); ?>
+						<?php if($o->tremendous_reward_id || $o->tremendous_order_id){
+							// The dashboard addresses rewards, not orders. Older rows only
+							// have the order id - link those to the order instead of
+							// building a /rewards/ URL that will 404.
+							$link = $o->tremendous_reward_id
+								? $rewards_host . '/rewards/' . $o->tremendous_reward_id
+								: $rewards_host . '/orders/' . $o->tremendous_order_id;
+						?>
+							<a href="<?= esc_url($link); ?>" target="_blank" class="br-action-link">
+								<span class="icon icon-link"></span> <?= esc_html($o->tremendous_reward_id ?: $o->tremendous_order_id); ?>
 							</a>
 						<?php }else{ ?>
 							<span class="br-text-12-muted">&mdash;</span>
@@ -96,11 +140,47 @@ $status_badges = array(
 					</td>
 				</tr>
 				<?php } }else{ ?>
-				<tr><td colspan="7" class="text-center"><?= __("No Tremendous orders yet.","bluerabbit"); ?></td></tr>
+				<tr><td colspan="8" class="text-center"><?= __("No Tremendous orders yet.","bluerabbit"); ?></td></tr>
 				<?php } ?>
 			</tbody>
 		</table>
 	</div>
+
+	<?php if(!$webhook_configured){ ?>
+	<div class="br-panel">
+		<div class="br-panel-note br-panel-note-alert">
+			<span class="icon icon-cancel"></span>
+			<span><?= __("No webhook signing secret is saved for this adventure, so delivery updates cannot be trusted and are not applied. Add the webhook in your Tremendous dashboard and paste its secret into the adventure's Tremendous settings.","bluerabbit"); ?></span>
+		</div>
+	</div>
+	<?php } ?>
+
+	<?php if($unapplied){ ?>
+	<div class="br-panel">
+		<h3 class="br-panel-title"><span class="icon icon-cancel"></span> <?= __("Webhook events not applied","bluerabbit"); ?></h3>
+		<span class="br-form-hint"><?= __("Received and stored, but not acted on. Nothing is discarded - if an event type is unrecognised or a signature did not verify, it shows up here.","bluerabbit"); ?></span>
+		<table class="br-table">
+			<thead>
+				<tr>
+					<th><?= __("Received","bluerabbit"); ?></th>
+					<th><?= __("Event","bluerabbit"); ?></th>
+					<th><?= __("Reference","bluerabbit"); ?></th>
+					<th><?= __("Why not applied","bluerabbit"); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach($unapplied as $e){ ?>
+				<tr>
+					<td><?= date('M j, g:i A', strtotime($e->received_at)); ?></td>
+					<td><?= esc_html($e->event_type ?: '—'); ?></td>
+					<td class="br-text-12-muted"><?= esc_html($e->external_id ?: ($e->tremendous_id ?: '—')); ?></td>
+					<td class="br-order-reason"><?= esc_html($e->note ?: '—'); ?></td>
+				</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+	</div>
+	<?php } ?>
 
 </div>
 

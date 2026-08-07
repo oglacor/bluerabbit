@@ -243,11 +243,22 @@ if($adventure && ($isGM || $isAdmin)){
 
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Products (what the player can choose from)","bluerabbit"); ?></label>
-				<span class="br-form-hint"><?= __("Leave empty to let the player choose from every product available on your Tremendous account.","bluerabbit"); ?></span>
+
+				<?php if($tremendous_config && !empty($tremendous_config->campaign_id)){ ?>
+					<div class="br-panel-note">
+						<span class="icon icon-check"></span>
+						<span><?= sprintf(__("This adventure uses Tremendous campaign %s, which already defines the catalogue every gift card offers. Leave this empty - there is nothing to pick here unless you want THIS item restricted to a shorter list than the campaign.","bluerabbit"), '<strong>' . esc_html($tremendous_config->campaign_id) . '</strong>'); ?></span>
+					</div>
+				<?php }else{ ?>
+					<span class="br-form-hint"><?= __("Pick nothing and Tremendous has no catalogue to offer, and the purchase is refused. Either choose products here, or - far easier - set a Campaign ID once in the adventure's Tremendous settings and every gift card inherits it.","bluerabbit"); ?></span>
+				<?php } ?>
+
 				<div class="br-actions">
 					<button type="button" class="br-btn cond-opt cond-opt-gift-card" onClick="brLoadTremendousCatalog();"><?= __("Load Catalog","bluerabbit"); ?></button>
+					<input type="search" class="br-input br-catalog-search br-initially-hidden" id="tremendous-catalog-search" placeholder="<?= __("Filter products…","bluerabbit"); ?>">
+					<span class="br-text-12-muted br-initially-hidden" id="tremendous-catalog-count"></span>
 				</div>
-				<div id="tremendous-catalog-list" class="br-form-hint"></div>
+				<div id="tremendous-catalog-list" class="br-catalog-list"></div>
 				<input type="hidden" id="the_item_tremendous_products" value="<?= esc_attr(wp_json_encode($item_tremendous_products)); ?>">
 			</div>
 		</div>

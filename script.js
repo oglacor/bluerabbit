@@ -4724,6 +4724,7 @@ function brSaveTremendousConfig() {
             nonce: $('#nonce').val(),
             adventure_id: $('#the_adventure_id').val(),
             api_key: $('#the_tremendous_api_key').val(),
+            webhook_secret: $('#the_tremendous_webhook_secret').val(),
             sandbox_mode: $('#the_tremendous_sandbox_mode').val(),
             funding_source_id: $('#the_tremendous_funding_source').val(),
             campaign_id: $('#the_tremendous_campaign_id').val(),
@@ -4731,7 +4732,10 @@ function brSaveTremendousConfig() {
         },
         success: function(raw) {
             displayAjaxResponse(raw);
+            // Both fields are write-only: a blank submission means "keep what's stored",
+            // so clearing them after a save keeps the next save from resending them.
             $('#the_tremendous_api_key').val('');
+            $('#the_tremendous_webhook_secret').val('');
         }
     });
 }
@@ -4762,12 +4766,24 @@ function brLoadTremendousCatalog() {
             let html = '';
             data.products.forEach(function(p) {
                 let checked = selected.indexOf(p.id) >= 0 ? 'checked' : '';
-                html += '<label class="br-tremendous-product-option">' +
+                // Currencies go in the label because a product that doesn't support the
+                // adventure's currency will be rejected at send time, and that is far
+                // cheaper to notice here than in a failed order.
+                let currencies = (p.currency_codes || []).join(', ');
+                html += '<label class="br-tremendous-product-option" data-search="' +
+                    ((p.name || p.id) + ' ' + currencies).toLowerCase().replace(/"/g, '') + '">' +
                     '<input type="checkbox" class="tremendous-product-checkbox" value="' + p.id + '" ' + checked + '> ' +
-                    (p.name || p.id) + '</label>';
+                    '<span>' + (p.name || p.id) + '</span>' +
+                    (currencies ? '<span class="br-catalog-currency">' + currencies + '</span>' : '') +
+                    '</label>';
             });
             $('#tremendous-catalog-list').html(html);
             $('.tremendous-product-checkbox').on('change', brSyncTremendousProducts);
+            // A real account returns thousands of products. An unfiltered wall of
+            // checkboxes is not a list anyone can use, so the search is shown only once
+            // there is something to search.
+            $('#tremendous-catalog-search, #tremendous-catalog-count').removeClass('br-initially-hidden');
+            brFilterTremendousCatalog();
         }
     });
 }
@@ -4778,7 +4794,29 @@ function brSyncTremendousProducts() {
         selected.push($(this).val());
     });
     $('#the_item_tremendous_products').val(JSON.stringify(selected));
+    brFilterTremendousCatalog();
 }
+
+function brFilterTremendousCatalog() {
+    let term = ($('#tremendous-catalog-search').val() || '').toLowerCase().trim();
+    let shown = 0, total = 0;
+    $('#tremendous-catalog-list .br-tremendous-product-option').each(function() {
+        total++;
+        let match = !term || ($(this).data('search') || '').indexOf(term) >= 0;
+        // Never hide a ticked product: filtering it out of sight while it stays in the
+        // saved list is how someone ends up not knowing what an item actually offers.
+        if (!match && $(this).find('input').is(':checked')) match = true;
+        $(this).toggleClass('br-catalog-hidden', !match);
+        if (match) shown++;
+    });
+    let picked = $('#tremendous-catalog-list input:checked').length;
+    $('#tremendous-catalog-count').text(
+        (term ? shown + ' of ' + total : total + ' products') +
+        (picked ? ' · ' + picked + ' selected' : ' · none selected (campaign applies)')
+    );
+}
+
+jQuery(document).on('input', '#tremendous-catalog-search', brFilterTremendousCatalog);
 
 function brTestTremendousConnection() {
     showLoader();

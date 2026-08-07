@@ -29,9 +29,10 @@ class BR_Tremendous {
             $adventure_id
         ));
         if (!$row) return null;
-        // Decrypted key only ever lives on this runtime property - never echoed back
-        // to the browser in any AJAX response.
+        // Decrypted secrets only ever live on these runtime properties - never echoed
+        // back to the browser in any AJAX response.
         $row->api_key = $row->api_key_enc ? BR_Mailer::decrypt_key($row->api_key_enc) : '';
+        $row->webhook_secret = !empty($row->webhook_secret_enc) ? BR_Mailer::decrypt_key($row->webhook_secret_enc) : '';
         return $row;
     }
 
@@ -49,6 +50,9 @@ class BR_Tremendous {
         // alone" (the UI never round-trips the decrypted key back into this field).
         if (!empty($data['api_key'])) {
             $set['api_key_enc'] = BR_Mailer::encrypt_key($data['api_key']);
+        }
+        if (!empty($data['webhook_secret'])) {
+            $set['webhook_secret_enc'] = BR_Mailer::encrypt_key($data['webhook_secret']);
         }
 
         $existing_id = $wpdb->get_var($wpdb->prepare(
@@ -187,6 +191,84 @@ class BR_Tremendous {
         return $res['items'];
     }
 
+    // ── Funding + balance ─────────────────────────────────────────────────
+
+    // Not every funding source can pay for an API order. A real account carries both a
+    // 'balance' source and an invoice source whose usage_permissions are empty - offering
+    // the second one in the picker sets up a failure at send time for no reason.
+    // $sources lets a caller that already has the list filter it without paying for a
+    // second round trip.
+    public function usableFundingSources($adventure_id, $sources = null) {
+        if (!is_array($sources)) $sources = $this->getFundingSources($adventure_id);
+        return array_values(array_filter($sources, function ($s) {
+            $active = !isset($s['status']) || strtolower($s['status']) === 'active';
+            // No permissions key at all: assume usable rather than hide a source we simply
+            // don't understand. A key that IS present is authoritative - and an empty list
+            // means no permissions, not "unknown", which is exactly what a real account's
+            // invoice source looks like.
+            $perms   = array_key_exists('usage_permissions', $s) ? $s['usage_permissions'] : null;
+            $allowed = !is_array($perms) || in_array('api_orders', $perms, true);
+            return $active && $allowed;
+        }));
+    }
+
+    // The config stores the literal 'BALANCE' as its default, but an order has to name a
+    // real funding source id. Resolve it at send time so an adventure that was never
+    // taken through Test Connection still pays from the account balance.
+    private function resolveFundingSourceId($adventure_id, $configured) {
+        if ($configured && strtoupper($configured) !== 'BALANCE') return $configured;
+        foreach ($this->usableFundingSources($adventure_id) as $s) {
+            if (strtolower($s['method'] ?? '') === 'balance') return $s['id'];
+        }
+        return $configured;
+    }
+
+    // Returns ['known'=>bool, 'amount'=>float, 'currency'=>string, 'id'=>string] for the
+    // configured source. Cached briefly: this is consulted on every purchase, and a live
+    // round trip per gift card would put Tremendous's latency inside the player's click.
+    // The cache is only ever used to REFUSE early - a stale value can never authorise a
+    // send, because Tremendous re-checks the balance itself and we surface what it says.
+    public function fundingBalance($adventure_id, $use_cache = true) {
+        $key = 'br_tremendous_balance_' . (int) $adventure_id;
+        if ($use_cache) {
+            $cached = get_transient($key);
+            if (is_array($cached)) return $cached;
+        }
+
+        $out = array('known' => false, 'amount' => 0.0, 'currency' => '', 'id' => '');
+        $config = $this->getConfig($adventure_id);
+        if (!$config) return $out;
+
+        $wanted = $config->funding_source_id;
+        foreach ($this->usableFundingSources($adventure_id) as $s) {
+            $is_match = (strtoupper((string) $wanted) === 'BALANCE')
+                ? strtolower($s['method'] ?? '') === 'balance'
+                : ($s['id'] ?? '') === $wanted;
+            if (!$is_match) continue;
+
+            // available_amount is the same figure as available_cents/100; prefer the
+            // explicit one and fall back rather than assuming either is present.
+            $meta = $s['meta'] ?? array();
+            if (isset($meta['available_amount'])) {
+                $out['amount'] = (float) $meta['available_amount'];
+                $out['known']  = true;
+            } elseif (isset($meta['available_cents'])) {
+                $out['amount'] = ((float) $meta['available_cents']) / 100;
+                $out['known']  = true;
+            }
+            $out['currency'] = $meta['currency_code'] ?? '';
+            $out['id']       = $s['id'] ?? '';
+            break;
+        }
+
+        set_transient($key, $out, 5 * MINUTE_IN_SECONDS);
+        return $out;
+    }
+
+    public function forgetBalance($adventure_id) {
+        delete_transient('br_tremendous_balance_' . (int) $adventure_id);
+    }
+
     // Three outcomes the old version collapsed into a single "couldn't connect": not
     // configured, rejected by Tremendous, and connected-but-no-funding-sources. Only the
     // middle one is a credentials problem, and an empty account reported as a connection
@@ -200,8 +282,144 @@ class BR_Tremendous {
             return array('success' => true, 'funding_sources' => array(), 'color' => 'blue',
                 'message' => __('Connected - but this Tremendous account has no funding sources yet. Add one in your Tremendous dashboard before configuring a gift-card item.', 'bluerabbit'));
         }
-        return array('success' => true, 'funding_sources' => $res['items'], 'color' => 'green',
-            'message' => sprintf(_n('Connected! %d funding source found.', 'Connected! %d funding sources found.', count($res['items']), 'bluerabbit'), count($res['items'])));
+
+        // A real account also carries sources that cannot pay for an API order - an
+        // invoice source with empty usage_permissions, for one. Offering those in the
+        // picker only sets up a failure at send time.
+        $usable = $this->usableFundingSources($adventure_id, $res['items']);
+        if (!$usable) {
+            return array('success' => false, 'funding_sources' => array(), 'color' => 'red',
+                'message' => sprintf(__('Connected, but none of this account\'s %d funding sources can pay for API orders. Check their permissions in your Tremendous dashboard.', 'bluerabbit'), count($res['items'])));
+        }
+
+        $hidden = count($res['items']) - count($usable);
+        return array('success' => true, 'funding_sources' => $usable, 'color' => 'green',
+            'message' => sprintf(_n('Connected! %d usable funding source found.', 'Connected! %d usable funding sources found.', count($usable), 'bluerabbit'), count($usable))
+                . ($hidden > 0 ? ' ' . sprintf(_n('(%d other cannot pay for API orders.)', '(%d others cannot pay for API orders.)', $hidden, 'bluerabbit'), $hidden) : ''));
+    }
+
+    // ── Webhooks ──────────────────────────────────────────────────────────
+
+    const WEBHOOK_ROUTE = 'bluerabbit/v1';
+    const WEBHOOK_PATH  = '/tremendous-webhook';
+
+    public static function webhookUrl() {
+        return rest_url(self::WEBHOOK_ROUTE . self::WEBHOOK_PATH);
+    }
+
+    // Tremendous signs each delivery with the secret it returns once, at webhook-creation
+    // time. Compared with hash_equals because a timing-safe compare is the entire point of
+    // an HMAC: a byte-at-a-time == would leak the expected digest to anyone allowed to
+    // POST here, and this endpoint is public by necessity.
+    private function signatureMatches($raw_body, $secret, $provided) {
+        if ($secret === '' || $provided === '') return false;
+        // Accept both a bare hex digest and the "sha256=..." form; which one arrives is a
+        // detail of the sender, not something worth rejecting a real event over.
+        $provided = trim($provided);
+        if (stripos($provided, 'sha256=') === 0) $provided = substr($provided, 7);
+        return hash_equals(hash_hmac('sha256', $raw_body, $secret), strtolower($provided));
+    }
+
+    // Maps an event name onto a delivery state without hard-coding Tremendous's exact
+    // vocabulary. The names are matched by substring on purpose: this integration cannot
+    // verify the full event list without a live webhook, and an unrecognised event is
+    // recorded and flagged rather than guessed at or dropped.
+    private function deliveryStateFor($event) {
+        $e = strtoupper((string) $event);
+        if (strpos($e, 'FAIL') !== false)                                   return 'failed';
+        if (strpos($e, 'CANCEL') !== false)                                 return 'canceled';
+        if (strpos($e, 'REFUND') !== false)                                 return 'refunded';
+        if (strpos($e, 'REDEEM') !== false)                                 return 'redeemed';
+        if (strpos($e, 'DELIVER') !== false || strpos($e, 'SENT') !== false) return 'delivered';
+        return '';
+    }
+
+    // Pull the first value for any of $keys anywhere in a nested payload. Tremendous nests
+    // the reward differently per event type and the shapes are not all known here, so this
+    // searches rather than assuming a path.
+    private function digUp($node, array $keys) {
+        if (!is_array($node)) return null;
+        foreach ($keys as $k) {
+            if (isset($node[$k]) && is_scalar($node[$k]) && $node[$k] !== '') return (string) $node[$k];
+        }
+        foreach ($node as $value) {
+            if (is_array($value)) {
+                $found = $this->digUp($value, $keys);
+                if ($found !== null) return $found;
+            }
+        }
+        return null;
+    }
+
+    // Public endpoint. Always 200s once the body is stored: a webhook sender that gets an
+    // error retries, and retrying will not fix an event we simply don't recognise. What
+    // matters is that every delivery is durable and visible in br_tremendous_events.
+    public function handleWebhook($request) {
+        global $wpdb;
+
+        $raw     = $request->get_body();
+        $data    = json_decode($raw, true);
+        $data    = is_array($data) ? $data : array();
+        $event   = $this->digUp($data, array('event', 'event_type', 'type'));
+        $ext_id  = $this->digUp($data, array('external_id'));
+        $trem_id = $this->digUp($data, array('reward_id', 'order_id', 'id'));
+
+        $order = null;
+        if ($ext_id) {
+            $order = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}br_tremendous_orders WHERE tremendous_external_id=%s", $ext_id));
+        }
+        if (!$order && $trem_id) {
+            // Could be either identifier depending on which object the event is about.
+            $order = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}br_tremendous_orders WHERE tremendous_reward_id=%s OR tremendous_order_id=%s",
+                $trem_id, $trem_id));
+        }
+
+        // The signing secret is per-adventure, and the adventure is only known once the
+        // order is matched. An event we cannot attribute is therefore never trusted.
+        $valid = false;
+        if ($order) {
+            $config = $this->getConfig($order->adventure_id);
+            $secret = ($config && !empty($config->webhook_secret)) ? $config->webhook_secret : '';
+            foreach (array('tremendous-webhook-signature', 'x-tremendous-signature', 'x-signature') as $header) {
+                if ($this->signatureMatches($raw, $secret, (string) $request->get_header($header))) { $valid = true; break; }
+            }
+        }
+
+        $state   = $this->deliveryStateFor($event);
+        $applied = false;
+        $note    = '';
+
+        if (!$order) {
+            $note = 'no matching order';
+        } elseif (!$valid) {
+            // Recorded, never acted on. Without a verified signature anyone who finds this
+            // URL could mark rewards delivered or refunded at will.
+            $note = 'signature not verified - event stored but not applied';
+        } elseif (!$state) {
+            $note = 'unrecognised event type';
+        } else {
+            $wpdb->update("{$wpdb->prefix}br_tremendous_orders", array(
+                'delivery_status' => $state,
+                'last_event'      => (string) $event,
+                'last_event_at'   => current_time('mysql'),
+            ), array('order_id' => $order->order_id));
+            $applied = true;
+        }
+
+        $wpdb->insert("{$wpdb->prefix}br_tremendous_events", array(
+            'event_type'       => $event ? substr((string) $event, 0, 60) : null,
+            'tremendous_id'    => $trem_id,
+            'external_id'      => $ext_id,
+            'matched_order_id' => $order ? $order->order_id : null,
+            'signature_valid'  => $valid ? 1 : 0,
+            'applied'          => $applied ? 1 : 0,
+            'note'             => $note ?: null,
+            'payload'          => $raw,
+        ));
+
+        return new WP_REST_Response(array('received' => true, 'applied' => $applied), 200);
     }
 
     // ── The main send ─────────────────────────────────────────────────────
@@ -239,6 +457,25 @@ class BR_Tremendous {
         }
         if (!$products && empty($config->campaign_id)) {
             return array('success' => false, 'error' => 'no_products', 'message' => __("This gift card isn't finished being set up - no Tremendous products or campaign have been chosen for it. Please contact your administrator.", 'bluerabbit'));
+        }
+
+        // Refuse a card the account cannot pay for, before the order row and the stock
+        // reservation exist. Tremendous would reject it anyway; the difference is that a
+        // campaign running out of funds otherwise fails one player at a time, each of them
+        // burning a reservation and leaving a 'failed' row, with nobody told why.
+        $balance = $this->fundingBalance($adventure_id);
+        if ($balance['known'] && (float) $item->item_tremendous_amount > $balance['amount']) {
+            // Cached figure - re-check live before refusing, so a top-up that happened in
+            // the last few minutes doesn't block a legitimate purchase.
+            $balance = $this->fundingBalance($adventure_id, false);
+        }
+        if ($balance['known'] && (float) $item->item_tremendous_amount > $balance['amount']) {
+            return array('success' => false, 'error' => 'insufficient_funds',
+                'message' => __('This reward is temporarily unavailable - the gift card account needs topping up. Please contact your administrator.', 'bluerabbit'),
+                'admin_detail' => sprintf(
+                    __('Tremendous balance is %1$s %2$s but this card costs %3$s.', 'bluerabbit'),
+                    number_format($balance['amount'], 2), $balance['currency'], number_format((float) $item->item_tremendous_amount, 2)
+                ));
         }
 
         // Always the player's own WP account email - no override parameter exists on
@@ -348,17 +585,28 @@ class BR_Tremendous {
             $reward['campaign_id'] = $config->campaign_id;
         }
         $order_payload = array(
-            'payment'     => array('funding_source_id' => $config->funding_source_id),
+            'payment'     => array('funding_source_id' => $this->resolveFundingSourceId($adventure_id, $config->funding_source_id)),
             'rewards'     => array($reward),
             'external_id' => $external_id,
         );
 
         $res = $this->apiRequest('POST', '/orders', $order_payload, $config->api_key, $config->sandbox_mode);
 
+        // Money moved either way - a success spent it, a failure may have been caused by
+        // not having it. Neither leaves the cached figure worth trusting.
+        $this->forgetBalance($adventure_id);
+
         if ($res['success']) {
-            $tremendous_order_id = $res['data']['order']['reward']['id'] ?? ($res['data']['order']['id'] ?? null);
+            // Confirmed against a real response: the order carries `rewards` (an ARRAY),
+            // not `reward`. The previous singular lookup always missed and fell back to
+            // the order id, which then got used as a reward id - so the dashboard link in
+            // the orders log pointed at a reward that does not exist. They are two
+            // different identifiers and both are worth keeping.
+            $order = $res['data']['order'] ?? array();
+            $tremendous_order_id  = $order['id'] ?? null;
+            $tremendous_reward_id = $order['rewards'][0]['id'] ?? ($order['reward']['id'] ?? null);
             $wpdb->update("{$wpdb->prefix}br_tremendous_orders",
-                array('status' => 'sent', 'tremendous_order_id' => $tremendous_order_id, 'api_response' => wp_json_encode($res['data'])),
+                array('status' => 'sent', 'tremendous_order_id' => $tremendous_order_id, 'tremendous_reward_id' => $tremendous_reward_id, 'api_response' => wp_json_encode($res['data'])),
                 array('order_id' => $order_row_id)
             );
 
@@ -448,11 +696,15 @@ class BR_Tremendous {
 
         $ok = $this->saveConfig($adventure_id, array(
             'api_key'           => $_POST['api_key'] ?? '',
+            'webhook_secret'    => $_POST['webhook_secret'] ?? '',
             'sandbox_mode'      => $_POST['sandbox_mode'] ?? 0,
             'funding_source_id' => $_POST['funding_source_id'] ?? '',
             'campaign_id'       => $_POST['campaign_id'] ?? '',
             'currency_code'     => $_POST['currency_code'] ?? '',
         ));
+        // Mode, funding source or key may all have changed - the cached figure belonged
+        // to the old configuration.
+        $this->forgetBalance($adventure_id);
 
         $data['success'] = $ok;
         $data['message'] = $ok

@@ -1222,7 +1222,40 @@ $image_types = array(
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Campaign ID (optional)","bluerabbit"); ?></label>
 				<input type="text" class="br-input" id="the_tremendous_campaign_id" value="<?= esc_attr($tremendous_config->campaign_id ?? ''); ?>" placeholder="<?= __("For Tremendous-side branding","bluerabbit"); ?>">
+				<span class="br-form-hint"><?= __("Set this OR pick products on each gift-card item. Tremendous rejects an order that has neither.","bluerabbit"); ?></span>
 			</div>
+		</div>
+
+		<?php if($tremendous_config && $tremendous_config->api_key){
+			$br_balance = BR_Tremendous::instance()->fundingBalance($adventure->adventure_id);
+			if($br_balance['known']){
+				$br_low = $wpdb->get_var($wpdb->prepare("SELECT MAX(item_tremendous_amount) FROM {$wpdb->prefix}br_items WHERE adventure_id=%d AND item_tremendous_enabled=1 AND item_status='publish'", $adventure->adventure_id));
+				$br_short = $br_low && $br_balance['amount'] < (float) $br_low;
+		?>
+			<div class="br-panel-note <?= $br_short ? 'br-panel-note-alert' : ''; ?>">
+				<span class="icon icon-bloo"></span>
+				<span>
+					<?= sprintf(__("Tremendous balance: %1\$s %2\$s","bluerabbit"), number_format($br_balance['amount'], 2), esc_html($br_balance['currency'])); ?>
+					<?php if($br_short){ ?>
+						&mdash; <?= sprintf(__("below your largest gift card (%s). Purchases will be refused until it is topped up.","bluerabbit"), number_format((float) $br_low, 2)); ?>
+					<?php } ?>
+					<?php if($br_balance['currency'] && $br_balance['currency'] !== $tremendous_config->currency_code){ ?>
+						&mdash; <?= sprintf(__("note: the account is funded in %1\$s but cards are issued in %2\$s.","bluerabbit"), esc_html($br_balance['currency']), esc_html($tremendous_config->currency_code)); ?>
+					<?php } ?>
+				</span>
+			</div>
+		<?php } } ?>
+
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Webhook URL","bluerabbit"); ?></label>
+			<input type="text" readonly class="br-input" value="<?= esc_attr(BR_Tremendous::webhookUrl()); ?>">
+			<span class="br-form-hint"><?= __("Add this as a webhook in your Tremendous dashboard, then paste the signing secret it gives you below. Without it, delivery failures and redemptions stay invisible here.","bluerabbit"); ?></span>
+		</div>
+
+		<div class="br-form-group">
+			<label class="br-form-label"><?= __("Webhook Signing Secret","bluerabbit"); ?></label>
+			<input type="password" class="br-input" id="the_tremendous_webhook_secret" value="" placeholder="<?= $tremendous_config && !empty($tremendous_config->webhook_secret_enc) ? __('•••••••• (saved - leave blank to keep)','bluerabbit') : __('Paste the secret from the Tremendous webhook','bluerabbit'); ?>">
+			<span class="br-form-hint"><?= __("Events arriving without a valid signature are logged but never applied.","bluerabbit"); ?></span>
 		</div>
 
 		<div id="tremendous-connection-status"></div>
