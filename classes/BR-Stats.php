@@ -424,9 +424,11 @@ class BR_Stats {
     public function get_adventure_tabi_list( int $adventure_id ): array {
         global $wpdb;
         return $wpdb->get_results( $wpdb->prepare(
+            // Level order like every other tabi list, so the filter reads the same way as
+            // the Tabi lists the funnel is filtering.
             "SELECT tabi_id, tabi_name FROM {$wpdb->prefix}br_tabis
             WHERE adventure_id = %d AND tabi_status = 'publish'
-            ORDER BY tabi_id ASC",
+            ORDER BY tabi_level ASC, tabi_id ASC",
             $adventure_id
         ), ARRAY_A );
     }
@@ -525,8 +527,20 @@ class BR_Stats {
     public function get_player_tabi_progress( int $user_id, int $adventure_id ): array {
         global $wpdb;
         return $wpdb->get_results( $wpdb->prepare(
+            // Level order, matching BR_Tabi::getTabis() exactly - the milestone list on
+            // page-player-work sits directly above this panel and is already in tabi-level
+            // order, so ordering by insertion id here contradicted it on one screen.
+            // tabi_level is nullable and not unique, so tabi_id is a required tiebreaker;
+            // unlevelled tabis sort first, which is what every other tabi list does.
+            //
+            // Every selected tabi column is in the GROUP BY. MariaDB does no functional-
+            // dependency detection, so grouping by the primary key alone is rejected under
+            // ONLY_FULL_GROUP_BY even though it is unambiguous - tabi_name and tabi_color
+            // already tripped that before tabi_level was added here. Grouping by all of
+            // them changes no results (tabi_id is unique) and makes the query legal
+            // whatever sql_mode the server runs.
             "SELECT
-                t.tabi_id, t.tabi_name, t.tabi_color,
+                t.tabi_id, t.tabi_name, t.tabi_color, t.tabi_level,
                 COUNT(q.quest_id) AS total_quests,
                 COUNT(pp.quest_id) AS completed_quests
             FROM {$wpdb->prefix}br_tabis t
@@ -536,8 +550,8 @@ class BR_Stats {
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.player_id = %d AND pp.adventure_id = %d
             WHERE t.adventure_id = %d AND t.tabi_status = 'publish'
-            GROUP BY t.tabi_id
-            ORDER BY t.tabi_id ASC",
+            GROUP BY t.tabi_id, t.tabi_name, t.tabi_color, t.tabi_level
+            ORDER BY t.tabi_level ASC, t.tabi_id ASC",
             $user_id, $adventure_id, $adventure_id
         ), ARRAY_A );
     }
@@ -702,8 +716,10 @@ class BR_Stats {
         ) );
 
         $tabis = $wpdb->get_results( $wpdb->prepare(
+            // Same level ordering as get_player_tabi_progress() above, for the same
+            // reason - the two tabi panels on the stats page disagreed with each other.
             "SELECT
-                t.tabi_id, t.tabi_name, t.tabi_color,
+                t.tabi_id, t.tabi_name, t.tabi_color, t.tabi_level,
                 COUNT(DISTINCT q.quest_id) AS total_quests,
                 COUNT(pp.player_id) AS total_completions
             FROM {$wpdb->prefix}br_tabis t
@@ -718,8 +734,8 @@ class BR_Stats {
                       AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
                 )
             WHERE t.adventure_id = %d AND t.tabi_status = 'publish'
-            GROUP BY t.tabi_id
-            ORDER BY t.tabi_id ASC",
+            GROUP BY t.tabi_id, t.tabi_name, t.tabi_color, t.tabi_level
+            ORDER BY t.tabi_level ASC, t.tabi_id ASC",
             $adventure_id, $adventure_id
         ), ARRAY_A );
 
