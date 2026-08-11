@@ -702,10 +702,20 @@ window.brStats = {
 								</td>
 								<td class="text-center">#<?= (int) $csa->attempt_no; ?></td>
 								<td class="text-center">
-									<?php if ($csa->attempt_status == 'success') { ?>
-									<span class="br-badge br-badge-green"><span class="icon icon-check"></span> <?php _e("Pass", "bluerabbit"); ?></span>
-									<?php } else { ?>
-									<span class="br-badge br-badge-red"><span class="icon icon-cancel"></span> <?php _e("Fail", "bluerabbit"); ?></span>
+									<?php
+									// Four outcomes now, not two: a run can also still be
+									// open, or have been left without ever being finished.
+									$cs_badges = [
+										'success'     => ['br-badge-green', 'icon-check',  __("Pass", "bluerabbit")],
+										'fail'        => ['br-badge-red',   'icon-cancel', __("Fail", "bluerabbit")],
+										'in_progress' => ['br-badge-blue',  'icon-rotate', __("In progress", "bluerabbit")],
+										'abandoned'   => ['br-badge-amber', 'icon-cancel', __("Abandoned", "bluerabbit")],
+									];
+									list($cs_bcls, $cs_bico, $cs_blabel) = $cs_badges[$csa->attempt_status] ?? $cs_badges['fail'];
+									?>
+									<span class="br-badge <?= $cs_bcls; ?>"><span class="icon <?= $cs_bico; ?>"></span> <?= esc_html($cs_blabel); ?></span>
+									<?php if (in_array($csa->attempt_status, ['abandoned', 'in_progress'], true) && $csa->total_questions) { ?>
+									<div class="br-text-12-muted"><?= sprintf(__("reached %d of the questions", "bluerabbit"), (int) $csa->total_questions); ?></div>
 									<?php } ?>
 								</td>
 								<td class="text-center">

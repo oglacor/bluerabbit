@@ -84,6 +84,11 @@
                 action:  'br_casestudy_progress',
                 nonce:   state.nonce,
                 step_id: state.stepId,
+                // The quest and adventure travel with progress saves too now: an attempt
+                // row is opened on the first save of a run, and it cannot be filed against
+                // a milestone the server was never told about.
+                quest_id:     state.questId,
+                adventure_id: state.adventureId,
                 state:   JSON.stringify(payload)
             });
         };
@@ -204,9 +209,10 @@
         if (!seed || typeof jQuery === 'undefined' || typeof runAJAX === 'undefined') return;
 
         jQuery.post(runAJAX.ajaxurl, {
-            action:  'br_casestudy_retake',
-            nonce:   seed.nonce,
-            step_id: stepId
+            action:       'br_casestudy_retake',
+            nonce:        seed.nonce,
+            step_id:      stepId,
+            adventure_id: seed.adventureId
         }, function (raw) {
             var res = (typeof raw === 'string') ? JSON.parse(raw) : raw;
             if (!res || !res.success) return;

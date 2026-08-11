@@ -202,23 +202,45 @@ foreach ($pa_steps as $pa_index => $pa_step) {
 				 LIMIT 1",
 				$pa_player_id, $pa_step->step_id, $pa_child_id
 			));
-			$pa_cs_runs = (int) $wpdb->get_var($wpdb->prepare(
-				"SELECT COUNT(*) FROM {$wpdb->prefix}br_casestudy_attempts
+			// Counted apart, because the step row's own ps_attempt only ever counts runs
+			// that reached the end - showing that next to a total that includes walked-
+			// away-from runs reads as two different answers to the same question.
+			$pa_cs_counts = $wpdb->get_row($wpdb->prepare(
+				"SELECT
+				   SUM(attempt_status IN ('success','fail')) AS finished,
+				   SUM(attempt_status IN ('in_progress','abandoned')) AS unfinished
+				 FROM {$wpdb->prefix}br_casestudy_attempts
 				 WHERE player_id = %d AND step_id = %d AND adventure_id = %d",
 				$pa_player_id, $pa_step->step_id, $pa_child_id
 			));
+			$pa_cs_runs   = (int) ($pa_cs_counts->finished ?? 0);
+			$pa_cs_unfin  = (int) ($pa_cs_counts->unfinished ?? 0);
 			if ($pa_cs) {
 				$pa_answered = true;
-				$pa_cls = ($pa_cs->attempt_status === 'success') ? 'br-answer-correct' : 'br-answer-wrong';
+				// A run that was never finished is not the same as one that was failed,
+				// and saying "not passed" for a case study the player walked out of
+				// misreports what happened.
+				$pa_unfinished = in_array($pa_cs->attempt_status, ['in_progress', 'abandoned'], true);
+				if ($pa_cs->attempt_status === 'success') {
+					$pa_cls = 'br-answer-correct'; $pa_ico = 'icon-check'; $pa_lbl = __("Passed", "bluerabbit");
+				} elseif ($pa_unfinished) {
+					$pa_cls = 'br-answer-neutral'; $pa_ico = 'icon-rotate';
+					$pa_lbl = ($pa_cs->attempt_status === 'abandoned') ? __("Started, not finished", "bluerabbit") : __("In progress", "bluerabbit");
+				} else {
+					$pa_cls = 'br-answer-wrong'; $pa_ico = 'icon-cancel'; $pa_lbl = __("Not passed", "bluerabbit");
+				}
 				$pa_answer_html = '<span class="br-answer-pill ' . $pa_cls . '">'
-					. '<span class="icon ' . ($pa_cs->attempt_status === 'success' ? 'icon-check' : 'icon-cancel') . '"></span> '
-					. ($pa_cs->attempt_status === 'success' ? __("Passed", "bluerabbit") : __("Not passed", "bluerabbit"))
+					. '<span class="icon ' . $pa_ico . '"></span> ' . $pa_lbl
 					. ($pa_cs->attempt_score !== null ? ' &mdash; ' . intval($pa_cs->attempt_score) . '%' : '')
 					. ($pa_cs->total_questions ? ' (' . intval($pa_cs->correct_count) . '/' . intval($pa_cs->total_questions) . ')' : '')
 					. '</span>';
 				if ($pa_cs_runs > 1) {
 					$pa_answer_html .= '<span class="br-answer-pill br-answer-neutral">'
-						. sprintf(__("best of %d attempts", "bluerabbit"), $pa_cs_runs) . '</span>';
+						. sprintf(__("best of %d finished", "bluerabbit"), $pa_cs_runs) . '</span>';
+				}
+				if ($pa_cs_unfin > 0) {
+					$pa_answer_html .= '<span class="br-answer-pill br-answer-neutral">'
+						. sprintf(_n("%d not finished", "%d not finished", $pa_cs_unfin, "bluerabbit"), $pa_cs_unfin) . '</span>';
 				}
 				break;
 			}

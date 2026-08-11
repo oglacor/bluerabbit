@@ -2354,10 +2354,20 @@ function br_migrate_casestudy_attempts_schema() {
 			`total_questions` INT DEFAULT NULL,
 			`attempt_answers` LONGTEXT DEFAULT NULL,
 			`attempt_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			`attempt_updated` DATETIME DEFAULT NULL,
 			PRIMARY KEY (`attempt_id`),
 			KEY `player_adventure` (`player_id`, `adventure_id`),
-			KEY `player_step` (`player_id`, `step_id`)
+			KEY `player_step` (`player_id`, `step_id`),
+			KEY `open_runs` (`player_id`, `step_id`, `attempt_status`)
 		) $charset_collate");
+	}
+
+	// attempt_date is when the run started; attempt_updated is the last sign of life in
+	// it, which is what decides whether an unfinished run has been walked away from.
+	$cs_cols = $wpdb->get_col("SHOW COLUMNS FROM $table");
+	if ($cs_cols && !in_array('attempt_updated', $cs_cols)) {
+		$wpdb->query("ALTER TABLE $table ADD COLUMN `attempt_updated` DATETIME DEFAULT NULL");
+		$wpdb->query("ALTER TABLE $table ADD KEY `open_runs` (`player_id`, `step_id`, `attempt_status`)");
 	}
 }
 
@@ -3320,7 +3330,7 @@ add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
  * a migration is added or changed; deleting the br_schema_version option forces a
  * re-run.
  */
-define( 'BR_SCHEMA_VERSION', '2026-08-07.2' );
+define( 'BR_SCHEMA_VERSION', '2026-08-07.3' );
 
 function br_run_schema_migrations() {
 	if ( get_option( 'br_schema_version' ) === BR_SCHEMA_VERSION ) return;
