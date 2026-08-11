@@ -85,7 +85,7 @@ class BR_Progression {
                 AND tabis.adventure_id = $adv_parent_id
                 AND tabis.tabi_status = 'publish'
             WHERE quests.adventure_id=$adv_parent_id AND (quests.quest_status='publish' OR quests.quest_status='hidden' OR quests.quest_status='locked')
-            ORDER BY (quests.tabi_id IS NULL OR quests.tabi_id=0) ASC, quests.tabi_id ASC, quests.quest_order ASC, quests.mech_level ASC, quests.mech_start_date ASC, quests.quest_title ASC, quests.quest_id ASC");
+            ORDER BY (quests.tabi_id IS NULL OR quests.tabi_id=0) ASC, tabis.tabi_level ASC, quests.tabi_id ASC, quests.quest_order ASC, quests.mech_level ASC, quests.mech_start_date ASC, quests.quest_title ASC, quests.quest_id ASC");
 
             $survey_questions = $wpdb->get_results("SELECT questions.*
             FROM {$wpdb->prefix}br_survey_questions questions
