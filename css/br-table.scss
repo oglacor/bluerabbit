@@ -7602,6 +7602,49 @@ button.br-btn.br-confirming {
   }
 }
 
+// Tabi heading inside the milestone list. Full-width so it reads as a section break
+// rather than another row; the first one loses its top rule so the list does not open
+// with a stray line.
+.br-pw-tabi-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 6px;
+  padding-top: 12px;
+  border-top: 1px solid $br-border;
+  @include condensed-heading(13px, 700);
+  color: $br-primary;
+
+  &:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .icon { opacity: 0.7; }
+}
+
+.br-pw-tabi-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.br-pw-tabi-level,
+.br-pw-tabi-count {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: rgba($br-white, 0.45);
+}
+
+.br-pw-tabi-count {
+  font-variant-numeric: tabular-nums;
+}
+
 .br-pw-milestone-lock {
   font-size: 12px;
   color: rgba($br-white, 0.35);

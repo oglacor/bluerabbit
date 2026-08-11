@@ -130,6 +130,7 @@ if ($is_self) {
 		$done = ($tpl === 'milestone-finished');
 		$pw_milestones[] = [
 			'quest'  => $mi,
+			'tabi'   => (int) ($mi->tabi_id ?? 0),
 			'tpl'    => $tpl,
 			'done'   => $done,
 			'open'   => in_array($tpl, $pw_open, true),
@@ -154,6 +155,7 @@ if ($is_self) {
 				'mech_xp'     => $pq['mech_xp'],
 				'mech_bloo'   => $pq['mech_bloo'],
 			],
+			'tabi'   => (int) ($pq['tabi_id'] ?? 0),
 			'tpl'    => $pq['status'] === 'publish' ? 'milestone-finished' : 'milestone',
 			'done'   => $pq['status'] === 'publish',
 			'open'   => $pq['status'] === 'publish',
@@ -163,6 +165,25 @@ if ($is_self) {
 	}
 }
 $pw_done_count = count(array_filter($pw_milestones, function($m){ return $m['done']; }));
+
+// Tabi headings for the milestone list. Both branches above already return milestones
+// in tabi-level order (the $is_self query joins br_tabis for exactly that, and
+// get_player_quest_progress orders the same way), so grouping is only a matter of
+// noticing when the tabi changes while rendering - no re-sorting here.
+$pw_tabi_meta   = [];
+$pw_tabi_counts = [];
+foreach (BR_Tabi::instance()->getTabis($adv_parent_id) as $pw_t) {
+	$pw_tabi_meta[(int) $pw_t->tabi_id] = $pw_t;
+}
+foreach ($pw_milestones as $pw_m) {
+	$pw_tid = $pw_m['tabi'];
+	if (!isset($pw_tabi_counts[$pw_tid])) $pw_tabi_counts[$pw_tid] = ['done' => 0, 'total' => 0];
+	$pw_tabi_counts[$pw_tid]['total']++;
+	if ($pw_m['done']) $pw_tabi_counts[$pw_tid]['done']++;
+}
+// An adventure that uses no tabis at all would otherwise get a single "Not in a Tabi"
+// heading sitting above the whole list, which groups nothing and says nothing.
+$pw_show_tabi_headers = !(count($pw_tabi_counts) === 1 && isset($pw_tabi_counts[0]));
 $pw_earned_ach = count(array_filter($pw_achievements, function($a){ return !empty($a['earned_at']); }));
 
 // Engagement gauge (identical scale and colours to the stats page).
@@ -454,11 +475,30 @@ window.brStats = {
 
 				<?php if ($pw_milestones) { ?>
 				<div class="br-stats-quest-list br-pw-milestones">
+					<?php $pw_seen_tabi = null; ?>
 					<?php foreach ($pw_milestones as $m) {
 						$mq  = $m['quest'];
 						$cls = $m['done'] ? 'complete' : ($m['open'] ? 'in-progress' : 'locked');
 						$tag = $m['done'] ? __("Complete", "bluerabbit") : ($m['open'] ? __("Available", "bluerabbit") : $m['reason']);
+
+						// New heading whenever the tabi changes. Milestones with no tabi
+						// sort last (both queries push them there), so their heading lands
+						// at the bottom where it belongs rather than above everything.
+						if ($pw_show_tabi_headers && $pw_seen_tabi !== $m['tabi']) {
+							$pw_seen_tabi = $m['tabi'];
+							$pw_t     = $pw_tabi_meta[$m['tabi']] ?? null;
+							$pw_c     = $pw_tabi_counts[$m['tabi']] ?? ['done' => 0, 'total' => 0];
+							$pw_label = $pw_t ? $pw_t->tabi_name : __("Not in a Tabi", "bluerabbit");
 					?>
+					<div class="br-pw-tabi-header">
+						<span class="icon icon-tabi"></span>
+						<span class="br-pw-tabi-name"><?= esc_html($pw_label); ?></span>
+						<?php if ($pw_t && $pw_t->tabi_level !== null) { ?>
+						<span class="br-pw-tabi-level"><?= sprintf(__("Level %d", "bluerabbit"), (int) $pw_t->tabi_level); ?></span>
+						<?php } ?>
+						<span class="br-pw-tabi-count"><?= (int) $pw_c['done']; ?>/<?= (int) $pw_c['total']; ?></span>
+					</div>
+					<?php } ?>
 					<?php if ($m['open']) { ?>
 					<a class="br-stats-quest-row br-pw-milestone open" href="<?= esc_url($m['link']); ?>">
 					<?php } else { ?>
