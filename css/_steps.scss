@@ -488,17 +488,32 @@
                 background: #000;
             }
 
-            // Sits above the fixed iframe, which covers the viewport - without the
-            // z-index the retake control is rendered underneath the activity and
-            // cannot be clicked.
+            // Fixed for the same reason the wrapper above is: the iframe covers the whole
+            // viewport, so anything left in normal flow gets centred by
+            // .step-content-container and lands in the middle of the activity. Pinned to
+            // the bottom instead, clear of the step nav buttons.
+            //
+            // Safe to leave visible-by-default: an inactive .step is visibility:hidden,
+            // which descendants inherit, so only the active step's control is on screen.
             .casestudy-retake {
-                position: relative;
+                position: fixed;
+                bottom: 75px;
+                left: 50%;
+                transform: translateX(-50%);
                 z-index: 2;
                 display: flex;
-                flex-wrap: wrap;
+                flex-direction: column;
                 align-items: center;
-                gap: 10px;
-                margin-top: 10px;
+                gap: 6px;
+                width: max-content;
+                max-width: min(90vw, 460px);
+                text-align: center;
+
+                // Long enough to wrap on a phone, so it is capped and centred rather
+                // than stretching the bar across the screen.
+                .br-form-hint {
+                    margin: 0;
+                }
             }
 
 			.step-rating-choices{
