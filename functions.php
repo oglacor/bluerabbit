@@ -2324,6 +2324,43 @@ function br_migrate_transaction_lock_schema() {
 	}
 }
 
+// Case-study answer history - see classes/BR-CaseStudy.php.
+//
+// The activity already reported per-question state, and the server already re-read it to
+// decide pass/fail, but it lived in a single usermeta row per step that each retake
+// overwrote. So the data existed and no one could ever see it, and there was no such
+// thing as a second attempt on the record.
+//
+// One row per attempt instead, keyed the way br_challenge_attempts is - same shape, so
+// the same accordion in page-player-work renders both. The answers column keeps the
+// activity's own qstate verbatim: its structure belongs to the vendor's HTML, not to us,
+// and reshaping it here would silently drop whatever we failed to anticipate.
+function br_migrate_casestudy_attempts_schema() {
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$table = "{$wpdb->prefix}br_casestudy_attempts";
+
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table'") !== $table) {
+		$wpdb->query("CREATE TABLE $table (
+			`attempt_id` BIGINT NOT NULL AUTO_INCREMENT,
+			`player_id` BIGINT NOT NULL,
+			`adventure_id` BIGINT NOT NULL,
+			`quest_id` BIGINT NOT NULL,
+			`step_id` BIGINT NOT NULL,
+			`attempt_no` INT NOT NULL DEFAULT 1,
+			`attempt_status` VARCHAR(20) NOT NULL DEFAULT 'fail',
+			`attempt_score` INT DEFAULT NULL,
+			`correct_count` INT DEFAULT NULL,
+			`total_questions` INT DEFAULT NULL,
+			`attempt_answers` LONGTEXT DEFAULT NULL,
+			`attempt_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`attempt_id`),
+			KEY `player_adventure` (`player_id`, `adventure_id`),
+			KEY `player_step` (`player_id`, `step_id`)
+		) $charset_collate");
+	}
+}
+
 // Tremendous.com gift-card rewards integration - see classes/BR-Tremendous.php.
 // currency_code defaults to EUR (client's explicit tweak on the original brief, which
 // specified USD). tremendous_external_id's UNIQUE KEY is the idempotency lock that
@@ -3251,6 +3288,7 @@ add_action("wp_ajax_br_scorm_save_data", array('BR_SCORM', 'ajax_save_data'));
 add_action("wp_ajax_br_scorm_reset_all", array('BR_SCORM', 'ajax_reset_all'));
 add_action("wp_ajax_br_casestudy_progress", array('BR_CaseStudy', 'ajax_progress'));
 add_action("wp_ajax_br_casestudy_complete", array('BR_CaseStudy', 'ajax_complete'));
+add_action("wp_ajax_br_casestudy_retake", array('BR_CaseStudy', 'ajax_retake'));
 add_action("wp_ajax_submitRequest", [BR_Request::instance(), 'submitRequest']);
 add_action("wp_ajax_getRequests", [BR_Request::instance(), 'getRequests']);
 add_action("wp_ajax_getMyRequests", [BR_Request::instance(), 'getMyRequests']);
@@ -3282,7 +3320,7 @@ add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
  * a migration is added or changed; deleting the br_schema_version option forces a
  * re-run.
  */
-define( 'BR_SCHEMA_VERSION', '2026-08-07.1' );
+define( 'BR_SCHEMA_VERSION', '2026-08-07.2' );
 
 function br_run_schema_migrations() {
 	if ( get_option( 'br_schema_version' ) === BR_SCHEMA_VERSION ) return;
@@ -3311,6 +3349,7 @@ function br_run_schema_migrations() {
 	br_migrate_conditions_schema();
 	br_migrate_transaction_lock_schema();
 	br_migrate_tremendous_schema();
+	br_migrate_casestudy_attempts_schema();
 	br_migrate_achievement_bulk_queue_schema();
 	br_migrate_drop_parent_cascade_columns();
 

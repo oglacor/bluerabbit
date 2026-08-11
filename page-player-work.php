@@ -42,6 +42,11 @@ $attempt_answers = $wpdb->get_results($wpdb->prepare("SELECT a.*, b.answer_value
 	WHERE d.adventure_id=%d AND a.player_id=%d
 ", $adventure->adventure_id, $the_player_id));
 
+// Case-study attempts: one row per run, pass or fail, newest first. The answers column
+// holds the activity's own per-question state, so the breakdown below is whatever the
+// activity actually recorded rather than a shape we imposed on it.
+$cs_attempts = BR_CaseStudy::attempts_for_player($the_player_id, $adventure->adventure_id);
+
 // ── Personal stats (same source the stats page uses) ────────────────────────
 $pw_stats        = new BR_Stats();
 $pw_summary      = $pw_stats->get_player_summary($the_player_id, $adv_child_id);
@@ -227,6 +232,12 @@ window.brStats = {
 			<span class="icon icon-challenge"></span> <?php _e("Challenges", "bluerabbit"); ?>
 			<span class="br-badge br-badge-red"><?= count($attempts); ?></span>
 		</button>
+		<?php if ($cs_attempts) { ?>
+		<button class="br-tab-btn" onClick="brSwitchPanel('#pw-panels', '#pw-casestudies', this);">
+			<span class="icon icon-document"></span> <?php _e("Case Studies", "bluerabbit"); ?>
+			<span class="br-badge br-badge-teal"><?= count($cs_attempts); ?></span>
+		</button>
+		<?php } ?>
 		<?php if (!empty($pw_achievements)) { ?>
 		<button class="br-tab-btn" onClick="brSwitchPanel('#pw-panels', '#pw-achievements', this);">
 			<span class="icon icon-achievement"></span> <?php _e("Achievements", "bluerabbit"); ?>
@@ -658,6 +669,106 @@ window.brStats = {
 			</div>
 			<?php } ?>
 		</div>
+
+		<!-- ═══════════════ CASE STUDIES ═══════════════ -->
+		<?php if ($cs_attempts) { ?>
+		<div class="br-panel-group br-initially-hidden" id="pw-casestudies">
+			<div class="br-panel">
+				<h3 class="br-panel-title"><span class="icon icon-document"></span> <?php _e("Case Study Attempts", "bluerabbit"); ?></h3>
+				<p class="br-form-hint"><?php _e("Every run of an embedded case study, passed or failed, newest first. Click one to see how each question went. Retaking never removes an earlier attempt.", "bluerabbit"); ?></p>
+				<div class="br-table-scroll">
+					<table class="br-table">
+						<thead>
+							<tr>
+								<th><?php _e("Case Study", "bluerabbit"); ?></th>
+								<th class="text-center"><?php _e("Attempt", "bluerabbit"); ?></th>
+								<th class="text-center"><?php _e("Status", "bluerabbit"); ?></th>
+								<th class="text-center"><?php _e("Score", "bluerabbit"); ?></th>
+								<th><?php _e("Date", "bluerabbit"); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($cs_attempts as $csa) {
+								$cs_answers = $csa->attempt_answers ? json_decode($csa->attempt_answers, true) : [];
+								if (!is_array($cs_answers)) $cs_answers = [];
+							?>
+							<tr class="br-accordion-header" onclick="brToggleAccordion(this)">
+								<td>
+									<span class="br-accordion-arrow"></span>
+									<?= esc_html($csa->step_title ?: $csa->quest_title ?: __("Case study", "bluerabbit")); ?>
+									<?php if ($csa->step_title && $csa->quest_title) { ?>
+									<div class="br-text-12-muted"><?= esc_html($csa->quest_title); ?></div>
+									<?php } ?>
+								</td>
+								<td class="text-center">#<?= (int) $csa->attempt_no; ?></td>
+								<td class="text-center">
+									<?php if ($csa->attempt_status == 'success') { ?>
+									<span class="br-badge br-badge-green"><span class="icon icon-check"></span> <?php _e("Pass", "bluerabbit"); ?></span>
+									<?php } else { ?>
+									<span class="br-badge br-badge-red"><span class="icon icon-cancel"></span> <?php _e("Fail", "bluerabbit"); ?></span>
+									<?php } ?>
+								</td>
+								<td class="text-center">
+									<?php if ($csa->attempt_score !== null) {
+										$cs_grade_class = $csa->attempt_score >= 70 ? 'br-grade-good' : ($csa->attempt_score >= 50 ? 'br-grade-mid' : 'br-grade-bad');
+									?>
+									<span class="<?= $cs_grade_class; ?>"><?= (int) $csa->attempt_score; ?>%</span>
+									<?php if ($csa->total_questions) { ?>
+									<div class="br-text-12-muted"><?= (int) $csa->correct_count; ?>/<?= (int) $csa->total_questions; ?></div>
+									<?php } ?>
+									<?php } else { echo '&mdash;'; } ?>
+								</td>
+								<td>
+									<?= date('M j, Y', strtotime($csa->attempt_date)); ?>
+									<span class="br-text-12-muted"><?= date('g:i A', strtotime($csa->attempt_date)); ?></span>
+								</td>
+							</tr>
+							<tr class="br-accordion-body">
+								<td colspan="5">
+									<?php if ($cs_answers) {
+										$cs_qn = 0;
+										foreach ($cs_answers as $cs_key => $cs_q) {
+											$cs_qn++;
+											// The activity owns this shape, so read what is useful and fall
+											// back to showing the raw values rather than assuming fields
+											// that may not exist in a future version of the HTML.
+											$cs_q     = is_array($cs_q) ? $cs_q : ['value' => $cs_q];
+											$cs_right = !empty($cs_q['correct']);
+											$cs_label = '';
+											foreach (['question', 'title', 'prompt', 'text'] as $cs_f) {
+												if (!empty($cs_q[$cs_f]) && is_scalar($cs_q[$cs_f])) { $cs_label = (string) $cs_q[$cs_f]; break; }
+											}
+											if ($cs_label === '') $cs_label = sprintf(__("Question %s", "bluerabbit"), is_numeric($cs_key) ? $cs_qn : $cs_key);
+
+											$cs_given = '';
+											foreach (['answer', 'selected', 'choice', 'value', 'response'] as $cs_f) {
+												if (isset($cs_q[$cs_f]) && $cs_q[$cs_f] !== '' && $cs_q[$cs_f] !== null) {
+													$cs_given = is_array($cs_q[$cs_f]) ? implode(', ', array_map('strval', $cs_q[$cs_f])) : (string) $cs_q[$cs_f];
+													break;
+												}
+											}
+									?>
+									<div class="br-qa-block">
+										<div class="br-qa-question"><?= esc_html(wp_strip_all_tags($cs_label)); ?></div>
+										<div class="br-qa-answer">
+											<span class="br-answer-pill <?= $cs_right ? 'br-answer-correct' : 'br-answer-wrong'; ?>">
+												<span class="icon <?= $cs_right ? 'icon-check' : 'icon-cancel'; ?>"></span>
+												<?= $cs_given !== '' ? esc_html($cs_given) : ($cs_right ? __("Correct", "bluerabbit") : __("Incorrect", "bluerabbit")); ?>
+											</span>
+										</div>
+									</div>
+									<?php } } else { ?>
+									<div class="br-empty-state"><span class="icon icon-document"></span> <?php _e("This attempt recorded a score but no per-question detail", "bluerabbit"); ?></div>
+									<?php } ?>
+								</td>
+							</tr>
+							<?php } ?>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<?php } ?>
 
 		<!-- ═══════════════ ACHIEVEMENTS ═══════════════ -->
 		<?php if (!empty($pw_achievements)) { ?>

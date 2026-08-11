@@ -147,9 +147,10 @@
             var res = (typeof raw === 'string') ? JSON.parse(raw) : raw;
             if (res && res.success && res.result && res.result.correct !== 0) {
                 advance();
-            } else {
+            } else if (d.pass) {
                 // Server disagreed with the client's own pass claim — treat as
-                // not-passed rather than silently doing nothing.
+                // not-passed rather than silently doing nothing. Only worth saying when
+                // the activity claimed a pass; a failure already showed its own score.
                 showStatus(state.stepId, 'Not quite — you need to pass inside the activity to continue.');
             }
         });
@@ -175,17 +176,60 @@
                 }
             } else if (d.event === 'answer' || d.event === 'navigate') {
                 saveProgress({ score: d.score, total: d.total, qstate: d.qstate, seen: d.seen, screen: d.screen });
-            } else if (d.event === 'complete' && d.pass) {
+            } else if (d.event === 'complete') {
+                // Failed runs used to stop here, so the server never heard about them and
+                // the attempt history only ever contained passes - which is not a history.
+                // Every finished run is reported now; the server still decides pass/fail
+                // by re-reading the saved qstate, so telling it about a failure cannot be
+                // used to claim one.
+                if (!d.pass) {
+                    var seed = window.brCaseStudyData && window.brCaseStudyData[state.stepId];
+                    showStatus(state.stepId, 'Score ' + d.score + '/' + d.total + ' — you need ' +
+                        (seed ? seed.passScore : 14) + ' to pass. Use Try Again inside the activity.');
+                }
                 postComplete(d);
-            } else if (d.event === 'complete' && !d.pass) {
-                showStatus(state.stepId, 'Score ' + d.score + '/' + d.total + ' — you need ' +
-                    (window.brCaseStudyData && window.brCaseStudyData[state.stepId] ? window.brCaseStudyData[state.stepId].passScore : 14) +
-                    ' to pass. Use Try Again inside the activity.');
             } else if (d.event === 'restart') {
                 state.completionFired = false;
             }
         }
     });
+
+    // ── Retake ───────────────────────────────────────────────────────────────
+
+    // Clears the server-side saved state, then reloads the iframe from scratch. Without
+    // the reload the activity keeps whatever it holds in memory, so the player would see
+    // their finished run even though the server had forgotten it.
+    window.brCaseStudyRetake = function (stepId) {
+        var seed = window.brCaseStudyData && window.brCaseStudyData[stepId];
+        if (!seed || typeof jQuery === 'undefined' || typeof runAJAX === 'undefined') return;
+
+        jQuery.post(runAJAX.ajaxurl, {
+            action:  'br_casestudy_retake',
+            nonce:   seed.nonce,
+            step_id: stepId
+        }, function (raw) {
+            var res = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+            if (!res || !res.success) return;
+
+            seed.savedState = null;
+            state.savedState = null;
+            state.completionFired = false;
+
+            var wrapper = document.querySelector('.casestudy-wrapper[data-step-id="' + stepId + '"]');
+            var frame = wrapper ? wrapper.querySelector('.casestudy-frame') : null;
+            if (frame) {
+                var src = frame.getAttribute('data-src');
+                frame.src = 'about:blank';
+                // Reassign on the next tick so the blank load actually takes effect first.
+                setTimeout(function () {
+                    frame.src = src;
+                    state.iframeWindow = frame.contentWindow;
+                }, 50);
+            }
+            var err = wrapper ? wrapper.parentNode.querySelector('.br-step-feedback-error') : null;
+            if (err) err.remove();
+        });
+    };
 
     // ── Lazy-load: activate the right iframe when a step becomes active ───────
 

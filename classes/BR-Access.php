@@ -44,7 +44,7 @@ class BR_Access {
         // ── Playing the adventure ────────────────────────────────────────
         // An NPC is a full player: they progress, submit work, spend and earn.
         'br_complete_step', 'br_player_branch_choice', 'br_casestudy_complete',
-        'br_casestudy_progress', 'br_scorm_save_data', 'br_ai_validate_text',
+        'br_casestudy_progress', 'br_casestudy_retake', 'br_scorm_save_data', 'br_ai_validate_text',
         'submitPlayerWork', 'submitAnswer', 'submitSurveyAnswer', 'startAttempt',
         'answerEncounter', 'randomEncounter', 'failQuest', 'choosePath', 'setCurrentQuest',
         'getObjectives', 'insertSolvedObjective', 'resetQuestObjectives',

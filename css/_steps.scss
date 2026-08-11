@@ -488,7 +488,18 @@
                 background: #000;
             }
 
-
+            // Sits above the fixed iframe, which covers the viewport - without the
+            // z-index the retake control is rendered underneath the activity and
+            // cannot be clicked.
+            .casestudy-retake {
+                position: relative;
+                z-index: 2;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 10px;
+                margin-top: 10px;
+            }
 
 			.step-rating-choices{
 				display: block;

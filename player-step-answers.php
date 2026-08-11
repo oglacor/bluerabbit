@@ -191,10 +191,43 @@ foreach ($pa_steps as $pa_index => $pa_step) {
 			}
 			break;
 
+		// The embedded activity records per-question state, so this is not a bare
+		// completion like SCORM or puzzle - show how many landed, and how many runs it
+		// took, rather than a single "Completed" pill that hid all of it.
+		case 'case_study_html':
+			$pa_cs = $wpdb->get_row($wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}br_casestudy_attempts
+				 WHERE player_id = %d AND step_id = %d AND adventure_id = %d
+				 ORDER BY attempt_status = 'success' DESC, attempt_score DESC, attempt_id DESC
+				 LIMIT 1",
+				$pa_player_id, $pa_step->step_id, $pa_child_id
+			));
+			$pa_cs_runs = (int) $wpdb->get_var($wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}br_casestudy_attempts
+				 WHERE player_id = %d AND step_id = %d AND adventure_id = %d",
+				$pa_player_id, $pa_step->step_id, $pa_child_id
+			));
+			if ($pa_cs) {
+				$pa_answered = true;
+				$pa_cls = ($pa_cs->attempt_status === 'success') ? 'br-answer-correct' : 'br-answer-wrong';
+				$pa_answer_html = '<span class="br-answer-pill ' . $pa_cls . '">'
+					. '<span class="icon ' . ($pa_cs->attempt_status === 'success' ? 'icon-check' : 'icon-cancel') . '"></span> '
+					. ($pa_cs->attempt_status === 'success' ? __("Passed", "bluerabbit") : __("Not passed", "bluerabbit"))
+					. ($pa_cs->attempt_score !== null ? ' &mdash; ' . intval($pa_cs->attempt_score) . '%' : '')
+					. ($pa_cs->total_questions ? ' (' . intval($pa_cs->correct_count) . '/' . intval($pa_cs->total_questions) . ')' : '')
+					. '</span>';
+				if ($pa_cs_runs > 1) {
+					$pa_answer_html .= '<span class="br-answer-pill br-answer-neutral">'
+						. sprintf(__("best of %d attempts", "bluerabbit"), $pa_cs_runs) . '</span>';
+				}
+				break;
+			}
+			// No attempt row yet (a step completed before attempts were recorded) - fall
+			// through to the generic completion pill rather than showing nothing.
+
 		// Skins where the "answer" is a completion, not content the player typed.
 		case 'puzzle':
 		case 'scorm':
-		case 'case_study_html':
 		case 'backpack_item':
 			if ($pa_saved_row) {
 				$pa_answered = true;

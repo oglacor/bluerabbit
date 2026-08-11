@@ -27,6 +27,13 @@ $done_at     = get_user_meta( $user_id, "br_casestudy_done_{$step->step_id}", tr
 $saved_state = get_user_meta( $user_id, "br_casestudy_state_{$step->step_id}", true );
 $saved_state = $saved_state ? json_decode( $saved_state, true ) : null;
 $cs_done     = ! empty( $done_at );
+$cs_score    = get_user_meta( $user_id, "br_casestudy_score_{$step->step_id}", true );
+
+global $wpdb;
+$cs_attempts = (int) $wpdb->get_var( $wpdb->prepare(
+	"SELECT COUNT(*) FROM {$wpdb->prefix}br_casestudy_attempts WHERE player_id=%d AND step_id=%d AND adventure_id=%d",
+	$user_id, $step->step_id, $adventure->adventure_id
+) );
 ?>
 <div class="step <?= $i == 0 ? 'active' : ''; ?>" id="step-<?= $step->step_order; ?>">
 	<?php include( TEMPLATEPATH . '/steps-background.php' ); ?>
@@ -62,6 +69,25 @@ $cs_done     = ! empty( $done_at );
 		<?php if ( $cs_done ) { ?>
 		<div class="br-step-feedback br-step-feedback-success">
 			<span class="icon icon-check"></span> <?= __( "You have completed this content", "bluerabbit" ); ?>
+			<?php if ( $cs_score !== '' ) { ?>
+				<span class="br-text-12-muted"><?= sprintf( __( "Best score: %d%%", "bluerabbit" ), (int) $cs_score ); ?></span>
+			<?php } ?>
+		</div>
+		<?php } ?>
+
+		<?php if ( $launch_url ) { ?>
+		<div class="casestudy-retake">
+			<button type="button" class="br-btn" onClick="brCaseStudyRetake(<?= (int) $step->step_id; ?>);">
+				<span class="icon icon-rotate"></span>
+				<?= $cs_done ? __( "Take it again", "bluerabbit" ) : __( "Start over", "bluerabbit" ); ?>
+			</button>
+			<span class="br-form-hint">
+				<?php if ( $cs_attempts ) { ?>
+					<?= sprintf( _n( "%d attempt so far. Retaking never removes a previous result.", "%d attempts so far. Retaking never removes a previous result.", $cs_attempts, "bluerabbit" ), $cs_attempts ); ?>
+				<?php } else { ?>
+					<?= __( "You can take this as many times as you like.", "bluerabbit" ); ?>
+				<?php } ?>
+			</span>
 		</div>
 		<?php } ?>
 
