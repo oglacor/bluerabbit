@@ -133,6 +133,11 @@ if($canViewAdmin){ ?>
 	?>
 	<tr>
 		<th class="br-roster-name-cell"><?= $sort_link('name', __("Name", "bluerabbit")); ?></th>
+		<!-- Export-only column. Never rendered: brRosterRowToCsv() reads data-export off
+		     every cell, so a column can carry a value into the download without taking up
+		     space in the table. The header cell is empty for the same reason the body
+		     cells are - the label travels in data-export, not in the markup. -->
+		<th class="br-roster-col-export" data-export="<?= esc_attr__("Email", "bluerabbit"); ?>"></th>
 		<?php if ($config['use_hexad']['value'] > 0) { ?>
 		<th class="text-center"><span class="icon icon-hexad"></span></th>
 		<?php } ?>
@@ -189,9 +194,10 @@ if($canViewAdmin){ ?>
 							<a target="_blank" href="<?= get_bloginfo('url') . "/player-work/?adventure_id=$adventure->adventure_id&player_id=$p->player_id"; ?>"><?= esc_html($displayName); ?></a>
 							<?php if ($p->player_adventure_role != 'player') { ?><span class="br-badge br-badge-blue"><?= esc_html(strtoupper($p->player_adventure_role)); ?></span><?php } ?>
 						</td>
+						<td class="br-roster-col-export" data-export="<?= esc_attr($p->player_email ?: ''); ?>"></td>
 						<?php if ($config['use_hexad']['value'] > 0) { ?>
 						<td class="text-center">
-							<span class="button-icon font _24 sq-40 <?= $p->player_adventure_role == 'gm' ? 'border border-all border-3 teal-border-400' : ($p->player_adventure_role == 'npc' ? 'border border-all border-3 light-blue-border-800' : ''); ?>" style="background-image:url(<?= esc_url($p->player_picture); ?>)" title="<?= esc_attr($p->player_hexad); ?>"></span>
+							<span class="br-roster-avatar <?= $p->player_adventure_role == 'gm' ? 'br-roster-avatar-gm' : ($p->player_adventure_role == 'npc' ? 'br-roster-avatar-npc' : ''); ?>" style="background-image:url(<?= esc_url($p->player_picture); ?>)" title="<?= esc_attr($p->player_hexad); ?>"></span>
 						</td>
 						<?php } ?>
 						<td class="text-center"><?= (int) $p->player_level; ?></td>
@@ -203,7 +209,7 @@ if($canViewAdmin){ ?>
 						<td class="text-center"><?= $p->player_last_login ? date('M j, Y', strtotime($p->player_last_login)) : __("never", "bluerabbit"); ?></td>
 						<?php if ($isAdmin) { ?>
 						<td class="text-center">
-							<button class="button-icon blue-bg-800" onClick="updatePlayer(<?= $adventure->adventure_id . ", " . $p->player_id; ?>);"><span class="icon icon-rotate"></span></button>
+							<button class="br-icon-btn br-icon-btn-blue" onClick="updatePlayer(<?= $adventure->adventure_id . ", " . $p->player_id; ?>);"><span class="icon icon-rotate"></span></button>
 						</td>
 						<?php } ?>
 						<td class="text-center" data-export="<?= esc_attr($p->player_gender ?: ''); ?>"><?= esc_html($p->player_gender ?: '—'); ?></td>

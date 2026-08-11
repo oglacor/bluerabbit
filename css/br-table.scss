@@ -6838,6 +6838,29 @@ body.br-drawer-open {
 .br-roster-role-gm { color: $br-teal; }
 .br-roster-role-npc { color: $br-primary; }
 
+// A column that exists only to be exported. display:none keeps it out of the layout
+// while leaving the cell in the DOM, which is what brRosterRowToCsv() walks - so the
+// value reaches the CSV without ever being drawn. Applied to both the header table and
+// the body table so their column counts stay equal, which syncColumnWidths() requires.
+.br-roster-col-export {
+  display: none;
+}
+
+// Roster avatar: the player picture with a role-coloured ring. Replaces the
+// button-icon/font/_24/sq-40 + border utility pile-up that used to be inline here.
+.br-roster-avatar {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  &.br-roster-avatar-gm  { border: 3px solid $br-teal; }
+  &.br-roster-avatar-npc { border: 3px solid $br-primary; }
+}
+
 .br-roster-col-header {
   text-align: center;
   min-width: 40px;
