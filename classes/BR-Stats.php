@@ -109,14 +109,14 @@ class BR_Stats {
         return $wpdb->get_results( $wpdb->prepare(
             "SELECT
                 q.quest_id, q.quest_title, q.quest_type, q.quest_color, q.quest_icon,
-                q.mech_xp, q.mech_bloo, q.quest_order,
+                q.mech_xp, q.mech_bloo, q.quest_order, q.tabi_id,
                 pp.pp_status AS status, pp.pp_date AS completed_at, pp.pp_grade AS score
             FROM {$wpdb->prefix}br_quests q
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.player_id = %d AND pp.adventure_id = %d
             WHERE q.adventure_id = %d AND q.quest_status = 'publish'
               AND q.quest_type IN ('quest','challenge','survey','mission')
-            ORDER BY q.quest_order ASC",
+            ORDER BY (q.tabi_id IS NULL OR q.tabi_id = 0) ASC, q.tabi_id ASC, q.quest_order ASC",
             $user_id, $adventure_id, $adventure_id
         ), ARRAY_A );
     }

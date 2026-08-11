@@ -102,7 +102,7 @@ if ($is_self) {
 		"SELECT * FROM {$wpdb->prefix}br_quests
 		 WHERE adventure_id=%d AND quest_status IN ('publish','locked')
 		   AND quest_type IN ('quest','challenge','survey','mission')
-		 ORDER BY quest_order ASC, quest_id ASC",
+		 ORDER BY (tabi_id IS NULL OR tabi_id=0) ASC, tabi_id ASC, quest_order ASC, quest_id ASC",
 		$adv_parent_id
 	));
 	$pw_today    = date('YmdHi');
