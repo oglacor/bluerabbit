@@ -114,9 +114,10 @@ class BR_Stats {
             FROM {$wpdb->prefix}br_quests q
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.player_id = %d AND pp.adventure_id = %d
+            LEFT JOIN {$wpdb->prefix}br_tabis t ON q.tabi_id = t.tabi_id
             WHERE q.adventure_id = %d AND q.quest_status = 'publish'
               AND q.quest_type IN ('quest','challenge','survey','mission')
-            ORDER BY (q.tabi_id IS NULL OR q.tabi_id = 0) ASC, q.tabi_id ASC, q.quest_order ASC",
+            ORDER BY (q.tabi_id IS NULL OR q.tabi_id = 0) ASC, t.tabi_level ASC, q.tabi_id ASC, q.quest_order ASC",
             $user_id, $adventure_id, $adventure_id
         ), ARRAY_A );
     }

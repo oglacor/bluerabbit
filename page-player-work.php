@@ -99,10 +99,11 @@ if ($is_self) {
 $pw_milestones = [];
 if ($is_self) {
 	$pw_quests = $wpdb->get_results($wpdb->prepare(
-		"SELECT * FROM {$wpdb->prefix}br_quests
-		 WHERE adventure_id=%d AND quest_status IN ('publish','locked')
-		   AND quest_type IN ('quest','challenge','survey','mission')
-		 ORDER BY (tabi_id IS NULL OR tabi_id=0) ASC, tabi_id ASC, quest_order ASC, quest_id ASC",
+		"SELECT quests.* FROM {$wpdb->prefix}br_quests quests
+			 LEFT JOIN {$wpdb->prefix}br_tabis tabis ON quests.tabi_id = tabis.tabi_id
+		 WHERE quests.adventure_id=%d AND quests.quest_status IN ('publish','locked')
+		   AND quests.quest_type IN ('quest','challenge','survey','mission')
+		 ORDER BY (quests.tabi_id IS NULL OR quests.tabi_id=0) ASC, tabis.tabi_level ASC, quests.tabi_id ASC, quests.quest_order ASC, quests.quest_id ASC",
 		$adv_parent_id
 	));
 	$pw_today    = date('YmdHi');
