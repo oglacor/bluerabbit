@@ -1350,6 +1350,9 @@ function br_completion_quest_sql( $alias = '' ) {
 function br_stats_enqueue_assets() {
 	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], br_asset_version() );
 	wp_enqueue_style( 'br-notify', get_template_directory_uri() . '/css/br-notify.css', [], br_asset_version() );
+	if ( is_page('magic-link') ) {
+		wp_enqueue_script( 'br-magic-link', get_template_directory_uri() . '/js/br-magic-link.js', [], br_asset_version(), true );
+	}
 	if ( is_page('login') ) {
 		wp_enqueue_style( 'br-auth', get_template_directory_uri() . '/css/br-auth.css', ['br-table'], br_asset_version() );
 	}

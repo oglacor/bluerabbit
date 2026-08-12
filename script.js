@@ -10089,7 +10089,19 @@ function displayAjaxResponse(json_data) {
                 }, message_delay);
             }, 1);
         } else {
-            $("#feedback .content").html(data.message);
+            // The overlay has always closed on a click anywhere in it, which nobody can
+            // see. The button triggers the same handler by bubbling, so it needs no logic
+            // of its own - and it is omitted when noClose means there is nothing to
+            // trigger. Its label follows what the click will actually do.
+            var feedbackBtn = '';
+            if (!data.noClose) {
+                var feedbackLabel = data.location
+                    ? (brI18n.continue_label || 'Continue')
+                    : (brI18n.close || 'Close');
+                feedbackBtn = '<button type="button" class="br-btn br-btn-green br-feedback-close">' +
+                    aiEscapeHtml(feedbackLabel) + '</button>';
+            }
+            $("#feedback .content").html(data.message + feedbackBtn);
             $("#feedback").addClass('active');
             if (data.autofade) {
                 $("#feedback").unbind('click');
@@ -10851,3 +10863,7 @@ brI18n.level_up = brI18n.level_up || 'Level Up!';
 brI18n.verb_levelup = brI18n.verb_levelup || 'leveled up';
 brI18n.verb_achievement = brI18n.verb_achievement || 'earned an achievement';
 brI18n.verb_rank = brI18n.verb_rank || 'reached a new rank';
+// Fullscreen #feedback panel's exit button - "Continue" when the click navigates on,
+// "Close" when it just dismisses.
+brI18n.close = brI18n.close || 'Close';
+brI18n.continue_label = brI18n.continue_label || 'Continue';

@@ -92,8 +92,66 @@ $radius-sm:    8px;
     flex-direction: column;
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 18px;
     max-width: 1400px;
   }
+
+  // pop() emits one shape and it gets used in two places: as the small toast in
+  // #notify-message, and - for every response that does NOT set just_notify - as the
+  // sole content of this fullscreen overlay. At 340px wide with a left accent bar it
+  // read as a toast marooned in the middle of a black screen, with no title and no
+  // visible way out. Here it takes the celebration panel's shape instead: same
+  // surface, same radius, same blur, same entrance, so the two never look like they
+  // came from different products.
+  //
+  // The colour still arrives inline from pop() (border-left-color plus the icon's own
+  // background/colour), so nothing about the message contract changes - only how much
+  // room it is given.
+  .br-notify {
+    flex-direction: column;
+    gap: 16px;
+    max-width: min(420px, 92vw);
+    padding: 30px 28px;
+    border-radius: 16px;
+    // The 4px accent bar is a toast affordance; at panel size it reads as damage.
+    // Narrowed to a hairline, still tinted by pop()'s inline colour.
+    border-left-width: 1px;
+    background: rgba(4, 22, 30, 0.97);
+    border-top-color: rgba($br-primary, 0.35);
+    border-right-color: rgba($br-primary, 0.35);
+    border-bottom-color: rgba($br-primary, 0.35);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 40px rgba($br-primary, 0.15);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    text-align: center;
+    animation: br-feedback-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .br-notify-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 30px;
+  }
+
+  .br-notify-text {
+    font-size: 17px;
+    line-height: 1.45;
+  }
+}
+
+@keyframes br-feedback-pop {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+// Injected by displayAjaxResponse() alongside the message. The overlay has always
+// closed on click anywhere, which is undiscoverable - this just makes the exit visible.
+.br-feedback-close {
+  position: relative;
+  z-index: 2;
+  padding: 12px 32px;
+  font-size: 15px;
 }
 
 // Shown inside #feedback when a branch/path achievement is blocked because the

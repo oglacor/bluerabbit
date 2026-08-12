@@ -1,95 +1,144 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
-<?php 
-$code = $_GET['c'];
-if($code){
-	if(isset($_GET['adv'])){
-		$adv_id = $adv_id = $_GET['adv'];
-	}elseif ($config['default_adventure']['value']){
-		$adv_id = $config['default_adventure']['value'];
-	}else{
-		?>
-		<script> document.location.href="<?php bloginfo('url');?>/404"; </script>
-	<?php die();
+<?php
+/**
+ * page-magic-link.php — where a redeemed achievement code lands.
+ *
+ * A magic link arrives from outside the app (a printed card, a chat message, an
+ * email), so it has to land on a real URL - which is why this stays a full page
+ * rather than becoming an overlay on the journey. What it borrows is the look:
+ * the same panel brCelebrate() opens for a level-up or a condition-awarded
+ * achievement, so earning something by code feels like earning anything else.
+ *
+ * Three outcomes, one panel: redeemed, refused (with a reason), and no such code.
+ */
+$code = isset($_GET['c']) ? trim($_GET['c']) : '';
+
+if ($code) {
+	if (isset($_GET['adv'])) {
+		$adv_id = (int) $_GET['adv'];
+	} elseif ($config['default_adventure']['value']) {
+		$adv_id = (int) $config['default_adventure']['value'];
+	} else {
+		wp_safe_redirect(get_bloginfo('url') . '/404');
+		exit;
 	}
 	$adventure = BR_Adventure::instance()->getAdventure($adv_id);
 
-	
-	$code=strtolower($code);
-	$c = BR_Achievement::instance()->magicCode($code,$adv_id);
-	$error = $c['errors'];
-		if(empty($error)){
-			?>	
-			<div class="layer background fixed sq-full top left blue-grey-bg-800 blend-overlay opacity-80" style="background-image: url('<?= $c['c']->achievement_badge; ?>');"></div>
-			<div class="layer background fixed sq-full top left opacity-80" style="background-image: url(<?= get_bloginfo('template_directory')."/images/explosion-lq.gif"; ?>);"></div>
-			<div class="relative layer base boxed text-center min-w-300 max-w-900 padding-20">
-				<h5 class="font text-center condensed uppercase w900 _14 padding-10 white-color"><?php _e("You earned the achievement","bluerabbit"); ?>:</h5>
-				<h1 class="text-center font _48 w900 condensed padding-10 white-color">
-					<?= $c['c']->achievement_name; ?>
-				</h1>
-				<?php $number = rand(1,9); ?>
-				<audio id="audio-funky">
-					<source src="<?= get_bloginfo('template_directory')."/audio/funk$number.mp3"; ?>" type="audio/mpeg">
-				</audio>
-				<div class="relative">
-					<div class="background black-bg opacity-80"></div>
-					<div class="foreground padding-10 white-color">
-						<?= apply_filters('the_content',$c['c']->achievement_content); ?>
+	$code  = strtolower($code);
+	$c     = BR_Achievement::instance()->magicCode($code, $adv_id);
+	$error = isset($c['errors']) && is_array($c['errors']) ? $c['errors'] : [];
+	$ach   = isset($c['c']) ? $c['c'] : null;
+	// magicCode() returns early without either key when its nonce check fails, and the
+	// success branch below dereferences $ach - so no achievement is itself a refusal
+	// rather than a fatal.
+	if (!$ach && !$error) {
+		$error = ['cancel' => __("This code could not be checked. Please reload and try again.", "bluerabbit")];
+	}
+	$home  = get_bloginfo('url') . "/adventure/?adventure_id=" . ($adventure ? $adventure->adventure_id : $adv_id);
+?>
+
+<div class="br-magic-page">
+	<!-- Kept from the original: the achievement art washed behind everything, with
+	     the explosion over it. It is the one part of this screen that already read
+	     as a reward, so only the panel in front of it changed. -->
+	<div class="br-magic-bg" style="background-image:url('<?= esc_url($ach && $ach->achievement_badge ? $ach->achievement_badge : get_bloginfo('template_directory') . '/images/ghost.png'); ?>')"></div>
+	<?php if (empty($error)) { ?>
+	<div class="br-magic-explosion" style="background-image:url('<?= esc_url(get_bloginfo('template_directory') . '/images/explosion-lq.gif'); ?>')"></div>
+	<?php } ?>
+
+	<div class="br-rewards-modal br-magic-panel<?= empty($error) ? '' : ' br-magic-panel-refused'; ?>">
+		<div class="br-celebrate-head">
+			<div class="br-celebrate-rays" aria-hidden="true"></div>
+			<?php if (empty($error)) { ?>
+				<h2 class="br-celebrate-title"><?= __("Congratulations!", "bluerabbit"); ?></h2>
+				<p class="br-celebrate-line"><?= __("You just earned an achievement.", "bluerabbit"); ?></p>
+			<?php } else { ?>
+				<h2 class="br-celebrate-title"><?= __("Not this time", "bluerabbit"); ?></h2>
+				<p class="br-celebrate-line"><?= __("This code could not be redeemed.", "bluerabbit"); ?></p>
+			<?php } ?>
+		</div>
+
+		<div class="br-rewards-modal-body">
+			<?php if (empty($error)) { ?>
+				<div class="br-celebrate-card">
+					<?php if ($ach->achievement_badge) { ?>
+					<div class="br-celebrate-art" style="background-image:url(<?= esc_url($ach->achievement_badge); ?>)"></div>
+					<?php } else { ?>
+					<div class="br-celebrate-art br-celebrate-art-icon"><span class="icon icon-achievement"></span></div>
+					<?php } ?>
+					<div class="br-celebrate-card-info">
+						<div class="br-celebrate-card-title"><?= esc_html($ach->achievement_name); ?></div>
 					</div>
 				</div>
-				<br>
-				<a href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>" class="form-ui blue-bg-700 big">
-					<span class="icon icon-home"></span>
-					<?php _e("Back to home",'bluerabbit'); ?>
-				</a>
-			</div>
-			<script> $(document).ready(function(){ $("#audio-funky").get(0).play(); }); </script>
-		<?php }else{ ?>
+				<?php if (trim(strip_tags($ach->achievement_content)) !== '') { ?>
+				<div class="br-magic-story"><?= apply_filters('the_content', $ach->achievement_content); ?></div>
+				<?php } ?>
 
-		<div class="layer background fixed top left sq-full red-bg-800 blend-overlay opacity-40" style="background-image: url('<?= isset($c['c']->achievement_badge) ? esc_attr($c['c']->achievement_badge) : ''; ?>');"></div>
-		<div class="relative layer base boxed text-center min-w-300  max-w-900  padding-20">
-			<?php foreach($error as $key=>$err){ ?>
-				<h5 class="font text-center uppercase w900  _18 white-color red-bg-400 padding-10">
-					<span class="icon icon-<?= $key; ?> icon-lg"></span><br><?=$err; ?>
-				</h5>
-			<?php } ?>
-
-			<?php if(!empty($c['held_achievement'])){ $held = $c['held_achievement']; ?>
-			<div class="text-center relative padding-10 inline-block w-250">
-				<div class="background layer absolute sq-full purple-gradient-400 opacity-50"></div>
-				<div class="layer relative base">
-					<?php if($held->achievement_badge){ ?>
-					<img src="<?= esc_attr($held->achievement_badge); ?>" class="w-150 margin-5 overflow-hidden border rounded-max">
-					<?php } ?>
-					<h4 class="line white-color font w100 _12 opacity-80"><?= __("You already have","bluerabbit"); ?></h4>
-					<h3 class="line white-color font w900 _18"><?= esc_html($held->achievement_name); ?></h3>
+				<audio id="audio-funky" preload="auto">
+					<source src="<?= esc_url(get_bloginfo('template_directory') . '/audio/funk' . rand(1, 9) . '.mp3'); ?>" type="audio/mpeg">
+				</audio>
+			<?php } else { ?>
+				<?php foreach ($error as $key => $err) { ?>
+				<div class="br-magic-reason">
+					<span class="icon icon-<?= esc_attr($key); ?>"></span>
+					<span><?= esc_html($err); ?></span>
 				</div>
-			</div>
-			<?php } ?>
+				<?php } ?>
 
-			<div class="content text-center">
-				<a href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>" class="form-ui blue-bg-700 big">
-					<span class="icon icon-home"></span>
-					<?php _e("Back to home",'bluerabbit'); ?>
-				</a>
+				<?php if (!empty($c['held_achievement'])) { $held = $c['held_achievement']; ?>
+				<!-- The player already holds a groupmate of this branch achievement, so
+				     showing which one turns "you can't have this" into an explanation. -->
+				<div class="br-celebrate-card">
+					<?php if ($held->achievement_badge) { ?>
+					<div class="br-celebrate-art" style="background-image:url(<?= esc_url($held->achievement_badge); ?>)"></div>
+					<?php } else { ?>
+					<div class="br-celebrate-art br-celebrate-art-icon"><span class="icon icon-achievement"></span></div>
+					<?php } ?>
+					<div class="br-celebrate-card-info">
+						<div class="br-celebrate-card-sub"><?= __("You already have", "bluerabbit"); ?></div>
+						<div class="br-celebrate-card-title"><?= esc_html($held->achievement_name); ?></div>
+					</div>
+				</div>
+				<?php } ?>
+			<?php } ?>
+		</div>
+
+		<div class="br-rewards-modal-footer">
+			<p class="br-celebrate-outro"><?= __("Keep moving forward!", "bluerabbit"); ?></p>
+			<a class="br-btn br-btn-green br-rewards-claim-btn" href="<?= esc_url($home); ?>">
+				<span class="icon icon-home"></span> <?= __("Back to home", "bluerabbit"); ?>
+			</a>
+		</div>
+	</div>
+</div>
+
+<?php } else {
+	$home = get_bloginfo('url') . "/adventure/";
+?>
+
+<div class="br-magic-page">
+	<div class="br-magic-bg" style="background-image:url('<?= esc_url(get_bloginfo('template_directory') . '/images/ghost.png'); ?>')"></div>
+
+	<div class="br-rewards-modal br-magic-panel br-magic-panel-refused">
+		<div class="br-celebrate-head">
+			<div class="br-celebrate-rays" aria-hidden="true"></div>
+			<h2 class="br-celebrate-title"><?= __("Code doesn't exist", "bluerabbit"); ?></h2>
+			<p class="br-celebrate-line"><?= __("Check the code and try again.", "bluerabbit"); ?></p>
+		</div>
+		<div class="br-rewards-modal-body">
+			<div class="br-magic-reason">
+				<span class="icon icon-trash"></span>
+				<span><?= __("No achievement is linked to that code.", "bluerabbit"); ?></span>
 			</div>
 		</div>
-		<?php } ?>
-	<?php }else{ ?>
-		<div class="layer background top left fixed sq-full amber-bg-800 blend-overlay opacity-40" style="background-image: url('<?= get_bloginfo('template_directory')."/images/ghost.png"; ?>');"></div>
-		<div class="relative layer base boxed text-center min-w-300  max-w-900 padding-20">
-			<h5 class="font text-center uppercase w900  _18 white-color amber-bg-400 padding-10">
-				<span class="icon icon-trash icon-lg"></span><br><?php _e("Code doesn't exist!","bluerabbit"); ?>
-			</h5>
-			<h1 class="text-center font _48 w300 white-color padding-10">
-				<?= __("Check the code and try again",'bluerabbit'); ?>
-			</h1>
-			<div class="content text-center">
-				<a href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>" class="form-ui blue-bg-700 big">
-					<span class="icon icon-home"></span>
-					<?php _e("Back to home",'bluerabbit'); ?>
-				</a>
-			</div>
+		<div class="br-rewards-modal-footer">
+			<a class="br-btn br-btn-green br-rewards-claim-btn" href="<?= esc_url($home); ?>">
+				<span class="icon icon-home"></span> <?= __("Back to home", "bluerabbit"); ?>
+			</a>
 		</div>
-	<?php }  ?>
+	</div>
+</div>
+
+<?php } ?>
 <?php include (get_stylesheet_directory() . '/footer.php'); ?>

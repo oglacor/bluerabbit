@@ -8297,6 +8297,106 @@ button.br-btn.br-confirming {
 }
 
 // ═══════════════════════════════════════════════════════════
+// Magic-link landing page
+// ═══════════════════════════════════════════════════════════
+// Reuses .br-rewards-modal and the .br-celebrate-* innards wholesale, so redeeming a
+// code looks like every other reward. Only the page frame and the two background
+// layers live here - .br-rewards-overlay is deliberately NOT used, since that class
+// exists to position and hide a modal, and this one is the page.
+
+.br-magic-page {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: #04161e;
+}
+
+.br-magic-bg,
+.br-magic-explosion {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.br-magic-bg {
+  opacity: 0.35;
+  filter: blur(6px) saturate(1.2);
+}
+
+// The explosion is the one piece of the old screen worth keeping, so it stays exactly
+// as it was - full-bleed, over the art wash, under the panel.
+.br-magic-explosion {
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+
+.br-magic-panel {
+  position: relative;
+  z-index: 2;
+  width: min(460px, 92vw);
+  max-height: none;
+}
+
+// A refusal is not a celebration: the halo and the title lose the accent colour so the
+// panel does not congratulate someone on being turned away.
+.br-magic-panel-refused {
+  border-color: rgba($br-amber, 0.35);
+
+  .br-celebrate-rays {
+    background: radial-gradient(circle, rgba($br-amber, 0.22) 0%, rgba($br-amber, 0) 65%);
+  }
+
+  .br-celebrate-title {
+    text-shadow: 0 0 26px rgba($br-amber, 0.4);
+  }
+}
+
+.br-magic-reason {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: $radius-sm;
+  border-left: 3px solid $br-amber;
+  background: rgba($br-amber, 0.1);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  color: rgba($br-white, 0.85);
+
+  .icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: $br-amber;
+  }
+}
+
+// The achievement's own prose. Authored in the editor, so it can be anything - kept
+// readable and left-aligned rather than inheriting the panel's centring.
+.br-magic-story {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba($br-white, 0.1);
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+  color: rgba($br-white, 0.75);
+
+  p { margin: 0 0 10px; }
+  p:last-child { margin-bottom: 0; }
+  img { max-width: 100%; height: auto; border-radius: $radius-sm; }
+}
+
+// ═══════════════════════════════════════════════════════════
 // Duplicator page
 // ═══════════════════════════════════════════════════════════
 
