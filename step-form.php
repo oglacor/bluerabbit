@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $step_editor_id = "step-content-" . $s->step_id;
 $sid = $s->step_id;
 $settings = $s->step_settings ? json_decode($s->step_settings, true) : [];

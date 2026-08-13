@@ -420,7 +420,7 @@ class BR_Achievement {
                 if($player_level < $required_level){
                     $data['success'] = false;
                     $data['message'] = $notification->pop(sprintf(
-                        __("Can't award — player is Level %1\$d and this rank needs Level %2\$d",'bluerabbit'),
+                        __("Can't award â€” player is Level %1\$d and this rank needs Level %2\$d",'bluerabbit'),
                         $player_level, $required_level
                     ),'red','cancel');
                     $data['just_notify'] = true;
@@ -791,7 +791,7 @@ class BR_Achievement {
                 $data['skipped']  = $skipped;
                 $msg_content = $skipped
                     ? sprintf(
-                        __("%1\$d assigned — %2\$d skipped, below Level %3\$d","bluerabbit"),
+                        __("%1\$d assigned â€” %2\$d skipped, below Level %3\$d","bluerabbit"),
                         count($eligible), $skipped, $required_level
                       )
                     : sprintf( __("%d achievements assigned","bluerabbit"), count($eligible) );
@@ -833,6 +833,33 @@ class BR_Achievement {
         }
         echo json_encode($data);
         die();
+    }
+
+    // One shape for every reason a code can be refused, matching the panel the success
+    // case builds below. Players hit these far more often than the success screen, and
+    // they were the last thing in this flow still rendering bare headings straight onto
+    // the black overlay. Carries its own Close, so callers set noClose alongside it.
+    // $extra is trusted markup the caller builds (the held-branchmate card), appended
+    // inside the body under the reason.
+    private function magicRefusal($title, $detail = '', $icon = 'icon-cancel', $extra = '') {
+        $body = ($detail !== ''
+                ? '<div class="br-magic-reason">'
+                    .'<span class="icon '.esc_attr($icon).'"></span><span>'.esc_html($detail).'</span>'
+                  .'</div>'
+                : '') . $extra;
+
+        return '<div class="br-rewards-modal br-magic-panel br-magic-panel-refused">'
+                .'<div class="br-celebrate-head">'
+                    .'<div class="br-celebrate-rays" aria-hidden="true"></div>'
+                    .'<h2 class="br-celebrate-title">'.esc_html($title).'</h2>'
+                .'</div>'
+                .($body !== '' ? '<div class="br-rewards-modal-body">'.$body.'</div>' : '')
+                .'<div class="br-rewards-modal-footer">'
+                    .'<button type="button" class="br-btn br-btn-green br-rewards-claim-btn" onClick="hideAllOverlay();">'
+                        .'<span class="icon icon-check"></span> '.__('Close', 'bluerabbit')
+                    .'</button>'
+                .'</div>'
+            .'</div>';
     }
 
     public function magicCode($p_code = "", $p_adv=""){
@@ -887,9 +914,8 @@ class BR_Achievement {
                 if($c->achievement_max > 0){
                     $awarded = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}br_player_achievement WHERE adventure_id=$adv_child_id AND achievement_id=$c->achievement_id");
                     if(count($awarded) >= $c->achievement_max){
-                        $data['message']= '<span class="icon icon-max red icon-xl"></span>';
-                        $data['message'].= '<h2 class="red-A400">'.__("You are too late!",'bluerabbit').'</h2>';
-                        $data['message'].= '<h3><strong>'.__("Max Awards Reached!",'bluerabbit').'</strong></h3>';
+                        $data['message'] = $this->magicRefusal(__("You are too late!", 'bluerabbit'), __("This achievement has reached its maximum number of awards.", 'bluerabbit'), 'icon-max');
+                        $data['noClose'] = true;
                         $error['max']= __('Max awards reached',"bluerabbit");
                     }
                     BR_Activity::instance()->logActivity($adv_child_id,'max-reached','magic-code',$code,$c->achievement_id);
@@ -898,39 +924,53 @@ class BR_Achievement {
                     $now = date('YmdHi');
                     $deadline = date('YmdHi',strtotime($c->achievement_deadline));
                     if($now > $deadline){
-                        $data['message']= '<span class="icon icon-deadline icon-xl"></span>';
-                        $data['message'].= '<h2 class="red-A400">'.__("Deadline missed!",'bluerabbit').'</h2>';
-                        $data['message'].= '<h4>'.__("You can't use this code anymore!",'bluerabbit').'</h4>';
+                        $data['message'] = $this->magicRefusal(__("Deadline missed!", 'bluerabbit'), __("This code can no longer be used.", 'bluerabbit'), 'icon-deadline');
+                        $data['noClose'] = true;
                         $error['deadline']= __('Achievement no longer available',"bluerabbit");
                         BR_Activity::instance()->logActivity($adv_child_id,'deadline','magic-code',$code,$c->achievement_id);
                     }
                 }
                 if($c->code_status =='redeem'){
-                    $data['message']= '<span class="icon icon-carrot icon-xl"></span>';
-                    $data['message'].= '<h2 class="orange-400">'.__("This code has already been used!",'bluerabbit').'</h2>';
-                    $data['message'].= '<h4>'.__("You can't use this code anymore!",'bluerabbit').'</h4>';
+                    $data['message'] = $this->magicRefusal(
+                        __("Already used", 'bluerabbit'),
+                        __("Somebody has already redeemed this code.", 'bluerabbit'),
+                        'icon-carrot'
+                    );
+                    $data['noClose'] = true;
                     $error['carrot']= __('This code has already been used!',"bluerabbit");
                     BR_Activity::instance()->logActivity($adv_child_id,'redeemed','magic-code',$code,$c->achievement_id);
                 }
                 if($c->code_status =='expired'){
-                    $data['message']= '<span class="icon icon-deadline icon-xl"></span>';
-                    $data['message'].= '<h2>'.__("This code already expired!",'bluerabbit').'</h2>';
-                    $data['message'].= '<h4>'.__("You can't use this code anymore!",'bluerabbit').'</h4>';
+                    $data['message'] = $this->magicRefusal(
+                        __("Expired", 'bluerabbit'),
+                        __("This code is no longer valid.", 'bluerabbit'),
+                        'icon-deadline'
+                    );
+                    $data['noClose'] = true;
                     $error['expired']= __('This code already expired!',"bluerabbit");
                     BR_Activity::instance()->logActivity($adv_child_id,'expired','magic-code',$code,$c->achievement_id);
                 }
 
                 $held_branchmate = BR_Branch::instance()->getHeldBranchmate($current_user->ID, $adv_child_id, $c->achievement_id);
                 if($held_branchmate){
-                    $data['message']= '<span class="icon icon-cancel red icon-xl"></span>';
-                    $data['message'].= '<h3><strong>'.__("You can only earn one achievement from this branch",'bluerabbit').'</strong></h3>';
-                    $data['message'].= '<div class="held-branch-achievement">';
-                    if($held_branchmate->achievement_badge){
-                        $data['message'].= '<img src="'.esc_url($held_branchmate->achievement_badge).'" class="held-branch-achievement-badge">';
-                    }
-                    $data['message'].= '<h4>'.__("You already have:",'bluerabbit').'</h4>';
-                    $data['message'].= '<strong>'.esc_html($held_branchmate->achievement_name).'</strong>';
-                    $data['message'].= '</div>';
+                    // Refusal panel plus the groupmate they already hold, on the same card
+                    // shape the success case uses - which turns "you can't have this" into
+                    // "you already chose that one".
+                    $held_art = $held_branchmate->achievement_badge
+                        ? '<div class="br-celebrate-art" style="background-image:url('.esc_url($held_branchmate->achievement_badge).')"></div>'
+                        : '<div class="br-celebrate-art br-celebrate-art-icon"><span class="icon icon-achievement"></span></div>';
+                    $data['message'] = $this->magicRefusal(
+                        __("One from this branch", 'bluerabbit'),
+                        __("You can only earn one achievement from this branch.", 'bluerabbit'),
+                        'icon-cancel',
+                        '<div class="br-celebrate-card">'.$held_art
+                            .'<div class="br-celebrate-card-info">'
+                                .'<div class="br-celebrate-card-sub">'.__("You already have", 'bluerabbit').'</div>'
+                                .'<div class="br-celebrate-card-title">'.esc_html($held_branchmate->achievement_name).'</div>'
+                            .'</div>'
+                        .'</div>'
+                    );
+                    $data['noClose'] = true;
                     $error['journey']= __("You can only earn one achievement from this branch","bluerabbit");
                     $data['held_achievement'] = $held_branchmate;
                 }
@@ -946,8 +986,11 @@ class BR_Achievement {
                             }
                         }
                         if($allowed=='NOT'){
-                            $data['message']= '<span class="icon icon-cancel red icon-xl"></span>';
-                            $data['message'].= '<h3><strong>'.__("Wrong Code!",'bluerabbit').'</strong></h3>';
+                            $data['message'] = $this->magicRefusal(
+                                __("Wrong code", 'bluerabbit'),
+                                __("This code doesn't work here.", 'bluerabbit')
+                            );
+                            $data['noClose'] = true;
                             $error['cancel']= __('Wrong Code!',"bluerabbit");
 /*
                             $data['message'].= '<h3><strong>'.__("You need to unlock a path before you can earn this code!",'bluerabbit').'</strong></h3>';
@@ -961,7 +1004,12 @@ class BR_Achievement {
 
                 if(($c->code_status == 'publish' && $code==$c->code_value) || ($c->achievement_status == 'publish' && $c->achievement_code==$code)){
                     if($c->achieved_player == $current_user->ID || $c->redeemed_player_id == $current_user->ID ){
-                        $data['message'].= '<h2 class="light-blue-400">'.__("You already earned this achievement",'bluerabbit').'</h2>';
+                        $data['message'] = $this->magicRefusal(
+                            __("Already yours", 'bluerabbit'),
+                            __("You have earned this achievement before.", 'bluerabbit'),
+                            'icon-achievement'
+                        );
+                        $data['noClose'] = true;
                         $error['achiever']= __('You already earned this achievement',"bluerabbit");
                     }elseif(empty($error)){
                         if($code == $c->code_value){
@@ -980,43 +1028,79 @@ class BR_Achievement {
                             $data['success'] = true;
                             BR_Activity::instance()->logActivity($adv_child_id,'earned','magic-code',"",$c->achievement_id);
                         }
-                        $data['message'] = '<div class="achievement-unlocked">';
-                        $data['message'].= '<h4>'.__("Awesome!",'bluerabbit').'</h4>';
-                        $data['message'].= '<h3><strong>'.$c->achievement_name."</strong></h3>";
-                        $data['message'].= '<div class="divider thin"></div>';
-                        $data['message'].= apply_filters('the_content',$c->achievement_content);
-                        $data['message'].= '<div class="divider thin"></div>';
-                        $data['message'].= '</div>';
-                        $data['message'].= '<button class="form-ui red" onClick="hideAllOverlay();"><span class="icon icon-cancel"></span>'.__('click to close','bluerabbit').'</button>';
-                        $number = rand(1,9);
-                        $data['message'].='
-                            <audio id="audio-funky">
-                                <source src="'.get_bloginfo('template_directory').'/audio/funk'.$number.'.mp3" type="audio/mpeg">
-                            </audio>
-                            <script>
-                                $(document).ready(function() {
-                                    $("#audio-funky").get(0).play();
-                                });
-                            </script>';
+                        // Same panel the magic-link landing page uses, so redeeming a code
+                        // in the app and redeeming one from a printed card look identical.
+                        // The badge is shown here for the first time - the old markup had
+                        // the achievement's name and story but never its image.
+                        $art = $c->achievement_badge
+                            ? '<div class="br-celebrate-art" style="background-image:url('.esc_url($c->achievement_badge).')"></div>'
+                            : '<div class="br-celebrate-art br-celebrate-art-icon"><span class="icon icon-achievement"></span></div>';
+
+                        $story = trim(strip_tags($c->achievement_content)) !== ''
+                            ? '<div class="br-magic-story">'.apply_filters('the_content', $c->achievement_content).'</div>'
+                            : '';
+
+                        $data['message'] =
+                            '<div class="br-rewards-modal br-magic-panel">'
+                                .'<div class="br-celebrate-head">'
+                                    .'<div class="br-celebrate-rays" aria-hidden="true"></div>'
+                                    .'<h2 class="br-celebrate-title">'.__("Congratulations!", 'bluerabbit').'</h2>'
+                                    .'<p class="br-celebrate-line">'.__("You just earned an achievement.", 'bluerabbit').'</p>'
+                                .'</div>'
+                                .'<div class="br-rewards-modal-body">'
+                                    .'<div class="br-celebrate-card">'
+                                        .$art
+                                        .'<div class="br-celebrate-card-info">'
+                                            .'<div class="br-celebrate-card-title">'.esc_html($c->achievement_name).'</div>'
+                                        .'</div>'
+                                    .'</div>'
+                                    .$story
+                                .'</div>'
+                                .'<div class="br-rewards-modal-footer">'
+                                    .'<p class="br-celebrate-outro">'.__("Keep moving forward!", 'bluerabbit').'</p>'
+                                    .'<button type="button" class="br-btn br-btn-green br-rewards-claim-btn" onClick="hideAllOverlay();">'
+                                        .'<span class="icon icon-check"></span> '.__('Close', 'bluerabbit')
+                                    .'</button>'
+                                .'</div>'
+                                // No inline <script> to start it: displayAjaxResponse plays any
+                                // #audio-funky it finds in a feedback message, with the same
+                                // guard brCelebrate uses for browsers that refuse autoplay.
+                                .'<audio id="audio-funky" preload="auto">'
+                                    .'<source src="'.esc_url(get_bloginfo('template_directory').'/audio/funk'.rand(1,9).'.mp3').'" type="audio/mpeg">'
+                                .'</audio>'
+                            .'</div>';
+
+                        // The panel carries its own Close, so the overlay must not also bind
+                        // click-to-dismiss over the whole thing - a player reading the story
+                        // would close it by clicking the text.
                         $data['noClose'] = true;
-                        $data['location'] = get_bloginfo('url')."/achievements/?adventure_id=$adv_child_id";
 
                     }
                 }else{
-                    $data['message']= '<span class="icon icon-cancel icon-xl"></span>';
-                    $data['message'].= '<h2 class="red-A400">'.__("Wrong Code!",'bluerabbit').'</h2>';
-                    $data['message'].= '<h4>'.__("This code is wrong!",'bluerabbit').'</h4>';
+                    $data['message'] = $this->magicRefusal(
+                        __("Wrong code", 'bluerabbit'),
+                        __("Check the code and try again.", 'bluerabbit')
+                    );
+                    $data['noClose'] = true;
                     $error['cancel']= __('Wrong Code',"bluerabbit");
                     BR_Activity::instance()->logActivity($adv_child_id,'attempt','magic-code',$code);
                 }
             }else{
-                $data['message'] ='<h1>'.__("Code Doesn't exist",'bluerabbit').'</h1> <h4>'.__("click to close",'bluerabbit').'.</h4>';
-                $data['location']='reload';
+                $data['message'] = $this->magicRefusal(
+                    __("Code doesn't exist", 'bluerabbit'),
+                    __("No achievement is linked to that code.", 'bluerabbit'),
+                    'icon-trash'
+                );
+                $data['noClose'] = true;
                 $error['cancel']= __('Wrong Code',"bluerabbit");
                 BR_Activity::instance()->logActivity($adv_child_id,'attempt','magic-code',$code);
             }
         }else{
-            $data['message'] ='<h1>'.__('Unauthorized access','bluerabbit').'</h1> <h4>'.__('click to close','bluerabbit').'.</h4>';
+            $data['message'] = $this->magicRefusal(
+                __("Couldn't check that code", 'bluerabbit'),
+                __("Please reload the page and try again.", 'bluerabbit')
+            );
+            $data['noClose'] = true;
         }
         $data['errors'] = $error;
         if($p_code && $p_adv){

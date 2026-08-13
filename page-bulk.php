@@ -1,4 +1,4 @@
-﻿<?php include (get_stylesheet_directory() . '/header.php'); ?>
+<?php include (get_stylesheet_directory() . '/header.php'); ?>
 
 <?php 
 

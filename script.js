@@ -1,4 +1,4 @@
-﻿//////////////////  REGISTER NEW PLAYER  ////////////////
+//////////////////  REGISTER NEW PLAYER  ////////////////
 function jumpToStepByHash() {
     let step = window.location.hash.substring(1);
     let step_number = step.replace('step-', '');
@@ -10103,6 +10103,16 @@ function displayAjaxResponse(json_data) {
             }
             $("#feedback .content").html(data.message + feedbackBtn);
             $("#feedback").addClass('active');
+
+            // A message may bring its own reward sting (the magic code panel does).
+            // Played here rather than from an inline <script> in the response - and
+            // guarded like brCelebrate's, since browsers refuse autoplay without a
+            // gesture and a refused promise must not surface as an unhandled rejection.
+            var fbAudio = document.querySelector('#feedback #audio-funky');
+            if (fbAudio) {
+                var fbPlay = fbAudio.play();
+                if (fbPlay && fbPlay.catch) fbPlay.catch(function () {});
+            }
             if (data.autofade) {
                 $("#feedback").unbind('click');
                 hideAllOverlay();

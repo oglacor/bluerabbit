@@ -1,4 +1,4 @@
-﻿<div class="image-select" id="icon-art-books">
+<div class="image-select" id="icon-art-books">
 	<?php for($i=1;$i<=12;$i++){ ?>
 		<?php $file = get_bloginfo('template_directory')."/images/icon-art/books/$i.png"; ?>
 		<?php $active = ($selected_book == $file) ? 'active' : ''; ?>
