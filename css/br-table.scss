@@ -1089,6 +1089,40 @@ select.br-input {
   text-overflow: ellipsis;
 }
 
+// Richer than .br-gallery-label, which is one ellipsised line. The adventure and
+// system image grids need a name, an explanation of what the image is for, and a note
+// when the tile is showing an inherited default rather than something chosen here.
+.br-gallery-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  text-align: left;
+}
+
+.br-gallery-caption-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba($br-white, 0.9);
+}
+
+.br-gallery-caption-note {
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgba($br-white, 0.5);
+}
+
+// The tile has a picture but nobody picked it - worth saying, quietly.
+.br-gallery-caption-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $br-amber;
+}
+
 // ── Confirm-delete overlay ───────────────────────────────
 
 .br-confirm {

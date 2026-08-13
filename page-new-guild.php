@@ -81,15 +81,8 @@ if (isset($adventure) && $isGM) {
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Guild Logo", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= $is_edit ? $g->guild_logo : ''; ?>);" onClick="showWPUpload('the_guild_logo');" id="the_guild_logo_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_guild_logo');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_guild_logo');"><span class="icon icon-trash"></span></button>
-							<input type="hidden" id="the_guild_logo" value="<?= $is_edit ? $g->guild_logo : ''; ?>">
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single">
+					<?php BR_Utils::instance()->insertGalleryItem('the_guild_logo', $is_edit ? $g->guild_logo : ''); ?>
 				</div>
 			</div>
 		</div>

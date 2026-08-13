@@ -85,15 +85,8 @@
 			<tr>
 				<td class="text-right w-150"><?= __('Image','bluerabbit'); ?></td>
 				<td>
-					<div class="gallery">
-						<div class="gallery-item setting">
-							<div class="background" style="background-image: url(<?= isset($encounter->enc_badge) ? $encounter->enc_badge : "" ; ?>);" onClick="showWPUpload('the_enc_badge');" id="the_enc_badge_thumb"></div>
-							<div class="gallery-item-options relative">
-								<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_enc_badge');"><span class="icon icon-image"></span></button>
-								<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_enc_badge');"> <span class="icon icon-trash"></span> </button>
-								<input type="hidden" id="the_enc_badge" value="<?= isset($encounter->enc_badge) ? $encounter->enc_badge : "" ; ?>"/>
-							</div>
-						</div>
+					<div class="br-gallery br-gallery-single">
+						<?php BR_Utils::instance()->insertGalleryItem('the_enc_badge', $encounter->enc_badge ?? ''); ?>
 					</div>
 				</td>
 			</tr>

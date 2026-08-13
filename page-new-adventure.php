@@ -261,15 +261,8 @@ $image_types = array(
 		<div class="br-form-grid">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __('Image','bluerabbit'); ?></label>
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= $adventure->adventure_badge; ?>);" onClick="showWPUpload('the_adventure_badge');" id="the_adventure_badge_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_adventure_badge');"><span class="icon icon-image"></span></button>
-							<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_adventure_badge');"> <span class="icon icon-trash"></span> </button>
-							<input type="hidden" id="the_adventure_badge" value="<?php echo $adventure->adventure_badge; ?>"/>
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single">
+					<?php BR_Utils::instance()->insertGalleryItem('the_adventure_badge', $adventure->adventure_badge); ?>
 				</div>
 			</div>
 			<div class="br-form-group">
@@ -553,28 +546,14 @@ $image_types = array(
 		<div class="br-form-grid">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __('Logo','bluerabbit'); ?></label>
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= $adventure->adventure_logo; ?>);" onClick="showWPUpload('the_adventure_logo');" id="the_adventure_logo_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_adventure_logo');"><span class="icon icon-image"></span></button>
-							<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_adventure_logo');"> <span class="icon icon-trash"></span> </button>
-							<input type="hidden" id="the_adventure_logo" value="<?php echo $adventure->adventure_logo ?? ''; ?>"/>
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single">
+					<?php BR_Utils::instance()->insertGalleryItem('the_adventure_logo', $adventure->adventure_logo ?? ''); ?>
 				</div>
 			</div>
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __('Signature','bluerabbit'); ?></label>
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= $adventure->adventure_certificate_signature; ?>);" onClick="showWPUpload('the_adventure_certificate_signature');" id="the_adventure_certificate_signature_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('the_adventure_certificate_signature');"><span class="icon icon-image"></span></button>
-							<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#the_adventure_certificate_signature');"> <span class="icon icon-trash"></span> </button>
-							<input type="hidden" id="the_adventure_certificate_signature" value="<?php echo $adventure->adventure_certificate_signature; ?>"/>
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single">
+					<?php BR_Utils::instance()->insertGalleryItem('the_adventure_certificate_signature', $adventure->adventure_certificate_signature); ?>
 				</div>
 			</div>
 		</div>
@@ -1454,7 +1433,7 @@ $image_types = array(
 	<div class="br-panel">
 		<h3 class="br-panel-title"><span class="icon icon-image"></span> <?=__("Images","bluerabbit");?></h3>
 
-		<div class="gallery">
+		<div class="br-gallery br-gallery-large">
 			<?php foreach($image_types as $iKey=>$img){ ?>
 				<?php
 				$desc_warning = '';
@@ -1469,23 +1448,26 @@ $image_types = array(
 					}
 				}
 				?>
-				<div class="gallery-item setting">
-					<div class="gallery-image-thumb" style="background-image: url(<?= $img_url; ?>);" id="<?=$iKey;?>_thumb"></div>
-					<div class="gallery-item-options">
-						<button class="br-icon-btn br-icon-btn-green" onClick="showWPUpload('<?=$iKey; ?>');"><span class="icon icon-image"></span></button>
-						<button class="br-icon-btn br-icon-btn-red" onClick="clearImage('#<?=$iKey; ?>');"> <span class="icon icon-trash"></span> </button>
-					</div>
-					<div class="gallery-item-description white-color foreground">
-						<div class="background black-bg opacity-50"></div>
-						<h3 class="foreground br-text-18 w600 padding-10"><?=$img['label']; ?></h3>
-						<?php if(isset($img['desc'])){ ?>
-							<h5 class="foreground br-text-12 w600 padding-10"><?=$img['desc']; ?></h5>
+				<!-- Not the shared gallery-item partial: these tiles carry the four
+				     setting-* inputs the settings save collects, which the generic
+				     component does not model. Same classes, same look, extra contract. -->
+				<div class="br-gallery-item">
+					<div class="br-gallery-thumb" style="background-image: url(<?= esc_url($img_url); ?>);" id="<?=$iKey;?>_thumb" onClick="showWPUpload('<?=$iKey; ?>');">
+						<?php if(!$img_url){ ?>
+						<span class="br-gallery-placeholder"><span class="icon icon-image"></span></span>
 						<?php } ?>
-						<?php if(isset($desc_warning) && $desc_warning){ ?>
-							<h5 class="foreground br-text-12 w500 amber-500 padding-10">
-								<span class="icon icon-warning"></span>
-								<?=$desc_warning ?>
-							</h5>
+					</div>
+					<div class="br-gallery-actions">
+						<button type="button" class="br-gallery-btn br-gallery-btn-upload" onClick="showWPUpload('<?=$iKey; ?>');" title="<?= esc_attr__('Choose image','bluerabbit'); ?>"><span class="icon icon-image"></span></button>
+						<button type="button" class="br-gallery-btn br-gallery-btn-remove" onClick="clearImage('#<?=$iKey; ?>');" title="<?= esc_attr__('Remove','bluerabbit'); ?>"><span class="icon icon-trash"></span></button>
+					</div>
+					<div class="br-gallery-caption">
+						<span class="br-gallery-caption-title"><?= esc_html($img['label']); ?></span>
+						<?php if(isset($img['desc'])){ ?>
+						<span class="br-gallery-caption-note"><?= esc_html($img['desc']); ?></span>
+						<?php } ?>
+						<?php if($desc_warning){ ?>
+						<span class="br-gallery-caption-warn"><span class="icon icon-warning"></span> <?= esc_html($desc_warning); ?></span>
 						<?php } ?>
 					</div>
 					<input class="form-ui setting-value"  id="<?=$iKey; ?>" type="hidden" value="<?= isset($adv_settings[$iKey]['value']) ? $adv_settings[$iKey]['value'] : ""; ?>">

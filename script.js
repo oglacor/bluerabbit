@@ -3535,7 +3535,7 @@ function brCollectStepSettings(sid) {
             break;
         case 'gallery':
             var imgs = [];
-            $('#step-gallery-' + sid + ' .gallery-image-url').each(function() { imgs.push($(this).val()); });
+            $('#step-gallery-' + sid + ' .br-gallery-image-url').each(function() { imgs.push($(this).val()); });
             settings = { images: imgs, layout: 'auto' };
             break;
         case 'find_item':
@@ -3874,7 +3874,7 @@ function brAddGalleryImage(sid) {
             '<div class="br-step-gallery-thumb" data-index="' + idx + '">' +
             '<div style="width:80px;height:80px;border-radius:6px;background:url(' + url + ') center/cover;border:1px solid rgba(255,255,255,0.1)"></div>' +
             '<button class="br-btn br-btn-red" style="padding:2px 6px;font-size:10px;margin-top:2px" onClick="$(this).closest(\'.br-step-gallery-thumb\').remove();"><span class="icon icon-trash"></span></button>' +
-            '<input type="hidden" class="gallery-image-url" value="' + url + '">' +
+            '<input type="hidden" class="br-gallery-image-url" value="' + url + '">' +
             '</div>'
         );
     });
@@ -9383,10 +9383,10 @@ function showWPUploadMultimedia(who, type, q_id) {
         let attachment = file_frame.state().get('selection').first().toJSON();
         $('#' + who + " .multimedia-element").html('');
         if (attachment.type == 'video') {
-            $('#' + who + " .multimedia-element").append('<video id="' + who + '_thumb" controls class="gallery-item-video"><source src="' + attachment.url + '"> </video>');
+            $('#' + who + " .multimedia-element").append('<video id="' + who + '_thumb" controls class="br-multimedia-video"><source src="' + attachment.url + '"> </video>');
             $('#' + who + '_thumb')[0].load();
         } else if (attachment.type == 'audio') {
-            $('#' + who + " .multimedia-element").append('<audio id="' + who + '_thumb" controls class="gallery-item-audio"><source src="' + attachment.url + '"> </audio>');
+            $('#' + who + " .multimedia-element").append('<audio id="' + who + '_thumb" controls class="br-multimedia-audio"><source src="' + attachment.url + '"> </audio>');
             $('#' + who + '_thumb')[0].load();
         } else if (attachment.type == 'image') {
             $('#' + who + " .multimedia-element").append('<img id="' + who + '_thumb" src="' + attachment.url + '">');

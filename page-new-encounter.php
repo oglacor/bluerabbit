@@ -87,15 +87,8 @@ $is_edit = ($adventure && isset($encounter) && $encounter);
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Image", "bluerabbit"); ?></label>
 			<div class="br-form-component">
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= isset($encounter->enc_badge) ? $encounter->enc_badge : ''; ?>);" onClick="showWPUpload('the_enc_badge');" id="the_enc_badge_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_enc_badge');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_enc_badge');"><span class="icon icon-trash"></span></button>
-							<input type="hidden" id="the_enc_badge" value="<?= isset($encounter->enc_badge) ? $encounter->enc_badge : ''; ?>">
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single">
+					<?php BR_Utils::instance()->insertGalleryItem('the_enc_badge', $encounter->enc_badge ?? ''); ?>
 				</div>
 			</div>
 		</div>

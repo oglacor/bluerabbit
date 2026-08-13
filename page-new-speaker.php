@@ -51,15 +51,8 @@ $speakerUsers = get_users(['role__in' => $the_roles]);
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Speaker Picture", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background speaker-editable" style="background-image: url(<?= $speaker ? $speaker->speaker_picture : ''; ?>);" onClick="showWPUpload('the_speaker_picture');" id="the_speaker_picture_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40 green-bg-400 speaker-editable" onClick="showWPUpload('the_speaker_picture');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40 red-bg-400 speaker-editable" onClick="clearImage('#the_speaker_picture');"><span class="icon icon-trash"></span></button>
-							<input type="hidden" id="the_speaker_picture" value="<?= $speaker ? $speaker->speaker_picture : ''; ?>">
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single speaker-editable">
+					<?php BR_Utils::instance()->insertGalleryItem('the_speaker_picture', $speaker ? $speaker->speaker_picture : ''); ?>
 				</div>
 			</div>
 		</div>

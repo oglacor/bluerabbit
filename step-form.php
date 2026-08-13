@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $step_editor_id = "step-content-" . $s->step_id;
 $sid = $s->step_id;
 $settings = $s->step_settings ? json_decode($s->step_settings, true) : [];
@@ -41,26 +41,26 @@ $options = $settings['options'] ?? [];
 
 	<div class="br-step-form-body">
 
-		<!-- ═══ LABEL ═══ -->
+		<!-- â•â•â• LABEL â•â•â• -->
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Label", "bluerabbit"); ?></label>
-			<span class="br-form-hint"><?= __("Admin reference only — players never see this", "bluerabbit"); ?></span>
+			<span class="br-form-hint"><?= __("Admin reference only â€” players never see this", "bluerabbit"); ?></span>
 			<input class="br-input" id="step-title-<?= $sid; ?>" type="text" maxlength="255" value="<?= esc_attr($s->step_title); ?>">
 		</div>
 
-		<!-- ═══ TYPE SELECTOR ═══ -->
+		<!-- â•â•â• TYPE SELECTOR â•â•â• -->
 		<div class="br-form-grid br-form-grid-2">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Step Type", "bluerabbit"); ?></label>
 				<select id="step-skin-<?= $sid; ?>" class="br-input" onChange="brCheckStepSkin(<?= $sid; ?>);">
-					<optgroup label="<?= __('DELIVER — Auto-complete on view', 'bluerabbit'); ?>">
+					<optgroup label="<?= __('DELIVER â€” Auto-complete on view', 'bluerabbit'); ?>">
 						<option value="dialogue" <?= $skin == 'dialogue' ? 'selected' : ''; ?>><?= __("Dialogue", "bluerabbit"); ?></option>
 						<option value="video" <?= $skin == 'video' ? 'selected' : ''; ?>><?= __("Video", "bluerabbit"); ?></option>
 						<option value="audio" <?= $skin == 'audio' ? 'selected' : ''; ?>><?= __("Audio", "bluerabbit"); ?></option>
 						<option value="gallery" <?= $skin == 'gallery' ? 'selected' : ''; ?>><?= __("Gallery", "bluerabbit"); ?></option>
 						<option value="find_item" <?= $skin == 'find_item' ? 'selected' : ''; ?>><?= __("Find Item", "bluerabbit"); ?></option>
 					</optgroup>
-					<optgroup label="<?= __('VALIDATE — Player must answer correctly', 'bluerabbit'); ?>">
+					<optgroup label="<?= __('VALIDATE â€” Player must answer correctly', 'bluerabbit'); ?>">
 						<option value="multiple_choice" <?= $skin == 'multiple_choice' ? 'selected' : ''; ?>><?= __("Multiple Choice", "bluerabbit"); ?></option>
 						<option value="keyphrase" <?= $skin == 'keyphrase' ? 'selected' : ''; ?>><?= __("Keyphrase", "bluerabbit"); ?></option>
 						<option value="cryptex" <?= $skin == 'cryptex' ? 'selected' : ''; ?>><?= __("Cryptex", "bluerabbit"); ?></option>
@@ -69,7 +69,7 @@ $options = $settings['options'] ?? [];
 						<option value="scorm" <?= $skin == 'scorm' ? 'selected' : ''; ?>><?= __("SCORM Package", "bluerabbit"); ?></option>
 						<option value="case_study_html" <?= $skin == 'case_study_html' ? 'selected' : ''; ?>><?= __("Case Study (HTML)", "bluerabbit"); ?></option>
 					</optgroup>
-					<optgroup label="<?= __('COLLECT — Player submits, no right/wrong', 'bluerabbit'); ?>">
+					<optgroup label="<?= __('COLLECT â€” Player submits, no right/wrong', 'bluerabbit'); ?>">
 						<option value="open_text" <?= $skin == 'open_text' ? 'selected' : ''; ?>><?= __("Open Text", "bluerabbit"); ?></option>
 						<option value="survey_choice" <?= $skin == 'survey_choice' ? 'selected' : ''; ?>><?= __("Survey Choice", "bluerabbit"); ?></option>
 						<option value="survey_rating" <?= $skin == 'survey_rating' ? 'selected' : ''; ?>><?= __("Rating Scale", "bluerabbit"); ?></option>
@@ -77,7 +77,7 @@ $options = $settings['options'] ?? [];
 						<option value="upload_image" <?= $skin == 'upload_image' ? 'selected' : ''; ?>><?= __("Upload Image", "bluerabbit"); ?></option>
 						<option value="upload_video" <?= $skin == 'upload_video' ? 'selected' : ''; ?>><?= __("Upload Video", "bluerabbit"); ?></option>
 					</optgroup>
-					<optgroup label="<?= __('FLOW — Routing & Branching', 'bluerabbit'); ?>">
+					<optgroup label="<?= __('FLOW â€” Routing & Branching', 'bluerabbit'); ?>">
 						<option value="jump_to_step" <?= $skin == 'jump_to_step' ? 'selected' : ''; ?>><?= __("Jump to Step", "bluerabbit"); ?></option>
 						<option value="branch_choice" <?= $skin == 'branch_choice' ? 'selected' : ''; ?>><?= __("Branch Choice", "bluerabbit"); ?></option>
 					</optgroup>
@@ -93,18 +93,18 @@ $options = $settings['options'] ?? [];
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Required?", "bluerabbit"); ?></label>
 				<select id="step-required-<?= $sid; ?>" class="br-input">
-					<option value="1" <?= $s->step_required ? 'selected' : ''; ?>><?= __("Yes — must complete to advance", "bluerabbit"); ?></option>
-					<option value="0" <?= !$s->step_required ? 'selected' : ''; ?>><?= __("No — optional step", "bluerabbit"); ?></option>
+					<option value="1" <?= $s->step_required ? 'selected' : ''; ?>><?= __("Yes â€” must complete to advance", "bluerabbit"); ?></option>
+					<option value="0" <?= !$s->step_required ? 'selected' : ''; ?>><?= __("No â€” optional step", "bluerabbit"); ?></option>
 				</select>
 			</div>
 		</div>
 
-		<!-- ═══ DIALOGUE FIELDS ═══ -->
+		<!-- â•â•â• DIALOGUE FIELDS â•â•â• -->
 		<div class="br-skin-panel" data-skins="dialogue,system">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Character Position", "bluerabbit"); ?></label>
 				<select id="step-attach-<?= $sid; ?>" class="br-input">
-					<option value="none" <?= ($s->step_attach ?? '') == 'none' ? 'selected' : ''; ?>><?= __("No one — just describing the scene", "bluerabbit"); ?></option>
+					<option value="none" <?= ($s->step_attach ?? '') == 'none' ? 'selected' : ''; ?>><?= __("No one â€” just describing the scene", "bluerabbit"); ?></option>
 					<option value="left" <?= ($s->step_attach ?? '') == 'left' ? 'selected' : ''; ?>><?= __("On the left", "bluerabbit"); ?></option>
 					<option value="right" <?= ($s->step_attach ?? '') == 'right' ? 'selected' : ''; ?>><?= __("On the right", "bluerabbit"); ?></option>
 				</select>
@@ -116,11 +116,11 @@ $options = $settings['options'] ?? [];
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Character Image", "bluerabbit"); ?></label>
 				<span class="br-form-hint"><?= __("Best at 9:16 proportions", "bluerabbit"); ?></span>
-				<div class="gallery"><?php BR_Utils::instance()->insertGalleryItem('the_step_character_image', $s->step_character_image); ?></div>
+				<div class="br-gallery br-gallery-single"><?php BR_Utils::instance()->insertGalleryItem('the_step_character_image', $s->step_character_image); ?></div>
 			</div>
 		</div>
 
-		<!-- ═══ CONTENT EDITOR ═══ -->
+		<!-- â•â•â• CONTENT EDITOR â•â•â• -->
 		<div class="br-skin-panel" data-skins="dialogue,system,open_text,win,fail,find_item,branch_choice">
 			<div class="br-form-group" id="step-content-row-<?= $sid; ?>">
 				<label class="br-form-label"><?= __("Content", "bluerabbit"); ?></label>
@@ -128,30 +128,36 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ VIDEO ═══ -->
+		<!-- â•â•â• VIDEO â•â•â• -->
 		<div class="br-skin-panel" data-skins="video">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Video File", "bluerabbit"); ?></label>
 				<?php $thumb_id = 'the_step_image_' . $sid; ?>
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" onClick="showWPUploadVideo('<?= $thumb_id; ?>');" id="<?= $thumb_id; ?>_thumb">
+				<div class="br-gallery br-gallery-single">
+					<!-- Not the shared partial: this one uploads a VIDEO, so it calls
+					     showWPUploadVideo() rather than showWPUpload(). Same classes, same
+					     look - only the picker differs. -->
+					<div class="br-gallery-item">
+						<div class="br-gallery-thumb" onClick="showWPUploadVideo('<?= $thumb_id; ?>');" id="<?= $thumb_id; ?>_thumb">
 							<?php $mime = wp_check_filetype($s->step_image); ?>
-							<video id="<?= $thumb_id; ?>_thumb_video" class="gallery-item-video <?= strstr($mime['type'] ?? '', 'video') ? 'active' : ''; ?>" controls>
-								<source src="<?= $s->step_image; ?>">
+							<?php if (!$s->step_image) { ?>
+							<span class="br-gallery-placeholder"><span class="icon icon-video"></span></span>
+							<?php } ?>
+							<video id="<?= $thumb_id; ?>_thumb_video" class="br-gallery-video <?= strstr($mime['type'] ?? '', 'video') ? 'active' : ''; ?>" controls>
+								<source src="<?= esc_url($s->step_image); ?>">
 							</video>
 						</div>
-						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUploadVideo('<?= $thumb_id; ?>');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#<?= $thumb_id; ?>');"><span class="icon icon-trash"></span></button>
-							<input type="hidden" id="<?= $thumb_id; ?>" value="<?= $s->step_image; ?>">
+						<div class="br-gallery-actions">
+							<button type="button" class="br-gallery-btn br-gallery-btn-upload" onClick="showWPUploadVideo('<?= $thumb_id; ?>');" title="<?= esc_attr__('Choose video','bluerabbit'); ?>"><span class="icon icon-image"></span></button>
+							<button type="button" class="br-gallery-btn br-gallery-btn-remove" onClick="clearImage('#<?= $thumb_id; ?>');" title="<?= esc_attr__('Remove','bluerabbit'); ?>"><span class="icon icon-trash"></span></button>
 						</div>
+						<input type="hidden" id="<?= $thumb_id; ?>" value="<?= esc_attr($s->step_image); ?>">
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- ═══ AUDIO ═══ -->
+		<!-- â•â•â• AUDIO â•â•â• -->
 		<div class="br-skin-panel" data-skins="audio">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Audio File", "bluerabbit"); ?></label>
@@ -165,7 +171,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ GALLERY ═══ -->
+		<!-- â•â•â• GALLERY â•â•â• -->
 		<div class="br-skin-panel" data-skins="gallery">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Gallery Images", "bluerabbit"); ?> <span class="br-label-optional">(<?= __("max 7", "bluerabbit"); ?>)</span></label>
@@ -174,7 +180,7 @@ $options = $settings['options'] ?? [];
 					<div class="br-step-gallery-thumb" data-index="<?= $gi; ?>">
 						<div class="br-gallery-thumb-img" style="background-image:url(<?= esc_attr($img); ?>)"></div>
 						<button class="br-btn br-btn-red br-btn-xs" onClick="brRemoveGalleryImage(<?= $sid; ?>,<?= $gi; ?>)"><span class="icon icon-trash"></span></button>
-						<input type="hidden" class="gallery-image-url" value="<?= esc_attr($img); ?>">
+						<input type="hidden" class="br-gallery-image-url" value="<?= esc_attr($img); ?>">
 					</div>
 					<?php } ?>
 				</div>
@@ -182,7 +188,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ FIND ITEM ═══ -->
+		<!-- â•â•â• FIND ITEM â•â•â• -->
 		<div class="br-skin-panel" data-skins="find_item">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Item to grant", "bluerabbit"); ?></label>
@@ -200,7 +206,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ MULTIPLE CHOICE ═══ -->
+		<!-- â•â•â• MULTIPLE CHOICE â•â•â• -->
 		<div class="br-skin-panel" data-skins="multiple_choice">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Question", "bluerabbit"); ?></label>
@@ -238,7 +244,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ KEYPHRASE / CRYPTEX ═══ -->
+		<!-- â•â•â• KEYPHRASE / CRYPTEX â•â•â• -->
 		<div class="br-skin-panel" data-skins="keyphrase,cryptex">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Prompt / Question", "bluerabbit"); ?></label>
@@ -264,7 +270,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ PUZZLE ═══ -->
+		<!-- â•â•â• PUZZLE â•â•â• -->
 		<div class="br-skin-panel" data-skins="puzzle">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Puzzle Image", "bluerabbit"); ?></label>
@@ -286,7 +292,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ BACKPACK ITEM ═══ -->
+		<!-- â•â•â• BACKPACK ITEM â•â•â• -->
 		<div class="br-skin-panel" data-skins="backpack_item">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Prompt", "bluerabbit"); ?></label>
@@ -310,7 +316,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ SCORM ═══ -->
+		<!-- â•â•â• SCORM â•â•â• -->
 		<div class="br-skin-panel" data-skins="scorm">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("SCORM Package", "bluerabbit"); ?></label>
@@ -330,7 +336,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ CASE STUDY (HTML) ═══ -->
+		<!-- â•â•â• CASE STUDY (HTML) â•â•â• -->
 		<div class="br-skin-panel" data-skins="case_study_html">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Launch URL", "bluerabbit"); ?></label>
@@ -349,7 +355,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ SURVEY CHOICE / POLL ═══ -->
+		<!-- â•â•â• SURVEY CHOICE / POLL â•â•â• -->
 		<div class="br-skin-panel" data-skins="survey_choice,survey_poll">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Question", "bluerabbit"); ?></label>
@@ -384,7 +390,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ SURVEY RATING ═══ -->
+		<!-- â•â•â• SURVEY RATING â•â•â• -->
 		<div class="br-skin-panel" data-skins="survey_rating">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Question", "bluerabbit"); ?></label>
@@ -412,7 +418,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ OPEN TEXT ═══ -->
+		<!-- â•â•â• OPEN TEXT â•â•â• -->
 		<div class="br-skin-panel" data-skins="open_text">
 			<?php
 			$_ot_has_ai_key = false;
@@ -456,7 +462,7 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ UPLOAD IMAGE / VIDEO ═══ -->
+		<!-- â•â•â• UPLOAD IMAGE / VIDEO â•â•â• -->
 		<div class="br-skin-panel" data-skins="upload_image,upload_video">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Prompt", "bluerabbit"); ?></label>
@@ -468,12 +474,12 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ JUMP TO STEP ═══ -->
+		<!-- â•â•â• JUMP TO STEP â•â•â• -->
 		<div class="br-skin-panel" data-skins="jump_to_step">
 			<div class="br-step-buttons-container" id="step-buttons-form-container"></div>
 		</div>
 
-		<!-- ═══ BRANCH CHOICE ═══ -->
+		<!-- â•â•â• BRANCH CHOICE â•â•â• -->
 		<div class="br-skin-panel" data-skins="branch_choice">
 			<?php $branch_groups = BR_Branch::instance()->getBranchGroups($s->adventure_id); ?>
 			<div class="br-form-group">
@@ -497,7 +503,7 @@ $options = $settings['options'] ?? [];
 			<input type="hidden" id="the_step_achievement_group" value="">
 		</div>
 
-		<!-- ═══ CHOOSE NICKNAME / AVATAR ═══ -->
+		<!-- â•â•â• CHOOSE NICKNAME / AVATAR â•â•â• -->
 		<div class="br-skin-panel br-skin-panel-centered" data-skins="choose_nickname">
 			<p class="br-muted"><?= __("The system prompts the player to input their First and Last names", "bluerabbit"); ?></p>
 		</div>
@@ -505,7 +511,7 @@ $options = $settings['options'] ?? [];
 			<p class="br-muted"><?= __("Upload the images of the avatars available to the players", "bluerabbit"); ?></p>
 		</div>
 
-		<!-- ═══ MISTAKE MESSAGE ═══ -->
+		<!-- â•â•â• MISTAKE MESSAGE â•â•â• -->
 		<div class="br-skin-panel" data-skins="multiple_choice,keyphrase,cryptex,puzzle,backpack_item,scorm">
 			<div class="br-form-group">
 				<label class="br-form-label"><?= __("Mistake Message", "bluerabbit"); ?> <span class="br-label-optional">(<?= __("optional", "bluerabbit"); ?>)</span></label>
@@ -514,16 +520,16 @@ $options = $settings['options'] ?? [];
 			</div>
 		</div>
 
-		<!-- ═══ BACKGROUND ═══ -->
+		<!-- â•â•â• BACKGROUND â•â•â• -->
 		<div class="br-form-group" id="step-background-row-<?= $sid; ?>">
 			<label class="br-form-label"><?= __("Background", "bluerabbit"); ?></label>
 			<span class="br-form-hint"><?= __("Background image of the scene", "bluerabbit"); ?></span>
-			<div class="gallery"><?php BR_Utils::instance()->insertGalleryItem('the_step_background', $s->step_background); ?></div>
+			<div class="br-gallery br-gallery-single"><?php BR_Utils::instance()->insertGalleryItem('the_step_background', $s->step_background); ?></div>
 		</div>
 
-		<!-- ═══ STEP REWARDS ═══ -->
+		<!-- â•â•â• STEP REWARDS â•â•â• -->
 		<div class="br-rewards-section">
-			<label class="br-form-label br-rewards-title"><span class="icon icon-basket"></span> <?= __("Step Rewards", "bluerabbit"); ?> <span class="br-label-optional">(<?= __("optional — granted on completion", "bluerabbit"); ?>)</span></label>
+			<label class="br-form-label br-rewards-title"><span class="icon icon-basket"></span> <?= __("Step Rewards", "bluerabbit"); ?> <span class="br-label-optional">(<?= __("optional â€” granted on completion", "bluerabbit"); ?>)</span></label>
 			<div class="br-form-grid br-form-grid-3">
 				<div class="br-form-group">
 					<label class="br-form-label br-form-label-sm"><?= __("XP", "bluerabbit"); ?></label>

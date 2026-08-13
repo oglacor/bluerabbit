@@ -81,7 +81,7 @@ $all_adventures = $wpdb->get_results(
 
             <div class="br-form-group">
                 <label class="br-form-label"><?= __('Logo','bluerabbit'); ?></label>
-                <div class="gallery">
+                <div class="br-gallery br-gallery-single">
                     <?php BR_Utils::instance()->insertGalleryItem('the-org-logo', $org->org_logo); ?>
                 </div>
             </div>

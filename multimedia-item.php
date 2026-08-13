@@ -11,11 +11,15 @@
 					<?php if(strstr($mime['type'], "image")){ ?>
 						<img id="<?= $thumb_id; ?>_thumb" src="<?= $file; ?>" alt="">
 					<?php }elseif(strstr($mime['type'], "video")){ ?>
-						<video id="<?= $thumb_id; ?>_thumb" controls class="gallery-item-video">
+						<!-- Named for the component that owns them. These were gallery-item-video
+						     /-audio, which is styled only INSIDE .gallery-item and so did nothing
+						     here - and could not be pointed at .br-gallery-video either, since that
+						     is display:none until .active. -->
+						<video id="<?= $thumb_id; ?>_thumb" controls class="br-multimedia-video">
 							<source src="<?= $file; ?>">
 						</video>
 					<?php }elseif(strstr($mime['type'], "audio")){ ?>
-						<audio id="<?= $thumb_id; ?>_thumb" controls class="gallery-item-audio">
+						<audio id="<?= $thumb_id; ?>_thumb" controls class="br-multimedia-audio">
 							<source src="<?= $file; ?>">
 						</audio>
 					<?php }?> 

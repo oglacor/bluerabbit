@@ -1,4 +1,4 @@
-<div class="image-select" id="icon-art-books">
+﻿<div class="image-select" id="icon-art-books">
 	<?php for($i=1;$i<=12;$i++){ ?>
 		<?php $file = get_bloginfo('template_directory')."/images/icon-art/books/$i.png"; ?>
 		<?php $active = ($selected_book == $file) ? 'active' : ''; ?>
@@ -12,12 +12,12 @@
 		</button>
 	<?php } ?>
 </div>
-<div class="gallery">
-	<div class="gallery-item setting">
-		<div class="background" style="background-image: url(<?= isset($quest->mech_badge) ? ($quest->mech_badge) : ""; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
-		<div class="gallery-item-options relative">
-			<button class="button-icon font _24 sq-40  green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-			<button class="button-icon font _24 sq-40  red-bg-400" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
+<div class="br-gallery br-gallery-single">
+	<div class="br-gallery-item">
+		<div class="br-gallery-thumb" style="background-image: url(<?= isset($quest->mech_badge) ? ($quest->mech_badge) : ""; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
+		<div class="br-gallery-actions">
+			<button class="br-gallery-btn br-gallery-btn-upload" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
+			<button class="br-gallery-btn br-gallery-btn-remove" onClick="clearImage('#the_quest_badge');"> <span class="icon icon-trash"></span> </button>
 		</div>
 	</div>
 </div>

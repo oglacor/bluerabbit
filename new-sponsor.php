@@ -48,7 +48,7 @@
 			<tr>
 				<td class="text-right w-150"><?= __('Logo','bluerabbit'); ?></td>
 				<td>
-					<div class="gallery">
+					<div class="br-gallery br-gallery-single">
 						<?php BR_Utils::instance()->insertGalleryItem('the-sponsor-logo', $sponsor->sponsor_logo); ?>
 					</div>
 				</td>
@@ -85,7 +85,7 @@
 			<tr>
 				<td class="text-right w-150"><?= __('Image','bluerabbit'); ?></td>
 				<td>
-					<div class="gallery">
+					<div class="br-gallery br-gallery-single">
 						<?php BR_Utils::instance()->insertGalleryItem('the-sponsor-image', $sponsor->sponsor_image); ?>
 					</div>
 				</td>

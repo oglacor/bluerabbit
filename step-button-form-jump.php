@@ -19,7 +19,7 @@
 				<?php foreach ($buttons as $key => $btn) { ?>
 				<tr id="step-button-<?= $btn->button_id; ?>">
 					<td class="br-th-image">
-						<div class="gallery margin-10">
+						<div class="br-gallery br-gallery-single">
 							<?php BR_Utils::instance()->insertGalleryItem('the_step_button_image-' . $btn->button_id, $btn->button_image); ?>
 						</div>
 					</td>

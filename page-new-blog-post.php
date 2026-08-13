@@ -43,15 +43,8 @@ $is_edit = (isset($adventure) && isset($quest));
 		<div class="br-form-group">
 			<label class="br-form-label"><?= __("Post Image", "bluerabbit"); ?> <span class="br-required">*<?= __("Required", "bluerabbit"); ?></span></label>
 			<div class="br-form-component">
-				<div class="gallery">
-					<div class="gallery-item setting">
-						<div class="background" style="background-image: url(<?= isset($quest->mech_badge) ? $quest->mech_badge : ''; ?>);" onClick="showWPUpload('the_quest_badge');" id="the_quest_badge_thumb"></div>
-						<div class="gallery-item-options relative">
-							<button class="button-icon font _24 sq-40 green-bg-400" onClick="showWPUpload('the_quest_badge');"><span class="icon icon-image"></span></button>
-							<button class="button-icon font _24 sq-40 red-bg-400" onClick="clearImage('#the_quest_badge');"><span class="icon icon-trash"></span></button>
-							<input type="hidden" id="the_quest_badge" value="<?= isset($quest->mech_badge) ? $quest->mech_badge : ''; ?>">
-						</div>
-					</div>
+				<div class="br-gallery br-gallery-single">
+					<?php BR_Utils::instance()->insertGalleryItem('the_quest_badge', $quest->mech_badge ?? ''); ?>
 				</div>
 			</div>
 		</div>
