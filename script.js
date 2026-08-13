@@ -3868,12 +3868,12 @@ function brAddGalleryImage(sid) {
     frame.on('select', function() {
         var url = frame.state().get('selection').first().toJSON().url;
         var container = $('#step-gallery-' + sid);
-        if (container.find('.br-gallery-thumb').length >= 7) return;
-        var idx = container.find('.br-gallery-thumb').length;
+        if (container.find('.br-step-gallery-thumb').length >= 7) return;
+        var idx = container.find('.br-step-gallery-thumb').length;
         container.append(
-            '<div class="br-gallery-thumb" data-index="' + idx + '">' +
+            '<div class="br-step-gallery-thumb" data-index="' + idx + '">' +
             '<div style="width:80px;height:80px;border-radius:6px;background:url(' + url + ') center/cover;border:1px solid rgba(255,255,255,0.1)"></div>' +
-            '<button class="br-btn br-btn-red" style="padding:2px 6px;font-size:10px;margin-top:2px" onClick="$(this).closest(\'.br-gallery-thumb\').remove();"><span class="icon icon-trash"></span></button>' +
+            '<button class="br-btn br-btn-red" style="padding:2px 6px;font-size:10px;margin-top:2px" onClick="$(this).closest(\'.br-step-gallery-thumb\').remove();"><span class="icon icon-trash"></span></button>' +
             '<input type="hidden" class="gallery-image-url" value="' + url + '">' +
             '</div>'
         );
@@ -3882,7 +3882,7 @@ function brAddGalleryImage(sid) {
 }
 
 function brRemoveGalleryImage(sid, idx) {
-    $('#step-gallery-' + sid + ' .br-gallery-thumb[data-index=' + idx + ']').remove();
+    $('#step-gallery-' + sid + ' .br-step-gallery-thumb[data-index=' + idx + ']').remove();
 }
 
 

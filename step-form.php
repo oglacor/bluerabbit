@@ -171,7 +171,7 @@ $options = $settings['options'] ?? [];
 				<label class="br-form-label"><?= __("Gallery Images", "bluerabbit"); ?> <span class="br-label-optional">(<?= __("max 7", "bluerabbit"); ?>)</span></label>
 				<div id="step-gallery-<?= $sid; ?>" class="br-gallery-grid">
 					<?php $gallery_images = $settings['images'] ?? []; foreach ($gallery_images as $gi => $img) { ?>
-					<div class="br-gallery-thumb" data-index="<?= $gi; ?>">
+					<div class="br-step-gallery-thumb" data-index="<?= $gi; ?>">
 						<div class="br-gallery-thumb-img" style="background-image:url(<?= esc_attr($img); ?>)"></div>
 						<button class="br-btn br-btn-red br-btn-xs" onClick="brRemoveGalleryImage(<?= $sid; ?>,<?= $gi; ?>)"><span class="icon icon-trash"></span></button>
 						<input type="hidden" class="gallery-image-url" value="<?= esc_attr($img); ?>">

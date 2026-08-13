@@ -1525,7 +1525,12 @@ body.br-drawer-open {
   }
 }
 
-.br-gallery-thumb {
+// The step gallery's thumb is a stack - image, then a remove button under it - not the
+// image tile of .br-gallery-thumb above. It used to share that name, and being declared
+// later it won for BOTH: every migrated gallery tile lost width, aspect-ratio and
+// background-size, collapsing to a zero-height sliver. That is why page-config and the
+// achievement/quest pickers looked broken rather than merely dated.
+.br-step-gallery-thumb {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
