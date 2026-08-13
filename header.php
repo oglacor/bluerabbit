@@ -83,7 +83,12 @@
 			$show_survey_names = isset($adv_settings['show_survey_names']['value']) ? $adv_settings['show_survey_names']['value'] : "";
 			$use_achievements = isset($adv_settings['use_achievements']['value']) ? $adv_settings['use_achievements']['value'] : "";
 			$hide_achievements = isset($adv_settings['hide_achievements']['value']) ? $adv_settings['hide_achievements']['value'] : "";
-			$allow_magic_codes = isset($adv_settings['use_magic_codes']['value']) ? $adv_settings['use_magic_codes']['value'] : "";
+			// The stored setting is use_magic_code, singular - the name is written by the
+			// settings screen straight from the br_settings row, so the plural read here
+			// never matched anything and the flag was permanently "". That silently hid
+			// the nav button, the taskbar quick link and the code-entry form itself, no
+			// matter what the adventure had switched on.
+			$allow_magic_codes = isset($adv_settings['use_magic_code']['value']) ? $adv_settings['use_magic_code']['value'] : "";
 			$use_blockers = isset($adv_settings['use_blockers']['value']) ? $adv_settings['use_blockers']['value'] : "";
 			$use_wall = isset($adv_settings['use_wall']['value']) ? $adv_settings['use_wall']['value'] : "";
 			$use_guilds = isset($adv_settings['use_guilds']['value']) ? $adv_settings['use_guilds']['value'] : "";
