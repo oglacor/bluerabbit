@@ -1337,20 +1337,11 @@ $image_types = array(
 				</div>
 			</div>
 
-			<!-- Cooper Slug -->
-			<div class="br-step-row br-ql-row" style="--ql-color:rgba(0,188,212,0.3)" id="ql_cooper_slug">
-				<span class="br-ql-icon" style="--ql-color:rgba(0,188,212,0.4)">&nbsp;</span>
-				<div class="br-ql-info">
-					<span class="br-ql-title"><?= __("Cooper Slug","bluerabbit"); ?></span>
-					<span class="br-ql-desc"><?= __("Custom Cooper client slug for this adventure","bluerabbit"); ?></span>
-				</div>
-				<div class="setting br-ql-setting-wide">
-					<input class="br-input setting-value br-w-full" type="text" placeholder="e.g. my-company" value="<?= isset($adv_settings['ql_cooper_slug']['value']) ? $adv_settings['ql_cooper_slug']['value'] : ""; ?>">
-					<input class="setting-id" type="hidden" value="<?= isset($adv_settings['ql_cooper_slug']['id']) ? $adv_settings['ql_cooper_slug']['id'] : ""; ?>">
-					<input class="setting-name" type="hidden" value="ql_cooper_slug">
-					<input class="setting-label" type="hidden" value="<?= __("Cooper Slug","bluerabbit"); ?>">
-				</div>
-			</div>
+			<?php // The "Cooper Slug" row lived here. It named this adventure's client
+			      // record on the old external support app; Cooper now reads this
+			      // adventure out of the database directly, so there is nothing left
+			      // for a slug to point at. Existing ql_cooper_slug rows in br_settings
+			      // are simply ignored. ?>
 
 		</div>
 

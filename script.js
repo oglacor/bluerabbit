@@ -4934,6 +4934,33 @@ function saveSettings() {
         }
     });
 }
+////////////////////////////////////////// Cooper docs sync //////////////////////////////////////////
+// The crawl walks every page on bluerabbit.io/docs, so it takes a while and the
+// button has to say so - an admin who thinks nothing happened clicks again and
+// starts a second crawl on top of the first.
+function brCooperSyncDocs(btn) {
+    var label = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="icon icon-refresh"></span> Syncing…';
+    }
+    showLoader('small');
+
+    jQuery.ajax({
+        url: runAJAX.ajaxurl,
+        data: ({ action: 'br_cooper_sync_docs' }),
+        method: "POST",
+        success: function (data_received) {
+            displayAjaxResponse(data_received);
+            if (btn) { btn.disabled = false; btn.innerHTML = label; }
+        },
+        error: function () {
+            if (btn) { btn.disabled = false; btn.innerHTML = label; }
+            hideLoader();
+        }
+    });
+}
+
 ////////////////////////////////////////// Save Settings  ////////////////////////////////////////////
 function saveSysConfig() {
     showLoader('small');

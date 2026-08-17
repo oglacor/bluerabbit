@@ -573,7 +573,6 @@
 					$ql_item_shop  = $use_items && (!isset($adv_settings['ql_item_shop']['value']) || $adv_settings['ql_item_shop']['value'] != 0);
 					$ql_feedback   = !isset($adv_settings['ql_feedback']['value']) || $adv_settings['ql_feedback']['value'] != 0;
 					$ql_cooper     = !isset($adv_settings['ql_cooper']['value']) || $adv_settings['ql_cooper']['value'] != 0;
-					$cooper_slug   = isset($adv_settings['ql_cooper_slug']['value']) && $adv_settings['ql_cooper_slug']['value'] ? $adv_settings['ql_cooper_slug']['value'] : '';
 				?>
 					<?php if($ql_journey){ ?>
 					<a class="button-icon deep-purple-bg-400" id="journey-btn" href="<?= get_bloginfo('url')."/adventure/?adventure_id=$adventure->adventure_id"; ?>">
@@ -595,8 +594,10 @@
 						<span class="icon icon-comment white-color"></span>
 					</button>
 					<?php } ?>
-					<?php if($ql_cooper && $cooper_slug){ ?>
-					<button class="button-icon blue-bg-800" id="cooper-support-btn" onclick="openCooperModal()">
+					<?php // $cooper_slug is no longer part of the gate: Cooper reads this
+					      // adventure directly now, so there is no external app to point at.
+					      if($ql_cooper && BR_Cooper::instance()->isEnabled($adventure->adventure_id)){ ?>
+					<button class="button-icon blue-bg-800" id="cooper-support-btn" data-br-cooper-open title="<?= esc_attr__('Ask Cooper','bluerabbit'); ?>">
 						<img src="<?= get_bloginfo('template_directory')."/images/cooper-white.png"; ?>">
 					</button>
 					<?php } ?>
@@ -633,109 +634,44 @@
 		<?php wp_enqueue_media();?>
 		<?php wp_footer(); ?>
 
-		<?php if (isset($cooper_slug) && !empty($cooper_slug)): ?>
-		<!-- Cooper Support Modal -->
-		<div id="cooper-modal">
-			<div id="cooper-backdrop" onclick="closeCooperModal()"></div>
-			<div id="cooper-panel">
-				<button id="cooper-close" onclick="closeCooperModal()" title="Close">×</button>
-				<iframe id="cooper-iframe" src="" frameborder="0" allow="autoplay" title="Cooper Support"></iframe>
+		<?php
+		// Cooper: rendered by the theme, not embedded from support.bluerabbit.io.
+		// The panel is emitted for any logged-in user so the docs-only assistant is
+		// reachable outside an adventure; $cooper_adventure_id is 0 there, which is
+		// what tells BR_Cooper there is no progress to talk about.
+		$cooper_adventure_id = isset($adventure) ? (int) $adventure->adventure_id : 0;
+		if (is_user_logged_in() && BR_Cooper::instance()->isEnabled($cooper_adventure_id)):
+		?>
+		<div id="br-cooper" class="br-cooper" aria-hidden="true" role="dialog" aria-label="<?= esc_attr__('Cooper','bluerabbit'); ?>">
+			<div class="br-cooper-backdrop" data-br-cooper-close></div>
+			<div class="br-cooper-panel">
+
+				<div class="br-cooper-header">
+					<span class="br-cooper-avatar">
+						<img src="<?= get_bloginfo('template_directory')."/images/cooper-white.png"; ?>" alt="Cooper">
+					</span>
+					<span class="br-cooper-title">
+						<strong><?= __('Cooper','bluerabbit'); ?></strong>
+						<span><?= $cooper_adventure_id
+							? esc_html($adventure->adventure_title)
+							: __('BlueRabbit help','bluerabbit'); ?></span>
+					</span>
+					<button type="button" class="br-cooper-close" data-br-cooper-close title="<?= esc_attr__('Close','bluerabbit'); ?>">&times;</button>
+				</div>
+
+				<div id="br-cooper-log" class="br-cooper-log" aria-live="polite"></div>
+
+				<form id="br-cooper-form" class="br-cooper-form">
+					<textarea id="br-cooper-input" class="br-cooper-input" rows="1"
+						placeholder="<?= esc_attr__('Ask Cooper anything…','bluerabbit'); ?>"></textarea>
+					<button type="submit" id="br-cooper-send" class="br-cooper-send" title="<?= esc_attr__('Send','bluerabbit'); ?>">
+						<span class="icon icon-send"></span>
+					</button>
+				</form>
+				<div class="br-cooper-disclaimer"><?= __("Cooper guides — it won't hand you answers.",'bluerabbit'); ?></div>
+
 			</div>
 		</div>
-		<style>
-			#cooper-modal {
-				display: none;
-				position: fixed;
-				inset: 0;
-				z-index: 32000;
-			}
-			#cooper-modal.open { display: block; }
-			#cooper-backdrop {
-				position: absolute;
-				inset: 0;
-				background: rgba(0, 0, 0, 0.45);
-				backdrop-filter: blur(2px);
-			}
-			#cooper-panel {
-				position: absolute;
-				bottom: 70px;
-				right: 20px;
-				width: 420px;
-				height: 580px;
-				border-radius: 16px;
-				overflow: hidden;
-				box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
-				background: #0c1929;
-				animation: cooperSlideIn 0.25s ease;
-			}
-			@keyframes cooperSlideIn {
-				from { opacity: 0; transform: translateY(20px) scale(0.97); }
-				to   { opacity: 1; transform: translateY(0) scale(1); }
-			}
-			#cooper-close {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				z-index: 1;
-				background: rgba(255,255,255,0.12);
-				border: none;
-				color: white;
-				width: 28px;
-				height: 28px;
-				border-radius: 50%;
-				cursor: pointer;
-				font-size: 18px;
-				line-height: 1;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				transition: background 0.15s;
-			}
-			#cooper-close:hover { background: rgba(255,255,255,0.25); }
-			#cooper-iframe {
-				width: 100%;
-				height: 100%;
-				border: none;
-				display: block;
-			}
-			@media (max-width: 480px) {
-				#cooper-panel {
-					bottom: 60px;
-					right: 0;
-					left: 0;
-					width: 100%;
-					height: calc(100vh - 60px);
-					border-radius: 16px 16px 0 0;
-				}
-			}
-		</style>
-		<script>
-			var cooperEmbedUrl = 'https://support.bluerabbit.io/<?= esc_js($cooper_slug) ?>/?embed=1';
-			var cooperLoaded = false;
-
-			function openCooperModal() {
-				var modal  = document.getElementById('cooper-modal');
-				var iframe = document.getElementById('cooper-iframe');
-				if (!cooperLoaded) {
-					iframe.src = cooperEmbedUrl;
-					cooperLoaded = true;
-				}
-				modal.classList.add('open');
-				// Close the start menu if it's open
-				if (document.getElementById('start') && document.getElementById('start').classList.contains('active')) {
-					activateStartMenu();
-				}
-			}
-
-			function closeCooperModal() {
-				document.getElementById('cooper-modal').classList.remove('open');
-			}
-
-			// Close on Escape key
-			document.addEventListener('keydown', function(e) {
-				if (e.key === 'Escape') closeCooperModal();
-			});
-		</script>
 		<?php endif; ?>
 
 	</body>

@@ -1095,6 +1095,47 @@ function ajaxFunctions() {
 	wp_enqueue_script( 'br-scorm-api', get_template_directory_uri().'/js/scorm-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-casestudy-api', get_template_directory_uri().'/js/casestudy-api.js', array('jquery','ajaxFunctions'), '1.0', true);
 	wp_enqueue_script( 'br-session-tracker', get_template_directory_uri().'/js/br-session-tracker.js', array('jquery','ajaxFunctions'), '1.0', true);
+	br_cooper_enqueue();
+}
+
+/**
+ * Cooper's panel script and its config.
+ *
+ * The suggestions are built here rather than in JS because they depend on the
+ * adventure's own vocabulary, and an opener that says "milestones" to an
+ * adventure that calls them "missions" is worse than no opener at all.
+ */
+function br_cooper_enqueue() {
+	if ( ! is_user_logged_in() ) return;
+
+	$adventure_id = 0;
+	if ( isset($_GET['adventure_id']) ) {
+		$adventure_id = intval($_GET['adventure_id']);
+	}
+	if ( ! BR_Cooper::instance()->isEnabled( $adventure_id ) ) return;
+
+	wp_enqueue_script( 'br-cooper', get_template_directory_uri().'/js/br-cooper.js', array(), br_asset_version(), true );
+
+	$suggestions = $adventure_id
+		? array(
+			__( 'What can I do right now?', 'bluerabbit' ),
+			__( 'How am I doing so far?', 'bluerabbit' ),
+			__( "I'm stuck — where should I look?", 'bluerabbit' ),
+		)
+		: array(
+			__( 'How does BlueRabbit work?', 'bluerabbit' ),
+			__( 'How do I join an adventure?', 'bluerabbit' ),
+		);
+
+	wp_localize_script( 'br-cooper', 'brCooper', array(
+		'ajaxurl'      => admin_url( 'admin-ajax.php' ),
+		'adventureId'  => $adventure_id,
+		'greeting'     => $adventure_id
+			? __( "Hi! I'm Cooper. I can see where you are in this adventure — ask me what's open to you, or what's holding you up.", 'bluerabbit' )
+			: __( "Hi! I'm Cooper. Ask me anything about how BlueRabbit works.", 'bluerabbit' ),
+		'suggestions'  => $suggestions,
+		'genericError' => __( "Something went wrong reaching me. Try again in a moment.", 'bluerabbit' ),
+	) );
 }
 
 require_once ("$dirName/classes/Notification.php");
@@ -1133,6 +1174,7 @@ require_once ("$dirName/classes/BR-mailer.php");
 require_once ("$dirName/classes/BR-Tremendous.php");
 require_once ("$dirName/classes/BR-Stats.php");
 require_once ("$dirName/classes/BR-PlayerMeta.php");
+require_once ("$dirName/classes/BR-Cooper.php");
 require_once ("$dirName/functions/br-email-admin.php");
 
 // ── Stats Dashboard ─────────────────────────────────────────────────────────
@@ -2476,6 +2518,72 @@ function br_migrate_drop_parent_cascade_columns() {
 	}
 }
 
+/**
+ * Cooper's own tables: the chat transcript and the documentation index.
+ *
+ * The docs table is created with a raw CREATE TABLE rather than through dbDelta
+ * because dbDelta cannot parse a FULLTEXT index - it silently drops the line and
+ * then tries to re-add it on every run. The index is the whole point of the table
+ * (BR_Cooper::searchDocs is a MATCH...AGAINST in boolean mode), so it is worth
+ * stepping outside the helper for.
+ */
+function br_migrate_cooper_schema() {
+	global $wpdb;
+	$charset = $wpdb->get_charset_collate();
+
+	$conversations = "{$wpdb->prefix}br_cooper_conversations";
+	if (!$wpdb->get_var("SHOW TABLES LIKE '{$conversations}'")) {
+		$wpdb->query("CREATE TABLE {$conversations} (
+			`conv_id`          BIGINT NOT NULL AUTO_INCREMENT,
+			`player_id`        BIGINT NOT NULL,
+			`adventure_id`     BIGINT NOT NULL DEFAULT 0,
+			`conv_started`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			`conv_last_active` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			`conv_status`      VARCHAR(20) NOT NULL DEFAULT 'open',
+			PRIMARY KEY (`conv_id`),
+			KEY `player_adventure` (`player_id`, `adventure_id`)
+		) {$charset}");
+	}
+
+	$messages = "{$wpdb->prefix}br_cooper_messages";
+	if (!$wpdb->get_var("SHOW TABLES LIKE '{$messages}'")) {
+		$wpdb->query("CREATE TABLE {$messages} (
+			`msg_id`      BIGINT NOT NULL AUTO_INCREMENT,
+			`conv_id`     BIGINT NOT NULL,
+			`msg_role`    VARCHAR(20) NOT NULL,
+			`msg_content` LONGTEXT NOT NULL,
+			`msg_date`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`msg_id`),
+			KEY `conv` (`conv_id`, `msg_id`)
+		) {$charset}");
+	}
+
+	$docs = "{$wpdb->prefix}br_cooper_docs";
+	if (!$wpdb->get_var("SHOW TABLES LIKE '{$docs}'")) {
+		$wpdb->query("CREATE TABLE {$docs} (
+			`doc_id`      BIGINT NOT NULL AUTO_INCREMENT,
+			`doc_url`     VARCHAR(500) NOT NULL,
+			`doc_title`   VARCHAR(255) NOT NULL,
+			`doc_section` VARCHAR(255) NULL,
+			`doc_content` LONGTEXT NOT NULL,
+			`doc_hash`    CHAR(32) NOT NULL,
+			`doc_synced`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`doc_id`),
+			UNIQUE KEY `url` (`doc_url`(191)),
+			FULLTEXT KEY `search` (`doc_title`, `doc_content`),
+			FULLTEXT KEY `title_search` (`doc_title`)
+		) ENGINE=InnoDB {$charset}");
+	}
+
+	// MySQL resolves MATCH() against an index covering exactly the named columns,
+	// so scoring the title separately from the body needs its own index. Added
+	// here as well as in the CREATE above for installs that got the first version.
+	$has_title_idx = $wpdb->get_results("SHOW INDEX FROM {$docs} WHERE Key_name = 'title_search'");
+	if (empty($has_title_idx)) {
+		$wpdb->query("ALTER TABLE {$docs} ADD FULLTEXT KEY `title_search` (`doc_title`)");
+	}
+}
+
 function br_save_ai_api_key() {
 	global $wpdb;
 	$n = new Notification();
@@ -3209,6 +3317,62 @@ add_action("wp_ajax_br_player_branch_choice", [BR_Branch::instance(), 'ajaxPlaye
 add_action("wp_ajax_br_save_ai_api_key", 'br_save_ai_api_key');
 add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
 
+// ── Cooper ──────────────────────────────────────────────────────────────────
+
+function br_cooper_chat() {
+	$message = trim(wp_kses_post($_POST['message'] ?? ''));
+	if ($message === '') {
+		echo wp_json_encode(['success' => false, 'error' => __('Say something first!', 'bluerabbit')]);
+		die();
+	}
+	// A long paste is almost always an accident, and it is also the cheapest way
+	// to run up someone's API bill.
+	if (mb_strlen($message) > 4000) { $message = mb_substr($message, 0, 4000); }
+
+	$adventure_id    = intval($_POST['adventure_id'] ?? 0);
+	$conversation_id = intval($_POST['conversation_id'] ?? 0);
+
+	echo wp_json_encode(BR_Cooper::instance()->chat($adventure_id, $message, $conversation_id));
+	die();
+}
+add_action("wp_ajax_br_cooper_chat", 'br_cooper_chat');
+
+function br_cooper_transcript() {
+	$conversation_id = intval($_POST['conversation_id'] ?? 0);
+	echo wp_json_encode([
+		'success'  => true,
+		'messages' => BR_Cooper::instance()->transcript($conversation_id, get_current_user_id()),
+	]);
+	die();
+}
+add_action("wp_ajax_br_cooper_transcript", 'br_cooper_transcript');
+
+function br_cooper_sync_docs() {
+	if (!current_user_can('manage_options')) {
+		echo wp_json_encode(['success' => false, 'error' => __('Unauthorized.', 'bluerabbit')]);
+		die();
+	}
+	$n = new Notification();
+	$report = BR_Cooper::instance()->syncDocs();
+
+	$msg = sprintf(
+		__('Docs synced: %1$d new, %2$d updated, %3$d unchanged (%4$d pages).', 'bluerabbit'),
+		$report['added'], $report['updated'], $report['unchanged'], $report['pages']
+	);
+	if (!empty($report['failed'])) {
+		$msg .= ' ' . sprintf(__('%d failed.', 'bluerabbit'), count($report['failed']));
+	}
+
+	echo wp_json_encode([
+		'success'     => empty($report['failed']) || $report['fetched'] > 0,
+		'report'      => $report,
+		'message'     => $n->pop($msg, 'teal', 'config'),
+		'just_notify' => true,
+	]);
+	die();
+}
+add_action("wp_ajax_br_cooper_sync_docs", 'br_cooper_sync_docs');
+
 
 /**
  * Schema migrations, run once per deployment instead of once per request.
@@ -3224,7 +3388,7 @@ add_action("wp_ajax_br_ai_validate_text", 'br_ai_validate_text');
  * a migration is added or changed; deleting the br_schema_version option forces a
  * re-run.
  */
-define( 'BR_SCHEMA_VERSION', '2026-08-07.3' );
+define( 'BR_SCHEMA_VERSION', '2026-08-17.1' );
 
 function br_run_schema_migrations() {
 	if ( get_option( 'br_schema_version' ) === BR_SCHEMA_VERSION ) return;
@@ -3256,6 +3420,7 @@ function br_run_schema_migrations() {
 	br_migrate_casestudy_attempts_schema();
 	br_migrate_achievement_bulk_queue_schema();
 	br_migrate_drop_parent_cascade_columns();
+	br_migrate_cooper_schema();
 
 	update_option( 'br_schema_version', BR_SCHEMA_VERSION );
 	delete_option( 'br_schema_lock' );

@@ -61,6 +61,12 @@ class BR_Access {
         // ── Their own profile ────────────────────────────────────────────
         'updateProfile', 'setProfilePicture', 'setNickname', 'newHexad',
 
+        // ── Cooper ───────────────────────────────────────────────────────
+        // Read-only against the NPC's own progress, and it writes nothing but
+        // their own chat transcript. br_cooper_sync_docs is deliberately absent:
+        // that one rewrites the shared documentation index.
+        'br_cooper_chat', 'br_cooper_transcript',
+
         // ── Surveillance: read-only views and exports ────────────────────
         'br_stats_player_panel', 'br_stats_search_players', 'br_stats_xp_distribution',
         'br_stats_xp_history', 'br_stats_quest_funnel', 'br_stats_activity_heatmap',
