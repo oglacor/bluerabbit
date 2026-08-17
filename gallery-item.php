@@ -3,9 +3,16 @@
  * Reusable gallery item component for image/video upload.
  *
  * Variables (set before including):
- *   $thumb_id  (string)  — unique ID for the hidden input and thumbnail (required)
- *   $file      (string)  — current image/video URL (optional, default '')
- *   $callback  (string)  — extra JS callback param for showWPUpload (optional, default '')
+ *   $thumb_id    (string) — unique ID for the hidden input and thumbnail (required)
+ *   $file        (string) — current image/video URL (optional, default '')
+ *   $callback    (string) — extra JS callback param for showWPUpload (optional, default '')
+ *   $input_class (string) — extra classes for the hidden input (optional, default '')
+ *
+ * The hidden input is the only place the chosen URL lives - showWPUpload() writes
+ * it there by ID and nothing else holds a copy. A page whose save routine collects
+ * inputs by class therefore has to be able to put its class on THAT input;
+ * shadowing it with a second hidden field is what let page-config drift out of
+ * sync with this partial in the first place. Hence $input_class.
  *
  * Usage:
  *   <?php $thumb_id = 'the_quest_badge'; $file = $quest->mech_badge ?? ''; include(TEMPLATEPATH . '/gallery-item.php'); ?>
@@ -13,9 +20,10 @@
  *   <?php BR_Utils::instance()->insertGalleryItem('the_quest_badge', $quest->mech_badge); ?>
  */
 if ( ! isset( $thumb_id ) || ! $thumb_id ) return;
-$file     = $file     ?? '';
-$callback = $callback ?? '';
-$has_file = ! empty( $file );
+$file        = $file        ?? '';
+$callback    = $callback    ?? '';
+$input_class = $input_class ?? '';
+$has_file    = ! empty( $file );
 $mime     = $has_file ? wp_check_filetype( $file ) : [ 'type' => '' ];
 $is_video = $has_file && isset( $mime['type'] ) && strstr( $mime['type'], 'video' );
 ?>
@@ -39,5 +47,9 @@ $is_video = $has_file && isset( $mime['type'] ) && strstr( $mime['type'], 'video
 			<span class="icon icon-trash"></span>
 		</button>
 	</div>
-	<input type="hidden" id="<?= esc_attr( $thumb_id ); ?>" value="<?= esc_attr( $file ); ?>">
+	<input type="hidden" class="<?= esc_attr( $input_class ); ?>" id="<?= esc_attr( $thumb_id ); ?>" value="<?= esc_attr( $file ); ?>">
 </div>
+<?php
+// include() shares the caller's scope, so a value set for one tile would silently
+// apply to the next one in a loop that does not set it again.
+unset( $callback, $input_class );

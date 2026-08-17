@@ -1076,6 +1076,12 @@ select.br-input {
   }
 }
 
+// One grid cell wrapping a tile plus its label and the hidden inputs a page's save
+// routine collects. Positioned so the tile's absolutely placed actions stay inside it.
+.br-gallery-cell {
+  position: relative;
+}
+
 // Gallery label (for config pages)
 .br-gallery-label {
   padding: 6px 8px;

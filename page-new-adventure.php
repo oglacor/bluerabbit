@@ -1450,8 +1450,11 @@ $image_types = array(
 				?>
 				<!-- Not the shared gallery-item partial: these tiles carry the four
 				     setting-* inputs the settings save collects, which the generic
-				     component does not model. Same classes, same look, extra contract. -->
-				<div class="br-gallery-item">
+				     component does not model. Same classes, same look, extra contract.
+				     .setting is half of that contract - updateAdventure() iterates
+				     $('.setting') to build adventure_settings, so without it the whole
+				     grid is edited and then never submitted. -->
+				<div class="br-gallery-item setting">
 					<div class="br-gallery-thumb" style="background-image: url(<?= esc_url($img_url); ?>);" id="<?=$iKey;?>_thumb" onClick="showWPUpload('<?=$iKey; ?>');">
 						<?php if(!$img_url){ ?>
 						<span class="br-gallery-placeholder"><span class="icon icon-image"></span></span>

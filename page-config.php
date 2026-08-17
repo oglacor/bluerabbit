@@ -298,7 +298,7 @@
 		<div class="br-config-settings-list">
 		<?php foreach($sg['settings'] as $sKey=>$s){ ?>
 			<div class="br-step-row br-config-setting-row" id="<?= $sKey; ?>">
-				<div class="br-config-setting-body config">
+				<div class="br-config-setting-body">
 					<span class="br-config-setting-label">
 						<?php if(isset($s['icon'])){ ?><span class="icon icon-<?= $s['icon']; ?> br-config-icon-hint"></span> <?php } ?>
 						<?= $s['label']; ?>
@@ -337,7 +337,16 @@
 						</div>
 					<?php }elseif($s['type']=='image'){ ?>
 						<div class="br-gallery br-gallery-single">
-							<?php $thumb_id = $sKey; $file = $config[$sKey]['value']; include(TEMPLATEPATH . '/gallery-item.php'); ?>
+							<?php
+							// _image, not $sKey: the row wrapper above already owns id="$sKey"
+							// for toggleSetting()/saveSetting(), and showWPUpload() resolves its
+							// target with $('#' + who) - which returns the row div, so the picked
+							// URL was being written to a <div> and thrown away.
+							$thumb_id    = $sKey . '_image';
+							$file        = $config[$sKey]['value'];
+							$input_class = 'setting-value';
+							include(TEMPLATEPATH . '/gallery-item.php');
+							?>
 						</div>
 					<?php } ?>
 					<input class="form-ui setting-id" type="hidden" value="<?= isset($config[$sKey]['id']) ? $config[$sKey]['id'] : ''; ?>">
@@ -554,12 +563,23 @@
 		<h3 class="br-panel-title"><span class="icon icon-image"></span> <?= __("Images","bluerabbit"); ?></h3>
 		<div class="br-gallery br-gallery-large">
 			<?php foreach($image_types as $iKey=>$img){ ?>
-			<div style="position:relative">
-				<?php $thumb_id = $iKey; $file = $config[$iKey]['value']; include(TEMPLATEPATH . '/gallery-item.php'); ?>
+			<?php // .config is what saveSysConfig() iterates over. Without it this whole
+			      // grid was rendered, edited, and then simply not submitted. ?>
+			<div class="br-gallery-cell config">
+				<?php
+				$thumb_id    = $iKey;
+				$file        = isset($config[$iKey]['value']) ? $config[$iKey]['value'] : '';
+				$input_class = 'setting-value';
+				include(TEMPLATEPATH . '/gallery-item.php');
+				?>
 				<div class="br-gallery-label"><?= $img['label']; ?></div>
-				<input class="form-ui setting-id" type="hidden" value="<?= $config[$iKey]['id']; ?>">
-				<input class="form-ui setting-name" type="hidden" value="<?= $iKey; ?>">
-				<input class="form-ui setting-label" type="hidden" value="<?= $img['label']; ?>">
+				<input class="form-ui setting-id" type="hidden" value="<?= isset($config[$iKey]['id']) ? $config[$iKey]['id'] : ''; ?>">
+				<input class="form-ui setting-name" type="hidden" value="<?= esc_attr($iKey); ?>">
+				<input class="form-ui setting-label" type="hidden" value="<?= esc_attr($img['label']); ?>">
+				<?php // saveSysConfig() writes config_type and config_desc on every save, so
+				      // leaving these out blanked both columns for the image rows. ?>
+				<input class="form-ui setting-type" type="hidden" value="upload">
+				<input class="form-ui setting-desc" type="hidden" value="<?= isset($img['desc']) ? esc_attr($img['desc']) : ''; ?>">
 			</div>
 			<?php } ?>
 		</div>

@@ -190,10 +190,11 @@ class BR_Utils {
         return $symbol . ($value < 0 ? '-' : '') . number_format(abs($value), $decimals);
     }
 
-    public function insertGalleryItem($thumb_id, $file=NULL, $callback=NULL){
+    public function insertGalleryItem($thumb_id, $file=NULL, $callback=NULL, $input_class=NULL){
         if($thumb_id){
-            $file     = $file ?? '';
-            $callback = $callback ?? '';
+            $file        = $file ?? '';
+            $callback    = $callback ?? '';
+            $input_class = $input_class ?? '';
             $theFile = (get_template_directory()."/gallery-item.php");
             if(file_exists($theFile)) {
                 include ($theFile);

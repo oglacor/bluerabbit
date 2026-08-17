@@ -2941,10 +2941,15 @@ function clearImage(id, updateType, q_id) {
     } else {
         $(id).val(0);
         $(id + "_thumb").css("background-image", "");
-        $(id + "_thumb_video source").removeAttr('src');
-        $(id + "_thumb_video").removeClass('active');
-        $(id + "_thumb_video")[0].load();
-
+        // The gallery partial only renders a <video> when the current file is one,
+        // so on an image tile this set is empty and [0].load() threw a TypeError -
+        // which is every Remove button on every plain image picker.
+        let video = $(id + "_thumb_video");
+        if (video.length) {
+            $(id + "_thumb_video source").removeAttr('src');
+            video.removeClass('active');
+            video[0].load();
+        }
     }
 }
 
