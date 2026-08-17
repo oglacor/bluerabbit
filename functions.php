@@ -829,118 +829,9 @@ $sql = "
 	
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta($sql);
-	$new_pages = array(
-		"About Adventure",
-		"Achievement",
-		"Achievements",
-		"Adventure",
-		"Adventures",
-		"Adventure Summary",
-		"Documents", // Page to show unprocessed chunks. Here we display all chunk cards and allow the user to edit and customize the project.
-		"Document Chunks", // Page to show unprocessed chunks. Here we display all chunk cards and allow the user to edit and customize the project.
-		"Projects", // List of projects to access and manage them.
-		"Project", // Here we edit name and description of the project.
-		"Assign Achievement",
-		"Assign Item",
-		"Backpack",
-		"Blocker",
-		"Blockers",
-		"Blog Post",
-		"Blog",
-		"Builder",
-		"Challenge",
-		"Challenges",
-		"Challenges Report",
-		"Certificate",
-		"Config",
-		"Duplicator",
-        "Email Notifications",
-		"Encounters",
-		"Enroll",
-		"Guild",
-		"Guilds",
-		"Guild Enroll",
-		"Item Shop",
-		"Item",
-		"Leaderboard",
-		"Login",
-		"Lore",
-		"Magic Link",
-		"Manage Adventure",
-		"Manage Adventures",
-		"Manage Players",
-		"Mission",
-		"My Account",
-		"My Organization",
-		"My Report",
-		"New Achievement",
-		"New Adventure",
-		"New Tabi",
-		"New Blocker",
-		"New Blog Post",
-		"New Challenge",
-		"New Encounter",
-		"New Guild",
-		"New HEXAD",
-		"New Item",
-		"New Lore",
-		"New Mission",
-		"New Organization",
-		"New Player Post",
-		"New Quest",
-		"New Speaker",
-		"New Survey",
-		"New Session",
-		"Organization",
-		"Organizations",
-		"No Access",
-		"Paypal Ipn",
-		"Player Work",
-		"Player",
-		"Players",
-		"Post",
-        "Quest QR",
-		"Quest",
-		"Register",
-		"Report",
-		"Review Player Posts",
-		"Schedule",
-		"Secrets and clues",
-		"Session",
-		"Speaker",
-		"Speakers",
-		"Survey Results",
-		"Survey",
-		"Stats",
-		"Transactions",
-		"Tremendous Orders",
-		"Tabis",
-		"Wall",
-		"Manage Requests",
-		"My Requests"
-	);
-	foreach ($new_pages as $np) {
-		// Exact, case-insensitive match on post_title
-		$q = new WP_Query([
-			'post_type'      => 'page',
-			'title'          => $np,       // exact match on the title
-			'post_status'    => 'any',     // mirror get_page_by_title behavior
-			'posts_per_page' => 1,
-			'no_found_rows'  => true,
-			'fields'         => 'ids',     // faster: return only IDs
-		]);
-
-		if (empty($q->posts)) {
-			$nparray = [
-				'post_type'    => 'page',
-				'post_title'   => $np,
-				'post_content' => '',
-				'post_status'  => 'publish',
-				'post_author'  => 1,
-			];
-			$npid = wp_insert_post($nparray);
-		}
-	}
+	// Every page the theme routes to - see br_theme_pages(). Forced here because a
+	// fresh activation has no signature stored yet and must not wait for init.
+	br_ensure_pages( true );
 
 	// Seed standard plans
 	$standard_plans = array(
@@ -3370,3 +3261,265 @@ function br_run_schema_migrations() {
 	delete_option( 'br_schema_lock' );
 }
 add_action( 'init', 'br_run_schema_migrations' );
+
+/**
+ * The pages BlueRabbit needs in wp_posts, keyed by slug.
+ *
+ * The slug is the important half, not the title. WordPress picks a template by
+ * slug (page-{slug}.php), so a page called "Item Shop" sitting on the slug
+ * item-shop-2 renders the generic page.php and looks, to everyone using the
+ * site, exactly like a missing page. That is why every entry here is created
+ * with an explicit post_name and why br_ensure_pages() matches on slug.
+ *
+ * Keep this in step with the page-*.php templates in the theme root: a template
+ * with no page here is dead code, and a page here with no template just renders
+ * page.php. The one intentional omission is page-dev.php - it exposes
+ * destructive maintenance helpers and has no business existing on a client
+ * install. page-magic-link-bkp.php is a backup copy, not a route.
+ */
+function br_theme_pages() {
+	return array(
+		// ── Player-facing ────────────────────────────────────────────────
+		'about-adventure'     => 'About Adventure',
+		'achievements'        => 'Achievements',
+		'adventure'           => 'Adventure',
+		'adventure-summary'   => 'Adventure Summary',
+		'adventures'          => 'Adventures',
+		'backpack'            => 'Backpack',
+		'blog'                => 'Blog',
+		'blog-post'           => 'Blog Post',
+		'certificate'         => 'Certificate',
+		'challenge'           => 'Challenge',
+		'challenges'          => 'Challenges',
+		'enroll'              => 'Enroll',
+		'guild-enroll'        => 'Guild Enroll',
+		'guilds'              => 'Guilds',
+		'item'                => 'Item',
+		'item-shop'           => 'Item Shop',
+		'items'               => 'Items',
+		'leaderboard'         => 'Leaderboard',
+		'lore'                => 'Lore',
+		'mission'             => 'Mission',
+		'my-account'          => 'My Account',
+		'my-requests'         => 'My Requests',
+		'post'                => 'Post',
+		'quest'               => 'Quest',
+		'report'              => 'Report',
+		'secrets-and-clues'   => 'Secrets and clues',
+		'schedule'            => 'Schedule',
+		'session'             => 'Session',
+		'speaker'             => 'Speaker',
+		'speakers'            => 'Speakers',
+		'survey'              => 'Survey',
+		'thank-you'           => 'Thank You',
+		'transactions'        => 'Transactions',
+		'upgrade'             => 'Upgrade',
+		'wall'                => 'Wall',
+
+		// ── Access / entry points ────────────────────────────────────────
+		'login'               => 'Login',
+		'magic-link'          => 'Magic Link',
+		'no-access'           => 'No Access',
+		'register'            => 'Register',
+		'paypal-ipn'          => 'Paypal Ipn',
+
+		// ── Game Master: building an adventure ───────────────────────────
+		'builder'             => 'Builder',
+		'config'              => 'Config',
+		'duplicator'          => 'Duplicator',
+		'manage-adventure'    => 'Manage Adventure',
+		'manage-adventures'   => 'Manage Adventures',
+		'new-achievement'     => 'New Achievement',
+		'new-adventure'       => 'New Adventure',
+		'new-blocker'         => 'New Blocker',
+		'new-blog-post'       => 'New Blog Post',
+		'new-challenge'       => 'New Challenge',
+		'new-encounter'       => 'New Encounter',
+		'new-guild'           => 'New Guild',
+		'new-hexad'           => 'New HEXAD',
+		'new-item'            => 'New Item',
+		'new-lore'            => 'New Lore',
+		'new-quest'           => 'New Quest',
+		'new-session'         => 'New Session',
+		'new-speaker'         => 'New Speaker',
+		'blockers'            => 'Blockers',
+		'quest-qr'            => 'Quest QR',
+		'surveys'             => 'Surveys',
+		'tabis'               => 'Tabis',
+
+		// ── Game Master: running an adventure ────────────────────────────
+		'assign-achievement'  => 'Assign Achievement',
+		'assign-item'         => 'Assign Item',
+		'bulk'                => 'Bulk',
+		'challenges-report'   => 'Challenges Report',
+		'email-notifications' => 'Email Notifications',
+		'manage-players'      => 'Manage Players',
+		'manage-requests'     => 'Manage Requests',
+		'milestone-funnel'    => 'Milestone Funnel',
+		'player'              => 'Player',
+		'player-meta'         => 'Player Meta',
+		'player-report'       => 'Player Report',
+		'player-work'         => 'Player Work',
+		'players'             => 'Players',
+		'review-player-posts' => 'Review Player Posts',
+		'stats'               => 'Stats',
+		'survey-results'      => 'Survey Results',
+
+		// ── Organizations / platform admin ───────────────────────────────
+		'manage-orgs'         => 'Manage Orgs',
+		'my-orgs'             => 'My Orgs',
+		'organization'        => 'Organization',
+		'tremendous-orders'   => 'Tremendous Orders',
+		'users'               => 'Users',
+
+		// ── Legacy: shipped by earlier versions, no template of their own.
+		// They render the generic page.php. Kept so an update never removes a
+		// route a client site or a WP menu may still point at; safe to prune
+		// once you have confirmed nothing links to them.
+		'achievement'         => 'Achievement',
+		'blocker'             => 'Blocker',
+		'encounters'          => 'Encounters',
+		'guild'               => 'Guild',
+		'my-organization'     => 'My Organization',
+		'my-report'           => 'My Report',
+		'new-organization'    => 'New Organization',
+		'new-player-post'     => 'New Player Post',
+		'new-tabi'            => 'New Tabi',
+		'organizations'       => 'Organizations',
+		'documents'           => 'Documents',
+		'document-chunks'     => 'Document Chunks',
+		'projects'            => 'Projects',
+		'project'             => 'Project',
+	);
+}
+
+/**
+ * Create any page from br_theme_pages() that this install is missing.
+ *
+ * This used to live inline in theme_core_setup(), which is hooked on
+ * after_switch_theme - so it only ever ran when someone *switched* to the theme.
+ * Updating the theme in place (the normal way a client gets a new version)
+ * never fired it, which is why pages added after the initial setup were still
+ * missing on live sites. It now runs on init behind a signature check, so
+ * shipping a new page in this list is enough: the next request after the deploy
+ * picks it up and no version constant has to be bumped by hand.
+ *
+ * The signature is the list itself, so this costs one option read per request
+ * once everything is in place.
+ *
+ * @param bool $force Run even when the signature already matches.
+ * @return array {created: string[], repaired: string[], published: string[]}
+ */
+function br_ensure_pages( $force = false ) {
+	$pages  = br_theme_pages();
+	$report = array( 'created' => array(), 'repaired' => array(), 'published' => array() );
+
+	$signature = md5( wp_json_encode( $pages ) );
+	if ( ! $force && get_option( 'br_pages_signature' ) === $signature ) return $report;
+
+	// Same reasoning as br_run_schema_migrations(): until the signature is
+	// stamped, every concurrent request would start inserting the same pages,
+	// and wp_insert_post() resolves the resulting slug clash by suffixing -2,
+	// so the race does not just waste work - it produces the exact broken state
+	// this function exists to repair. add_option() is an INSERT on a unique key,
+	// so exactly one caller wins.
+	$lock = get_option( 'br_pages_lock' );
+	if ( $lock ) {
+		if ( ( time() - (int) $lock ) < 300 ) return $report;
+		delete_option( 'br_pages_lock' );
+	}
+	if ( ! add_option( 'br_pages_lock', time(), '', 'no' ) ) return $report;
+
+	foreach ( $pages as $slug => $title ) {
+		$page = get_page_by_path( $slug, OBJECT, 'page' );
+
+		if ( ! $page ) {
+			// Nothing on the canonical slug. Before adding a second copy, check
+			// whether the page is already here under a deduplicated slug - the
+			// old title-matching code would find it, skip it and leave the
+			// template permanently unreachable. Claim the slug back instead.
+			$page = br_find_page_by_title( $title );
+			if ( $page ) {
+				wp_update_post( array( 'ID' => $page->ID, 'post_name' => $slug ) );
+				$report['repaired'][] = $slug;
+				$page = get_post( $page->ID );
+			}
+		}
+
+		if ( $page ) {
+			// A draft or pending page 404s for players, which reads as missing.
+			if ( 'publish' !== $page->post_status ) {
+				wp_update_post( array( 'ID' => $page->ID, 'post_status' => 'publish' ) );
+				$report['published'][] = $slug;
+			}
+			continue;
+		}
+
+		$id = wp_insert_post( array(
+			'post_type'      => 'page',
+			'post_title'     => $title,
+			'post_name'      => $slug,
+			'post_content'   => '',
+			'post_status'    => 'publish',
+			'post_author'    => 1,
+			'comment_status' => 'closed',
+			'ping_status'    => 'closed',
+		) );
+
+		if ( $id && ! is_wp_error( $id ) ) $report['created'][] = $slug;
+	}
+
+	update_option( 'br_pages_signature', $signature, false );
+	delete_option( 'br_pages_lock' );
+
+	if ( $report['created'] || $report['repaired'] || $report['published'] ) {
+		update_option( 'br_pages_last_report', $report, false );
+	}
+
+	return $report;
+}
+add_action( 'init', 'br_ensure_pages' );
+
+/**
+ * Exact title match against pages in any usable status.
+ *
+ * get_page_by_title() is deprecated as of WP 6.2, and 'any' as a post_status
+ * silently drops trashed pages - which is what we want here, a page in the bin
+ * should be recreated rather than resurrected onto the canonical slug.
+ */
+function br_find_page_by_title( $title ) {
+	$q = new WP_Query( array(
+		'post_type'      => 'page',
+		'title'          => $title,
+		'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
+		'posts_per_page' => 1,
+		'no_found_rows'  => true,
+	) );
+	return empty( $q->posts ) ? null : $q->posts[0];
+}
+
+/**
+ * Admins can force a re-run with ?br_ensure_pages=1 on any admin screen, for
+ * when a site is known to be missing pages and nobody wants to wait for a
+ * signature change.
+ */
+function br_ensure_pages_manual_run() {
+	if ( empty( $_GET['br_ensure_pages'] ) || ! current_user_can( 'manage_options' ) ) return;
+	$GLOBALS['br_pages_manual_report'] = br_ensure_pages( true );
+}
+add_action( 'admin_init', 'br_ensure_pages_manual_run' );
+
+function br_ensure_pages_notice() {
+	if ( ! isset( $GLOBALS['br_pages_manual_report'] ) ) return;
+	$r = $GLOBALS['br_pages_manual_report'];
+
+	$lines = array();
+	if ( $r['created'] )   $lines[] = sprintf( __( 'Created: %s', 'bluerabbit' ), implode( ', ', $r['created'] ) );
+	if ( $r['repaired'] )  $lines[] = sprintf( __( 'Slug repaired: %s', 'bluerabbit' ), implode( ', ', $r['repaired'] ) );
+	if ( $r['published'] ) $lines[] = sprintf( __( 'Published: %s', 'bluerabbit' ), implode( ', ', $r['published'] ) );
+	if ( ! $lines ) $lines[] = __( 'All theme pages are present.', 'bluerabbit' );
+
+	echo '<div class="updated notice"><p><strong>BlueRabbit pages</strong><br>'
+		. implode( '<br>', array_map( 'esc_html', $lines ) ) . '</p></div>';
+}
+add_action( 'admin_notices', 'br_ensure_pages_notice' );
