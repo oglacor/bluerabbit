@@ -202,27 +202,6 @@ class BR_Adventure {
     }
 
     // From functions/ajax.php
-    public function loadStory($adv_id=null){
-        global $wpdb;
-        $data=array();
-        $adventure_id = $adv_id ? $adv_id : $_POST['adventure_id'];
-        $adventure = $this->getAdventure($adventure_id);
-        $notification = new Notification();
-        if($adventure->adventure_instructions){
-            $theFile = (get_template_directory()."/about-adventure.php");
-            if(file_exists($theFile)) {
-                include ($theFile);
-            }else{
-                $msg_content = __("Content doesn't exist",'bluerabbit');
-                $data['message'] = $notification->pop($msg_content, 'red','cancel');
-                $data['just_notify'] =true;
-                echo json_encode($data);
-            }
-        }
-        die();
-    }
-
-    // From functions/ajax.php
     public function getAdventure($adventure_id=NULL){
         if($adventure_id){
             global $wpdb; $current_user = wp_get_current_user();

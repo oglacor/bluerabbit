@@ -36,7 +36,7 @@ class BR_Access {
 
         // ── Session, chrome and read-only renderers ──────────────────────
         'br_logout', 'br_notify', 'br_session_ping', 'br_dismiss_tutorial',
-        'closeIntro', 'loadContent', 'loadChat', 'loadStory', 'loadLore', 'searchLore',
+        'closeIntro', 'loadContent', 'loadChat', 'loadLore', 'searchLore',
         'loadQuestCard', 'loadItemCard', 'loadAchievementCard', 'loadBackpackItem',
         'loadGuildCard', 'displayAchievementCard', 'loadStepButtonForm',
         'insertItemConditionsModal', 'insertQuestConditionsModal', 'insertTabiConditionsModal',

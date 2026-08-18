@@ -147,16 +147,6 @@
 						</a>
 					</li>
 				<?php } ?>
-				<?php if($adventure->adventure_instructions){ ?>
-					<li class="nav-button">
-						<a class="" href="<?=get_bloginfo('url')."/about-adventure/?adventure_id=$adv_child_id"; ?>">
-							<span class="content">
-								<span class="image"><img src="<?= get_bloginfo('template_directory'); ?>/images/icons/icon-story.png" alt=""/></span>
-								<span class="label"><?= __("Story","bluerabbit"); ?></span>
-							</span>
-						</a>
-					</li>
-				<?php } ?>
 				<?php if ($use_wall){ ?>
 					<li class="nav-button">
 						<a href="<?= get_bloginfo('url')."/wall/?adventure_id=$adv_child_id"; ?>">

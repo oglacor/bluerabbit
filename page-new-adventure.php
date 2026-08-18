@@ -202,7 +202,7 @@ $image_types = array(
 			<span class="icon icon-tools"></span> <?= __("General","bluerabbit"); ?>
 		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('adventure-intro', this)">
-			<span class="icon icon-document"></span> <?= __("Intro","bluerabbit"); ?>
+			<span class="icon icon-comment"></span> <?= __("Cooper Context","bluerabbit"); ?>
 		</button>
 		<button class="br-tab-btn" onClick="brScrollTo('certificate-settings', this)">
 			<span class="icon icon-achievement"></span> <?= __("Certificate","bluerabbit"); ?>
@@ -492,12 +492,13 @@ $image_types = array(
 	</div>
 
 	<!-- ═══════════════════════════════════════════════════════ -->
-	<!-- ADVENTURE INTRO                                        -->
+	<!-- COOPER CONTEXT                                         -->
 	<!-- ═══════════════════════════════════════════════════════ -->
 	<div class="br-scroll-section" id="adventure-intro">
 	<div class="br-panel">
-		<h3 class="br-panel-title"><span class="icon icon-document"></span> <?= __('Adventure Intro',"bluerabbit"); ?></h3>
-		<p class="br-form-hint"><?= __('This message will be seen when players log in for the first time to the adventure.','bluerabbit'); ?></p>
+		<h3 class="br-panel-title"><span class="icon icon-comment"></span> <?= __('Cooper Context',"bluerabbit"); ?></h3>
+		<p class="br-form-hint"><?= __("Everything Cooper should know about this adventure that it cannot work out from the database on its own — what the programme is for, who the players are, house rules, dates, who to contact, vocabulary your organisation uses. Cooper reads this on every conversation and treats it as authoritative, so it is the one place a Game Master can teach the assistant without touching any code.","bluerabbit"); ?></p>
+		<p class="br-form-hint"><strong><?= __("Players never see this text.","bluerabbit"); ?></strong> <?= __("It used to be the intro message shown on first login; that screen is gone. Write for the assistant, not for the player — and do not put answers, codes or solutions here, because Cooper is built never to reveal them.","bluerabbit"); ?></p>
 		<div class="br-form-group">
 			<?php
 			if($roles[0]=="administrator"){

@@ -1,11 +1,6 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 <?php $journey_style = $_GET['style'] ?? 'map'; ?>
 <?php if($adventure){ ?>
-	<?php if(!$current_player->player_hide_intro && $adventure->adventure_instructions){ ?>
-		<script>
-			document.location.href="<?=get_bloginfo('url')."/about-adventure/?adventure_id=$adv_child_id"; ?>";
-		</script>
-	<?php } ?>
 
 	<?php
 		if($adventure->adventure_has_guilds && !$current_player->player_guild && !$isGM && !$isAdmin){

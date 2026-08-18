@@ -41,8 +41,8 @@ const new_adventure_steps = [
     },
     {
         id: 'intro-1',
-        title: "<?= __("Intro Message","bluerabbit"); ?>",
-        text: "<?= __("This is what players see the very first time they log into the adventure.","bluerabbit"); ?>",
+        title: "<?= __("Cooper Context","bluerabbit"); ?>",
+        text: "<?= __("Notes for the Cooper assistant: what this adventure is for, house rules, dates, who to contact. Players never see it - Cooper reads it on every conversation.","bluerabbit"); ?>",
         <?= br_tab_switch_snippet('#tab-group', '#adventure-intro'); ?>
         attachTo: { element: '#tutorial-adventure-intro', on: 'top' },
         buttons: [ brNextBtn() ]

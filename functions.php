@@ -3360,7 +3360,6 @@ add_action("wp_ajax_removeOption", [BR_Challenge::instance(), 'removeOption']);
 add_action("wp_ajax_updateSpeaker", [BR_Session::instance(), 'updateSpeaker']);
 add_action("wp_ajax_updateSession", [BR_Session::instance(), 'updateSession']);
 add_action("wp_ajax_loadContent", [BR_Content::instance(), 'loadContent']);
-add_action("wp_ajax_loadStory", [BR_Adventure::instance(), 'loadStory']);
 add_action("wp_ajax_br_logout", [BR_Player::instance(), 'br_logout']);
 add_action("wp_ajax_br_scorm_upload", array('BR_SCORM', 'ajax_upload'));
 add_action("wp_ajax_br_scorm_save_data", array('BR_SCORM', 'ajax_save_data'));
@@ -3512,7 +3511,6 @@ add_action( 'init', 'br_run_schema_migrations' );
 function br_theme_pages() {
 	return array(
 		// ── Player-facing ────────────────────────────────────────────────
-		'about-adventure'     => 'About Adventure',
 		'achievements'        => 'Achievements',
 		'adventure'           => 'Adventure',
 		'adventure-summary'   => 'Adventure Summary',

@@ -2098,32 +2098,6 @@ function randomEncounter(enc_id = 0) {
     });
 }
 
-function loadStory() {
-    $('#overlay-content .content').html('');
-    let adventure_id = $('#the_adventure_id').val();
-    showLoader();
-    jQuery.ajax({
-        url: runAJAX.ajaxurl,
-        data: ({
-            action: 'loadStory',
-            adventure_id: adventure_id
-        }),
-        method: "POST",
-        success: function (data_received) {
-            if (isJson(data_received)) {
-                displayAjaxResponse(data_received);
-            } else {
-                $('#overlay-content .content').html(data_received);
-            }
-            hideAllOverlay();
-            let flipTimeout = setTimeout(function () {
-                $("#overlay-content").addClass('active');
-            }, 100);
-        }
-    });
-}
-
-
 ///////////////// Load Guild Card
 function loadGuildCard(guild_id = 0) {
     showLoader();

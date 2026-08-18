@@ -511,7 +511,11 @@
 			include (get_stylesheet_directory() . '/tutorials/tutorial-journey.php');
 		}
         ?>
-        <?php if(is_page('adventure') && isset($current_player, $adventure) && empty($current_player->player_hide_intro) && empty($adventure->adventure_instructions)){ ?>
+        <?php // Was also gated on an empty adventure_instructions, back when instructions
+              // meant "show the intro screen instead of the tutorial". Instructions are
+              // now Cooper's context and are never shown, so that clause would have
+              // denied the tutorial to every adventure that wrote any context.
+              if(is_page('adventure') && isset($current_player, $adventure) && empty($current_player->player_hide_intro)){ ?>
             <script>
                tour.start();
             </script>
