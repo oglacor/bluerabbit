@@ -107,7 +107,47 @@ class BR_Config {
                 }
             }
         }
+
+        if($plan_key){
+            $features = $this->grantSystemPlan($plan_key, $features);
+        }
         return !empty($features) ? $features : false;
+    }
+
+    /**
+     * A 'system' plan (God Mode) is never gated by a feature switch.
+     *
+     * The stored rows had drifted into an incoherent state: God Mode had
+     * allow_use_claude_api, use_item_shop and use_backpack switched OFF while
+     * Basic - the cheapest plan - had the Claude API switched ON. The practical
+     * effect was that an administrator, who resolves to God Mode, silently lost
+     * the A.I. Content Validation panel on every adventure and could not add an
+     * API key at all, while a Basic user could.
+     *
+     * Fixing the three rows would have fixed today's symptom and left the cause:
+     * nothing stops the next Save Settings, plan edit, or seed from writing a 0
+     * there again. So the guarantee is enforced where the values are read
+     * instead, and the stored rows for system plans simply stop mattering.
+     *
+     * Numeric features (max_adventures, max_players) are deliberately left
+     * alone - forcing them to 1 would turn "unlimited" into a limit of one.
+     */
+    private function grantSystemPlan($plan_key, $features){
+        global $wpdb;
+        if(empty($features) || !is_array($features)) return $features;
+
+        $is_system = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_plans WHERE plan_key = %s AND plan_type = 'system'",
+            $plan_key
+        ));
+        if(!$is_system) return $features;
+
+        foreach($features as $name => $f){
+            $type = isset($f['type']) ? $f['type'] : 'radio';
+            if($type === 'number') continue;
+            $features[$name][$plan_key] = 1;
+        }
+        return $features;
     }
 
     public function getUserPlan($user_id){

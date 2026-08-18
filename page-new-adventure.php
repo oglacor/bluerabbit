@@ -1116,7 +1116,7 @@ $image_types = array(
 	<?php if ($br_ai_allowed) { ?>
 	<div class="br-scroll-section" id="ai-settings">
 	<div class="br-panel">
-		<h3 class="br-panel-title"><span class="icon icon-data"></span> <?= __("A.I. Features","bluerabbit"); ?></h3>
+		<h3 class="br-panel-title"><span class="icon icon-data"></span> <?= __("A.I. Content Validation &amp; Cooper","bluerabbit"); ?></h3>
 		<span class="br-form-hint"><?= __("One Claude API key powers every A.I. feature in this adventure: validation on Open Text steps, A.I. grading, and Cooper. The key is stored per-adventure and used server-side only — usage bills to whoever owns it, so a client can use their own Anthropic account.","bluerabbit"); ?></span>
 
 		<?php $ai_key = $adventure->adventure_ai_api_key ?? ''; ?>
