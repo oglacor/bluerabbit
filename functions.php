@@ -2582,6 +2582,31 @@ function br_migrate_cooper_schema() {
 	if (empty($has_title_idx)) {
 		$wpdb->query("ALTER TABLE {$docs} ADD FULLTEXT KEY `title_search` (`doc_title`)");
 	}
+
+	// Seed Cooper's two br_config rows.
+	//
+	// BR_Cooper treats a missing cooper_enabled as ON, but the Config page does
+	// not: its toggle reads $config['cooper_enabled']['value'], which for an
+	// absent row renders empty, so the switch shows OFF and the first "Save
+	// Settings" writes that empty value back - silently disabling Cooper without
+	// anyone touching the toggle. Seeding the row makes the UI agree with the code.
+	$cooper_defaults = array(
+		'cooper_enabled' => array('label' => 'Enable Cooper',      'type' => 'radio', 'value' => '1'),
+		'cooper_api_key' => array('label' => 'Anthropic API Key',  'type' => 'text',  'value' => ''),
+	);
+	foreach ($cooper_defaults as $name => $cd) {
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT config_id FROM {$wpdb->prefix}br_config WHERE config_name = %s", $name
+		));
+		if (!$exists) {
+			$wpdb->insert("{$wpdb->prefix}br_config", array(
+				'config_name'  => $name,
+				'config_label' => $cd['label'],
+				'config_type'  => $cd['type'],
+				'config_value' => $cd['value'],
+			), array('%s', '%s', '%s', '%s'));
+		}
+	}
 }
 
 function br_save_ai_api_key() {
