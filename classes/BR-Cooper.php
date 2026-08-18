@@ -93,18 +93,65 @@ class BR_Cooper {
 		return isset($config['cooper_api_key']['value']) ? $config['cooper_api_key']['value'] : '';
 	}
 
+	/**
+	 * Three independent switches, all of which must be on.
+	 *
+	 *   1. the platform master switch   (Config → Cooper)
+	 *   2. the owner's plan             (use_cooper feature, Pro and up)
+	 *   3. this adventure's Quick Link  (Adventure → Quick Links)
+	 *
+	 * …plus an API key to spend. Called on every page render, so the result is
+	 * memoized per request — the plan lookup alone is several queries.
+	 */
 	public function isEnabled($adventure_id = 0) {
+		static $cache = [];
+		$adventure_id = (int) $adventure_id;
+		if (isset($cache[$adventure_id])) return $cache[$adventure_id];
+
+		return $cache[$adventure_id] = $this->resolveEnabled($adventure_id);
+	}
+
+	private function resolveEnabled($adventure_id) {
 		if (!$this->apiKey($adventure_id)) return false;
 
 		$config = BR_Config::instance()->getSysConfig();
 		if (isset($config['cooper_enabled']['value']) && !$config['cooper_enabled']['value']) return false;
 
-		if ($adventure_id) {
-			$settings = BR_Config::instance()->getSettings($adventure_id);
-			// Absent means on: existing adventures shouldn't lose Cooper on upgrade.
-			if (isset($settings['ql_cooper']['value']) && !$settings['ql_cooper']['value']) return false;
-		}
-		return true;
+		if (!$adventure_id) return true;
+
+		$settings = BR_Config::instance()->getSettings($adventure_id);
+		// Absent means on: existing adventures shouldn't lose Cooper on upgrade.
+		if (isset($settings['ql_cooper']['value']) && !$settings['ql_cooper']['value']) return false;
+
+		return $this->planAllows($adventure_id);
+	}
+
+	/**
+	 * Does the plan behind this adventure include Cooper?
+	 *
+	 * Judged on the adventure OWNER's plan, not the current viewer's. Cooper is
+	 * sold to the organisation running the adventure; a Basic-plan player enrolled
+	 * in a Pro client's adventure should still get the assistant that client is
+	 * paying for, and a Pro player should not get it inside a Basic adventure.
+	 */
+	private function planAllows($adventure_id) {
+		global $wpdb;
+
+		$owner = (int) $wpdb->get_var($wpdb->prepare(
+			"SELECT adventure_owner FROM {$wpdb->prefix}br_adventures WHERE adventure_id = %d",
+			$adventure_id
+		));
+		if (!$owner) return false;
+
+		$plan     = BR_Config::instance()->getUserPlan($owner);
+		$plan_key = $plan ? $plan['plan_key'] : 'basic';
+		$features = BR_Config::instance()->getFeatures($plan_key);
+
+		// An install that predates the use_cooper feature row has nothing to check
+		// against; treat that as allowed rather than switching Cooper off silently.
+		if (!is_array($features) || !isset($features['use_cooper'][$plan_key])) return true;
+
+		return (bool) $features['use_cooper'][$plan_key];
 	}
 
 	// ────────────────────────────────────────────────────────────────────────

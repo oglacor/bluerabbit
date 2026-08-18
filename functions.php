@@ -2545,6 +2545,9 @@ function br_migrate_cooper_schema() {
 		) {$charset}");
 	}
 
+	// No token or cost columns here on purpose: per-adventure spend is separated
+	// by giving each adventure its own Anthropic API key, so the accounting lives
+	// in the Anthropic console rather than being duplicated (and drifting) here.
 	$messages = "{$wpdb->prefix}br_cooper_messages";
 	if (!$wpdb->get_var("SHOW TABLES LIKE '{$messages}'")) {
 		$wpdb->query("CREATE TABLE {$messages} (
@@ -2605,6 +2608,45 @@ function br_migrate_cooper_schema() {
 				'config_type'  => $cd['type'],
 				'config_value' => $cd['value'],
 			), array('%s', '%s', '%s', '%s'));
+		}
+	}
+
+	// Cooper as a sellable feature, off on Basic and on from Pro upward. Seeded
+	// into br_features AND br_plan_features because getFeatures() reads the
+	// latter whenever br_plans exists - writing only the legacy
+	// feature_access_* columns would leave the gate invisible to the plan system.
+	$feature_id = $wpdb->get_var("SELECT feature_id FROM {$wpdb->prefix}br_features WHERE feature_name = 'use_cooper'");
+	if (!$feature_id) {
+		$wpdb->insert("{$wpdb->prefix}br_features", array(
+			'feature_name'          => 'use_cooper',
+			'feature_label'         => 'Cooper Assistant',
+			'feature_type'          => 'radio',
+			'feature_desc'          => 'The in-adventure AI guide. Each adventure supplies its own Anthropic API key, so usage bills to the client running it.',
+			'feature_access_free'   => 0,
+			'feature_access_pro'    => 1,
+			'feature_access_admin'  => 1,
+			'feature_access_god'    => 1,
+		), array('%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d'));
+		$feature_id = $wpdb->insert_id;
+	}
+
+	if ($feature_id && $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}br_plan_features'")) {
+		$by_plan = array('basic' => '0', 'pro' => '1', 'enterprise' => '1', 'god' => '1');
+		$plans   = $wpdb->get_results("SELECT plan_id, plan_key FROM {$wpdb->prefix}br_plans");
+		foreach ($plans as $p) {
+			$has = $wpdb->get_var($wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}br_plan_features WHERE plan_id = %d AND feature_id = %d",
+				$p->plan_id, $feature_id
+			));
+			// Only ever seeded, never overwritten - once an admin has set this per
+			// plan, a redeploy must not reset their commercial decision.
+			if (!$has) {
+				$wpdb->insert("{$wpdb->prefix}br_plan_features", array(
+					'plan_id'       => $p->plan_id,
+					'feature_id'    => $feature_id,
+					'feature_value' => isset($by_plan[$p->plan_key]) ? $by_plan[$p->plan_key] : '0',
+				), array('%d', '%d', '%s'));
+			}
 		}
 	}
 }

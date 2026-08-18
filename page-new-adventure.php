@@ -1116,8 +1116,8 @@ $image_types = array(
 	<?php if ($br_ai_allowed) { ?>
 	<div class="br-scroll-section" id="ai-settings">
 	<div class="br-panel">
-		<h3 class="br-panel-title"><span class="icon icon-data"></span> <?= __("A.I. Content Validation","bluerabbit"); ?></h3>
-		<span class="br-form-hint"><?= __("Add a Claude API key to enable A.I. validation on Open Text steps. The key is stored per-adventure and used server-side only.","bluerabbit"); ?></span>
+		<h3 class="br-panel-title"><span class="icon icon-data"></span> <?= __("A.I. Features","bluerabbit"); ?></h3>
+		<span class="br-form-hint"><?= __("One Claude API key powers every A.I. feature in this adventure: validation on Open Text steps, A.I. grading, and Cooper. The key is stored per-adventure and used server-side only — usage bills to whoever owns it, so a client can use their own Anthropic account.","bluerabbit"); ?></span>
 
 		<?php $ai_key = $adventure->adventure_ai_api_key ?? ''; ?>
 		<div class="br-form-group">
@@ -1143,7 +1143,7 @@ $image_types = array(
 					<li><?= __('Click "Create Key", give it a name, and copy the key.', 'bluerabbit'); ?></li>
 					<li><?= __('Paste the key above. It starts with', 'bluerabbit'); ?> <code>sk-ant-</code></li>
 				</ol>
-				<p class="br-muted"><?= __('The key is used server-side to validate player text responses with Claude Haiku. Typical cost: less than $0.01 per validation.', 'bluerabbit'); ?></p>
+				<p class="br-muted"><?= __('The key is used server-side only. Text validation runs on Claude Haiku at well under $0.01 per check; Cooper runs on Claude Opus and costs roughly a cent per player question. Billing and usage limits are managed in the Anthropic console for whichever account the key belongs to.', 'bluerabbit'); ?></p>
 			</div>
 		</details>
 	</div>

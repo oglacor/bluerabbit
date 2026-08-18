@@ -187,25 +187,25 @@
 				),
 			),
 		),
-/*
 		'cooper_settings' => array(
 			'icon'=>'comment',
 			'label'=>__("Cooper","bluerabbit"),
 			'settings'=>array(
 				'cooper_enabled' => array(
-					'label'=>__("Enable Cooper","bluerabbit"),
-					'desc'=>__("The in-adventure assistant. Individual adventures can still switch it off in their own Quick Links settings.","bluerabbit"),
+					'label'=>__("Enable Cooper platform-wide","bluerabbit"),
+					'desc'=>__("Master switch. Each adventure still decides for itself under Quick Links, and only adventures on a plan with the Cooper feature can use it.","bluerabbit"),
 					'icon'=>'comment',
 					'type'=>'radio',
 				),
 				'cooper_api_key' => array(
-					'label'=>__("Anthropic API Key","bluerabbit"),
-					'desc'=>__("Used for any adventure that has not set its own key. Adventures with their own key bill their own usage.","bluerabbit"),
+					'label'=>__("Fallback Anthropic API Key","bluerabbit"),
+					'desc'=>__("Only used by adventures that have not set their own key. Give each client adventure its own key so their usage bills separately.","bluerabbit"),
 					'placeholder'=>'sk-ant-...',
 					'type'=>'text',
 				),
 			),
 		),
+/*
 		'miscelaneous_settings' => array(
 			'icon'=>'mystery',
 			'label'=>__("Miscelaneous","bluerabbit"),
