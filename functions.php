@@ -2596,6 +2596,7 @@ function br_migrate_cooper_schema() {
 	$cooper_defaults = array(
 		'cooper_enabled' => array('label' => 'Enable Cooper',      'type' => 'radio', 'value' => '1'),
 		'cooper_api_key' => array('label' => 'Anthropic API Key',  'type' => 'text',  'value' => ''),
+		'cooper_model'   => array('label' => 'Model',              'type' => 'select','value' => 'claude-sonnet-5'),
 	);
 	foreach ($cooper_defaults as $name => $cd) {
 		$exists = $wpdb->get_var($wpdb->prepare(

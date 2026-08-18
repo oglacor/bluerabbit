@@ -32,10 +32,65 @@
  */
 class BR_Cooper {
 
-	/** Chat is interactive, so this runs at medium effort rather than the default high. */
-	const MODEL      = 'claude-opus-5';
+	/**
+	 * Chat is interactive, so this runs at medium effort rather than the default high.
+	 *
+	 * MODEL is the fallback only — the live value comes from Config → Cooper, because
+	 * the right model here is a budget decision rather than an engineering one and it
+	 * should not need a deploy to change.
+	 *
+	 * Sonnet 5 is the default on measurement, not on instinct. On a real adventure it
+	 * came out at $0.0051 a question against $0.0063 for Haiku 4.5 — cheaper than the
+	 * cheap model, because Haiku predates adaptive thinking and has to be given a
+	 * fixed thinking budget, which it spends whether the question needs it or not.
+	 * Output bills at 5x input, so those wasted thinking tokens cost more than
+	 * Sonnet's larger price per token saves. Opus is $0.0091 and noticeably sharper
+	 * at "what should I do next" reasoning, if the budget allows.
+	 */
+	const MODEL      = 'claude-sonnet-5';
 	const EFFORT     = 'medium';
 	const MAX_TOKENS = 4000;
+
+	/**
+	 * Models offered in Config → Cooper.
+	 *
+	 * Deliberately a fixed list rather than a free-text field: a typo in a model id
+	 * is a 404 on every single chat, and the failure would look like "Cooper is
+	 * broken" rather than "someone mistyped a setting".
+	 */
+	const MODELS = [
+		'claude-sonnet-5'  => 'Sonnet 5 — recommended, ~$0.005 per question',
+		'claude-opus-5'    => 'Opus 5 — sharpest guidance, ~$0.009 per question',
+		'claude-haiku-4-5' => 'Haiku 4.5 — older; no adaptive thinking, ~$0.006 per question',
+	];
+
+	/**
+	 * The thinking/effort parameters this model actually accepts.
+	 *
+	 * Adaptive thinking and output_config.effort both arrived with the 4.6
+	 * generation. Sending either to Haiku 4.5 is a 400 on every request — which
+	 * surfaced as "Cooper is broken" rather than "wrong parameter", because the
+	 * handler quite correctly does not show players an API error. Since the model
+	 * is now a setting an admin can change, the request has to follow it.
+	 */
+	private function tuning($model) {
+		if ($model === 'claude-haiku-4-5') {
+			// No adaptive thinking, no effort. A small explicit budget still buys
+			// better answers on the multi-step "what should I do next" questions.
+			return ['thinking' => ['type' => 'enabled', 'budget_tokens' => 1024]];
+		}
+		return [
+			'thinking'      => ['type' => 'adaptive'],
+			'output_config' => ['effort' => self::EFFORT],
+		];
+	}
+	/** Effort is not exposed: at this prompt size it moves quality far less than the model does. */
+	public function model() {
+		$config = BR_Config::instance()->getSysConfig();
+		$chosen = isset($config['cooper_model']['value']) ? trim($config['cooper_model']['value']) : '';
+
+		return isset(self::MODELS[$chosen]) ? $chosen : self::MODEL;
+	}
 
 	/** Turns of history replayed to the model. Older turns stay in the DB for the transcript. */
 	const HISTORY_TURNS = 12;
@@ -901,6 +956,7 @@ RULES;
 	private function callClaude($api_key, $system, $messages) {
 		$sources = [];
 		$tools   = [$this->docsTool()];
+		$model   = $this->model();
 
 		for ($round = 0; $round < 3; $round++) {
 			$response = wp_remote_post('https://api.anthropic.com/v1/messages', [
@@ -910,11 +966,9 @@ RULES;
 					'x-api-key'         => $api_key,
 					'anthropic-version' => '2023-06-01',
 				],
-				'body' => wp_json_encode([
-					'model'      => self::MODEL,
+				'body' => wp_json_encode(array_merge($this->tuning($model), [
+					'model'      => $model,
 					'max_tokens' => self::MAX_TOKENS,
-					'thinking'   => ['type' => 'adaptive'],
-					'output_config' => ['effort' => self::EFFORT],
 					'system'     => [[
 						'type'          => 'text',
 						'text'          => $system,
@@ -924,7 +978,7 @@ RULES;
 					]],
 					'tools'      => $tools,
 					'messages'   => $messages,
-				]),
+				])),
 			]);
 
 			if (is_wp_error($response)) {

@@ -197,6 +197,15 @@
 					'icon'=>'comment',
 					'type'=>'radio',
 				),
+				'cooper_model' => array(
+					'label'=>__("Model","bluerabbit"),
+					'desc'=>__("Measured on a real adventure with prompt caching warm: about \$0.005 a question on Sonnet 5, \$0.009 on Opus 5, \$0.006 on Haiku 4.5. Haiku is not the cheapest here because it predates adaptive thinking and spends a fixed thinking budget on every question.","bluerabbit"),
+					'type'=>'select',
+					'options'=>array_map(
+						function($id, $label){ return array($id, $label); },
+						array_keys(BR_Cooper::MODELS), array_values(BR_Cooper::MODELS)
+					),
+				),
 				'cooper_api_key' => array(
 					'label'=>__("Fallback Anthropic API Key","bluerabbit"),
 					'desc'=>__("Only used by adventures that have not set their own key. Give each client adventure its own key so their usage bills separately.","bluerabbit"),
