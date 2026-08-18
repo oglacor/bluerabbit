@@ -295,7 +295,6 @@
 		<?php } ?>
 		<button class="br-tab-btn" onClick="brScrollTo('features', this)"><span class="icon icon-teamwork"></span> <?= __("Features","bluerabbit"); ?></button>
 		<button class="br-tab-btn" onClick="brScrollTo('plans_settings', this)"><span class="icon icon-rank"></span> <?= __("Plans","bluerabbit"); ?></button>
-		<button class="br-tab-btn" onClick="brScrollTo('cooper_docs', this)"><span class="icon icon-story"></span> <?= __("Cooper Docs","bluerabbit"); ?></button>
 		<button class="br-tab-btn" onClick="brScrollTo('image_settings', this)"><span class="icon icon-image"></span> <?= __("Images","bluerabbit"); ?></button>
 		<button class="br-tab-btn" onClick="brScrollTo('organizations_settings', this)"><span class="icon icon-wall"></span> <?= __("Organizations","bluerabbit"); ?></button>
 		<button class="br-tab-btn" onClick="brScrollTo('sponsors_settings', this)"><span class="icon icon-carrot"></span> <?= __("Sponsors","bluerabbit"); ?></button>
@@ -377,6 +376,36 @@
 			</div>
 		<?php } ?>
 		</div>
+
+		<?php // Cooper's documentation index sits inside Cooper's own settings panel
+		      // rather than in a section of its own — the key, the master switch and
+		      // the docs it answers from are one subject, and were three tabs apart.
+		      if($sgKey === 'cooper_settings'){
+			$cooper_docs = BR_Cooper::instance()->docsStatus();
+		?>
+		<div class="br-config-section-divider">
+			<h3 class="br-panel-title"><span class="icon icon-story"></span> <?= __("Documentation","bluerabbit"); ?></h3>
+			<span class="br-form-hint br-form-hint-block">
+				<?= __("Cooper answers platform questions from a local copy of bluerabbit.io/docs, so players never wait on another server. Re-sync after the docs change.","bluerabbit"); ?>
+			</span>
+			<div class="br-config-add-row">
+				<span class="br-text-16-light">
+					<?php if($cooper_docs['count']){ ?>
+						<?= sprintf(__("%d pages indexed","bluerabbit"), $cooper_docs['count']); ?>
+						<?php if($cooper_docs['synced']){ ?>
+							— <?= sprintf(__("last synced %s","bluerabbit"), date_i18n(get_option('date_format').' H:i', strtotime($cooper_docs['synced']))); ?>
+						<?php } ?>
+					<?php }else{ ?>
+						<?= __("No documentation indexed yet — Cooper will say it isn't sure instead of guessing.","bluerabbit"); ?>
+					<?php } ?>
+				</span>
+				<button class="br-btn br-btn-green" onClick="brCooperSyncDocs(this);">
+					<span class="icon icon-refresh"></span> <?= __("Sync documentation","bluerabbit"); ?>
+				</button>
+			</div>
+		</div>
+		<?php } ?>
+
 	</div>
 	</div>
 	<?php } ?>
@@ -572,32 +601,6 @@
 				<input type="text" id="plan-user-search" class="br-input br-max-w-400" placeholder="<?= __('Search by name or email...','bluerabbit'); ?>" onKeyUp="searchUsersForPlanAssign();">
 			</div>
 			<div id="plan-user-results"></div>
-		</div>
-	</div>
-	</div>
-
-	<!-- Cooper documentation index -->
-	<?php $cooper_docs = BR_Cooper::instance()->docsStatus(); ?>
-	<div class="br-scroll-section" id="cooper_docs">
-	<div class="br-panel">
-		<h3 class="br-panel-title"><span class="icon icon-story"></span> <?= __("Cooper's Documentation","bluerabbit"); ?></h3>
-		<p class="br-config-setting-desc">
-			<?= __("Cooper answers platform questions from a local copy of bluerabbit.io/docs so players never wait on another server. Re-sync after the docs change.","bluerabbit"); ?>
-		</p>
-		<div class="br-config-add-row">
-			<span class="br-text-16-light">
-				<?php if($cooper_docs['count']){ ?>
-					<?= sprintf(__("%d pages indexed","bluerabbit"), $cooper_docs['count']); ?>
-					<?php if($cooper_docs['synced']){ ?>
-						— <?= sprintf(__("last synced %s","bluerabbit"), date_i18n(get_option('date_format').' H:i', strtotime($cooper_docs['synced']))); ?>
-					<?php } ?>
-				<?php }else{ ?>
-					<?= __("No documentation indexed yet — Cooper will say it isn't sure instead of guessing.","bluerabbit"); ?>
-				<?php } ?>
-			</span>
-			<button class="br-btn br-btn-green" onClick="brCooperSyncDocs(this);">
-				<span class="icon icon-refresh"></span> <?= __("Sync documentation","bluerabbit"); ?>
-			</button>
 		</div>
 	</div>
 	</div>
