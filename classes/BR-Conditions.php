@@ -197,15 +197,33 @@ class BR_Conditions {
         // a single page load and decisive for the bulk paths - assign-to-all, the CSV
         // batch, a cohort arriving after a rules change - which call resetPlayer() in a
         // loop and used to re-read these for all 1,400 of them.
-        $total_milestones = self::adventureTotal("milestones:$adv_parent_id", function () use ($wpdb, $adv_parent_id) {
-            return (int) $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
-                WHERE adventure_id=%d AND quest_status='publish' AND quest_type IN ('quest','challenge','survey','mission') AND (mech_optional IS NULL OR mech_optional = 0)",
+        // The milestones overall progress is measured against - see
+        // br_journey_milestone_sql(). Ids rather than a bare count, because the
+        // numerator has to be restricted to this same set; cached per adventure
+        // exactly as the count was, so the bulk paths still read it once.
+        $journey_ids = self::adventureTotal("journey_ids:$adv_parent_id", function () use ($wpdb, $adv_parent_id) {
+            $counts = br_journey_milestone_sql();
+            return array_map('intval', $wpdb->get_col($wpdb->prepare(
+                "SELECT quest_id FROM {$wpdb->prefix}br_quests
+                WHERE adventure_id=%d AND {$counts}",
                 $adv_parent_id
-            ));
+            )));
         });
+        $total_milestones = count($journey_ids);
+
+        // milestone_count stays the raw number of milestones this player has
+        // finished, which is what the "Milestones Completed" condition has always
+        // meant and what the celebration copy reads.
         $milestone_count = count($fqs);
-        $journey_pct     = $total_milestones > 0 ? round(($milestone_count / $total_milestones) * 100, 2) : 0;
+
+        // The percentage intersects instead, so both halves describe the same
+        // milestones. It used to divide a numerator that counted hidden and
+        // optional completions by a denominator that excluded both, which could
+        // put journey_pct above 100%. Reusing $fqs rather than re-querying keeps
+        // the established meaning of "completed" - a milestone still awaiting a
+        // Game Master's review does not count.
+        $journey_done = count(array_intersect(array_map('intval', $fqs), $journey_ids));
+        $journey_pct  = $total_milestones > 0 ? round(($journey_done / $total_milestones) * 100, 2) : 0;
 
         $completed_tabi_ids = BR_Tabi::instance()->getCompletedTabiIds($adv_parent_id, $player_id);
         $total_tabis        = self::adventureTotal("tabis:$adv_parent_id", function () use ($wpdb, $adv_parent_id) {

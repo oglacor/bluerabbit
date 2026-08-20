@@ -1281,29 +1281,64 @@ function br_completion_quest_sql( $alias = '' ) {
 }
 
 /**
+ * Milestone statuses that are part of a player's journey.
+ *
+ * 'locked' counts. A locked milestone is us intervening operationally - a speaker
+ * who did not turn up, a challenge being rewritten, questions that need fixing -
+ * not the journey being genuinely different for this player. The work is still
+ * theirs to do, so a journey holding one is not finished, and if we leave it
+ * locked that is on us rather than something the player should be credited for.
+ *
+ * Excluded, and why:
+ *   draft        content the Game Master has not finished writing. Requiring it
+ *                would make its Tabi permanently uncompletable.
+ *   hidden       "published as hidden" - live and reachable, but deliberately off
+ *                the journey map. Not part of the curated list a player is asked
+ *                to work through.
+ *   trash/delete gone.
+ *
+ * @param string $alias table alias used in the query, e.g. 'q' for `br_quests q`
+ */
+function br_journey_status_sql( $alias = '' ) {
+	$p = $alias ? $alias . '.' : '';
+	return "{$p}quest_status IN ('publish','locked')";
+}
+
+/**
  * SQL predicate for "this milestone counts toward its Tabi's completion".
  *
  * A Tabi is finished only when every milestone inside it is finished - including
- * the ones the player cannot reach yet. Blocked is not the same as absent: a
- * locked or hidden milestone is still work the Tabi is asking for, and the player
- * simply has not unlocked it.
+ * the ones the player cannot reach yet. Blocked is not the same as absent.
  *
  * This exists because the two halves of the completion sum used to disagree. The
- * denominator counted only quest_status='publish' milestones while the numerator
- * filtered on no status at all, so a Tabi holding ten milestones with nine locked
- * had a denominator of one - complete the single reachable milestone and the Tabi
- * read 100%, firing any achievement hung off it. Both halves now call this, so
- * they cannot drift apart again.
+ * denominator counted only quest_status='publish' while the numerator filtered on
+ * no status at all, so a Tabi holding ten milestones with nine locked had a
+ * denominator of one: complete the single reachable milestone and the Tabi read
+ * 100%, firing any achievement hung off it. Both halves now call this.
  *
- * Everything except 'trash' counts, rather than an allowlist of statuses, so a
- * status added later fails safe: an unrecognised milestone keeps its Tabi
- * incomplete instead of quietly completing it early.
+ * Optional side quests are excluded here but NOT from journey progress - see
+ * br_journey_milestone_sql(). A Tabi is "done" when its required work is done;
+ * overall progress is a different question about everything on offer.
  *
  * @param string $alias table alias used in the query, e.g. 'q' for `br_quests q`
  */
 function br_tabi_milestone_sql( $alias = '' ) {
+	return br_completion_quest_sql( $alias ) . ' AND ' . br_journey_status_sql( $alias );
+}
+
+/**
+ * SQL predicate for "this milestone counts toward overall journey progress".
+ *
+ * Deliberately includes optional side quests, unlike br_tabi_milestone_sql().
+ * Overall progress answers "how much of what is available to me have I done",
+ * and a side quest sitting on the map is available. Tabi completion answers
+ * "is this chapter finished", where an opt-in extra should not hold it open.
+ *
+ * @param string $alias table alias used in the query, e.g. 'q' for `br_quests q`
+ */
+function br_journey_milestone_sql( $alias = '' ) {
 	$p = $alias ? $alias . '.' : '';
-	return br_completion_quest_sql( $alias ) . " AND {$p}quest_status <> 'trash'";
+	return "{$p}quest_type IN ('quest','challenge','survey','mission') AND " . br_journey_status_sql( $alias );
 }
 
 function br_stats_enqueue_assets() {
