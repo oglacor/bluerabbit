@@ -1289,19 +1289,21 @@ function br_completion_quest_sql( $alias = '' ) {
  * theirs to do, so a journey holding one is not finished, and if we leave it
  * locked that is on us rather than something the player should be credited for.
  *
+ * 'hidden' counts too. "Published as hidden" is live content kept off the journey
+ * map until something reveals it - a magic code, a QR checkpoint, a branch. It is
+ * still the player's to complete and it will become reachable, so leaving it out
+ * understated the denominator in exactly the same way 'locked' did.
+ *
  * Excluded, and why:
  *   draft        content the Game Master has not finished writing. Requiring it
  *                would make its Tabi permanently uncompletable.
- *   hidden       "published as hidden" - live and reachable, but deliberately off
- *                the journey map. Not part of the curated list a player is asked
- *                to work through.
  *   trash/delete gone.
  *
  * @param string $alias table alias used in the query, e.g. 'q' for `br_quests q`
  */
 function br_journey_status_sql( $alias = '' ) {
 	$p = $alias ? $alias . '.' : '';
-	return "{$p}quest_status IN ('publish','locked')";
+	return "{$p}quest_status IN ('publish','locked','hidden')";
 }
 
 /**
