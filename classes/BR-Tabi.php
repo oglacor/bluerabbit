@@ -296,6 +296,52 @@ class BR_Tabi {
         return $completed;
     }
 
+    // Every tabi's progress for one player, in two queries rather than the two per
+    // tabi getTabiProgressPct() costs - the journey page opens a bar on every tabi
+    // modal it renders, so per-tabi calls scaled with the size of the adventure.
+    //
+    // Counts exactly the milestone set that decides completion (br_tabi_milestone_sql):
+    // required milestones whose status is publish, hidden or locked. A player reaches
+    // 100% here at the same moment getCompletedTabiIds() calls the tabi done, so the
+    // bar and the tabi badge cannot disagree.
+    //
+    // Returns [ tabi_id => ['total' => int, 'done' => int, 'pct' => int] ].
+    public function getTabiProgressMap($adventure_id, $player_id) {
+        global $wpdb;
+        $totals = $this->tabiQuestTotals($adventure_id);
+        if(empty($totals)) return [];
+
+        // COUNT(DISTINCT quest_id) because a milestone can hold more than one
+        // published player_post (a re-submission, a GM re-grade). getCompletedTabiIds()
+        // survives that on a >= test; a percentage would read over 100.
+        $counts = br_tabi_milestone_sql('q');
+        $done = $wpdb->get_results($wpdb->prepare("
+            SELECT q.tabi_id, COUNT(DISTINCT pp.quest_id) AS completed
+            FROM {$wpdb->prefix}br_player_posts pp
+            JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
+            WHERE q.adventure_id = %d AND q.tabi_id > 0 AND {$counts}
+            AND pp.player_id = %d AND pp.pp_status = 'publish'
+            GROUP BY q.tabi_id
+        ", $adventure_id, $player_id));
+        $done_map = [];
+        foreach($done as $d) { $done_map[(int)$d->tabi_id] = (int)$d->completed; }
+
+        $progress = [];
+        foreach($totals as $t) {
+            $tabi_id = (int)$t->tabi_id;
+            $total   = (int)$t->total;
+            $count   = min($done_map[$tabi_id] ?? 0, $total);
+            $progress[$tabi_id] = [
+                'total' => $total,
+                'done'  => $count,
+                // Floored whole numbers: the bar is a status read, and a player with
+                // work still left must never be shown a rounded-up 100%.
+                'pct'   => $total ? (int) floor(($count / $total) * 100) : 0,
+            ];
+        }
+        return $progress;
+    }
+
     // Same shape of query as getCompletedTabiIds(), scoped to one tabi - for the
     // achievement-conditions "X% progress in THIS Tabi" condition type, which needs a
     // percentage rather than getCompletedTabiIds()'s all-or-nothing boolean.

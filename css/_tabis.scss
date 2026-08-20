@@ -181,6 +181,67 @@
 		}
 	}
 
+	// Progress towards this tabi's badge. Sits between the header and the board so it
+	// is the first thing read on open, and it is rendered for locked tabis too — a
+	// player can already hold completions inside one.
+	.tabi-modal-progress {
+		flex-shrink: 0;
+		padding: 14px 20px 16px;
+		border-bottom: 1px solid rgba(255,255,255,0.08);
+
+		.tabi-modal-progress-head {
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
+			gap: 12px;
+			margin-bottom: 8px;
+		}
+
+		.tabi-modal-progress-label {
+			font: 400 12px $base-font;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: rgba(255,255,255,0.55);
+		}
+
+		.tabi-modal-progress-value {
+			font: 900 20px $condensed-font;
+			color: $br-primary;
+			line-height: 1;
+		}
+
+		.tabi-modal-progress-track {
+			position: relative;
+			width: 100%;
+			height: 10px;
+			border-radius: 20px;
+			overflow: hidden;
+			background: rgba(255,255,255,0.10);
+		}
+
+		.tabi-modal-progress-fill {
+			height: 100%;
+			border-radius: 20px;
+			background: linear-gradient(90deg, rgba(28,194,235,0.55) 0%, $br-primary 100%);
+			transition: width 0.5s ease-out;
+
+			// The width is data, not decoration, so it cannot live in a style
+			// attribute. One class per whole percent costs 101 rules and a few
+			// hundred compressed bytes.
+			@for $i from 0 through 100 {
+				&.br-fill-#{$i} { width: $i * 1%; }
+			}
+		}
+
+		// Badge earned — the bar has done its job, so it stops reading as "pending".
+		&.is-complete {
+			.tabi-modal-progress-value { color: $br-green; }
+			.tabi-modal-progress-fill {
+				background: linear-gradient(90deg, rgba(36,218,152,0.55) 0%, $br-green 100%);
+			}
+		}
+	}
+
 	.tabi-modal-board {
 		overflow-y: auto;
 		padding: 16px 20px 24px;

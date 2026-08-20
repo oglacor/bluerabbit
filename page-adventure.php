@@ -131,11 +131,17 @@
 		<div class="tabi-modal-overlay" id="tabi-modal-overlay" onclick="closeTabiModal()"></div>
 		<?php
 		$tabi_position_nonce = wp_create_nonce('tabi_position_nonce');
+		// One query pair for the whole adventure; each modal reads its own row below.
+		$tabi_progress_map = BR_Tabi::instance()->getTabiProgressMap($adv_parent_id, $current_player->player_id);
 		foreach($tabis as $t) {
 			$modal_quests = isset($tabi_quest_map[$t->tabi_id]) ? $tabi_quest_map[$t->tabi_id] : [];
 			?>
 			<?php
 				$modal_is_locked = !empty($tabi_locked[$t->tabi_id]);
+				// Locked tabis get the bar too: a player can hold completions inside one
+				// (it locked behind a later condition), and hiding the number there would
+				// read as "no progress" rather than "not open yet".
+				$modal_progress  = $tabi_progress_map[$t->tabi_id] ?? ['total' => 0, 'done' => 0, 'pct' => 0];
 				$modal_req_names = [];
 				if($modal_is_locked && !empty($tabi_prereq_map[$t->tabi_id])) {
 					foreach($tabis as $rt) {
@@ -150,9 +156,22 @@
 					<div class="tabi-modal-color-strip <?= esc_attr($t->tabi_color); ?>"></div>
 					<h2 class="tabi-modal-title"><?= esc_html($t->tabi_name); ?></h2>
 					<button class="tabi-modal-close action-button" onclick="closeTabiModal()">
-						<span class="icon icon-cancel font _24"></span>
+						<span class="icon icon-cancel br-text-24"></span>
 					</button>
 				</div>
+				<?php // Share of this tabi's required milestones the player has finished - the
+				     // same set that awards the tabi badge, so 100% here means the badge is due.
+				     if($modal_progress['total'] > 0) { ?>
+				<div class="tabi-modal-progress<?= $modal_progress['pct'] >= 100 ? ' is-complete' : ''; ?>">
+					<div class="tabi-modal-progress-head">
+						<span class="tabi-modal-progress-label"><?= $modal_progress['pct'] >= 100 ? __('Badge earned','bluerabbit') : __('Progress towards this badge','bluerabbit'); ?></span>
+						<span class="tabi-modal-progress-value"><?= $modal_progress['pct']; ?>%</span>
+					</div>
+					<div class="tabi-modal-progress-track">
+						<div class="tabi-modal-progress-fill br-fill-<?= $modal_progress['pct']; ?>"></div>
+					</div>
+				</div>
+				<?php } ?>
 				<?php if($modal_is_locked) { ?>
 				<div class="tabi-modal-locked">
 					<span class="icon icon-lock"></span>

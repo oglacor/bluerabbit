@@ -19,6 +19,8 @@ Version: 13.24.0
 * {
   outline: none;
   font-family: inherit;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
   background-position: center center;
   background-size: cover;
@@ -579,8 +581,7 @@ button.hex-button, a.hex-button, span.hex-button, .hex-button {
   display: inline-block;
   padding: 0;
   margin: 0;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   min-width: 33px;
   min-height: 38px;
   background-color: transparent;
@@ -2422,7 +2423,6 @@ span.divider {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  width: -moz-max-content;
   width: max-content;
   max-width: min(90vw, 460px);
   text-align: center;
@@ -3407,10 +3407,14 @@ span.divider {
   position: relative;
   transform-style: preserve-3d;
   transform: translateZ(-50px);
+  -webkit-transition: transform 0.67s;
+  -moz-transition: transform 0.67s;
   transition: all 0.67s ease-out;
 }
 .book-scene .book .front-gradient {
   opacity: 0;
+  -webkit-transition: transform 0.67s;
+  -moz-transition: transform 0.67s;
   transition: all 0.67s ease-out;
 }
 .book-scene .book .book-face {
@@ -3504,9 +3508,13 @@ span.divider {
   z-index: 10;
 }
 .carousel-scene .next.button-icon .icon, .carousel-scene .next.br-icon-btn .icon, .carousel-scene .next.br-close-btn .icon, .carousel-scene .next.br-action-icon-green .icon, .carousel-scene .next.br-delete-mini .icon, .carousel-scene .prev.button-icon .icon, .carousel-scene .prev.br-icon-btn .icon, .carousel-scene .prev.br-close-btn .icon, .carousel-scene .prev.br-action-icon-green .icon, .carousel-scene .prev.br-delete-mini .icon {
+  -webkit-transition: transform 0.3s;
+  -moz-transition: transform 0.3s;
   transition: all 0.3s ease-out;
 }
 .carousel-scene .next.button-icon, .carousel-scene .next.br-icon-btn, .carousel-scene .next.br-close-btn, .carousel-scene .next.br-action-icon-green, .carousel-scene .next.br-delete-mini, .carousel-scene .prev.button-icon, .carousel-scene .prev.br-icon-btn, .carousel-scene .prev.br-close-btn, .carousel-scene .prev.br-action-icon-green, .carousel-scene .prev.br-delete-mini {
+  -webkit-transition: transform 0.3s;
+  -moz-transition: transform 0.3s;
   transition: all 0.3s ease-out;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0);
 }
@@ -3826,9 +3834,7 @@ span.divider {
   overflow: hidden;
   touch-action: none;
   overscroll-behavior: none;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   cursor: grab;
 }
 .journey-container:active {
@@ -3855,9 +3861,7 @@ span.divider {
   overflow: visible;
   touch-action: auto;
   overscroll-behavior: auto;
-  -webkit-user-select: auto;
-     -moz-user-select: auto;
-          user-select: auto;
+  user-select: auto;
   cursor: default;
   width: auto;
   height: auto;
@@ -3973,8 +3977,7 @@ span.divider {
   display: grid;
   grid-template-columns: 60px 1fr auto;
   grid-template-rows: auto auto;
-  -moz-column-gap: 16px;
-       column-gap: 16px;
+  column-gap: 16px;
   row-gap: 4px;
   align-items: center;
   padding: 10px 14px 10px 18px;
@@ -4033,7 +4036,6 @@ span.divider {
 }
 .journey.journey-board .milestone .milestone-modal-content .milestone-level, .journey.journey-board .milestone .milestone-modal-content .milestone-xp, .journey.journey-board .milestone .milestone-modal-content .milestone-bloo, .journey.journey-board .milestone .milestone-modal-content .milestone-ep {
   display: inline-flex;
-  width: -moz-fit-content;
   width: fit-content;
   font: 700 14px "proxima-nova-extra-condensed", sans-serif;
   opacity: 0.75;
@@ -4048,7 +4050,6 @@ span.divider {
   display: flex;
   align-items: center;
   gap: 4px;
-  width: -moz-fit-content;
   width: fit-content;
   font: 600 14px "proxima-nova-extra-condensed", sans-serif;
   margin: 0;
@@ -4062,7 +4063,6 @@ span.divider {
   grid-column: 3;
   justify-self: end;
   display: inline-block;
-  width: -moz-fit-content;
   width: fit-content;
   font: 700 14px "proxima-nova-extra-condensed", sans-serif;
   text-transform: uppercase;
@@ -4080,7 +4080,6 @@ span.divider {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  width: -moz-fit-content;
   width: fit-content;
   padding: 6px 16px;
   border-radius: 6px;
@@ -4107,7 +4106,6 @@ span.divider {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  width: -moz-fit-content;
   width: fit-content;
   height: auto;
   padding: 6px 16px;
@@ -4494,9 +4492,7 @@ span.divider {
   background-size: contain;
   z-index: 20;
   transition: box-shadow 0.2s ease;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   text-align: center;
 }
 .tabi-node:hover .tabi-node-count {
@@ -4744,6 +4740,352 @@ span.divider {
 .tabi-modal .tabi-modal-header .tabi-modal-close {
   margin-left: auto;
   flex-shrink: 0;
+}
+.tabi-modal .tabi-modal-progress {
+  flex-shrink: 0;
+  padding: 14px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-label {
+  font: 400 12px "proxima-nova", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-value {
+  font: 900 20px "proxima-nova-extra-condensed", sans-serif;
+  color: #1cc2eb;
+  line-height: 1;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-track {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgba(28, 194, 235, 0.55) 0%, #1cc2eb 100%);
+  transition: width 0.5s ease-out;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-0 {
+  width: 0%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-1 {
+  width: 1%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-2 {
+  width: 2%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-3 {
+  width: 3%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-4 {
+  width: 4%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-5 {
+  width: 5%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-6 {
+  width: 6%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-7 {
+  width: 7%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-8 {
+  width: 8%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-9 {
+  width: 9%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-10 {
+  width: 10%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-11 {
+  width: 11%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-12 {
+  width: 12%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-13 {
+  width: 13%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-14 {
+  width: 14%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-15 {
+  width: 15%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-16 {
+  width: 16%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-17 {
+  width: 17%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-18 {
+  width: 18%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-19 {
+  width: 19%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-20 {
+  width: 20%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-21 {
+  width: 21%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-22 {
+  width: 22%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-23 {
+  width: 23%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-24 {
+  width: 24%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-25 {
+  width: 25%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-26 {
+  width: 26%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-27 {
+  width: 27%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-28 {
+  width: 28%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-29 {
+  width: 29%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-30 {
+  width: 30%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-31 {
+  width: 31%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-32 {
+  width: 32%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-33 {
+  width: 33%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-34 {
+  width: 34%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-35 {
+  width: 35%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-36 {
+  width: 36%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-37 {
+  width: 37%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-38 {
+  width: 38%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-39 {
+  width: 39%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-40 {
+  width: 40%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-41 {
+  width: 41%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-42 {
+  width: 42%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-43 {
+  width: 43%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-44 {
+  width: 44%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-45 {
+  width: 45%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-46 {
+  width: 46%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-47 {
+  width: 47%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-48 {
+  width: 48%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-49 {
+  width: 49%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-50 {
+  width: 50%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-51 {
+  width: 51%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-52 {
+  width: 52%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-53 {
+  width: 53%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-54 {
+  width: 54%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-55 {
+  width: 55%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-56 {
+  width: 56%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-57 {
+  width: 57%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-58 {
+  width: 58%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-59 {
+  width: 59%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-60 {
+  width: 60%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-61 {
+  width: 61%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-62 {
+  width: 62%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-63 {
+  width: 63%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-64 {
+  width: 64%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-65 {
+  width: 65%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-66 {
+  width: 66%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-67 {
+  width: 67%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-68 {
+  width: 68%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-69 {
+  width: 69%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-70 {
+  width: 70%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-71 {
+  width: 71%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-72 {
+  width: 72%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-73 {
+  width: 73%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-74 {
+  width: 74%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-75 {
+  width: 75%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-76 {
+  width: 76%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-77 {
+  width: 77%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-78 {
+  width: 78%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-79 {
+  width: 79%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-80 {
+  width: 80%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-81 {
+  width: 81%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-82 {
+  width: 82%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-83 {
+  width: 83%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-84 {
+  width: 84%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-85 {
+  width: 85%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-86 {
+  width: 86%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-87 {
+  width: 87%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-88 {
+  width: 88%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-89 {
+  width: 89%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-90 {
+  width: 90%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-91 {
+  width: 91%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-92 {
+  width: 92%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-93 {
+  width: 93%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-94 {
+  width: 94%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-95 {
+  width: 95%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-96 {
+  width: 96%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-97 {
+  width: 97%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-98 {
+  width: 98%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-99 {
+  width: 99%;
+}
+.tabi-modal .tabi-modal-progress .tabi-modal-progress-fill.br-fill-100 {
+  width: 100%;
+}
+.tabi-modal .tabi-modal-progress.is-complete .tabi-modal-progress-value {
+  color: #24da98;
+}
+.tabi-modal .tabi-modal-progress.is-complete .tabi-modal-progress-fill {
+  background: linear-gradient(90deg, rgba(36, 218, 152, 0.55) 0%, #24da98 100%);
 }
 .tabi-modal .tabi-modal-board {
   overflow-y: auto;
@@ -5054,9 +5396,7 @@ span.divider {
   display: block;
   width: 100%;
   height: auto;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   pointer-events: none;
 }
 .journey-asset.clickable {
@@ -5145,9 +5485,6 @@ span.divider {
   border-radius: 4px;
   width: 200px;
   outline: none;
-}
-.journey-builder-container .builder .builder-asset .asset-controls .asset-link-row .asset-link-input::-moz-placeholder {
-  color: rgba(255, 255, 255, 0.35);
 }
 .journey-builder-container .builder .builder-asset .asset-controls .asset-link-row .asset-link-input::placeholder {
   color: rgba(255, 255, 255, 0.35);
@@ -5874,6 +6211,8 @@ ul li.card {
   width: 100%;
   height: auto;
   margin: 0 0 5px;
+  -webkit-transition: transform 0.3s;
+  -moz-transition: transform 0.3s;
   transition: all 0.3s ease-out;
   z-index: 100;
 }
@@ -5996,6 +6335,8 @@ ul.guilds li.card {
   margin: 10px;
   display: inline-block;
   text-align: center;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
 }
 ul.guilds li.card img.badge {
@@ -7094,9 +7435,13 @@ svg.icon-image.active line.yellow, svg.icon-image.active polyline.yellow, svg.ic
   width: 100%;
   height: auto;
   margin: 0;
+  -webkit-transition: transform 0.3s ease-in-out;
+  -moz-transition: transform 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
 }
 .card div {
+  -webkit-transition: transform 0.3s ease-in-out;
+  -moz-transition: transform 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
 }
 .card.profile-image {
@@ -8405,7 +8750,7 @@ ul.color-select li.active .icon-check {
   transition: all 0.2s;
 }
 .challenge-quest .challenge-conditions .challenge-actions button.challenge-main-action-button:hover {
-  background: rgb(65.4963562753, 204.0761133603, 238.3036437247);
+  background: rgb(25.6848455982%, 80.0298483766%, 93.4524093038%);
 }
 .challenge-quest .challenge-conditions .challenge-actions button.challenge-main-action-button.level-button, .challenge-quest .challenge-conditions .challenge-actions button.challenge-main-action-button.max-button, .challenge-quest .challenge-conditions .challenge-actions button.challenge-main-action-button.reqs-button, .challenge-quest .challenge-conditions .challenge-actions button.challenge-main-action-button.deadline-button {
   background: rgba(40, 50, 60, 0.5);
@@ -8504,8 +8849,7 @@ ul.color-select li.active .icon-check {
   width: 100%;
   max-width: 720px;
   max-height: 300px;
-  -o-object-fit: contain;
-     object-fit: contain;
+  object-fit: contain;
   border-radius: 10px;
   border: 1px solid rgba(28, 194, 235, 0.2);
 }
@@ -8587,8 +8931,7 @@ ul.color-select li.active .icon-check {
   max-height: 100px;
   max-width: 140px;
   border-radius: 5px;
-  -o-object-fit: contain;
-     object-fit: contain;
+  object-fit: contain;
 }
 .challenge-quest .challenge-content .challenge-question ul.question-options li.question-option span.font {
   font-size: 14px;
@@ -8630,7 +8973,7 @@ ul.color-select li.active .icon-check {
   border-color: rgba(226, 64, 64, 0.35);
 }
 .challenge-quest .challenge-content .challenge-question ul.question-options li.question-option.wrong span.font {
-  color: rgb(236.0840909091, 130.4159090909, 130.4159090909);
+  color: rgb(92.5819964349%, 51.1434937611%, 51.1434937611%);
 }
 .challenge-quest .challenge-content .challenge-question ul.question-options.opts-images {
   grid-template-columns: repeat(4, 1fr);
@@ -8662,8 +9005,7 @@ ul.color-select li.active .icon-check {
 .challenge-quest .challenge-content .challenge-question ul.question-options.opts-images li.question-option .opt-img-wrap img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   max-height: none;
   max-width: none;
 }
@@ -8746,7 +9088,7 @@ ul.color-select li.active .icon-check {
   border-color: #e24040;
 }
 .challenge-quest .challenge-content .challenge-question ul.question-options.opts-images li.question-option.wrong .opt-img-label {
-  color: rgb(236.0840909091, 130.4159090909, 130.4159090909);
+  color: rgb(92.5819964349%, 51.1434937611%, 51.1434937611%);
 }
 .challenge-quest .challenge-content .challenge-question ul.question-options.opts-images-2col {
   grid-template-columns: 1fr 1fr;
@@ -8850,7 +9192,7 @@ ul.color-select li.active .icon-check {
 .challenge-quest .confirm-action.overlay-layer .close-confirm {
   background: rgba(226, 64, 64, 0.15);
   border: 1px solid rgba(226, 64, 64, 0.3);
-  color: rgb(236.0840909091, 130.4159090909, 130.4159090909);
+  color: rgb(92.5819964349%, 51.1434937611%, 51.1434937611%);
   border-radius: 6px;
 }
 .challenge-quest #times-up .background {
@@ -9189,13 +9531,6 @@ ul.question-options li.option .option-text input.form-ui {
   width: 100%;
   padding: 5px;
   color: #141d23;
-}
-ul.question-options li.option .option-text input.form-ui::-moz-placeholder {
-  font-size: 18px;
-  font-weight: 300;
-  padding: 10px;
-  font-style: italic;
-  color: rgba(20, 29, 35, 0.5);
 }
 ul.question-options li.option .option-text input.form-ui::placeholder {
   font-size: 18px;
@@ -9633,8 +9968,7 @@ ul.pagination li {
 .br-cooper-avatar img {
   width: 100%;
   height: 100%;
-  -o-object-fit: contain;
-     object-fit: contain;
+  object-fit: contain;
 }
 
 .br-cooper-title {
@@ -9719,7 +10053,7 @@ ul.pagination li {
   align-self: flex-start;
   background: rgba(226, 64, 64, 0.15);
   border: 1px solid rgba(226, 64, 64, 0.4);
-  color: rgb(240.79, 161.41, 161.41);
+  color: rgb(94.4274509804%, 63.2980392157%, 63.2980392157%);
 }
 
 .br-cooper-li {
@@ -9831,9 +10165,6 @@ ul.pagination li {
 .br-cooper-input:focus {
   outline: none;
   border-color: #1cc2eb;
-}
-.br-cooper-input::-moz-placeholder {
-  color: rgba(255, 255, 255, 0.35);
 }
 .br-cooper-input::placeholder {
   color: rgba(255, 255, 255, 0.35);
@@ -11583,7 +11914,6 @@ nav.tab-nav ul li.active {
   font-family: "proxima-nova-extra-condensed", sans-serif;
   background-color: rgba(28, 194, 235, 0.2);
   padding: 10px 20px;
-  width: -moz-fit-content;
   width: fit-content;
 }
 .hud-title h1 .hud-title-label, .hud-title h2 .hud-title-label, .hud-title h3 .hud-title-label, .hud-title h4 .hud-title-label, .hud-title h5 .hud-title-label, .hud-title h6 .hud-title-label {
@@ -11808,8 +12138,7 @@ nav.tab-nav ul li.active {
 .guilds-page-layout .guild-leaderboard-section ul.cards.guilds.guild-leaderboard-top5 li.card .guild-lb-badge img.badge {
   width: 64px;
   height: 64px;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   border-radius: 0;
   border: none;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
@@ -11871,8 +12200,7 @@ nav.tab-nav ul li.active {
 .guilds-page-layout .guild-leaderboard-section .guild-leaderboard-table-wrap .guild-leaderboard-table .guild-lb-table-badge img.badge {
   width: 36px;
   height: 36px;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   display: block;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
@@ -12554,8 +12882,7 @@ nav.tab-nav ul li.active {
   .page-break {
     display: block;
     page-break-before: always;
-    -moz-column-break-before: always;
-         break-before: always;
+    break-before: always;
   }
   .report .header-space, .report .footer-space {
     height: 50px;
@@ -12803,4 +13130,4 @@ nav.tab-nav ul li.active {
 }
 .scorm-next-wrapper.active {
   display: block;
-}/*# sourceMappingURL=style.css.map */
+}
