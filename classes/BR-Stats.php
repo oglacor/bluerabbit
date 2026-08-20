@@ -539,14 +539,18 @@ class BR_Stats {
             // already tripped that before tabi_level was added here. Grouping by all of
             // them changes no results (tabi_id is unique) and makes the query legal
             // whatever sql_mode the server runs.
+            // The tabi join uses br_tabi_milestone_sql(), the same milestone set the
+            // awarding logic counts: a locked or hidden milestone is still part of its
+            // Tabi. Filtering to quest_status='publish' here shrank the denominator to
+            // the milestones a player could already reach, so a Tabi with nine of ten
+            // milestones locked showed 100% after a single completion.
             "SELECT
                 t.tabi_id, t.tabi_name, t.tabi_color, t.tabi_level,
                 COUNT(q.quest_id) AS total_quests,
                 COUNT(pp.quest_id) AS completed_quests
             FROM {$wpdb->prefix}br_tabis t
             LEFT JOIN {$wpdb->prefix}br_quests q
-                ON t.tabi_id = q.tabi_id AND q.quest_status = 'publish'
-                AND q.quest_type IN ('quest','challenge','survey','mission') AND (q.mech_optional IS NULL OR q.mech_optional = 0)
+                ON t.tabi_id = q.tabi_id AND " . br_tabi_milestone_sql('q') . "
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.player_id = %d AND pp.adventure_id = %d
             WHERE t.adventure_id = %d AND t.tabi_status = 'publish'
@@ -718,14 +722,18 @@ class BR_Stats {
         $tabis = $wpdb->get_results( $wpdb->prepare(
             // Same level ordering as get_player_tabi_progress() above, for the same
             // reason - the two tabi panels on the stats page disagreed with each other.
+            // The tabi join uses br_tabi_milestone_sql(), the same milestone set the
+            // awarding logic counts: a locked or hidden milestone is still part of its
+            // Tabi. Filtering to quest_status='publish' here shrank the denominator to
+            // the milestones a player could already reach, so a Tabi with nine of ten
+            // milestones locked showed 100% after a single completion.
             "SELECT
                 t.tabi_id, t.tabi_name, t.tabi_color, t.tabi_level,
                 COUNT(DISTINCT q.quest_id) AS total_quests,
                 COUNT(pp.player_id) AS total_completions
             FROM {$wpdb->prefix}br_tabis t
             LEFT JOIN {$wpdb->prefix}br_quests q
-                ON t.tabi_id = q.tabi_id AND q.quest_status = 'publish'
-                AND q.quest_type IN ('quest','challenge','survey','mission') AND (q.mech_optional IS NULL OR q.mech_optional = 0)
+                ON t.tabi_id = q.tabi_id AND " . br_tabi_milestone_sql('q') . "
             LEFT JOIN {$wpdb->prefix}br_player_posts pp
                 ON q.quest_id = pp.quest_id AND pp.adventure_id = %d
                 AND EXISTS (

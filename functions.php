@@ -1280,6 +1280,32 @@ function br_completion_quest_sql( $alias = '' ) {
 	     . " AND ({$p}mech_optional IS NULL OR {$p}mech_optional = 0)";
 }
 
+/**
+ * SQL predicate for "this milestone counts toward its Tabi's completion".
+ *
+ * A Tabi is finished only when every milestone inside it is finished - including
+ * the ones the player cannot reach yet. Blocked is not the same as absent: a
+ * locked or hidden milestone is still work the Tabi is asking for, and the player
+ * simply has not unlocked it.
+ *
+ * This exists because the two halves of the completion sum used to disagree. The
+ * denominator counted only quest_status='publish' milestones while the numerator
+ * filtered on no status at all, so a Tabi holding ten milestones with nine locked
+ * had a denominator of one - complete the single reachable milestone and the Tabi
+ * read 100%, firing any achievement hung off it. Both halves now call this, so
+ * they cannot drift apart again.
+ *
+ * Everything except 'trash' counts, rather than an allowlist of statuses, so a
+ * status added later fails safe: an unrecognised milestone keeps its Tabi
+ * incomplete instead of quietly completing it early.
+ *
+ * @param string $alias table alias used in the query, e.g. 'q' for `br_quests q`
+ */
+function br_tabi_milestone_sql( $alias = '' ) {
+	$p = $alias ? $alias . '.' : '';
+	return br_completion_quest_sql( $alias ) . " AND {$p}quest_status <> 'trash'";
+}
+
 function br_stats_enqueue_assets() {
 	wp_enqueue_style( 'br-table', get_template_directory_uri() . '/css/br-table.css', [], br_asset_version() );
 	wp_enqueue_style( 'br-notify', get_template_directory_uri() . '/css/br-notify.css', [], br_asset_version() );

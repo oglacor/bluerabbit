@@ -252,11 +252,14 @@ class BR_Tabi {
     private function tabiQuestTotals($adventure_id) {
         global $wpdb;
         if (!array_key_exists($adventure_id, self::$tabi_totals)) {
+            // Was quest_status='publish', which silently shrank the denominator to
+            // only the milestones a player could already reach - see
+            // br_tabi_milestone_sql().
+            $counts = br_tabi_milestone_sql();
             self::$tabi_totals[$adventure_id] = $wpdb->get_results($wpdb->prepare("
                 SELECT tabi_id, COUNT(*) AS total
                 FROM {$wpdb->prefix}br_quests
-                WHERE adventure_id = %d AND tabi_id > 0 AND quest_status = 'publish'
-                  AND (mech_optional IS NULL OR mech_optional = 0)
+                WHERE adventure_id = %d AND tabi_id > 0 AND {$counts}
                 GROUP BY tabi_id
             ", $adventure_id));
         }
@@ -268,15 +271,19 @@ class BR_Tabi {
         $totals = $this->tabiQuestTotals($adventure_id);
         if(empty($totals)) return [];
 
-        $done = $wpdb->get_results("
+        // Must select from exactly the same milestone set as tabiQuestTotals(): this
+        // side previously applied no quest_status filter at all, so a completion
+        // recorded against a trashed milestone still counted toward a denominator
+        // that excluded it.
+        $counts = br_tabi_milestone_sql('q');
+        $done = $wpdb->get_results($wpdb->prepare("
             SELECT q.tabi_id, COUNT(*) AS completed
             FROM {$wpdb->prefix}br_player_posts pp
             JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
-            WHERE q.adventure_id = $adventure_id AND q.tabi_id > 0
-            AND (q.mech_optional IS NULL OR q.mech_optional = 0)
-            AND pp.player_id = $player_id AND pp.pp_status = 'publish'
+            WHERE q.adventure_id = %d AND q.tabi_id > 0 AND {$counts}
+            AND pp.player_id = %d AND pp.pp_status = 'publish'
             GROUP BY q.tabi_id
-        ");
+        ", $adventure_id, $player_id));
         $done_map = [];
         foreach($done as $d) { $done_map[$d->tabi_id] = (int)$d->completed; }
 
@@ -294,17 +301,19 @@ class BR_Tabi {
     // percentage rather than getCompletedTabiIds()'s all-or-nothing boolean.
     public function getTabiProgressPct($adventure_id, $player_id, $tabi_id) {
         global $wpdb;
+        $countsBare = br_tabi_milestone_sql();
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
-            WHERE adventure_id = %d AND tabi_id = %d AND quest_status = 'publish' AND (mech_optional IS NULL OR mech_optional = 0)",
+            WHERE adventure_id = %d AND tabi_id = %d AND {$countsBare}",
             $adventure_id, $tabi_id
         ));
         if ($total === 0) return 0;
 
+        $counts = br_tabi_milestone_sql('q');
         $done = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_posts pp
             JOIN {$wpdb->prefix}br_quests q ON pp.quest_id = q.quest_id
-            WHERE q.adventure_id = %d AND q.tabi_id = %d AND (q.mech_optional IS NULL OR q.mech_optional = 0)
+            WHERE q.adventure_id = %d AND q.tabi_id = %d AND {$counts}
             AND pp.player_id = %d AND pp.pp_status = 'publish'",
             $adventure_id, $tabi_id, $player_id
         ));
