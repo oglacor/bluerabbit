@@ -1,15 +1,10 @@
 <?php include (get_stylesheet_directory() . '/header.php'); ?>
 
 <?php
-	$manage = isset($_GET['manage']) ? $_GET['manage'] : 'journey';
-	// NPCs get exactly one tab here: Guilds, and read-only apart from appointing a
-	// guild leader. Everything else under Manage Adventure is content authoring.
-	$npc_manage_ok = !empty($isNPC) && $manage === 'guilds';
-?>
-<?php if($isGM || $isAdmin || $npc_manage_ok){ ?>
-	<?php
-	$manage_base = get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=";
+	// Declared before the access guard because $manage is validated against it, and
+	// that has to happen before $manage reaches the include at the bottom of the file.
 	$manage_tabs = [
+		['key'=>'dashboard',    'icon'=>'stats',       'label'=>__("Dashboard","bluerabbit"),    'show'=>true],
 		['key'=>'journey',      'icon'=>'journey',     'label'=>__("Journey","bluerabbit"),      'show'=>true],
 		['key'=>'achievements', 'icon'=>'achievement', 'label'=>__("Achievements","bluerabbit"), 'show'=>!empty($use_achievements)],
 		['key'=>'encounters',   'icon'=>'battle',      'label'=>__("Encounters","bluerabbit"),   'show'=>!empty($use_encounters)],
@@ -24,6 +19,22 @@
 		['key'=>'speakers',     'icon'=>'socialiser',  'label'=>__("Speakers","bluerabbit"),     'show'=>!empty($use_speakers)],
 		['key'=>'requests',     'icon'=>'mail',        'label'=>__("Requests","bluerabbit"),     'show'=>true],
 	];
+
+	// $manage names an include file further down, so it must never be used as it
+	// arrives: "?manage=../../wp-config" resolved to a real path outside the theme.
+	// Only the keys declared above are accepted; anything else opens the dashboard.
+	$manage_keys = array_column($manage_tabs, 'key');
+	$manage = ( isset($_GET['manage']) && in_array($_GET['manage'], $manage_keys, true) )
+		? $_GET['manage']
+		: 'dashboard';
+
+	// NPCs get exactly one tab here: Guilds, and read-only apart from appointing a
+	// guild leader. Everything else under Manage Adventure is content authoring.
+	$npc_manage_ok = !empty($isNPC) && $manage === 'guilds';
+?>
+<?php if($isGM || $isAdmin || $npc_manage_ok){ ?>
+	<?php
+	$manage_base = get_bloginfo('url')."/manage-adventure/?adventure_id=$adventure->adventure_id&manage=";
 	?>
 	<div class="br-tabs br-tabs-sticky">
 		<?php foreach($manage_tabs as $tab){ ?>
@@ -43,11 +54,14 @@
 	</div>
 
 	<?php
+		// A tab key with no manage-*.php of its own (Journey Assets, say) falls back
+		// to the dashboard rather than the journey list - the dashboard is the page
+		// that can point at everything.
 		$theFile = (TEMPLATEPATH . "/manage-$manage.php");
 		if(file_exists($theFile)) {
 			include ($theFile);
 		}else{
-			include (TEMPLATEPATH . "/manage-journey.php");
+			include (TEMPLATEPATH . "/manage-dashboard.php");
 		}
 	?>
 	<input type="hidden" id="reload" value="1">

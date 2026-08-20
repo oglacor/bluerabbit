@@ -8830,3 +8830,109 @@ button.br-btn.br-confirming {
   opacity: 0.4;
   pointer-events: none;
 }
+
+// ── Adventure dashboard (manage-dashboard.php) ───────────
+//
+// The default tab of Manage Adventure: a read-only inventory of everything the
+// adventure holds, split by status. Locked and hidden get their own colour because
+// finding them is the entire point of the screen — both count towards completion,
+// so a player is held up by content the GM has no other way of seeing.
+
+.br-dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.br-dash-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  padding: 18px 18px 16px;
+  border-radius: $radius;
+  border: 1px solid $br-border;
+  background: $br-panel-bg;
+
+  // Alert state is a left edge, not a fill: a red tile reads as broken even when
+  // the number is a routine two submissions waiting.
+  &.br-dash-kpi-alert {
+    border-left: 3px solid $br-amber;
+  }
+}
+
+.br-dash-kpi-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 20px;
+  color: rgba($br-primary, 0.35);
+}
+
+.br-dash-kpi-value {
+  font: 900 32px $condensed;
+  color: $br-white;
+  line-height: 1;
+}
+
+.br-dash-kpi-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba($br-white, 0.8);
+}
+
+.br-dash-kpi-note {
+  font-size: 12px;
+  color: rgba($br-white, 0.45);
+
+  a { color: $br-primary; text-decoration: none; }
+  a:hover { color: $br-white; }
+}
+
+.br-dash-table {
+  th, td { white-space: nowrap; }
+  td:first-child { white-space: normal; }
+}
+
+.br-dash-row-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  .icon {
+    font-size: 15px;
+    color: rgba($br-primary, 0.6);
+  }
+}
+
+// Statuses with a vocabulary of their own — a request is pending or resolved, never
+// published — are spelled out here rather than forced into a column that would lie.
+.br-dash-row-detail {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba($br-white, 0.4);
+}
+
+.br-dash-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: rgba($br-white, 0.9);
+}
+
+.br-dash-num-zero    { color: rgba($br-white, 0.2); font-weight: 400; }
+.br-dash-num-locked  { color: $br-amber; }
+.br-dash-num-hidden  { color: $br-purple; }
+.br-dash-num-draft   { color: rgba($br-white, 0.55); }
+.br-dash-num-total   { color: $br-primary; }
+
+.br-dash-footnote {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba($br-white, 0.4);
+}

@@ -1610,4 +1610,218 @@ class BR_Stats {
             'session_count'       => $count,
         ];
     }
+
+    // ── Adventure inventory (manage-adventure dashboard) ─────
+
+    // Buckets every content row is sorted into. 'other' catches vocabularies that
+    // are not the journey's - a request is pending or resolved, never published.
+    private const INVENTORY_BUCKETS = [
+        'publish' => 0, 'locked' => 0, 'hidden' => 0,
+        'draft'   => 0, 'trash'  => 0, 'other'  => 0, 'total' => 0,
+    ];
+
+    // Adventure-scoped content tables: key => [ table (no prefix), status column ].
+    // Both halves are literals used to build SQL, so nothing here may ever come
+    // from a request.
+    private const INVENTORY_TABLES = [
+        'achievements'    => [ 'br_achievements',    'achievement_status' ],
+        'items'           => [ 'br_items',           'item_status'        ],
+        'item-categories' => [ 'br_item_categories', 'category_status'    ],
+        'guilds'          => [ 'br_guilds',          'guild_status'       ],
+        'tabis'           => [ 'br_tabis',           'tabi_status'        ],
+        'journey-assets'  => [ 'br_journey_assets',  'asset_status'       ],
+        'speakers'        => [ 'br_speakers',        'speaker_status'     ],
+        'sessions'        => [ 'br_sessions',        'session_status'     ],
+        'encounters'      => [ 'br_encounters',      'enc_status'         ],
+        'blockers'        => [ 'br_blockers',        'blocker_status'     ],
+        'branches'        => [ 'br_branch_groups',   'group_status'       ],
+        'objectives'      => [ 'br_objectives',      'objective_status'   ],
+        'announcements'   => [ 'br_announcements',   'ann_status'         ],
+        'sponsors'        => [ 'br_sponsors',        'sponsor_status'     ],
+        'steps'           => [ 'br_steps',           'step_status'        ],
+        'transactions'    => [ 'br_transactions',    'trnx_status'        ],
+        'requests'        => [ 'br_requests',        'request_status'     ],
+    ];
+
+    // What an adventure holds, every row split by status.
+    //
+    // A Game Master cannot fix what they cannot see, and locked or hidden content is
+    // exactly the kind that gets forgotten and then silently breaks player progress:
+    // a Tabi holding nine locked milestones reads as one milestone on the map and is
+    // not finishable. So each row reports the status split, never a bare total.
+    //
+    // The vocabulary is the one the completion logic already uses -
+    // br_journey_status_sql() names publish/locked/hidden as the statuses that make up
+    // a journey, with draft and trash outside it. There is no second definition here.
+    //
+    // Returns [ key => INVENTORY_BUCKETS + ['statuses' => [raw status => count]] ].
+    public function get_content_inventory( int $adventure_id ): array {
+        global $wpdb;
+        $inv = [];
+
+        // Everything that lives in br_quests, split by type: milestones, challenges,
+        // surveys, missions, and the blog/lore entries that share the table.
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT quest_type, quest_status, COUNT(*) AS n
+            FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d
+            GROUP BY quest_type, quest_status",
+            $adventure_id
+        ) );
+        foreach ( $rows as $r ) {
+            $this->tally_inventory( $inv, (string) $r->quest_type, (string) $r->quest_status, (int) $r->n );
+        }
+
+        foreach ( self::INVENTORY_TABLES as $key => $spec ) {
+            list( $table, $col ) = $spec;
+            $rows = $wpdb->get_results( $wpdb->prepare(
+                "SELECT {$col} AS s, COUNT(*) AS n
+                FROM {$wpdb->prefix}{$table}
+                WHERE adventure_id = %d
+                GROUP BY {$col}",
+                $adventure_id
+            ) );
+            foreach ( $rows as $r ) {
+                $this->tally_inventory( $inv, $key, (string) $r->s, (int) $r->n );
+            }
+        }
+
+        // Question banks hang off a milestone rather than the adventure, so they join
+        // back through br_quests. Worth surfacing: a live challenge with an empty bank
+        // is a milestone no player can pass, and nothing else on this page shows it.
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT cq.question_status AS s, COUNT(*) AS n
+            FROM {$wpdb->prefix}br_challenge_questions cq
+            JOIN {$wpdb->prefix}br_quests q ON q.quest_id = cq.quest_id
+            WHERE q.adventure_id = %d
+            GROUP BY cq.question_status",
+            $adventure_id
+        ) );
+        foreach ( $rows as $r ) {
+            $this->tally_inventory( $inv, 'challenge-questions', (string) $r->s, (int) $r->n );
+        }
+
+        // br_survey_questions.survey_id is a quest_id - the survey milestone it belongs to.
+        $rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT sq.survey_question_status AS s, COUNT(*) AS n
+            FROM {$wpdb->prefix}br_survey_questions sq
+            JOIN {$wpdb->prefix}br_quests q ON q.quest_id = sq.survey_id
+            WHERE q.adventure_id = %d
+            GROUP BY sq.survey_question_status",
+            $adventure_id
+        ) );
+        foreach ( $rows as $r ) {
+            $this->tally_inventory( $inv, 'survey-questions', (string) $r->s, (int) $r->n );
+        }
+
+        return $inv;
+    }
+
+    // 'delete' and 'trash' both mean gone; anything else outside the journey
+    // vocabulary lands in 'other' and is reported raw through 'statuses'.
+    private function tally_inventory( array &$inv, string $key, string $status, int $n ): void {
+        if ( ! isset( $inv[ $key ] ) ) {
+            $inv[ $key ] = self::INVENTORY_BUCKETS + [ 'statuses' => [] ];
+        }
+        if ( $status === 'delete' ) $status = 'trash';
+        $bucket = ( array_key_exists( $status, self::INVENTORY_BUCKETS ) && $status !== 'total' )
+            ? $status
+            : 'other';
+        $inv[ $key ][ $bucket ] += $n;
+        $inv[ $key ]['total']   += $n;
+        $inv[ $key ]['statuses'][ $status ] = ( $inv[ $key ]['statuses'][ $status ] ?? 0 ) + $n;
+    }
+
+    // The "is this running smoothly" numbers, scoped to the managed adventure AND its
+    // children. Players enroll in a child while content lives on the parent, so a
+    // parent-only count reads zero on any adventure that was ever cloned for a cohort.
+    public function get_adventure_health( int $adventure_id ): array {
+        global $wpdb;
+
+        $ids = $this->adventure_family_ids( $adventure_id );
+        $in  = implode( ',', $ids );
+
+        $players = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
+            WHERE adventure_id IN ({$in}) AND player_adventure_status = 'in'
+              AND player_adventure_role = 'player'"
+        );
+
+        $staff = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_adventure
+            WHERE adventure_id IN ({$in}) AND player_adventure_status = 'in'
+              AND player_adventure_role IN ('gm','npc')"
+        );
+
+        $active_7d = (int) $wpdb->get_var(
+            "SELECT COUNT(DISTINCT player_id) FROM {$wpdb->prefix}br_activity_log
+            WHERE adventure_id IN ({$in}) AND log_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+        );
+
+        // Numerator and denominator have to describe the same thing or the ratio is
+        // free to exceed 100%: counting every published post against a denominator of
+        // required milestones credits optional side quests, trashed content and GM
+        // test runs. Both halves are enrolled players against required milestones.
+        $counts_pp   = br_tabi_milestone_sql( 'q' );
+        $completions = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_posts pp
+            JOIN {$wpdb->prefix}br_quests q ON q.quest_id = pp.quest_id
+            JOIN {$wpdb->prefix}br_player_adventure pa
+                ON pa.player_id = pp.player_id AND pa.adventure_id = pp.adventure_id
+            WHERE pp.adventure_id IN ({$in}) AND pp.pp_status = 'publish'
+              AND q.adventure_id = %d AND {$counts_pp}
+              AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'",
+            $adventure_id
+        ) );
+
+        // Submitted, on a milestone that requires GM validation, never reviewed.
+        // pp_grade IS NULL is the only marker for "never reviewed" - an invalidated
+        // post keeps its grade, so pp_status alone cannot tell the two apart.
+        $awaiting_review = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_player_posts pp
+            JOIN {$wpdb->prefix}br_quests q ON q.quest_id = pp.quest_id
+            WHERE pp.adventure_id IN ({$in}) AND q.mech_validate = 1 AND pp.pp_grade IS NULL"
+        );
+
+        $open_requests = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_requests
+            WHERE adventure_id IN ({$in}) AND request_status = 'pending'"
+        );
+
+        // br_tabi_milestone_sql() again: the same milestone set the Tabi bars and
+        // getCompletedTabiIds() use, so this cannot drift from what players are shown.
+        $counts    = br_tabi_milestone_sql();
+        $required  = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}br_quests
+            WHERE adventure_id = %d AND {$counts}",
+            $adventure_id
+        ) );
+
+        $possible = $players * $required;
+
+        return [
+            'players'         => $players,
+            'staff'           => $staff,
+            'active_7d'       => $active_7d,
+            'active_pct'      => $players > 0 ? (int) round( ( $active_7d / $players ) * 100 ) : 0,
+            'completions'     => $completions,
+            'required'        => $required,
+            'completion_pct'  => $possible > 0 ? round( ( $completions / $possible ) * 100, 1 ) : 0,
+            'awaiting_review' => $awaiting_review,
+            'open_requests'   => $open_requests,
+        ];
+    }
+
+    // The managed adventure plus any child cloned from it. Always contains at least
+    // the id passed in, so callers can interpolate it into IN() without a guard.
+    private function adventure_family_ids( int $adventure_id ): array {
+        global $wpdb;
+        $children = $wpdb->get_col( $wpdb->prepare(
+            "SELECT adventure_id FROM {$wpdb->prefix}br_adventures WHERE adventure_parent = %d",
+            $adventure_id
+        ) );
+        $ids = array_map( 'intval', (array) $children );
+        $ids[] = $adventure_id;
+        return array_values( array_unique( array_filter( $ids ) ) );
+    }
 }
