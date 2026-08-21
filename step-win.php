@@ -17,11 +17,11 @@
 			<div class="edge-bottom"></div>
 			<div class="corner-br"></div>
 		</div>
-		<div class="action-buttons">
-			<button class="action-button success" onClick="submitPlayerWork();">
-				<?= __("Quest completed!","bluerabbit"); ?>
-			</button>
-		</div>
+        <div class="action-buttons">
+            <button class="action-button confirm" id="last-button" onClick="submitPlayerWork();">
+                <?= __("Finish","bluerabbit"); ?>
+            </button>
+        </div>
 
 		<div class="steps-navigation">
 			<button class="step-nav-button step-success" id="last-button"  onClick="submitPlayerWork();">
