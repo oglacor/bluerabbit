@@ -74,7 +74,7 @@ class BR_PlayerMeta {
 					SELECT MAX(player_meta_id) FROM {$wpdb->prefix}br_player_meta
 					WHERE player_id = pa.player_id
 				)
-			WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role = 'player'
+			WHERE pa.adventure_id = %d AND pa.player_adventure_status = 'in' AND pa.player_adventure_role IN ('player', 'npc')
 			$search_sql
 			ORDER BY u.display_name ASC
 			LIMIT %d OFFSET %d";
