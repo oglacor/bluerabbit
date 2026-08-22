@@ -164,7 +164,7 @@
 				     if($modal_progress['total'] > 0) { ?>
 				<div class="tabi-modal-progress<?= $modal_progress['pct'] >= 100 ? ' is-complete' : ''; ?>">
 					<div class="tabi-modal-progress-head">
-						<span class="tabi-modal-progress-label"><?= $modal_progress['pct'] >= 100 ? __('Badge earned','bluerabbit') : __('Progress towards this badge','bluerabbit'); ?></span>
+						<span class="tabi-modal-progress-label"><?= $modal_progress['pct'] >= 100 ? __('Stage complete','bluerabbit') : __('Progress towards this stage','bluerabbit'); ?></span>
 						<span class="tabi-modal-progress-value"><?= $modal_progress['pct']; ?>%</span>
 					</div>
 					<div class="tabi-modal-progress-track">
